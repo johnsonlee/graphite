@@ -437,7 +437,7 @@ mod tests {
                 .unwrap()
                 .prepare_pack()
                 .unwrap_err(),
-            "--output requires a path"
+            "--output requires a path (use --output=-name for a path starting with '-')"
         );
     }
 

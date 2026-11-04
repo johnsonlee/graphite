@@ -251,19 +251,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
 
 /// The frontend's own version, by running it with `--version` (`graphite 2.4.8`).
 fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<String> {
-    let mut cmd = match &fe.launch {
-        frontend::Launch::Jar(jar) => {
-            let mut c = std::process::Command::new(frontend::locate_java(env).ok()?);
-            c.arg("-jar").arg(jar);
-            c
-        }
-        frontend::Launch::Node(script) => {
-            let mut c = std::process::Command::new(frontend::locate_node(env).ok()?);
-            c.arg(script);
-            c
-        }
-        frontend::Launch::Executable(exe) => std::process::Command::new(exe),
-    };
+    let mut cmd = fe.command(env).ok()?;
     // A JVM started only to print its version needs no 8 GiB reservation.
     let out = cmd
         .arg("--version")

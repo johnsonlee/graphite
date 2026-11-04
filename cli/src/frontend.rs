@@ -111,6 +111,24 @@ pub struct Frontend {
 }
 
 impl Frontend {
+    /// The base launcher, before a subcommand or process-specific options.
+    pub fn command(&self, env: &Env) -> Result<std::process::Command, String> {
+        use std::process::Command;
+        Ok(match &self.launch {
+            Launch::Jar(jar) => {
+                let mut cmd = Command::new(locate_java(env)?);
+                cmd.arg("-jar").arg(jar);
+                cmd
+            }
+            Launch::Node(script) => {
+                let mut cmd = Command::new(locate_node(env)?);
+                cmd.arg(script);
+                cmd
+            }
+            Launch::Executable(program) => Command::new(program),
+        })
+    }
+
     pub fn path(&self) -> &Path {
         match &self.launch {
             Launch::Jar(p) | Launch::Node(p) | Launch::Executable(p) => p,

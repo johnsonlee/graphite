@@ -18,7 +18,7 @@
 //! a key names one invoke only in the bytecode it was read from, and the frontend hands a
 //! rule resolved on another input back unresolved, so its query runs again.
 
-use crate::frontend::{self, Env, Frontend, Launch};
+use crate::frontend::{Env, Frontend, Launch};
 use graphite_cypher::engine::Executor;
 use graphite_cypher::value::Value;
 use graphite_storage::node::NodeKind;
@@ -169,15 +169,10 @@ pub fn plan_command(
     input: Option<&Path>,
     analysis: &[OsString],
 ) -> Result<Command, String> {
-    let mut cmd = match &fe.launch {
-        Launch::Jar(jar) => {
-            let mut c = Command::new(frontend::locate_java(env)?);
-            c.arg("-jar").arg(jar);
-            c
-        }
-        Launch::Executable(exe) => Command::new(exe),
-        Launch::Node(_) => return Err("fold rules are only supported by the JVM frontend".into()),
-    };
+    if matches!(fe.launch, Launch::Node(_)) {
+        return Err("fold rules are only supported by the JVM frontend".into());
+    }
+    let mut cmd = fe.command(env)?;
     cmd.arg("fold").arg("plan").arg(file);
     if let Some(input) = input {
         cmd.arg("--input").arg(input);
@@ -775,6 +770,15 @@ mod tests {
         assert_eq!(
             args,
             ["-jar", "/opt/graphite.jar", "fold", "plan", "folds.yml"]
+        );
+        let js = Frontend {
+            lang: "js",
+            launch: Launch::Node("entry.js".into()),
+            found_via: "test",
+        };
+        assert_eq!(
+            plan_command(&env, &js, Path::new("folds.yml"), None, &[]).unwrap_err(),
+            "fold rules are only supported by the JVM frontend"
         );
         let exe = Frontend {
             lang: "jvm",

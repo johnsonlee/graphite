@@ -52,17 +52,10 @@ fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
 
 fn command(env: &Env) -> Result<Command, String> {
     let frontend = frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?;
-    let mut command = match frontend.launch {
-        Launch::Node(script) => {
-            let mut command = Command::new(frontend::locate_node(env)?);
-            command.arg(script);
-            command
-        }
-        Launch::Executable(exe) => Command::new(exe),
-        Launch::Jar(_) => {
-            return Err("JavaScript artifact analysis requires a Node.js frontend".into())
-        }
-    };
+    if matches!(frontend.launch, Launch::Jar(_)) {
+        return Err("JavaScript artifact analysis requires a Node.js frontend".into());
+    }
+    let mut command = frontend.command(env)?;
     command.arg("build");
     Ok(command)
 }

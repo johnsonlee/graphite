@@ -7,7 +7,10 @@ fn invalid_output_is_a_usage_error_with_or_without_fold() {
             vec!["-o", "x.graphite", "--output=y.graphite"],
             "specify --output only once",
         ),
-        (vec!["--output"], "--output requires a path"),
+        (
+            vec!["--output"],
+            "--output requires a path (use --output=-name for a path starting with '-')",
+        ),
     ] {
         for fold in [true, false] {
             let mut command = Command::new(env!("CARGO_BIN_EXE_graphite"));
@@ -28,15 +31,24 @@ fn invalid_output_is_a_usage_error_with_or_without_fold() {
 #[test]
 fn a_separate_output_value_cannot_consume_another_option() {
     for lang in ["js", "jvm"] {
-        for flag in ["--help", "-h", "--version", "--unknown"] {
+        for options in [
+            ["-o", "--help"],
+            ["-o", "-h"],
+            ["-o", "--version"],
+            ["-o", "--unknown"],
+            ["-o", "-graphs"],
+            ["-o", "-1.graphite"],
+            ["--output=", "--help"],
+        ] {
             let output = Command::new(env!("CARGO_BIN_EXE_graphite"))
-                .args(["build", "--lang", lang, "input", "-o", flag])
+                .args(["build", "--lang", lang, "input"])
+                .args(options)
                 .output()
                 .unwrap();
             assert_eq!(output.status.code(), Some(2));
             assert_eq!(
                 String::from_utf8(output.stderr).unwrap().trim(),
-                "Error: --output requires a path"
+                "Error: --output requires a path (use --output=-name for a path starting with '-')"
             );
         }
     }

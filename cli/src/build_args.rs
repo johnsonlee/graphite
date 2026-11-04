@@ -123,7 +123,7 @@ pub(crate) fn output_option(args: &[OsString]) -> Result<Option<Arg<'_>>, String
         args,
         &["-o", "--output"],
         "specify --output only once",
-        "--output requires a path",
+        "--output requires a path (use --output=-name for a path starting with '-')",
     )
 }
 
@@ -210,7 +210,7 @@ mod tests {
         ] {
             assert_eq!(
                 output_option(&a).err().as_deref(),
-                Some("--output requires a path")
+                Some("--output requires a path (use --output=-name for a path starting with '-')")
             );
         }
         assert_eq!(
