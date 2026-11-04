@@ -3463,3 +3463,50 @@ repeat the attempt 056 protocol against main `a5c96f71`: the same 64 pinned
 graphs in every request, 73 cases, three AB / BA / AB pairs, 20 pressure
 samples per case per arm at concurrency four, complete response consumption,
 and separate 5% CPU and peak RSS limits for loading and for the query mix.
+
+**Result.** All 10,074 requests matched their complete expected responses and
+all six server processes finished with zero OOM events. Per case and arm, p50
+and p95 are nearest ranks 10 and 19 of the 20 concurrent pressure samples.
+The table gives main and candidate milliseconds for the pair producing the
+median difference, followed by the full three-pair difference range.
+
+| Case | p50 A→B (Δ) [min,max] ms | p95 A→B (Δ) [min,max] ms |
+|---|---|---|
+| `shape-with-filter` | 2,884.846→0.373 / -2,884.473 [-2,919.972, -2,826.730] | 3,045.321→1.954 / -3,043.367 [-3,215.976, -2,984.762] |
+| `shape-order-by` | 2,376.472→1,750.321 / -626.151 [-676.400, -597.635] | 2,460.052→1,809.671 / -650.380 [-847.508, -578.892] |
+| `shape-order-by-desc` | 2,433.119→1,750.345 / -682.774 [-715.682, -643.892] | 2,512.744→1,824.170 / -688.575 [-936.364, -595.545] |
+| `shape-collect` | 1,793.113→1,681.790 / -111.323 [-186.751, -102.870] | 1,850.589→1,781.262 / -69.327 [-227.057, -41.842] |
+| `shape-with-aggregate` | 729.779→557.167 / -172.612 [-187.816, -168.318] | 768.979→596.845 / -172.133 [-261.017, -127.073] |
+| `shape-group-count` | 333.539→311.276 / -22.262 [-25.661, -21.415] | 361.727→338.863 / -22.864 [-50.501, -21.859] |
+| `shape-distinct` | 350.284→327.965 / -22.319 [-37.630, -21.386] | 396.729→354.224 / -42.505 [-119.781, -37.758] |
+| `shape-count-traversal` | 124.314→82.319 / -41.995 [-50.670, -37.934] | 162.802→93.506 / -69.296 [-91.175, -46.303] |
+| `schema-relationship-histogram` | 120.994→87.301 / -33.693 [-46.702, -29.422] | 157.048→107.817 / -49.231 [-72.613, -45.542] |
+
+| Pair | Phase | CPU s, A→B (Δ) | Kernel peak RSS MiB, A→B (Δ) |
+|---:|---|---:|---:|
+| 1 | loading | 26.458→23.520 (-11.105%) | 6,213.699→3,768.488 (-39.352%) |
+| 1 | query | 265.327→152.672 (-42.459%) | 12,381.410→6,169.207 (-50.174%) |
+| 2 | loading | 24.972→21.943 (-12.129%) | 6,223.125→3,777.137 (-39.305%) |
+| 2 | query | 262.224→152.031 (-42.023%) | 12,071.691→6,657.945 (-44.847%) |
+| 3 | loading | 26.093→22.948 (-12.054%) | 6,214.688→3,764.496 (-39.426%) |
+| 3 | query | 256.635→152.165 (-40.708%) | 12,127.629→6,425.008 (-47.022%) |
+
+All twelve CPU and peak RSS comparisons met their independent 5% bounds.
+Time to readiness fell by 2.873–3.078 s and the full query mix completed
+28.439–30.432 s sooner. All seven predeclared slow queries improved at both
+percentiles in each pair. Of the 73 cases, 11 had a positive paired median
+difference at p50 and 14 at p95. Five had higher p95 in all three pairs. The
+largest median p95 increase was 0.574 → 2.884 ms (+2.310 ms) on
+`targeted/global-wide-parameterized-as-literal`. The largest median p50
+increase was 1.338 → 2.080 ms (+0.742 ms). In total 97 of the 438 individual
+paired percentile differences were positive.
+
+Retain the CSR check for correctness. This warm-cache comparison measures the
+cumulative PR against main. It does not isolate the effect of the CSR check
+or establish equal or better latency for every query. The Linux executable
+from `e56c4ada` has SHA-256
+`0122ea5440f2969020feda5f83d0a80f64cd8fd813086bf49d27d8b6c6984db6`.
+The run seal is
+`b106f030611c857828ebb4aadfdd6dd09290a4d0dd2917004bf12a5eec6689ee`.
+The full result is
+`000613784af999ed7149446c343dbb8a1c7b35ff1695a1d8d545170668110f54`.
