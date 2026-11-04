@@ -98,6 +98,11 @@ struct Build: ParsableCommand {
             for omission in result.resourceOmissions {
                 stderr.write(("warning: resource \(omission.path) key \(omission.key) omitted: \(omission.reason)\n").data(using: .utf8)!)
             }
+            if !result.resourceOmissions.isEmpty {
+                // The IR is valid, but selecting a bundle with values this schema
+                // cannot preserve requires the CLI's explicit --allow-partial.
+                throw ExitCode(3)
+            }
         } catch let error as FrontendError {
             stderr.write("error: \(error)\n".data(using: .utf8)!)
             if case .noInput = error { throw ExitCode(2) }
