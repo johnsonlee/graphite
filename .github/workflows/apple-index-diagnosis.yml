@@ -1,14 +1,15 @@
 name: Apple index correctness diagnosis
 
 # Run manually, or add apple-index-diagnosis to a same-repository PR after
-# reviewing its diagnostic scripts. Ordinary pushes and PR updates do not trigger it.
+# reviewing its diagnostic scripts. Remove the label after the requested run starts;
+# a PR update only runs the diagnosis while this explicit opt-in label remains.
 # This correctness-only investigation retains both raw index dumps, IR streams,
 # saved graphs and a file/USR/string diff. A completed comparison can contain
 # differences; it does not change a shape pin or establish a performance result.
 on:
   workflow_dispatch:
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize]
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ jobs:
   compare-index-facts:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.label.name == 'apple-index-diagnosis' &&
+      (contains(github.event.pull_request.labels.*.name, 'apple-index-diagnosis') &&
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 120
