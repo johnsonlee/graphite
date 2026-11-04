@@ -40,7 +40,7 @@ final class EmitterObjcExtensionTests: XCTestCase {
         let result = try Frontend(options: options).build(to: output)
         let library = try XCTUnwrap(IndexReader.locateLibrary())
         let reader = try IndexReader(storePath: result.indexStore, libraryPath: library)
-        let model = reader.read(files: [SourcePosition.canonical(source.path)])
+        let model = try reader.read(files: [SourcePosition.canonical(source.path)])
         XCTAssertFalse(model.types.contains { $0.symbol.usr == "c:objc(cs)NSObject" })
         let declaration = try XCTUnwrap(model.members.first { $0.symbol.name == "graphiteProbe(_:)" })
         XCTAssertEqual(declaration.symbol.usr, "c:@CM@ExtensionProbe@@objc(cs)NSObject(im)graphiteProbe:")
