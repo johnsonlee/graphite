@@ -110,7 +110,7 @@ public struct Frontend {
 
         progress(Progress(phase: "index", done: 0, total: files.count))
         let reader = try IndexReader(storePath: storePath, libraryPath: libraryPath)
-        let model = reader.read(files: files)
+        let model = try reader.read(files: files)
         progress(Progress(phase: "index", done: files.count, total: files.count))
 
         var facts: [String: SyntaxFacts] = [:]

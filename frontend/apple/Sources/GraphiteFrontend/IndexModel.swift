@@ -121,10 +121,14 @@ public enum IndexError: Error, CustomStringConvertible {
 /// index store written by the Swift compiler (`-index-store-path`, which SwiftPM and
 /// Xcode enable by default).
 public final class IndexReader {
+    private let storePath: String
+    private let libraryPath: String
     private let db: IndexStoreDB
     private let databasePath: String
 
     public init(storePath: String, libraryPath: String) throws {
+        self.storePath = storePath
+        self.libraryPath = libraryPath
         guard FileManager.default.fileExists(atPath: storePath) else { throw IndexError.noStore(storePath) }
         guard FileManager.default.fileExists(atPath: libraryPath) else { throw IndexError.noLibrary(libraryPath) }
         let library: IndexStoreLibrary
@@ -189,7 +193,11 @@ public final class IndexReader {
         return nil
     }
 
-    public func read(files: [String]) -> IndexModel {
+    public func read(files: [String]) throws -> IndexModel {
+        let paths = Set(files.map(SourcePosition.canonical))
+        let swift = paths.filter { $0.hasSuffix(".swift") }
+        let raw = try swift.isEmpty ? nil : RawIndexReader(store: storePath, library: libraryPath)
+        let catalog = try raw?.records(files: swift) ?? [:]
         var model = IndexModel()
         var seen = Set<String>()
         var canonical: [String: String] = [:]
@@ -202,8 +210,19 @@ public final class IndexReader {
         var definedMembers = Set<String>()
         var declaredMembers: [String: (symbol: SymbolInfo, occurrence: SymbolOccurrence, position: SourcePosition)] = [:]
         var declaredTypes: [String: (symbol: SymbolInfo, occurrence: SymbolOccurrence, position: SourcePosition)] = [:]
-        for file in files.sorted() {
-            for occurrence in db.symbolOccurrences(inFilePath: file) {
+        for file in paths.sorted() {
+            let records = catalog[file]
+            var occurrences: [SymbolOccurrence] = []
+            if (records?.count ?? 0) <= 1 {
+                occurrences = db.symbolOccurrences(inFilePath: file)
+            }
+            // IndexStoreDB returns [] for both an empty record and an unreadable
+            // one. If a unit references it, distinguish those cases before saving.
+            // Multiple records always need the complete compiler contexts.
+            if occurrences.isEmpty, let records, let raw {
+                occurrences = try raw.occurrences(file: file, records: records)
+            }
+            for occurrence in occurrences {
                 let rawPath = occurrence.location.path
                 let path = canonical[rawPath] ?? {
                     let spelling = SourcePosition.canonical(rawPath)
@@ -244,11 +263,11 @@ public final class IndexReader {
                         model.supertypes.append(SupertypeRelation(subtype: relation.symbol.usr, supertype: symbol))
                     }
                 } else if roles.contains(.call) && !roles.contains(.implicit) {
-                    let key = "call \(symbol.usr) \(position.path):\(position.line):\(position.column)"
-                    guard seen.insert(key).inserted else { continue }
                     let container = occurrence.relations.first { $0.roles.contains(.calledBy) }
                         ?? occurrence.relations.first { $0.roles.contains(.containedBy) }
                     let caller = container.map { SymbolInfo(usr: $0.symbol.usr, name: $0.symbol.name, kind: $0.symbol.kind) }
+                    let key = "call \(occurrence.location.moduleName) \(caller?.usr ?? "") \(symbol.usr) \(position.path):\(position.line):\(position.column)"
+                    guard seen.insert(key).inserted else { continue }
                     model.calls.append(CallOccurrence(
                         callee: symbol,
                         caller: caller,
