@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import path from 'node:path';
 import fs from 'node:fs';
+import { distribution } from './distribution.js';
 import { encodeArtifactString } from './strings.js';
 
 export interface Method {
@@ -81,6 +82,11 @@ export function project(input: string, warn: (message: string) => void = console
     moduleDetection: ts.ModuleDetectionKind.Force,
   };
   const host = ts.createCompilerHost(options);
+  if (distribution) {
+    const directory = path.dirname(distribution.libraries[0]!);
+    host.getDefaultLibLocation = () => directory;
+    host.getDefaultLibFileName = options => path.join(directory, ts.getDefaultLibFileName(options));
+  }
   // TypeScript uses forward slashes for source and resolution paths, including on Windows.
   const roots = files.map(file => ts.sys.resolvePath(file));
   const key = (file: string) => host.getCanonicalFileName(ts.sys.resolvePath(file));

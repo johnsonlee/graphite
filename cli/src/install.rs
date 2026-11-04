@@ -6,10 +6,29 @@
 //! asset is required unless the caller opts out, so a truncated or substituted download
 //! never becomes the frontend that builds someone's graphs.
 
-use crate::frontend::{self, Env};
+mod js;
+
+use crate::frontend::{self, Env, Lang};
 use sha2::{Digest, Sha256};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+pub fn install(
+    env: &Env,
+    lang: Lang,
+    version: &str,
+    skip_checksum: bool,
+) -> Result<PathBuf, String> {
+    // The version is both a URL segment and the name of a local install directory.
+    semver::Version::parse(version)
+        .map_err(|e| format!("invalid release version '{version}': {e}"))?;
+    match lang {
+        Lang::Jvm => install_jvm(env, version, skip_checksum),
+        Lang::Js if skip_checksum => Err("--skip-checksum is only supported for legacy JVM releases; install the JS frontend without this flag".into()),
+        Lang::Js => js::install_js(env, version),
+    }
+}
 
 /// Where the JVM frontend jar for `version` lives once installed.
 pub fn jvm_install_path(env: &Env, version: &str) -> Result<PathBuf, String> {
@@ -30,9 +49,20 @@ pub fn parse_sha256_file(text: &str) -> Option<String> {
 }
 
 pub fn sha256_of(path: &Path) -> Result<String, String> {
-    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let mut file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let mut sha = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        let count = file
+            .read(&mut buffer)
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+        if count == 0 {
+            break;
+        }
+        sha.update(&buffer[..count]);
+    }
     const HEX: &[u8; 16] = b"0123456789abcdef";
-    let digest = Sha256::digest(bytes);
+    let digest = sha.finalize();
     let mut hex = String::with_capacity(digest.len() * 2);
     for &byte in digest.iter() {
         hex.push(char::from(HEX[usize::from(byte >> 4)]));
@@ -71,41 +101,49 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
     std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let part = dir.join(format!("{}.part", frontend::JVM_FRONTEND_JAR));
     let url = frontend::release_asset_url(version, frontend::JVM_RELEASE_ASSET);
-    eprintln!("Downloading {url}");
-    if let Err(e) = download(&url, &part) {
+    if let Err(error) =
+        download_verified(&url, &part, &dir.join("graphite.jar.sha256"), skip_checksum)
+    {
         discard_partial_install(dir);
-        return Err(e);
-    }
-
-    let sum_url = format!("{url}.sha256");
-    let sum_file = dir.join("graphite.jar.sha256");
-    match download(&sum_url, &sum_file) {
-        Ok(()) => {
-            let text = std::fs::read_to_string(&sum_file).map_err(|e| e.to_string())?;
-            let expected = parse_sha256_file(&text)
-                .ok_or_else(|| format!("{sum_url} does not contain a sha256 digest"))?;
-            let actual = sha256_of(&part)?;
-            if actual != expected {
-                discard_partial_install(dir);
-                return Err(format!(
-                    "checksum mismatch for {url}: expected {expected}, got {actual}"
-                ));
-            }
-        }
-        Err(_) if skip_checksum => {
-            eprintln!("WARNING: no checksum published for {version}; installing unverified");
-        }
-        Err(e) => {
-            discard_partial_install(dir);
-            return Err(format!(
-                "{e}. Releases before checksums were published can be installed with \
-                 --skip-checksum."
-            ));
-        }
+        return Err(error);
     }
     std::fs::rename(&part, &jar).map_err(|e| format!("{}: {e}", jar.display()))?;
     eprintln!("Installed JVM frontend {version} at {}", jar.display());
     Ok(jar)
+}
+
+/// Both release frontends use the same adjacent sha256sum receipt. Opting out
+/// of a missing receipt never bypasses a malformed or mismatching digest.
+fn download_verified(
+    url: &str,
+    asset: &Path,
+    checksum: &Path,
+    skip_checksum: bool,
+) -> Result<(), String> {
+    eprintln!("Downloading {url}");
+    download(url, asset)?;
+    let sum_url = format!("{url}.sha256");
+    match download(&sum_url, checksum) {
+        Ok(()) => {
+            let text = std::fs::read_to_string(checksum).map_err(|e| e.to_string())?;
+            let expected = parse_sha256_file(&text)
+                .ok_or_else(|| format!("{sum_url} does not contain a sha256 digest"))?;
+            let actual = sha256_of(asset)?;
+            if actual != expected {
+                return Err(format!(
+                    "checksum mismatch for {url}: expected {expected}, got {actual}"
+                ));
+            }
+            Ok(())
+        }
+        Err(_) if skip_checksum => {
+            eprintln!("WARNING: no checksum available for {url}; installing unverified");
+            Ok(())
+        }
+        Err(error) => Err(format!(
+            "{error}. A SHA-256 checksum is required for this release asset."
+        )),
+    }
 }
 
 /// Remove what a failed install left in its version directory (the `.part` download,
@@ -121,6 +159,22 @@ fn discard_partial_install(dir: &Path) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn invalid_versions_are_rejected_before_touching_the_install_directory() {
+        let root = tempfile::tempdir().unwrap();
+        let env = Env {
+            home: Some(root.path().into()),
+            ..Default::default()
+        };
+        for lang in [Lang::Js, Lang::Jvm] {
+            for version in ["", "../escape", "1.2.3/a", "1.2.3?query", "2.5.0-rc.01"] {
+                let error = install(&env, lang, version, false).unwrap_err();
+                assert!(error.starts_with("invalid release version"), "{error}");
+                assert!(!env.frontends_dir().unwrap().exists());
+            }
+        }
+    }
 
     #[test]
     fn install_path_is_versioned_under_the_home_frontends_dir() {

@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import { distribution } from './distribution.js';
 import { analyze, UsageError } from './analyzer.js';
 import { writeInterchange } from './interchange.js';
 
-const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts language selector is an alias for compiled-JavaScript analysis.\nNode.js 20 or newer is required.\n`;
+const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts and es language selectors are aliases for compiled-JavaScript analysis.\n${distribution ? 'Standalone executable (includes runtime and compiler). Use --licenses for third-party notices.' : 'Node.js 20 or newer is required for the source frontend.'}\n`;
 function printInfo(arg: string | undefined): boolean {
   if (arg === '--help' || arg === '-h') process.stdout.write(help);
-  else if (arg === '--version' || arg === '-V') console.log(`graphite ${JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version}`);
+  else if (arg === '--version' || arg === '-V') console.log(`graphite ${distribution?.version ?? JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version}`);
+  else if (arg === '--licenses' && distribution) process.stdout.write(distribution.notices);
   else return false;
   return true;
 }
