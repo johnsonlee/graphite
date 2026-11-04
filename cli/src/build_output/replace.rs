@@ -126,7 +126,7 @@ impl Claim {
         }
     }
 
-    fn backup_digest(&mut self, digest: &Path, previous: &Handle) -> io::Result<fs::Permissions> {
+    fn backup_digest(&mut self, digest: &Path, previous: &Handle) -> io::Result<()> {
         if !self.owns_dir()? {
             return Err(io::Error::other("publication claim changed"));
         }
@@ -137,9 +137,7 @@ impl Claim {
         let mut copy = File::create_new(self.dir.join("previous.sha256"))?;
         self.backup = Some(Handle::from_file(copy.try_clone()?)?);
         io::copy(&mut input, &mut copy)?;
-        let permissions = input.metadata()?.permissions();
-        copy.set_permissions(permissions.clone())?;
-        Ok(permissions)
+        copy.set_permissions(input.metadata()?.permissions())
     }
 
     pub(super) fn replace(
@@ -154,7 +152,7 @@ impl Claim {
         let inspect =
             |p: &Path| regular(p).map_err(|e| format!("could not inspect {}: {e}", p.display()));
         let backup = self.dir.join("previous.sha256");
-        let permissions = old_digest
+        old_digest
             .map(|id| self.backup_digest(&digest, id))
             .transpose()
             .map_err(|e| format!("could not back up {}: {e}", digest.display()))?;
@@ -185,7 +183,7 @@ impl Claim {
                 if regular(&digest)?.as_ref() != Some(&new_digest) {
                     return Err(io::Error::other("another writer changed the digest"));
                 }
-                if permissions.is_none() {
+                if old_digest.is_none() {
                     return fs::remove_file(&digest);
                 }
                 if !self.owns_dir()? || regular(&backup)?.as_ref() != self.backup.as_ref() {
@@ -330,6 +328,36 @@ mod tests {
             .unwrap();
         verify(&old, "replacement");
         assert!(!old.with_added_extension("lock").exists());
+    }
+
+    #[test]
+    fn standalone_rebuild_rolls_back_only_its_new_checksum_on_rename_failure() {
+        let tmp = tempfile::tempdir().unwrap();
+        let source = packed(&tmp.path().join("source"), "original");
+        let output = tmp.path().join("moved.graphite");
+        fs::rename(&source, &output).unwrap();
+        let digest = container::digest_path(&output);
+        let candidate = packed(&tmp.path().join("candidate"), "replacement");
+        let before = fs::read(&output).unwrap();
+        let old = regular(&output).unwrap().unwrap();
+        let old_hash = Container::open(&output).unwrap().file_sha256();
+        let error = Claim::new(&output)
+            .unwrap()
+            .replace(
+                &candidate,
+                &container::digest_path(&candidate),
+                &output,
+                (&old, None, &old_hash),
+                |_, to| {
+                    assert_eq!(to, output);
+                    assert!(digest.is_file());
+                    Err(io::Error::other("container busy"))
+                },
+            )
+            .unwrap_err();
+        assert!(error.contains("container busy"), "{error}");
+        assert_eq!(fs::read(&output).unwrap(), before);
+        assert!(!digest.exists() && !output.with_added_extension("lock").exists());
     }
 
     #[test]

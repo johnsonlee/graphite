@@ -66,9 +66,11 @@ analysis or invalid interchange leaves the destination and its parents untouched
 
 Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. Both JS and JVM builds can rebuild
-an existing `.graphite` output. The publisher verifies its manifest and matching
-sidecar and checks that neither file was replaced during analysis. An unrelated
-file, incomplete pair or mismatched digest stays untouched. A new build claims
+an existing `.graphite` output. The publisher verifies the old container's header,
+manifest and entry checksums. A sidecar, if present, must match. A container
+moved without its sidecar can be rebuilt, and the new graph receives a new
+sidecar. A concurrent change to either path, a stray sidecar or a mismatched
+digest prevents replacement. A new build claims
 the digest first, then publishes the container. If neither hard links nor
 exclusive rename work on the output filesystem, it creates each file exclusively
 and copies the staged bytes. The packed file is visible but cannot be opened by

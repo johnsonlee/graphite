@@ -791,7 +791,8 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
 
-When rebuilding a verified `app.graphite` and matching sidecar, both frontends claim
+A container moved without its sidecar can be rebuilt after its internal manifest and
+entry checksums verify. If a sidecar exists, it must match. For a rebuild both frontends claim
 `app.graphite.lock`, publish the new SHA-256 sidecar, then replace the container. If container publication
 fails, it restores the previous sidecar. An unlocked reader can observe the old
 container with the new checksum between the two renames. On Linux and macOS the

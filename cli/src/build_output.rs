@@ -90,7 +90,7 @@ impl Publication {
                 || !report.has_manifest
                 || report.digest_file != sidecar_expected.then_some(true)
             {
-                return Err(format!("expected a verified Graphite manifest, required graph entries and matching sidecar: {}", report.failures.join(", ")));
+                return Err(format!("expected a verified Graphite manifest, required graph entries and a matching sidecar when present: {}", report.failures.join(", ")));
             }
             Ok(report.file_sha256)
         };
@@ -293,6 +293,60 @@ mod tests {
             .unwrap_err();
         assert!(err.contains("output changed during this build"), "{err}");
         assert_eq!(contents(), winner);
+    }
+
+    #[test]
+    fn moved_standalone_graph_is_verified_and_rebuilt_with_its_new_checksum() {
+        let dir = tempfile::tempdir().unwrap();
+        let original = dir.path().join("original.graphite");
+        stage_value(&original, "old")
+            .pack(&original, Publication::CreateNew)
+            .unwrap();
+        let moved = dir.path().join("relocated.graphite");
+        std::fs::rename(&original, &moved).unwrap();
+        let checksum = graphite_storage::container::digest_path(&moved);
+        let expected = Publication::inspect(&moved).unwrap();
+        let stage = stage_value(&moved, "replacement");
+        let previous = std::fs::read(&moved).unwrap();
+
+        std::fs::write(&checksum, b"other file").unwrap();
+        assert!(stage
+            .pack(&moved, expected)
+            .unwrap_err()
+            .contains("output changed"));
+        assert_eq!(std::fs::read(&moved).unwrap(), previous);
+        assert_eq!(std::fs::read(&checksum).unwrap(), b"other file");
+        std::fs::remove_file(&checksum).unwrap();
+
+        // A header alone cannot prove the old bytes are a graph. Flip a byte
+        // in the manifest-covered string table without changing the directory.
+        let archive = graphite_storage::Container::open(&moved).unwrap();
+        let offset = archive.entry("graph.strings").unwrap().offset as usize;
+        drop(archive);
+        let mut corrupt = previous.clone();
+        corrupt[offset] ^= 1;
+        std::fs::write(&moved, &corrupt).unwrap();
+        let err = stage
+            .pack(&moved, Publication::inspect(&moved).unwrap())
+            .unwrap_err();
+        assert!(err.contains("CRC-32 mismatch"), "{err}");
+        assert_eq!(std::fs::read(&moved).unwrap(), corrupt);
+        assert!(!checksum.exists());
+
+        std::fs::write(&moved, &previous).unwrap();
+        stage
+            .pack(&moved, Publication::inspect(&moved).unwrap())
+            .unwrap();
+        let verified = graphite_storage::Container::open(&moved)
+            .unwrap()
+            .verify()
+            .unwrap();
+        assert!(verified.ok() && verified.has_manifest && verified.digest_file == Some(true));
+        let graph = graphite_storage::Graph::load(&moved).unwrap();
+        let graphite_storage::NodeKind::StringConstant(id) = graph.node(0).unwrap().kind else {
+            panic!("expected string")
+        };
+        assert_eq!(graph.str(id), "replacement");
     }
 
     #[test]
