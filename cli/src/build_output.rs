@@ -30,7 +30,7 @@ pub(crate) enum Publication {
     CreateNew,
     Rebuild {
         container: same_file::Handle,
-        digest: same_file::Handle,
+        digest: Option<same_file::Handle>,
     },
 }
 
@@ -38,13 +38,20 @@ impl Publication {
     /// Remember the pair we intend to rebuild. A competing publisher that finishes
     /// during analysis must never turn a new build into an overwrite.
     pub(crate) fn inspect(output: &Path) -> Result<Self, String> {
+        if output.is_file() {
+            replace::recover(output);
+        }
+        Self::snapshot(output)
+    }
+
+    fn snapshot(output: &Path) -> Result<Self, String> {
         let digest = graphite_storage::container::digest_path(output);
         let regular = |p: &Path| {
             replace::regular(p).map_err(|e| format!("could not inspect {}: {e}", p.display()))
         };
         match (regular(output)?, regular(&digest)?) {
             (None, None) => Ok(Self::CreateNew),
-            (Some(container), Some(digest)) => Ok(Self::Rebuild { container, digest }),
+            (Some(container), digest) => Ok(Self::Rebuild { container, digest }),
             _ => Err(format!(
                 "output already exists without a complete graph and digest pair: {}",
                 output.display()
@@ -52,14 +59,14 @@ impl Publication {
         }
     }
 
-    fn verify_rebuild(&self, output: &Path) -> Result<(), String> {
-        if Self::inspect(output)? != *self {
+    fn verify_rebuild(&self, output: &Path) -> Result<String, String> {
+        if Self::snapshot(output)? != *self {
             return Err(format!(
                 "output changed during this build: {}",
                 output.display()
             ));
         }
-        let verify = || -> Result<(), String> {
+        let verify = || -> Result<String, String> {
             let container = graphite_storage::Container::open(output).map_err(|e| e.to_string())?;
             use graphite_storage::io::{check_header, read_i32_at, MAGIC_NODEDATA};
             if !container.bytes("graph.nodedata").is_some_and(|bytes| {
@@ -72,10 +79,20 @@ impl Publication {
                 return Err("missing or unsupported Graphite node-data header".into());
             }
             let report = container.verify().map_err(|e| e.to_string())?;
-            if !report.ok() || !report.has_manifest || report.digest_file != Some(true) {
+            let sidecar_expected = matches!(
+                self,
+                Self::Rebuild {
+                    digest: Some(_),
+                    ..
+                }
+            );
+            if !report.ok()
+                || !report.has_manifest
+                || report.digest_file != sidecar_expected.then_some(true)
+            {
                 return Err(format!("expected a verified Graphite manifest, required graph entries and matching sidecar: {}", report.failures.join(", ")));
             }
-            Ok(())
+            Ok(report.file_sha256)
         };
         verify().map_err(|e| format!("refusing to replace {}: {e}", output.display()))
     }
@@ -100,12 +117,12 @@ impl Stage {
                 ref digest,
             } => {
                 let mut claim = replace::Claim::new(output)?;
-                publication.verify_rebuild(output)?;
+                let old_hash = publication.verify_rebuild(output)?;
                 claim.replace(
                     &destination,
                     &report.digest_file,
                     output,
-                    (container, digest),
+                    (container, digest.as_ref(), &old_hash),
                     |a, b| std::fs::rename(a, b),
                 )?
             }
@@ -290,9 +307,12 @@ mod tests {
             )
         };
         std::fs::write(&output, b"unrelated").unwrap();
-        assert!(Publication::inspect(&output)
-            .unwrap_err()
-            .contains("complete graph and digest pair"));
+        let error = stage_value(&output, "never published")
+            .pack(&output, Publication::inspect(&output).unwrap())
+            .unwrap_err();
+        assert!(error.contains("refusing to replace"), "{error}");
+        assert!(digest.symlink_metadata().is_err());
+        assert_eq!(std::fs::read(&output).unwrap(), b"unrelated");
         std::fs::write(&digest, b"unrelated digest").unwrap();
         let refuse = || {
             let original = contents();

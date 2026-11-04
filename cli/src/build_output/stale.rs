@@ -23,7 +23,7 @@ fn boot_uuid(value: &str) -> Option<String> {
 }
 
 #[cfg(target_os = "linux")]
-fn process_scope() -> Option<String> {
+pub(super) fn process_scope() -> Option<String> {
     let boot = boot_uuid(&fs::read_to_string("/proc/sys/kernel/random/boot_id").ok()?)?;
     let ns = fs::read_link("/proc/self/ns/pid").ok()?;
     let raw = ns.to_str()?.strip_prefix("pid:[")?.strip_suffix(']')?;
@@ -35,7 +35,7 @@ fn process_scope() -> Option<String> {
 }
 
 #[cfg(target_os = "macos")]
-fn process_scope() -> Option<String> {
+pub(super) fn process_scope() -> Option<String> {
     // A host name can repeat across shared mounts. Use the kernel's per-boot
     // session UUID; one lookup suffices for the lifetime of this CLI process.
     static SCOPE: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
@@ -55,7 +55,7 @@ fn process_scope() -> Option<String> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-fn process_scope() -> Option<String> {
+pub(super) fn process_scope() -> Option<String> {
     // Without a trustworthy boot and process-namespace discriminator, PIDs on
     // a shared filesystem cannot establish that its original writers exited.
     None
@@ -208,7 +208,7 @@ fn reclaimable(dir: &fs::File, name: &str, owner: u32, scope: &str) -> bool {
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-fn exited(pid: u32) -> bool {
+pub(super) fn exited(pid: u32) -> bool {
     use rustix::process::{test_kill_process, Pid};
     i32::try_from(pid)
         .ok()

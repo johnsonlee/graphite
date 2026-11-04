@@ -1,5 +1,14 @@
 //! Serialize frontend publishers of one packed graph. Back up only its digest:
 //! the container itself is untouched until the final atomic rename.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+mod recovery;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub(super) use recovery::recover;
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub(super) fn recover(_: &Path) -> bool {
+    false
+}
+
 use same_file::Handle;
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -10,6 +19,7 @@ pub(super) struct Claim {
     id: Handle,
     owner: Option<Handle>,
     backup: Option<Handle>,
+    pending: Option<Handle>,
     retain: bool,
 }
 
@@ -42,7 +52,13 @@ impl Claim {
             use std::os::unix::fs::DirBuilderExt;
             builder.mode(0o700);
         }
-        builder.create(&dir).map_err(|e| {
+        let create = match builder.create(&dir) {
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists && recover(output) => {
+                builder.create(&dir)
+            }
+            outcome => outcome,
+        };
+        create.map_err(|e| {
             if e.kind() == io::ErrorKind::AlreadyExists {
                 occupied_message(output, &dir)
             } else {
@@ -64,16 +80,41 @@ impl Claim {
             id,
             owner: None,
             backup: None,
+            pending: None,
             retain: false,
         };
         let owner = claim.dir.join("owner.pid");
         (|| -> io::Result<()> {
             let mut file = File::create_new(&owner)?;
             claim.owner = Some(Handle::from_file(file.try_clone()?)?);
-            writeln!(file, "{}", std::process::id())
+            writeln!(file, "{}", std::process::id())?;
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
+            if let Some(scope) = super::stale::process_scope() {
+                writeln!(
+                    file,
+                    "graphite-claim-v1 {scope} {}",
+                    recovery::identity(claim.id.as_file())?
+                )?;
+            }
+            Ok(())
         })()
         .map_err(|e| format!("could not record publisher in {}: {e}", owner.display()))?;
         Ok(claim)
+    }
+
+    fn record_pending(
+        &mut self,
+        staged_digest: &Path,
+        old_output: &Handle,
+        old_digest: Option<&Handle>,
+        old_graph_sha: &str,
+    ) -> Result<(), String> {
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        recovery::record(self, staged_digest, old_output, old_digest, old_graph_sha)
+            .map_err(|e| format!("could not record pending publication: {e}"))?;
+        #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+        let _ = (staged_digest, old_output, old_digest, old_graph_sha);
+        Ok(())
     }
 
     fn owns_dir(&self) -> io::Result<bool> {
@@ -96,7 +137,9 @@ impl Claim {
         let mut copy = File::create_new(self.dir.join("previous.sha256"))?;
         self.backup = Some(Handle::from_file(copy.try_clone()?)?);
         io::copy(&mut input, &mut copy)?;
-        input.metadata().map(|m| m.permissions())
+        let permissions = input.metadata()?.permissions();
+        copy.set_permissions(permissions.clone())?;
+        Ok(permissions)
     }
 
     pub(super) fn replace(
@@ -104,17 +147,18 @@ impl Claim {
         staged: &Path,
         staged_digest: &Path,
         output: &Path,
-        (old_output, old_digest): (&Handle, &Handle),
+        (old_output, old_digest, old_hash): (&Handle, Option<&Handle>, &str),
         rename: impl Fn(&Path, &Path) -> io::Result<()>,
     ) -> Result<(), String> {
         let digest = graphite_storage::container::digest_path(output);
         let inspect =
             |p: &Path| regular(p).map_err(|e| format!("could not inspect {}: {e}", p.display()));
         let backup = self.dir.join("previous.sha256");
-        let new_digest = Handle::from_path(staged_digest).map_err(|e| e.to_string())?;
-        let permissions = self
-            .backup_digest(&digest, old_digest)
+        let permissions = old_digest
+            .map(|id| self.backup_digest(&digest, id))
+            .transpose()
             .map_err(|e| format!("could not back up {}: {e}", digest.display()))?;
+        self.record_pending(staged_digest, old_output, old_digest, old_hash)?;
 
         let publish = |from: &Path, to: &Path, old: &Handle| {
             if !self.owns_dir().map_err(|e| e.to_string())? {
@@ -128,16 +172,25 @@ impl Claim {
             }
             rename(from, to).map_err(|e| format!("could not publish {}: {e}", to.display()))
         };
-        publish(staged_digest, &digest, old_digest)?;
+        let new_digest = if let Some(previous) = old_digest {
+            let id = Handle::from_path(staged_digest).map_err(|e| e.to_string())?;
+            publish(staged_digest, &digest, previous)?;
+            id
+        } else {
+            super::packed::publish_checksum(staged_digest, &digest)
+                .map_err(|e| format!("could not create {}: {e}", digest.display()))?
+        };
         if let Err(error) = publish(staged, output, old_output) {
             let rollback = (|| {
                 if regular(&digest)?.as_ref() != Some(&new_digest) {
                     return Err(io::Error::other("another writer changed the digest"));
                 }
+                if permissions.is_none() {
+                    return fs::remove_file(&digest);
+                }
                 if !self.owns_dir()? || regular(&backup)?.as_ref() != self.backup.as_ref() {
                     return Err(io::Error::other("digest backup changed"));
                 }
-                fs::set_permissions(&backup, permissions)?;
                 fs::rename(&backup, &digest)
             })();
             if let Err(e) = rollback {
@@ -164,6 +217,7 @@ impl Drop for Claim {
                 return Ok(());
             }
             for (name, id) in [
+                ("pending", &self.pending),
                 ("owner.pid", &self.owner),
                 ("previous.sha256", &self.backup),
             ] {
@@ -229,7 +283,11 @@ mod tests {
                 &candidate,
                 &sidecar,
                 &old,
-                (&old_container, &old_digest),
+                (
+                    &old_container,
+                    Some(&old_digest),
+                    &Container::open(&old).unwrap().file_sha256(),
+                ),
                 |a, b| {
                     if b == old {
                         // A late CreateNew publisher cannot claim the existing digest,
@@ -262,7 +320,11 @@ mod tests {
                 &retry,
                 &container::digest_path(&retry),
                 &old,
-                (&old_container, &regular(&digest).unwrap().unwrap()),
+                (
+                    &old_container,
+                    Some(&regular(&digest).unwrap().unwrap()),
+                    &Container::open(&old).unwrap().file_sha256(),
+                ),
                 |a, b| fs::rename(a, b),
             )
             .unwrap();
@@ -288,7 +350,11 @@ mod tests {
                 &candidate,
                 &container::digest_path(&candidate),
                 &old,
-                (&old_container, &old_digest),
+                (
+                    &old_container,
+                    Some(&old_digest),
+                    &Container::open(&old).unwrap().file_sha256(),
+                ),
                 |a, b| fs::rename(a, b),
             )
             .unwrap_err();
@@ -361,7 +427,11 @@ mod tests {
         }
         let pid = child.id().to_string();
         assert_eq!(
-            fs::read_to_string(lock.join("owner.pid")).unwrap().trim(),
+            fs::read_to_string(lock.join("owner.pid"))
+                .unwrap()
+                .lines()
+                .next()
+                .unwrap(),
             pid
         );
         child.kill().unwrap();
@@ -387,7 +457,11 @@ mod tests {
             fs::read(container::digest_path(&output)).unwrap()
         );
         assert_eq!(
-            fs::read_to_string(lock.join("owner.pid")).unwrap().trim(),
+            fs::read_to_string(lock.join("owner.pid"))
+                .unwrap()
+                .lines()
+                .next()
+                .unwrap(),
             pid
         );
         fs::remove_file(lock.join("previous.sha256")).unwrap();
@@ -395,6 +469,124 @@ mod tests {
         fs::remove_dir(&lock).unwrap();
         drop(Claim::new(&output).unwrap());
         assert!(!lock.exists());
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[test]
+    fn only_one_recoverer_repairs_a_killed_publishers_exact_files() {
+        use std::io::Read;
+        use std::process::{Command, Stdio};
+        use std::time::{Duration, Instant};
+        const CHILD: &str = "GRAPHITE_TEST_CRASH_RECOVERY";
+        if let Some(path) = std::env::var_os(CHILD) {
+            let path = PathBuf::from(path);
+            let dest = path.join("out/app.graphite");
+            let digest = container::digest_path(&dest);
+            let next = packed(&path.join("candidate"), "after");
+            let next_digest = container::digest_path(&next);
+            let mut claim = Claim::new(&dest).unwrap();
+            let old = regular(&dest).unwrap().unwrap();
+            let previous = regular(&digest).unwrap();
+            if let Some(id) = &previous {
+                claim.backup_digest(&digest, id).unwrap();
+            }
+            let old_sha = Container::open(&dest)
+                .unwrap()
+                .verify()
+                .unwrap()
+                .file_sha256;
+            claim
+                .record_pending(&next_digest, &old, previous.as_ref(), &old_sha)
+                .unwrap();
+            match fs::read_to_string(path.join("stop-at")).unwrap().as_str() {
+                "before" => (),
+                "between" => fs::rename(&next_digest, &digest).unwrap(),
+                "after" => {
+                    fs::rename(&next_digest, &digest).unwrap();
+                    fs::rename(&next, &dest).unwrap();
+                }
+                _ => unreachable!(),
+            }
+            fs::write(path.join("ready"), b"ready").unwrap();
+            io::stdin().read_to_end(&mut Vec::new()).unwrap();
+            return;
+        }
+        for with_sidecar in [false, true] {
+            for window in ["before", "between", "after"] {
+                let tmp = tempfile::tempdir().unwrap();
+                let dir = tmp.path();
+                let output = packed(&dir.join("out"), "before");
+                let digest = container::digest_path(&output);
+                if !with_sidecar {
+                    fs::remove_file(&digest).unwrap();
+                }
+                fs::write(dir.join("stop-at"), window).unwrap();
+                let mut child = Command::new(std::env::current_exe().unwrap())
+                    .args(["--exact", "build_output::replace::tests::only_one_recoverer_repairs_a_killed_publishers_exact_files"])
+                    .env(CHILD, dir).stdin(Stdio::piped()).stdout(Stdio::null()).spawn().unwrap();
+                let deadline = Instant::now() + Duration::from_secs(15);
+                while !dir.join("ready").exists() {
+                    assert!(child.try_wait().unwrap().is_none() && Instant::now() < deadline);
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                assert!(!recover(&output), "publisher is alive");
+                child.kill().unwrap();
+                child.wait().unwrap();
+                let lock = output.with_added_extension("lock");
+                let locked = File::open(&lock).unwrap();
+                locked.try_lock().unwrap();
+                assert!(!recover(&output), "another recoverer holds the same inode");
+                drop(locked);
+
+                let owner = lock.join("owner.pid");
+                let token = fs::read(&owner).unwrap();
+                fs::write(
+                    &owner,
+                    String::from_utf8(token.clone())
+                        .unwrap()
+                        .replace("graphite-claim-v1 ", "graphite-claim-v1 another-boot:"),
+                )
+                .unwrap();
+                assert!(!recover(&output));
+                fs::write(&owner, token).unwrap();
+                if window == "between" {
+                    let live = fs::read(&digest).unwrap();
+                    fs::write(&digest, format!("{}  app.graphite\n", "0".repeat(64))).unwrap();
+                    assert!(!recover(&output), "edited public checksum");
+                    fs::write(&digest, live).unwrap();
+                }
+                let barrier = std::sync::Barrier::new(2);
+                let race = || {
+                    barrier.wait();
+                    recover(&output)
+                };
+                let (a, b) = std::thread::scope(|t| {
+                    let first = t.spawn(race);
+                    let second = race();
+                    (first.join().unwrap(), second)
+                });
+                assert_ne!(a, b, "exactly one recoverer wins {window} {with_sidecar}");
+                assert!(!lock.exists());
+                let report = Container::open(&output).unwrap().verify().unwrap();
+                assert!(report.ok() && report.has_manifest);
+                assert_eq!(
+                    report.digest_file,
+                    if with_sidecar || window == "after" {
+                        Some(true)
+                    } else {
+                        None
+                    }
+                );
+                let graph = Graph::load(&output).unwrap();
+                let NodeKind::StringConstant(i) = graph.node(0).unwrap().kind else {
+                    panic!("expected literal")
+                };
+                assert_eq!(
+                    graph.str(i),
+                    if window == "after" { "after" } else { "before" }
+                );
+            }
+        }
     }
 
     #[test]
@@ -413,7 +605,8 @@ mod tests {
                 &output,
                 (
                     &regular(&output).unwrap().unwrap(),
-                    &regular(&digest).unwrap().unwrap(),
+                    Some(&regular(&digest).unwrap().unwrap()),
+                    &Container::open(&output).unwrap().file_sha256(),
                 ),
                 |a, b| {
                     assert!(Claim::new(&output).is_err());

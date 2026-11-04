@@ -794,7 +794,12 @@ are the bytes that were built.
 When rebuilding a verified `app.graphite` and matching sidecar, both frontends claim
 `app.graphite.lock`, publish the new SHA-256 sidecar, then replace the container. If container publication
 fails, it restores the previous sidecar. An unlocked reader can observe the old
-container with the new checksum between the two renames. After an interrupted build,
+container with the new checksum between the two renames. On Linux and macOS the
+next rebuild can recover an interrupted publication if the recorded publisher
+exited in this boot and PID namespace. Under an exclusive lock it verifies the
+container and identifies the recorded checksum before restoring the previous
+sidecar state. A live publisher, older or incomplete records, changed files, or
+an unconfirmed process scope require manual inspection. In that case,
 check `app.graphite.lock/owner.pid` if present and confirm all publishers have
 exited. The recorded PID is a hint and may have been reused. If the container
 exists, run `graphite verify app.graphite` and inspect `app.graphite.lock/previous.sha256`

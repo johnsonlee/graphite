@@ -15,6 +15,16 @@ pub(super) fn publish(staged: &Path, checksum: &Path, output: &Path) -> Result<(
     )
 }
 
+pub(super) fn publish_checksum(from: &Path, to: &Path) -> io::Result<Handle> {
+    publish_file(
+        from,
+        to,
+        false,
+        &|a, b| fs::hard_link(a, b),
+        &rename_exclusive,
+    )
+}
+
 pub(super) fn publish_with(
     staged: &Path,
     checksum: &Path,
