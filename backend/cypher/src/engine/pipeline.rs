@@ -3,7 +3,7 @@
 use super::matching::{has_unknown_label, resolve_node_class, Matcher, NodeClass};
 use super::partition::{row_weight, PartitionPlan, INTERNAL_WEIGHT_KEY};
 use super::Executor;
-use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem};
+use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem, StrOp};
 use crate::eval::{contains_aggregation, is_aggregation_name, Evaluator};
 use crate::functions::aggregate;
 use crate::ordering::compare_order_values;
@@ -247,8 +247,8 @@ impl Executor {
                         }
                     }
                     if !*optional {
-                        if let Some(shape) = FusedShape::detect(&clauses[i..]) {
-                            let out = self.run_fused(&matcher, &ev, rows, patterns, &shape)?;
+                        if let Some(mut shape) = FusedShape::detect(&clauses[i..]) {
+                            let out = self.run_fused(&matcher, &ev, rows, patterns, &mut shape)?;
                             return Ok(out);
                         }
                         // `MATCH [WHERE] WITH ...`: the same streaming scan, projection
@@ -261,12 +261,22 @@ impl Executor {
                         if let Some((shape, with_where, consumed)) =
                             FusedShape::detect_with(&clauses[i..])
                         {
-                            let budget = compute_early_limit(&clauses[i..]);
-                            let (cols, projected) =
-                                self.run_fused_with(&matcher, &ev, rows, patterns, &shape, budget)?;
+                            let filtered_limit = projected_filter_limit(&clauses[i..], &rows);
+                            let budget =
+                                filtered_limit.or_else(|| compute_early_limit(&clauses[i..]));
+                            let projected_filter = filtered_limit.and(with_where);
+                            let (cols, projected) = self.run_fused_with(
+                                &matcher,
+                                &ev,
+                                rows,
+                                patterns,
+                                &shape,
+                                budget,
+                                projected_filter,
+                            )?;
                             columns = cols;
                             rows = projected;
-                            if let Some(w) = with_where {
+                            if let Some(w) = with_where.filter(|_| projected_filter.is_none()) {
                                 let mut out = Vec::with_capacity(rows.len());
                                 for r in rows {
                                     self.tick()?;
@@ -477,7 +487,7 @@ impl Executor {
         ev: &Evaluator,
         rows: Vec<Row>,
         patterns: &[Pattern],
-        shape: &FusedShape,
+        shape: &mut FusedShape,
     ) -> CypherResult<QueryResult> {
         if has_unknown_label(patterns) {
             // No candidates: projection over zero rows.
@@ -568,7 +578,7 @@ impl Executor {
             }
         }
 
-        let ordered_capacity = bounded_order_capacity(shape, aggregated, patterns, &rows);
+        let ordered_capacity = prepare_bounded_order(shape, aggregated, patterns, &rows);
         let (columns, out) = self.fused_rows(
             matcher,
             ev,
@@ -580,15 +590,18 @@ impl Executor {
             budget,
             aggregated,
             ordered_capacity,
+            keep_projected,
         )?;
         finish_fused(ev, columns, out, shape)
     }
 
     /// Fused MATCH [WHERE] WITH: the rows the WITH projects, exactly as `project` would
-    /// build them from the generic match -- order stashes, provenance and all -- so the
-    /// loop can run the WITH's own WHERE and whatever follows over them. `budget`
-    /// bounds the match the way `exec_match`'s early limit does, and is `None` unless
-    /// the segment's LIMIT provably bounds it (see `compute_early_limit`).
+    /// build them from the generic match -- order stashes, provenance and all.
+    /// A proven scalar `projected_filter` runs before counting accepted rows;
+    /// otherwise the loop handles WITH's WHERE after this returns. `budget` is
+    /// present only when compute_early_limit or projected_filter_limit proves it
+    /// bounds the rows emitted here.
+    #[allow(clippy::too_many_arguments)]
     fn run_fused_with(
         &self,
         matcher: &Matcher,
@@ -597,7 +610,13 @@ impl Executor {
         patterns: &[Pattern],
         shape: &FusedShape,
         budget: Option<usize>,
+        projected_filter: Option<&Expr>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        if projected_filter.is_some() && budget == Some(0) {
+            // The admitted projection is total and scalar. No candidate is needed
+            // for a zero limit; HTTP probing rewrites this to one when requested.
+            return Ok((item_names(shape.items.as_deref().unwrap()), Vec::new()));
+        }
         if has_unknown_label(patterns) {
             return project(
                 ev,
@@ -617,9 +636,23 @@ impl Executor {
         } else {
             None
         };
-        self.fused_rows(
-            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
-        )
+        // Dispatch once per query so ordinary scans and ordered projections
+        // do not load or test an absent filter for every projected row.
+        macro_rules! project_rows {
+            ($accepts:expr) => {
+                self.fused_rows(
+                    matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
+                    $accepts,
+                )
+            };
+        }
+        match projected_filter {
+            Some(predicate) => project_rows!(|projected| {
+                self.tick()?;
+                Ok(ev.eval(predicate, projected)?.as_bool() == Some(true))
+            }),
+            None => project_rows!(keep_projected),
+        }
     }
 
     /// Stream the match into the projection: a group-by when the items aggregate, a
@@ -638,6 +671,7 @@ impl Executor {
         budget: Option<usize>,
         aggregated: bool,
         ordered_capacity: Option<usize>,
+        accepts: impl Fn(&Row) -> CypherResult<bool>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
         let items = shape.items.as_deref();
         if aggregated {
@@ -735,6 +769,9 @@ impl Executor {
                 order_before_distinct,
                 &mut columns,
             )?;
+            if !accepts(&projected)? {
+                return Ok(true);
+            }
             if let Some(top) = &mut top {
                 // Project every row first, including every expression and order stash.
                 // Losing rows must still report errors and consume the normal scan work.
@@ -1004,6 +1041,36 @@ fn bounded_order_capacity(
     };
     skip.checked_add(limit)
         .filter(|n| *n <= MAX_BOUNDED_ORDER_ROWS)
+}
+
+/// Reuse a projected property as the sort key in the heap and final sort. Admission
+/// proves scalar CallSite keys and unique visible columns; other shapes keep their
+/// original pre-projection stashes. Match expressions, not rendered column names.
+fn prepare_bounded_order(
+    shape: &mut FusedShape,
+    aggregated: bool,
+    patterns: &[Pattern],
+    seeds: &[Row],
+) -> Option<usize> {
+    let capacity = bounded_order_capacity(shape, aggregated, patterns, seeds)?;
+    let items = shape.items.as_ref()?;
+    for key in shape.order.as_mut()? {
+        if !matches!(&key.expr, Expr::Property { expr, .. } if matches!(expr.as_ref(), Expr::Variable(_)))
+        {
+            continue;
+        }
+        let mut matching = items.iter().filter(|item| item.expr == key.expr);
+        if let Some(item) = matching.next() {
+            if matching.next().is_none() {
+                key.expr = Expr::Variable(
+                    item.alias
+                        .clone()
+                        .unwrap_or_else(|| to_cypher_string(&item.expr)),
+                );
+            }
+        }
+    }
+    Some(capacity)
 }
 
 struct OrderedCandidate {
@@ -1328,6 +1395,134 @@ fn trim_probe(r: &mut QueryResult, n: usize) -> bool {
             r.rows.truncate(n);
             extra
         }
+    }
+}
+
+/// A function item lets ordinary scans specialize the row consumer without a predicate.
+fn keep_projected(_: &Row) -> CypherResult<bool> {
+    Ok(true)
+}
+
+/// A narrow, total scalar WITH/filter pipeline can count accepted rows while
+/// matching. Keep all other shapes on the existing path: early termination must
+/// not hide later expression errors, reorder volatile calls, truncate aggregate
+/// inputs, or lose DISTINCT provenance. This recognizes AST/schema properties,
+/// not a query's spelling or a particular workload.
+fn projected_filter_limit(clauses: &[Clause], seeds: &[Row]) -> Option<usize> {
+    if super::optimizations_disabled() || !matches!(seeds, [seed] if seed.is_empty()) {
+        return None;
+    }
+    let [Clause::Match {
+        patterns,
+        optional: false,
+        where_clause: None,
+    }, Clause::With {
+        distinct: false,
+        items: Some(items),
+        where_clause: Some(predicate),
+    }, Clause::Return {
+        distinct: false,
+        items: Some(returned),
+    }, Clause::Limit(Expr::Literal(Literal::Int(limit)))] = clauses
+    else {
+        return None;
+    };
+    let [pattern] = patterns.as_slice() else {
+        return None;
+    };
+    let [node] = pattern.nodes.as_slice() else {
+        return None;
+    };
+    if !pattern.rels.is_empty()
+        || pattern.path_variable.is_some()
+        || !node.properties.is_empty()
+        || node.labels.len() != 1
+    {
+        return None;
+    }
+    let NodeClass::Tags(tags) = resolve_node_class(&node.labels) else {
+        return None;
+    };
+    let [tag] = tags.as_slice() else { return None };
+    let variable = node.variable.as_ref()?;
+    let total_projection = |item: &ReturnItem| match &item.expr {
+        Expr::Literal(_) => true,
+        Expr::Property { expr, key } => {
+            matches!(expr.as_ref(), Expr::Variable(v) if v == variable)
+                && total_scalar_property(*tag, key)
+        }
+        _ => false,
+    };
+    if items.is_empty() || returned.is_empty() || !items.iter().all(total_projection) {
+        return None;
+    }
+    let names = item_names(items);
+    let aliases: std::collections::HashSet<_> = names.iter().map(String::as_str).collect();
+    if aliases.len() != names.len()
+        || aliases
+            .iter()
+            .any(|name| *name == "*" || is_internal_key(name))
+        || !total_projected_predicate(predicate, &aliases, 0)
+        || !returned.iter().all(
+            |item| matches!(&item.expr, Expr::Variable(name) if aliases.contains(name.as_str())),
+        )
+    {
+        return None;
+    }
+    usize::try_from(*limit).ok()
+}
+
+/// Only properties with an infallible scalar-or-null read qualify. In particular,
+/// generic_type/type_info can report a deferred schema error on a later graph.
+fn total_scalar_property(tag: u8, key: &str) -> bool {
+    use graphite_storage::node::*;
+    key == "id"
+        || graphite_storage::columns::raw_string_field(tag, key).is_some()
+        || (tag == TAG_CALL_SITE_NODE && super::fastpath::raw_string_field(tag, key).is_some())
+        || matches!(
+            (tag, key),
+            (TAG_CALL_SITE_NODE, "line" | "ordinal")
+                | (TAG_FIELD_NODE, "static")
+                | (TAG_PARAMETER_NODE, "index")
+                | (TAG_RETURN_NODE, "actual_type")
+                | (
+                    TAG_INT_CONSTANT
+                        | TAG_LONG_CONSTANT
+                        | TAG_FLOAT_CONSTANT
+                        | TAG_DOUBLE_CONSTANT
+                        | TAG_BOOLEAN_CONSTANT
+                        | TAG_NULL_CONSTANT,
+                    "value"
+                )
+        )
+}
+
+fn total_projected_predicate(
+    expr: &Expr,
+    aliases: &std::collections::HashSet<&str>,
+    depth: usize,
+) -> bool {
+    // Bound the extra planning walk; deeper predicates use ordinary evaluation.
+    if depth >= 32 {
+        return false;
+    }
+    let scalar = |e: &Expr| {
+        matches!(e, Expr::Literal(_))
+            || matches!(e, Expr::Variable(v) if aliases.contains(v.as_str()))
+    };
+    match expr {
+        Expr::IsNull(e) | Expr::IsNotNull(e) => scalar(e),
+        Expr::Comparison { left, right, .. }
+        | Expr::StringOp {
+            op: StrOp::StartsWith | StrOp::EndsWith | StrOp::Contains,
+            left,
+            right,
+        } => scalar(left) && scalar(right),
+        Expr::And(a, b) => {
+            total_projected_predicate(a, aliases, depth + 1)
+                && total_projected_predicate(b, aliases, depth + 1)
+        }
+        _ => false,
     }
 }
 
@@ -1735,6 +1930,18 @@ fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherRe
     })
 }
 
+/// Finalizing a group consumes its inputs. `collect` can keep that buffer as its
+/// result; trim the space left by removed nulls or DISTINCT duplicates.
+fn aggregate_owned(name: &str, mut values: Vec<Value>) -> CypherResult<Value> {
+    if name.eq_ignore_ascii_case("collect") {
+        values.retain(|v| !v.is_null());
+        values.shrink_to_fit();
+        Ok(Value::list(values))
+    } else {
+        aggregate(name, &values)
+    }
+}
+
 fn finalize_groups(
     ev: &Evaluator,
     plan: &AggPlan,
@@ -1751,18 +1958,18 @@ fn finalize_groups(
         })
         .collect();
     let mut out = Vec::with_capacity(groups.len());
-    let compute = |acc: GroupAcc| -> CypherResult<Row> {
+    let compute = |mut acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
         for (ai, agg) in plan.aggs.iter().enumerate() {
-            let mut inputs = acc.agg_inputs[ai].clone();
+            let mut inputs = std::mem::take(&mut acc.agg_inputs[ai]);
             let weights = &acc.agg_weights[ai];
             let v = if agg.distinct {
                 // Distinct values: what each row stood for is immaterial.
                 let mut seen = std::collections::HashSet::new();
                 inputs.retain(|v| seen.insert(value_key(v)));
-                aggregate(&agg.name, &inputs)?
+                aggregate_owned(&agg.name, inputs)?
             } else if weights.iter().all(|w| *w == 1) {
-                aggregate(&agg.name, &inputs)?
+                aggregate_owned(&agg.name, inputs)?
             } else {
                 aggregate_weighted(&agg.name, &inputs, weights)?
             };
@@ -2050,6 +2257,131 @@ mod bounded_order_tests {
             .as_ref()
             .is_some_and(|items| items.iter().any(|item| contains_aggregation(&item.expr)));
         bounded_order_capacity(&shape, aggregated, &patterns, &[Row::new()])
+    }
+
+    #[test]
+    fn bounded_order_reuses_only_unambiguous_projected_property_keys() {
+        for (property, descending) in [("caller_class", false), ("callee_name", true)] {
+            let dir = if descending { " DESC" } else { "" };
+            let (patterns, mut shape) = query_shape(&format!(
+                "MATCH (n:CallSite) RETURN n.{property} ORDER BY n.{property}{dir} LIMIT 200"
+            ));
+            assert_eq!(
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+                Some(200)
+            );
+            assert_eq!(
+                shape.order.unwrap(),
+                vec![OrderItem {
+                    expr: Expr::Variable(format!("n.{property}")),
+                    descending
+                }]
+            );
+        }
+        let (patterns, mut shape) = query_shape("MATCH (n:CallSite) RETURN n.callee_name AS `a.b` ORDER BY n.callee_name DESC, n.line LIMIT 3");
+        let original = shape.order.clone().unwrap();
+        assert_eq!(
+            prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+            Some(3)
+        );
+        let order = shape.order.unwrap();
+        assert_eq!(
+            order[0],
+            OrderItem {
+                expr: Expr::Variable("a.b".into()),
+                descending: true
+            }
+        );
+        assert_eq!(order[1], original[1]);
+        for (projection, order, capacity) in [
+            ("n.id AS a, n.id AS b", "n.id", Some(3)),
+            (
+                "n.callee_name AS `n.caller_class`",
+                "n.caller_class",
+                Some(3),
+            ),
+            ("n.caller_class AS a, n.id AS a", "n.caller_class", None),
+            ("rand() AS random", "rand()", None),
+            ("n.id + 1 AS x", "n.id + 1", None),
+        ] {
+            let (patterns, mut shape) = query_shape(&format!(
+                "MATCH (n:CallSite) RETURN {projection} ORDER BY {order} LIMIT 3"
+            ));
+            let before = shape.order.clone();
+            assert_eq!(
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+                capacity
+            );
+            assert_eq!(shape.order, before);
+        }
+        let (patterns, mut shape) =
+            query_shape("MATCH (n:CallSite) RETURN n.id AS id ORDER BY n.id LIMIT 3");
+        shape.items.as_mut().unwrap()[0].alias = Some(INTERNAL_PROVENANCE_KEY.into());
+        let before = shape.order.clone();
+        assert_eq!(
+            prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+            None
+        );
+        assert_eq!(shape.order, before);
+    }
+
+    #[test]
+    fn projected_property_keeps_nulls_and_ties_in_encounter_order() {
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        for (dir, ids) in [("", [1, 3, 0]), (" DESC", [0, 2, 1])] {
+            let (patterns, mut shape) = query_shape(&format!("MATCH (n:CallSite) RETURN n.callee_name AS name, n.id AS id ORDER BY n.callee_name{dir} LIMIT 3"));
+            let full_order = shape.order.clone().unwrap();
+            let capacity =
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]).unwrap();
+            let order = shape.order.as_deref().unwrap();
+            let items = shape.items.as_deref().unwrap();
+            let names = item_names(items);
+            let mut top = BoundedOrderedRows::new(capacity, order);
+            let mut full = Vec::new();
+            for (id, name) in [Value::Null, Value::str("a"), Value::Null, Value::str("a")]
+                .into_iter()
+                .enumerate()
+            {
+                let node = [
+                    ("callee_name".to_string(), name),
+                    ("id".to_string(), Value::Int(id as i64)),
+                ]
+                .into_iter()
+                .collect();
+                let row = [("n".to_string(), Value::map(node))].into_iter().collect();
+                let project = |order: &[OrderItem]| {
+                    project_row(
+                        &ev,
+                        &row,
+                        Some(items),
+                        &names,
+                        Some(order),
+                        false,
+                        false,
+                        &mut names.clone(),
+                    )
+                    .unwrap()
+                };
+                let projected = project(order);
+                assert!(!projected.keys().any(|k| k.starts_with(ORDER_STASH_PREFIX)));
+                top.push(projected);
+                full.push(project(&full_order));
+            }
+            let ids_from = |rows: &[Row]| -> Vec<i64> {
+                rows.iter()
+                    .take(capacity)
+                    .map(|row| match row["id"] {
+                        Value::Int(id) => id,
+                        _ => panic!("integer id expected"),
+                    })
+                    .collect()
+            };
+            let actual = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+            let expected = order_rows(&ev, full, &full_order).unwrap();
+            assert_eq!(ids_from(&actual), ids_from(&expected));
+            assert_eq!(ids_from(&actual), ids);
+        }
     }
 
     #[test]
@@ -2485,6 +2817,7 @@ mod bounded_order_tests {
             None,
             false,
             None,
+            keep_projected,
         )?;
         finish_fused(&ev, columns, rows, &shape)
     }
@@ -2524,8 +2857,8 @@ mod bounded_order_tests {
             "Late error must occur after a better candidate"
         );
         for limit in [0, 1] {
-            for key in ["n.id", "'same'"] {
-                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY key LIMIT {limit}");
+            for (key, order) in [("n.id", "key"), ("'same'", "key"), ("'same'", "n.id")] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
                 assert_eq!(capacity(&query), Some(limit));
                 let reference = full_sort(&ex, &query).unwrap_err();
                 let actual = ex.execute(&query, None).unwrap_err();
@@ -2629,6 +2962,7 @@ mod bounded_order_tests {
                             Some(3),
                             false,
                             capacity(&query),
+                            keep_projected,
                         )
                         .unwrap();
                     assert_eq!(
@@ -2698,6 +3032,8 @@ mod bounded_order_tests {
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_descriptor AS descriptor ORDER BY descriptor DESC, n.caller_signature LIMIT 20",
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_signature AS signature ORDER BY signature, n.caller_descriptor DESC LIMIT 20",
             "MATCH (n:CallSiteNode) RETURN n.callee_name AS name ORDER BY name LIMIT 0",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.callee_name ORDER BY n.callee_name DESC LIMIT 200",
         ];
         for query in cases {
             let (patterns, shape) = query_shape(query);
@@ -2715,6 +3051,7 @@ mod bounded_order_tests {
                     None,
                     false,
                     None,
+                    keep_projected,
                 )
                 .unwrap();
             let expected = finish_fused(&ev, columns, rows, &shape).unwrap();
@@ -2912,6 +3249,91 @@ mod with_prefix_tests {
     use super::*;
     use crate::parser::parse;
 
+    #[test]
+    fn collect_keeps_non_null_values_in_input_order_with_count_and_distinct() {
+        let ex = Executor::new(Vec::new(), false);
+        let result = ex
+            .execute(
+                "UNWIND [2, null, 2, 1] AS x RETURN collect(x) AS xs, \
+             collect(DISTINCT x) AS ds, count(x) AS n, count(*) AS rows",
+                None,
+            )
+            .unwrap();
+        assert_eq!(result.rows.len(), 1);
+        let row = &result.rows[0];
+        assert!(matches!(
+            row["xs"].as_list(),
+            Some([Value::Int(2), Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(
+            row["ds"].as_list(),
+            Some([Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(row["n"], Value::Int(3)));
+        assert!(matches!(row["rows"], Value::Int(4)));
+    }
+
+    #[test]
+    fn weighted_rows_keep_distinct_collect_and_reject_plain_collect() {
+        let ex = Executor::new(Vec::new(), false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let apply = |query| {
+            let clauses = parse(query).unwrap();
+            let [Clause::Return { items, .. }] = clauses.as_slice() else {
+                panic!("expected one projection");
+            };
+            let rows = [
+                (Value::Int(2), 2),
+                (Value::Null, 9),
+                (Value::Int(2), 4),
+                (Value::Int(1), 3),
+            ]
+            .into_iter()
+            .map(|(value, weight)| {
+                Row::from([
+                    ("x".to_string(), value),
+                    (INTERNAL_WEIGHT_KEY.to_string(), Value::Int(weight)),
+                ])
+            })
+            .collect();
+            project(&ev, rows, items.as_deref(), false, None)
+        };
+        let (_, rows) =
+            apply("RETURN collect(DISTINCT x) AS ds, count(x) AS n, count(*) AS total").unwrap();
+        assert_eq!(rows.len(), 1);
+        assert!(matches!(
+            rows[0]["ds"].as_list(),
+            Some([Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(rows[0]["n"], Value::Int(9)));
+        assert!(matches!(rows[0]["total"], Value::Int(18)));
+        let error = apply("RETURN collect(x)").unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("cannot be applied to weighted rows"));
+    }
+
+    #[test]
+    fn collect_on_empty_input_emits_only_an_ungrouped_row() {
+        let ex = Executor::new(Vec::new(), false);
+        let result = ex
+            .execute(
+                "UNWIND [] AS x RETURN collect(x) AS xs, collect(DISTINCT x) AS ds, count(*) AS n",
+                None,
+            )
+            .unwrap();
+        assert_eq!(result.rows.len(), 1);
+        let row = &result.rows[0];
+        assert!(matches!(row["xs"].as_list(), Some([])));
+        assert!(matches!(row["ds"].as_list(), Some([])));
+        assert!(matches!(row["n"], Value::Int(0)));
+        assert!(ex
+            .execute("UNWIND [] AS x RETURN x AS k, collect(x) AS xs", None)
+            .unwrap()
+            .rows
+            .is_empty());
+    }
+
     fn detect(q: &str) -> Option<(FusedShape, Option<Expr>, usize)> {
         let clauses = parse(q).unwrap();
         FusedShape::detect_with(&clauses).map(|(s, w, n)| (s, w.cloned(), n))
@@ -3016,6 +3438,12 @@ mod with_prefix_tests {
                 "WITH n.callee_name AS m, count(*) AS k RETURN m, k ORDER BY k DESC, m LIMIT 5",
                 true,
             ),
+            // The collected values retain encounter order, including across graphs.
+            (
+                "MATCH (n:CallSiteNode)",
+                "WITH collect(n.callee_name) AS names RETURN names[0..10] AS names",
+                true,
+            ),
             // A row-preserving WITH under a LIMIT: the match stops early in scan order.
             (
                 r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
@@ -3094,3 +3522,7 @@ mod identity_projection_tests;
 #[cfg(test)]
 #[path = "owned_projection_tests.rs"]
 mod owned_projection_tests;
+
+#[cfg(test)]
+#[path = "pipeline_with_filter_tests.rs"]
+mod projected_filter_tests;

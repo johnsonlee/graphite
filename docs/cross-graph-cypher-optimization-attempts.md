@@ -2575,3 +2575,938 @@ or certify recovery against the accepted pre-regression baseline. No further
 stabilization or optional bitmap/memo optimization is inferred from these numbers.
 Fresh remote CI is required for the new commit; the preceding131b80c4's six green
 checks and complete correctness/OOM artifact do not certify this head.
+
+### 2026-11-03 - Attempt 047: Stop scalar WITH filters after enough accepted rows
+
+**Hypothesis:** the real64 scalar WITH/filter/LIMIT query projects every CallSite
+before filtering and returning 200 rows. For a proven total scalar projection,
+evaluate the original projected predicate during streaming and count only accepted
+rows toward the existing LIMIT/probe budget. Restrict eligibility to a single
+CallSite match, total built-in scalar properties, unique ordinary aliases,
+`alias IS NOT NULL`, plain alias RETURN and a trailing nonnegative literal LIMIT.
+Aggregation, DISTINCT, sorting, extra clauses, volatile/error-capable expressions
+and ambiguous aliases retain their existing execution paths. This is an AST
+optimization, not a query-text or benchmark-case special case.
+
+**Identity:** parent `6d8d7cf1be17ee2aea665351a399186930e8e981`; its production
+Rust sources match `3a127f70cdfdd74754f2ef05f3b0d318f65f038f`, whose frozen release
+binary SHA-256 is
+`e0d1bc183a0e81d1c287e2b1cea2fc2d2b16b7344c326371959db029e097929f`.
+Accepted feature baseline is main `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`,
+binary SHA-256 `d792f4587c357f3b04b48fec16ac7eb72042b10d5d48d831bf61c93a51d7a5b6`.
+Candidate is the commit containing this attempt. Source revision and frozen
+release hash must be recorded before measurement; no performance result is
+inferred from the correctness checks below.
+
+**Protocol:** unchanged trusted a5c96f71 native controller and fixed 73-case
+catalog; each measured request targets all 64 real JAR graphs. Use the exact same
+historical saved graph files in every arm, manifest SHA-256
+`5fe9bc158351962fb46c57083bb0a33788bb34b24fc5b4c8c31defeeb8a8b177`, with
+1,408-file inventory SHA-256
+`e81d726dc213c454da5fca10727f809ff2d12efe5e605e4cca553d0b7658f978`.
+One oracle and two warmups per case, 20 pressure samples at concurrency four;
+the unchanged controller additionally takes 40 isolated samples at concurrency
+one for cases below its 100 ms p50 threshold. Consume complete HTTP responses,
+validate every result and retain all bodies, failures and samples. Compare parent
+then candidate for attribution, and main then candidate for cumulative results.
+Do not pool these different-baseline pairs or select a favorable run.
+
+The external protocol in `/tmp/graphite-js-artifact-validation/attempt047/`
+will freeze commands, binaries and controls before execution. A separately
+verified read-only cache helper must hold the same fixture pages resident for
+all arms; if that fails, report the missing control rather than claiming matched
+warm-cache measurements. No compilation or other validation load overlaps the
+measurements. The controller-only Darwin wait4 observer supplies kernel lifetime
+CPU and peak RSS, with unchanged server children; existing sampled phase
+observations remain explicitly weaker than exact phase measurements. Report
+per-case p50/p95 and absolute millisecond differences before percentages, loading
+readiness and complete request boundaries, and CPU/RSS separately. Keep all prior
+confounded and uncontrolled-cache runs as historical observations, not comparable
+performance baselines for this controlled run.
+
+**Correctness before measurement:** six focused tests verify eligibility,
+hardcoded result order and duplicate values, cross-graph provenance, null rejection,
+zero/exact/over limits, HTTP extra-row probing, injected result caps, empty results,
+late errors and ineligible aggregate/sort/DISTINCT fallbacks. Cancellation and
+expired deadlines are checked at LIMIT zero and one; long rejected prefixes still
+poll cancellation. An independent generic pipeline and deterministic property
+access counts check result equivalence and avoided work without synthetic timings.
+All 595 workspace tests passed (one existing ignored test); workspace/all-target/
+all-feature Clippy with warnings denied, formatting and diff checks passed.
+
+**Tradeoffs/limits:** this is a query-only experiment. Historical fixtures do not
+prove current frontend build/save performance. Darwin lifetime resources do not
+prove independent per-operation bounds or Linux OOM behavior. Twenty concurrent
+samples make p95 the second-largest observation; retain the full distribution
+and do not present this as precise tail estimation or saturation evidence.
+
+**Decision:** candidate pending independent review and real64 measurements.
+Correctness and deterministic work reduction alone do not establish performance
+acceptance. Fresh final-revision correctness/completion/OOM CI remains required.
+
+**Measured candidate:** `d27e054c7f39edb1ec0f7c837fc18331f63c63f4`, release
+SHA-256 `3a78fa0c4658dec52c19fe8dd7afa736d614a2eadd3f294584bc86032b7b6e0d`.
+Independent review found no concrete semantic defect. A subsequent correctness
+replay passed 52 checks on both real Next/React applications: complete saved node
+and relationship results, application operations, and changed WITH/filter HTTP
+queries against both the parent and an independent generic pipeline. All servers
+and validation work stopped before measurement.
+
+**Execution/evidence:** the two predeclared pairs completed without errors;
+all 1,408 files remained byte-identical. One verified cache helper held all
+647,282 fixture pages resident across the four arms and released every mapping
+and lock afterward. Kernel wait4 records joined to all eight independently
+observed production server PIDs. Each pair passed all eight trusted controller
+checks; all 17,356 complete request bodies matched their own and cross-revision
+oracles, with zero scope, sample-count or percentile-recomputation errors.
+Each unoptimized arm issued 4,319 requests and each optimized arm 4,359:
+the unchanged controller adds 40 isolated samples once the filter case falls
+below its 100 ms selection threshold. This difference was declared before the
+run. Raw evidence is in `attempt047/run`; complete separate analyses and every
+positive delta are retained in `attempt047-analysis` under the validation root.
+
+**Parent attribution (3a127f70 to d27e054c):**
+
+| Case | Base P50 ms | Candidate P50 ms | Delta ms | Base P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| WITH filter | 2927.137 | 0.500 | -2926.636 | 3450.237 | 0.570 | -3449.667 |
+| Sort | 2515.344 | 2467.353 | -47.991 | 2559.821 | 2519.551 | -40.270 |
+| Descending sort | 2606.854 | 2558.498 | -48.356 | 2661.498 | 2619.791 | -41.707 |
+| Collect | 2004.158 | 1896.134 | -108.023 | 2150.299 | 1976.447 | -173.851 |
+| WITH aggregate | 671.527 | 652.149 | -19.378 | 697.742 | 669.425 | -28.317 |
+| Group count | 352.217 | 324.610 | -27.607 | 374.336 | 336.024 | -38.312 |
+| Distinct | 315.595 | 285.892 | -29.702 | 346.102 | 297.487 | -48.615 |
+
+**Cumulative main comparison (a5c96f71 to d27e054c):**
+
+| Case | Base P50 ms | Candidate P50 ms | Delta ms | Base P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| WITH filter | 2706.350 | 0.467 | -2705.883 | 3381.610 | 0.580 | -3381.029 |
+| Sort | 2454.534 | 2647.910 | +193.376 | 2564.151 | 2839.790 | +275.638 |
+| Descending sort | 2547.118 | 2739.374 | +192.256 | 2593.889 | 2840.789 | +246.900 |
+| Collect | 1918.783 | 2007.168 | +88.385 | 1985.413 | 2122.977 | +137.564 |
+| WITH aggregate | 677.310 | 675.661 | -1.649 | 711.286 | 707.826 | -3.460 |
+| Group count | 359.860 | 347.116 | -12.744 | 390.367 | 378.436 | -11.931 |
+| Distinct | 320.438 | 299.889 | -20.549 | 384.333 | 330.665 | -53.668 |
+
+| Pair / server | Base lifetime CPU s | Candidate CPU s | Delta s | Base lifetime peak RSS MiB | Candidate RSS MiB | Delta MiB |
+|---|---:|---:|---:|---:|---:|---:|
+| Parent / primary | 326.675 | 251.331 | -75.344 | 10022.109 | 7047.391 | -2974.719 |
+| Parent / capacity recovery | 21.080 | 21.016 | -0.064 | 3384.125 | 4187.406 | +803.281 |
+| Main / primary | 318.986 | 267.109 | -51.877 | 10282.984 | 6414.500 | -3868.484 |
+| Main / capacity recovery | 20.682 | 20.973 | +0.291 | 5882.250 | 4006.422 | -1875.828 |
+
+Primary lifetime CPU/RSS decreased in both comparisons; these totals do not
+prove independent loading/query operation bounds. Auxiliary lifetime RSS rose
+803.281 MiB (+23.74%) against the parent and fell 1,875.828 MiB (-31.89%)
+against main. Keep both observations; primary savings do not offset the first
+overrun, and neither observation establishes its cause. This auxiliary check
+loads all 64 graphs but executes constant `RETURN 1` requests plus validation
+errors. It is correctness coverage, not a representative graph-query performance
+workload. Both arms have matching replies and final counters; no forced
+saturation, timeout or cancellation occurred in these auxiliary requests.
+
+| Pair | Base ready ms | Candidate ready ms | Delta ms | Base pressure-stage ms | Candidate pressure-stage ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| Parent | 22294.405 | 20529.509 | -1764.896 | 60404.625 | 42447.918 | -17956.707 |
+| Main | 20212.872 | 19562.033 | -650.839 | 56433.490 | 44924.090 | -11509.400 |
+
+Pressure-stage spans include controller validation/write gaps; they are not
+full build/save/query end-to-end measurements or substitutes for p50/p95.
+All first-use, isolated and pressure samples remain separate. Sampled loading
+RSS increased by 162,152,448 bytes (+5.0016%) in the parent pair and
+1,958,002,688 bytes (+60.68%) in the main pair. These are observations from
+the existing polling boundary, not independently delimited loading peaks;
+they cannot establish resource acceptance. Read-only boundary audit found that
+the parent pair's candidate maximum and main pair's baseline maximum were sampled
+after registry readiness, so their labels can include first-query work. However,
+the main pair's candidate maximum of 5,184,700,416 bytes occurs at least 2.468 s
+before registry readiness. That observation survives the boundary audit; it
+cannot be removed by relabeling the last sample. Exact lifecycle counters do not
+repair the missing exact phase peaks. The separate capacity check also overwrites
+its intermediate idle snapshot with the final snapshot; runtime assertions passed,
+but that intermediate raw counter snapshot is not retained by the trusted harness.
+
+**Bounded timeline audit:** existing request-cycle windows show that removing the
+long filter request changes the mix of overlapping queries. Both optimized arms
+have the same cross-round sort overlap pattern, while the second optimized arm's
+sort/descending-sort/collect p95 exceeds the first identical binary's by
+320.239/220.998/146.530 ms. The slowdown develops around pressure rounds 5–6;
+the overlap pattern changes from round 1. Thus the changed overlap alone does not
+explain the difference, and client-cycle windows are not server admission times.
+The shared scalar row consumer adds an optional-filter check; sort passes None,
+while collect's aggregation loop returns before that per-row branch. Source
+similarity does not prove equal generated code or runtime cost. The audit retains
+all request vectors and is not a new performance run or causal exoneration.
+
+**Decision after measurement:** retain the independently verified reduction in
+work and large filter-query latency improvement as a positive intermediate
+candidate, not cumulative acceptance. The main comparison still has materially
+higher sort/descending-sort/collect p50 and p95, despite lower total CPU, peak
+RSS and pressure-stage time. All smaller positive deltas also remain recorded.
+Do not pool the two pairs, offset adverse metrics, infer causation from one
+ordered comparison or repeat runs to choose a favorable statistic. Per-operation
+resources, current construction/build/save coverage and final Linux CI remain
+unverified. No new PR or no-regression claim follows from this experiment.
+
+### 2026-11-03 - Attempt 048: Specialize filtered and ordinary row consumers
+
+**Hypothesis:** release disassembly of047 confirms that ordinary sorted queries
+still execute two pointer loads and a null branch per projected row, despite
+passing no projected filter. Select a const-generic filtered/unfiltered consumer
+once per query so the ordinary loop has no new per-row filter check. Preserve
+047's eligibility proof, predicate evaluation, accepted-row counting, probing,
+errors and cancellation. This does not change the sort algorithm, aggregation,
+storage schema or loading behavior, and does not presume to explain collect or
+the difference between047's two runs of the same optimized binary.
+
+**Identity:** parent `6b95214980263c509170e9c3f317877bab81b7b6`, whose production
+code is047's `d27e054c`; accepted main remains
+`a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. Candidate is the commit containing
+this record. The precommit release binary SHA-256 is
+`0b1832b411155522da79ce4ac2c11ad1d9dbf85b58347c685d03c5459aeb09f3`;
+final committed-source/binary identity must be verified before measurement.
+
+**Correctness and compiled evidence:** all233 Cypher unit tests and six focused
+filter tests passed, with strict module/all-target/all-feature Clippy, formatting
+and diff checks. The optional Java fixture was unavailable, not newly exercised.
+Independent review checked all six call sites: the sole true specialization is
+guarded by a present predicate; all false callers pass None. The release ordinary
+consumer now branches directly from projection to bounded ordering without the
+filter loads/check/evaluator block. The filtered consumer retains tick and
+predicate evaluation. The ordinary closure shrinks from2216 to2004 bytes, while
+the complete executable grows18208 bytes (+0.190%) and its text segment grows
+16384 bytes. Code-size/cache tradeoffs remain subject to real workload checks.
+Exact symbols, disassembly, binary hashes and call sites are retained under
+`/tmp/graphite-js-artifact-validation/attempt048-disassembly/`.
+
+Full workspace validation reported595 passing tests and one existing ignored
+test; optional external-Java fixture bodies remain unavailable. Strict workspace
+all-target/all-feature Clippy passed. Preserve the first workspace failure:
+`prepare::tests::root_owned_policy_cannot_follow_source_or_trusted_symlink_parents`
+received filesystem `EINVAL` from fixture `create_dir_all`, before the symlink
+assertion. That source is identical to main. The original test executable passed
+both the focused test and the concurrent benchmark module, and the subsequent
+full workspace run passed without edits. This establishes current coverage but
+does not identify or claim to fix the first filesystem failure. The original
+log and subsequent logs remain under `attempt048-workspace-tests*.log` and
+`attempt048-prepare-*.log`; independent Linux coverage is still required.
+
+**Protocol before measurement:** preserve the trusted main controller, all73
+real64 cases, original complete-response checks, concurrency and sampling rules.
+Use the separate Linux environment for the full trusted current-revision JVM
+build/save/readback and native correctness/OOM pipeline, retaining4 GiB JAR heaps
+and every failure. Existing2 GiB VMs cannot host that pipeline; the dedicated
+24 GiB/4CPU environment is separate and does not raise any JVM heap ceiling.
+Freeze exact product/controller identities, input provenance and full commands
+before launch; exercise environment and producer/consumer handoff first. Linux
+correctness evidence does not itself establish performance recovery. Any separate
+parent-relative and accepted-main performance comparison must declare matched
+real persisted inputs, cache state, boundaries and resources before measurement;
+neither047's Darwin timings nor compiler output substitutes for that comparison.
+
+**Decision:** experimental candidate pending full verification and representative
+multi-graph measurements. Removing confirmed instructions is not a measured
+latency benefit, and existing047 regressions and resource gaps remain open.
+
+**Measured result (`b18d6fd0`):** The unchanged main controller completed on
+Linux arm64. Both arms built, saved and read back all 64 shards and the whole
+Tika, Hive and Kotlin compiler JARs. All 14 heap receipts recorded 4 GiB,
+all OOM counters stayed zero, and all 8,518 complete native responses matched
+across 73 cases. The candidate Linux workspace reported 595 passes and one
+existing ignored test; strict Clippy passed. External fixture-dependent test
+bodies were not counted as newly exercised. The two actual JMH archives had
+identical uncompressed contents for all 31,722 entries; only ZIP timestamps
+differed. Real64 construction was 224,118 → 228,136 ms and registry readiness
+26,099 → 27,204 ms, one fresh-build observation per arm with uncontrolled file
+residency. These are observations, not a resource or causal conclusion.
+
+The supplemental fixed-input comparison used the same main-produced files for
+both releases: 64 graphs, 1,408 files, 10,591,394,466 bytes, manifest SHA-256
+`de82420c4a0f23bfcfc1260b55ecf27804664bfe4ab939c966f33a57d168997f`.
+The main and candidate Linux binary hashes were `f29f5a153598756f7b3b6ee89a6d6b7154282997d5dd883f215c7885f1c27304`
+and `ac97a3456c6ed2da23457740bc745fe55fb5aba5c9dccee8be58dea9c59208c5`.
+One cache holder kept all 2,586,606 pages resident before and after each arm.
+The predeclared order was AB / BA / AB. Each fresh server ran all 73 global
+queries: one oracle, two warmups and twenty pressure requests per case at four
+workers. All 10,074 complete responses matched the trusted baseline. The derived
+resource driver used the trusted request and validation code; it excluded the
+variable-count isolated and separate capacity stages. Those remained covered
+by the original trusted run. This is a warm-filesystem comparison, not a
+measurement of cold disk access or every case's independent resource demand.
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 27.826 → 26.203 | 6,214.28 → 6,211.34 | 264.518 → 194.270 | 12,076.94 → 8,872.56 |
+| BA | 29.704 → 29.448 | 6,216.33 → 6,215.67 | 267.341 → 195.359 | 11,729.80 → 9,155.10 |
+| AB | 29.338 → 29.910 | 6,212.50 → 6,215.28 | 266.884 → 196.768 | 11,963.80 → 9,142.09 |
+
+Each resource comparison was within the 5% limit. CPU is user + system time
+for the exclusive server cgroup; RSS is the kernel-accounted process high-water
+mark. Loading ends after validated readiness and a confirmed freeze, before any
+query. The HWM was reset there and checked again after final result consumption.
+Background work and the boundary gaps are included. The observation process and
+query driver ran outside the measured cgroup. This does not establish exact
+physical page-table peaks or JVM construction CPU/RSS.
+
+For pressure latency, use nearest-rank percentiles of the twenty complete
+requests for each case/arm. Report the median of the three paired deltas with
+their full range; do not pool cases. Filter p95 fell by 3,075.5 ms (reductions
+3,026.3–3,111.3 ms). Ascending sort improved in every pair. Collect p95 had
+mixed deltas: median −10.2 ms, range −27.9 to +46.4 ms. Two adverse results
+repeated: `shape-count-traversal` p95 was 172.7 → 202.6, 173.7 → 205.8 and
+192.2 → 201.8 ms; `schema-relationship-histogram` p50 was 118.5 → 134.5,
+119.5 → 138.7 and 136.2 → 140.9 ms. Do not attribute those differences to the
+removed filter branch: both queries use the partitioned edge scan, which has
+identical source in the two releases. All cases, adverse deltas, raw samples
+and failures are retained under `/private/tmp/graphite-js-linux-acceptance/`
+(`resume01` and `resource-results-b18-01`). The initial user-interrupted run
+stopped in preparation and supplied no timing samples.
+
+**Decision:** retain the specialized consumer and verified filtered-query gain;
+this exact candidate passes correctness and the measured mixed-load resource
+limits. The two repeatable latency regressions still preclude cumulative
+acceptance. Removing work in their shared edge scan is the next hypothesis.
+
+### 2026-11-03 - Attempt 049: Skip the empty prefix of the hop target-tag table
+
+**Trigger and hypothesis:** Traversal count and the relationship histogram both
+partition one-hop matches by source tag, raw edge label and target tag. The
+sweep builds a byte table indexed by target node ID. With sparse global IDs,
+it writes `NO_TAG` over all positions below the first possible target before
+examining any edges. This work is present on both main and 048; identifying it
+is not evidence that 048 caused the observed latency differences.
+
+On the actual 64 Java shards from the Linux run, the sum of node capacities is
+679,587,444, while the populated intervals contain exactly 19,438,199 IDs.
+All tag lists are strictly increasing, and the last populated ID in each shard
+is its capacity minus one. Thus trimming just the leading gap eliminates
+660,149,245 bytes (97.14%) of logical scratch initialization for a full sweep.
+This is a property of the input data, not a measured RSS or latency delta.
+For example, the last Kotlin shard has capacity 19,438,200 but its first node
+ID is 19,235,118. The manifest and unmodified graph-file inventory are the same
+as in the measured 048 comparison.
+
+**Change:** Start the temporary table at the lowest first ID among the target
+lists when their persisted order is known to be nondecreasing. A lower ID
+cannot match. Any unsorted target list retains the original zero-based range.
+The upper bound, assignment order for overlapping/duplicate IDs, gaps,
+relationship bits, traversal direction, representative-edge selection,
+provenance, weights and cancellation checks remain unchanged. The table is
+still per query; there is no persistent cache or loading work.
+
+**Identity and protocol:** Parent `f5e241a7` retains the 048 native implementation
+and the separate JavaScript numeric literal fix `42031d8d`. Main/trusted baseline
+is `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. The experimental candidate is the
+commit containing this record. Freeze its exact commit/tree/binary identity
+before measuring. Use the same locked Linux environment, 64 main-produced
+filesets, fixed 73-case oracle and complete responses, concurrency four, and
+fresh-process AB / BA / AB pairs against main with verified file residency.
+Retain every sample, failure and adverse metric. Compare count-traversal and
+relationship-histogram first, then report every case separately, including the
+other slow cases. Check loading and mixed-query CPU and kernel-accounted process
+RSS independently in each pair. The native suite and full JVM correctness/OOM
+controller remain separate; no single-graph performance measurements.
+
+**Decision before measurement:** candidate only. Reduced logical initialization
+is verified from the inputs; its practical benefit and final acceptance are open.
+
+**Correctness before measurement:** 598 default workspace tests passed, one
+existing test was ignored, and strict workspace Clippy/formatting checks passed.
+All 30 partition tests passed with the CI core-JAR graph (27,904 nodes, 1,671
+annotations). They exercise the generic oracle, reversed type-index order,
+representative edge positions, counts and provenance across two graphs. The new
+tests also cover gaps, overlapping/duplicate IDs, empty lists, malformed upper
+bounds and the zero-based fallback for unsorted indices. A prior test build had
+a test-only comparison type error, corrected before execution. A run with the
+CRUD graph passed the new tests but failed two pre-existing assertions requiring
+annotation nodes; that graph contains none. The failure is retained and the
+fixture-enabled result above uses the intended JVM graph, without weakening
+those assertions. These tests are correctness evidence only.
+
+**Measured result (`8f11662d`):** The Linux CLI SHA-256 was
+`2e54a43d0458499144644c92f95538d3fddb4a59276da7e0e6c5c314a6fb2d8d`, built from an empty target.
+The initial transport attempts failed before building the candidate (ambiguous
+cached Rust libraries, a stale copied binary, and a missing transitive dependency
+in a direct rustc link). They supplied no performance samples. A clean Cargo
+build with locked dependencies verified the committed identity. The real Next
+client/server build/save/query checks passed again in all four storage forms.
+Another 32 complete HTTP responses matched 048; directed edge counts and histogram
+counts/provenance matched independent reads of the saved data. The CRUD client
+and server had 85,276 edges combined, and Taskboard had 315,572.
+
+Under the predeclared protocol, all 10,074 requests matched the complete trusted
+oracles. The same 2,586,606 pages were resident at every boundary. All samples,
+checks and failures remain in `/private/tmp/graphite-js-linux-acceptance/attempt049-resource/`
+(plan SHA-256 `1a27584aa0eb162eed3d89c3c619e64524752a87e32942e1987b4c931b70d0ff`).
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 30.808 → 25.962 | 6,213.84 → 6,213.70 | 265.154 → 191.421 | 12,438.39 → 8,918.95 |
+| BA | 26.066 → 25.223 | 6,212.63 → 6,216.36 | 263.294 → 196.463 | 12,042.28 → 9,262.23 |
+| AB | 26.983 → 26.335 | 6,220.11 → 6,222.61 | 262.885 → 191.449 | 12,284.93 → 9,089.69 |
+
+| Target case | Metric | Pair 1: main → candidate ms | Pair 2: main → candidate ms | Pair 3: main → candidate ms |
+|---|---|---:|---:|---:|
+| Traversal count | p50 | 125.25 → 83.92 | 124.59 → 84.29 | 135.27 → 83.47 |
+| Traversal count | p95 | 159.26 → 130.83 | 183.86 → 128.97 | 170.37 → 129.00 |
+| Relationship histogram | p50 | 127.23 → 82.92 | 127.86 → 90.28 | 126.79 → 89.71 |
+| Relationship histogram | p95 | 152.82 → 109.74 | 151.03 → 99.61 | 146.58 → 98.88 |
+
+All 12 independent resource comparisons satisfied the 5% limit for loading
+and the mixed query workload; both target queries improved on main at p50 and
+p95 in every pair. These measurements do not establish single-case CPU/RSS or
+JVM construction resource bounds. Other slow queries remain mixed: collect
+p95 was 1917.21 → 1976.82, 1932.40 → 2066.05 and 1912.14 → 1859.86 ms;
+its median paired delta was +59.60 ms. Sort p50 median deltas were +7.73 and
++32.74 ms (each range includes an improvement), while both sort p95 medians
+improved. The largest positive median delta among cases adverse in every pair
+was +2.00 ms for the fast dense aliased query's p95 (3.31 → 5.31, 2.91 → 5.51,
+3.22 → 3.36 ms). These observations are retained without pooling cases or
+selecting a favorable run.
+
+**Decision:** keep the verified reduction in scratch space and the repeatable
+latency recovery of the two target cases. This is not blanket acceptance.
+Mixed sort results and the positive median collect p95 delta remain explicit.
+The collect query reads 5,051,914 call sites; its aggregate finalizer copies an
+owned vector and clones surviving values into a second list. That concrete
+work is the next hypothesis, not a claim about the cause of run-to-run variation.
+
+### 2026-11-03 - Attempt 050: Consume completed aggregate input buffers
+
+**Hypothesis:** The `collect` pressure case still had a positive median p95
+delta in 049. Its input includes all 5,051,914 call sites. Each finished group
+owns its vectors, but the finalizer cloned every input `Value` into another
+vector before applying the aggregate. `collect` then filtered nulls into a
+vector of references and cloned the surviving values again. Remove these copies
+at the ownership boundary, without truncating the input, skipping expressions
+or assuming that the final list will only be sliced.
+
+**Change:** Take each per-aggregate vector from the consumed group. The
+unweighted and DISTINCT `collect` paths retain non-null values in encounter
+order and move the resulting vector into the list. Shrinking it avoids holding
+millions of unused slots when null filtering or DISTINCT removed most inputs;
+that operation can reallocate, so net latency/RSS must be measured. DISTINCT
+still deduplicates by the original keys before aggregate evaluation. Other
+aggregates use the existing functions, and weighted non-DISTINCT dispatch,
+including its errors, is unchanged. Input evaluation, row weights, group order,
+provenance and cancellation points are unchanged.
+
+**Verification:** 601 default workspace tests passed (one existing ignored),
+with strict workspace Clippy, formatting and diff checks. All six targeted
+WITH-prefix/aggregation tests passed on the CI JVM core fixture, including the
+real two-source collect slice against the generic path. Literal oracles cover
+`[2, null, 2, 1]` with collect, DISTINCT and counts; empty input with/without a
+group; and weighted DISTINCT/unsupported weighted non-DISTINCT behavior.
+
+**Identity and protocol before measurement:** Parent `5ecf8836`, whose native
+production code is 049's `8f11662d`; accepted main remains `a5c96f71`. Candidate
+is the commit containing this record. Reuse the verified Linux real64 manifest
+and oracle described in 048/049. Freeze exact binaries, source trees and the
+plan before execution. Use AB / BA / AB pairs vs main with fresh processes,
+verified pinned residency around each arm, four workers and all 73 cases
+(first-use, two warmups, twenty pressure samples each). Preserve all raw samples
+and failures. Report per-case p50/p95 and median/range of the three paired
+deltas; do not pool cases. Prioritize collect p95 while retaining both sort
+directions, the earlier filter/edge-scan improvements and all adverse cases.
+Verify the independent 5% CPU/RSS limits separately for loading and the fixed
+mixed-query workload in each pair. No single-graph performance measurements.
+
+**Decision before measurement:** experimental candidate. Eliminating confirmed
+copies does not establish a latency or RSS gain; final exact-head correctness
+and the full trusted Linux/CI gate are separate requirements.
+
+**Measured result (`5a608699`):** The clean Linux CLI SHA-256 is
+`413154b24907230d46c10ff6c677a83bd0feffddbc591f389ff7866a86c3603f`.
+Both real applications passed build/save/query in all four forms. A separate
+replay compared 28 complete aggregate HTTP responses with 049 and with the
+saved node records; list order, DISTINCT, null/empty results, per-graph counts
+and provenance matched. The 64-graph comparison passed all 10,074 complete
+response checks. Raw samples and all adverse cases are retained in
+`/private/tmp/graphite-js-linux-acceptance/attempt050-resource/` (plan
+`cf3f56a2b3cf71c98ea23182559e469d0b65c37031c1d8649d4cc54f7bca3cee`).
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 25.686 → 25.584 | 6,221.30 → 6,211.59 | 260.672 → 188.957 | 12,858.19 → 9,002.83 |
+| BA | 24.518 → 25.509 | 6,211.27 → 6,209.81 | 260.221 → 190.007 | 11,991.39 → 8,896.49 |
+| AB | **26.283 → 27.793** | 6,222.02 → 6,212.16 | 262.441 → 196.643 | 11,900.53 → 8,861.71 |
+
+Collect p95 decreased by 29.23–169.52 ms in all three pairs (median decrease
+57.61 ms); p50 decreased by 13.27–43.52 ms. The filter and both edge scans
+retained their p50/p95 improvements on main in every pair. Sort p50 was higher
+in every pair: median +12.82 ms ascending (range +4.80 to +47.74), +43.16 ms
+descending (+34.14 to +81.48). Ascending p95 decreased by 20.39–51.70 ms;
+descending p95 remained mixed (median +9.75 ms). Group-count p95 increased by
+4.02–18.72 ms. No query or pair is pooled or discarded.
+
+**Decision:** retain the ownership change as a positive increment; do not accept
+the cumulative candidate. In the last pair loading CPU increased by 1.510 s
+(+5.745%), above the independent 5% ceiling. Neither lower query resources nor
+other pairs offset this. The loader source did not change in this attempt;
+the measurement alone does not establish a cause. Two concrete remaining
+opportunities are the reverse-CSR builder's full-size cursor copy/empty-ID scans
+and the ordered projection's repeated evaluation of the same scalar property.
+
+### 2026-11-03 - Attempt 051: Build reverse CSR over occupied ranges
+
+**Trigger and hypothesis:** 050 exceeded main's loading CPU by 5.745% in one
+of three fixed pairs. The measured loader built a complete second copy of the
+reverse offset array to use as write cursors. Across the canonical 64 inputs
+that is 2,718,350,032 bytes copied in aggregate, up to 77,752,804 bytes for one
+graph. These are logical byte counts, not an RSS peak or a timing claim.
+
+**Change:** Count degrees at destination index + 1, using the occupied range
+of destinations in the actual forward CSR. Initialize those offset slots as
+write cursors; advancing each cursor during the ordered fill leaves its final
+exclusive end in place. The untouched leading offsets remain zero and the
+trailing offsets equal the edge count. Use the monotone forward offsets to skip
+empty source prefixes/suffixes, without assuming that a type index describes
+all edges. The result retains the full public offset length, ascending source
+order, repeated/self edges and their raw labels. There is no persisted-format
+change, additional cache or deferred query work.
+
+**Correctness:** 605 default workspace tests passed, one existing ignored;
+strict workspace Clippy and formatting passed. Against the CI core graph all
+134 storage tests passed. An independent stable-sort inversion checked every
+offset, predecessor and label on a late Kotlin compiler shard with 19,438,200
+CSR rows and 223,904 edges. The shard's BV inputs/labels matched the current
+fixture; its `forward.properties` differed only in the declaration binding.
+Small oracles also cover empty graphs, sparse prefix/interior/trailing rows,
+self edges, duplicates, both capacity bounds and invalid inputs. None of these
+single-graph checks supplies performance evidence.
+
+**Protocol:** Parent `75be740f`, native production code `5a608699`; candidate
+is the commit containing this record. Use the same immutable Linux real64 graph
+files and trusted 73-case oracles. Before measurement seal one common holder
+and all comparison identities. One full-mix pair (050 then 051) measures the
+increment; a distinct pair compares 052 and 051; three fresh main/final pairs
+(AB / BA / AB) determine cumulative performance evidence. Every arm consumes
+all 1,679 responses, including twenty concurrent pressure samples per case.
+Verify residency around each arm; retain all samples/failures. Do not pool
+attribution and main acceptance or use parent savings to offset a main overrun.
+The complete trusted exact-head construction/readback, query and Linux OOM
+checks remain a separate gate. Candidate pending measurement.
+
+**Measured increment and decision — retain 051 for composition.** The one attribution pair ran `5a608699` (050) then `b842d902` (051). Its 3,358 complete responses matched the real64 oracles. Loading CPU was 25.484 → 23.523 s (−1.961 s). Loading peak process RSS was 6,222.227 → 3,767.770 MiB (−2,454.457 MiB). Query peak RSS was 8,797.805 → 6,379.422 MiB (−2,418.383 MiB). Query CPU went the other way, 186.323 → 195.426 s (+9.104 s, +4.89%), inside the independent 5% bound in this pair. ASC and DESC sort p95 increased 238.977 ms and 200.829 ms, collect p95 increased 101.615 ms, and WITH-aggregate p95 increased 78.063 ms. Keep the observed memory reduction, with those adverse observations intact. One pair does not establish repeatability, and 051 alone was not compared with main in three pairs. The resource limit checks against main apply to the cumulative 052 candidate below.
+
+### 2026-11-03 - Attempt 052: Reuse projected scalar sort keys
+
+**Trigger and hypothesis:** After 050, both real ORDER BY cases had higher
+concurrent p50 than main in each pair. The ascending query projects and sorts
+by `n.caller_class`, the descending query by `n.callee_name`. In the admitted
+bounded-sort path, each matching CallSite evaluated that property to project
+it, then evaluated the same property again to stash an order key. The heap and
+final sort consumed the stash; neither needed a second property lookup.
+The real fixture contains 5,051,914 call sites. This source-level observation
+is not proof of how much of the measured delta the duplicate evaluation caused.
+
+**Change:** After the existing bounded-order admission succeeds, rewrite only
+an order key that is a variable's property and exactly matches one unique
+projected expression. The internal key becomes the actual projected column
+name (including its alias); heap selection and final sort use the same effective
+order. This does not change query text or the shared parsed AST. Unsupported,
+volatile, ambiguous, nonmatching, aggregate and DISTINCT paths retain their
+previous behavior. Every candidate row is still projected and checked, including
+losing rows and LIMIT-zero probes. Direction, ties, null semantics, pagination,
+provenance, errors, cancellation and work checks are unchanged.
+
+**Evidence before timing:** On the integrated candidate, all 607 default Rust
+workspace tests passed (one original ignored), with strict workspace Clippy and
+formatting. Fifteen bounded-order tests ran against the CI JVM graph, including
+full-sort comparisons for the exact 200-row ascending/descending queries,
+multiple graphs, aliases, ties/nulls, mixed order keys, rejecting ambiguous
+names and preserving late errors. The JS frontend at `7f5b40a6` also passed
+39 tests and the two-application build/save/query checks independently.
+
+**Identity and protocol:** Parent `95d16cd6` includes 051's native change and
+the separately verified JavaScript binding-state repair. Candidate is the commit
+containing this record. Use the 050/051 attribution pair, the 052/051 attribution
+pair (candidate first), then three main/052 pairs (AB / BA / AB), all on the same
+64 committed-reference graph inputs, 73 trusted cases and continuously held
+file pages. Each arm runs 1,679 verified requests at concurrency four with twenty
+pressure samples per case. Seal all identities before the first arm. Keep the
+one-pair incremental evidence separate from main acceptance and keep every
+adverse case/failure. No timing from synthetic or single-graph fixtures.
+Assess reverse-CSR loading, both sorts, collect, filter, edge scans and the rest
+of the catalog; independently enforce CPU and RSS limits in each final pair.
+Fresh full trusted Linux construction/readback, OOM and exact-final CI gates
+remain separate. Candidate pending measurement.
+
+**Measured increment and decision — retain 052 for composition.** One separate BA attribution pair ran `46ee8322` (052) first and `b842d902` (051) second. Expressed as 051 → 052, ASC p50 was 2,419.986 → 1,819.695 ms (−600.291) and p95 was 2,811.742 → 2,363.996 ms (−447.746). DESC p50 fell 673.649 ms and p95 fell 615.304 ms. Query CPU was 196.217 → 168.774 s (−27.443 s, −13.99%). Query peak RSS was 6,261.777 → 6,438.512 MiB (+176.734 MiB, +2.82%). Loading CPU and RSS also satisfied their separate bounds. The same pair had a 193.302 ms higher collect p95 and a 20.292 ms higher relationship-histogram p95. All 3,358 requests passed. These observations support the sort increment. they are not the comparison with the accepted baseline.
+
+**Three direct comparisons with main.** Each fresh arm ran 1,679 complete requests against all 64 frozen main graphs (73 first-use, 146 warmup, 1,460 pressure, concurrency four during pressure). Main `a5c96f71` and 052 `46ee8322` ran AB / BA / AB. Each value below is a per-case nearest-rank percentile of 20 requests in one arm. All Δ values are candidate minus main. The summary is the median and range of the three paired deltas, without pooling samples.
+
+| Query / percentile | Pair 1 main → 052 ms | Pair 2 main → 052 ms | Pair 3 main → 052 ms | Median Δ [range] ms |
+|---|---:|---:|---:|---:|
+| shape-order-by p50 | 2389.118 → 1775.900 | 2359.178 → 1836.257 | 2375.429 → 1851.308 | -524.121 [-613.218, -522.921] |
+| shape-order-by p95 | 2646.180 → 1824.370 | 2450.558 → 1951.866 | 2582.027 → 1939.059 | -642.968 [-821.810, -498.692] |
+| shape-order-by-desc p50 | 2437.767 → 1783.554 | 2406.362 → 1849.486 | 2441.875 → 1853.780 | -588.096 [-654.212, -556.876] |
+| shape-order-by-desc p95 | 2681.196 → 1842.823 | 2484.589 → 1961.168 | 2697.783 → 1924.036 | -773.747 [-838.373, -523.421] |
+| shape-collect p50 | 1822.386 → 1668.232 | 1780.936 → 1769.268 | 1836.468 → 1767.202 | -69.265 [-154.154, -11.668] |
+| shape-collect p95 | 1918.251 → 1732.062 | 1913.868 → 1908.103 | 1944.701 → 1839.387 | -105.315 [-186.188, -5.766] |
+| shape-with-aggregate p50 | 751.824 → 714.998 | 724.411 → 753.679 | 734.251 → 761.078 | +26.827 [-36.825, +29.267] |
+| shape-with-aggregate p95 | 860.270 → 746.434 | 777.166 → 822.440 | 858.046 → 813.407 | -44.639 [-113.836, +45.274] |
+
+Both sorts and collect improved at p50/p95 in each final pair. Count-traversal, relationship-histogram and WITH-filter p95 median deltas were −64.420, −44.912 and −3,123.299 ms, also favorable in every pair. The material mixed case was WITH-aggregate p50, with deltas of −36.825, +29.267 and +26.827 ms. P95 was lower in two pairs but higher by 45.274 ms in the other. Retain the beneficial candidate with that uncertainty recorded. Of 438 individual final pressure p50/p95 comparisons, 94 moved upward. The complete sample records cover all cases.
+
+| Operation / metric | Pair 1 main → 052 | Pair 2 main → 052 | Pair 3 main → 052 |
+|---|---:|---:|---:|
+| loading / CPU seconds | 25.223 → 23.149 | 27.193 → 21.943 | 28.369 → 24.848 |
+| loading / peak RSS MiB | 6216.500 → 3766.680 | 6211.832 → 3772.559 | 6214.332 → 3766.855 |
+| query / CPU seconds | 265.119 → 156.420 | 258.768 → 166.978 | 265.437 → 165.190 |
+| query / peak RSS MiB | 12408.551 → 6460.379 | 12766.949 → 6367.723 | 12009.605 → 6285.758 |
+
+Loading CPU/RSS and mixed-query CPU/RSS decreased in all three final pairs, so all twelve independent 5% checks passed. Observed startup to registry readiness decreased by 1.941, 4.965 and 3.342 s. These are fixed-mix, warm-filesystem Linux observations. no individual-query resource or JVM construction bound follows from them. A final exact-revision full trusted build/save/readback, OOM and CI check remains separate. The repaired JS producer has its own unit and real-application gates.
+
+**Evidence.** The ten-arm suite SHA-256 is `177552ffac39d02beb738a2adf3438a79aa637ed3abb9046d4fda48d144feae6`. The pre-first-request execution seal SHA-256 is `9d0930cbfe20d22dc617ebd7b4423cf3685e76d8b7c696891ad7560dbacb4113`. All 16,790 requests passed the fixed oracles. One holder retained all 2,586,606 pages throughout the three groups and their post-audits, and released all 1,408 locks. The run archive under `attempt052-ten-arm/frozen/results/{attribution-050-051,attribution-051-052,acceptance-main-052}` retains the three unpooled `run-result.json` files, the complete 73-case catalog, every exported request/receipt audit, phase observations, and raw-output volume identities. `graphite-p52-ten-arm-report` contains all per-pair percentile rows, every raw request observation and all upward changes.
+
+### 2026-11-03 - Attempt 053: Store short column keys inline during partition scans
+
+The grouped WITH query in the 73-case catalog counts CallSites by callee class,
+keeps groups with more than five matches, and returns the first 50 groups. In
+052 its concurrent p50 changed by −36.825, +29.267 and +26.827 ms relative to
+main. The partition planner reaches the aggregated WITH and chooses a single
+string column, with no index predicate. On each of 5,051,914 CallSites it
+creates a vector of string IDs to look up the partition. Even a successful
+lookup of a repeated class allocates a one-element vector.
+
+Use a small vector in the existing map key. Its first four string IDs fit
+inline, covering all four CallSite string fields. Longer keys can still grow.
+The tag, all selected column IDs, the key set, the insertion-ordered map and
+the polling and weight rules are unchanged. The direct dependency uses the
+version of smallvec already present in the lockfile. Parent is `d64420ed`,
+which also includes the separately tested JS output-publication fix.
+
+On the CI JVM core fixture, a two-source oracle decodes actual call records
+and verifies plan admission, every representative ID and weight, first-seen
+order, all resulting counts and row provenance. All 31 partition tests passed
+on that fixture. The default cypher suite passed 242 tests and strict cypher
+Clippy passed. The targeted checks are correctness evidence.
+
+The cumulative comparison uses the immutable 64-graph Linux inputs and
+baseline `a5c96f71`. Freeze the clean candidate binary before running three
+AB / BA / AB pairs. Each arm consumes all 1,679 queries, including twenty
+concurrency-four pressure observations per case. Evaluate the grouping query's
+p50 and p95 alongside the two sorts, collect, filter, relationship scans and
+all other cases. Report the median and range of paired absolute changes.
+Retain every failure and adverse sample. Loading and query CPU and peak RSS
+each have an independent +5% ceiling in every pair. Construction/readback,
+stability, OOM, the two real JS apps and the exact-revision trusted gate are
+separate checks. Candidate pending measurement.
+
+**Measured result and decision.** Clean Linux candidate `3a249350` passed all
+10,074 complete responses on the fixed real64 workload. The two real JS
+applications again passed all four saved forms and the global HTTP checks.
+An independent grouped-query replay checked 14 HTTP responses per binary
+against decoded client and server call records, including source-order
+reversal, the exact count threshold, and pagination. The integrated workspace
+passed 610 tests, with one existing test ignored. Strict Clippy passed.
+
+| Pair | Grouped WITH p50 ms, main → 053 | Grouped WITH p95 ms, main → 053 |
+|---|---:|---:|
+| AB | 717.074 → 744.413 | 758.432 → 783.064 |
+| BA | 757.248 → 740.228 | 829.317 → 786.215 |
+| AB | 721.584 → 778.184 | 778.079 → 865.289 |
+
+The median paired difference was +27.339 ms for p50 and +24.632 ms for
+p95. Both percentiles improved in one pair and regressed in two. Removing
+the transient column-vector allocation did not recover this query. Revert
+the inline key and its direct dependency. Retain the independently decoded
+partition and aggregate regression test. Other cumulative gains have separate
+evidence. The concurrent filter, both sorts, traversal and relationship
+histogram improved at both percentiles in all three pairs. Collect p50 also
+improved in all three. Its p95 changes were −57.970, −156.008 and +109.081 ms.
+
+| Pair | Load CPU s | Load RSS MiB | Query CPU s | Query RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 24.567 → 23.575 | 6213.102 → 3770.512 | 257.730 → 162.545 | 12229.430 → 6308.227 |
+| BA | 24.645 → 21.891 | 6213.316 → 3771.449 | 268.080 → 159.688 | 13256.793 → 6414.418 |
+| AB | 25.666 → 24.503 | 6214.766 → 3776.590 | 258.642 → 170.457 | 12035.262 → 6309.215 |
+
+Every loading and mixed-query CPU and RSS observation remained inside its
+own limit. The comparison seal was
+`be59112341af08ccb23d92ae15d80be007c5742851cf6c3c39cb521cc99b41eb`.
+The immutable `attempt053-resource/runs/053-3a24935017e4c2e106a34056d4559ab5c1862efe`
+archive retains the raw output volume names, per-case sample vectors,
+response audits and phase snapshots. `graphite-attempt053-offline-audit/053-final`
+retains all 73 cases, per-arm values, absolute changes, extrema, boundaries
+and input hashes. The measured candidate did not reach final acceptance.
+
+### 2026-11-03 - Attempt 054: Count partitions from one CallSite column
+
+Attempt 053 retained the per-node lookup of a compound key and did not
+recover the grouped WITH latency. The general partition scan builds and
+hashes a key containing a tag, a list of column IDs and a set of property
+keys. For one CallSite tag and one scalar field, only the string ID varies.
+
+Scan the raw field into a source-local insertion-ordered map keyed by that
+ID. Store the first matching node and increment the weight on every match.
+Only the distinct local groups enter the general partition map. Use the same
+record accessor, order of first occurrence, per-node cancellation polling and
+per-partition work accounting as the original scan. Keep the general path
+for unsorted tag lists, predicates, multiple tags and other key shapes.
+The scan reads recorded values directly, including on graphs with optional
+indexes. No persisted graph format or loading work changes.
+
+On the 64 frozen graphs the independent decoder counted 5,051,914 CallSites,
+372,571 source-local groups and 124,987 distinct classes across sources.
+There were 56,210 groups with counts above five. All 50 output rows,
+their counts, graph provenance, and the pagination probe matched the
+frozen HTTP oracle. The first decoder comparison emitted provenance in
+source encounter order. Sorting the provenance IDs according to the
+existing result contract made its full response equal to the frozen
+response. The original mismatch is retained. On the CI core fixture all
+32 partition tests passed, including the decoded-group oracle, the unsorted
+fallback, cancellation and timeout checks. All 243 default cypher tests and
+strict cypher Clippy passed.
+
+Parent is `a00f9721`. Compare this cumulative candidate with main
+`a5c96f71` using the same three AB / BA / AB pairs, 64 frozen graphs,
+73 cases, concurrency four, twenty pressure requests per case per arm,
+and complete response-body verification. Report p50 and p95 per case,
+preserving all samples and uncertainties. Prioritize the grouped WITH
+query and retain the prior slow query results. Enforce the +5% CPU and RSS
+limits separately for loading and the fixed query mix in each pair.
+Fresh trusted build/save/readback, OOM and CI verification remain separate.
+
+**Matched Linux results.** All 10,074 responses matched the frozen oracles.
+All six fresh servers completed without an OOM. Each case has twenty
+pressure samples per arm at concurrency four. The table gives the actual
+main/candidate pair whose absolute difference is the median of the three
+paired differences. Brackets contain the full range of paired differences.
+The p50 and p95 are the 10th and 19th nearest ranks respectively.
+
+| Query | p50 ms, main → 054 (median Δ [range]) | p95 ms, main → 054 (median Δ [range]) |
+|---|---:|---:|
+| shape-with-aggregate | 686.44 → 535.28 (-151.16 [-160.48, -144.92]) | 722.66 → 552.82 (-169.85 [-204.13, -141.44]) |
+| shape-order-by | 2338.38 → 1777.67 (-560.72 [-598.80, -513.22]) | 2432.80 → 1863.26 (-569.54 [-611.27, -561.74]) |
+| shape-order-by-desc | 2382.11 → 1797.36 (-584.76 [-647.87, -551.81]) | 2498.06 → 1879.02 (-619.05 [-676.38, -599.43]) |
+| shape-collect | 1736.21 → 1708.80 (-27.42 [-95.93, -19.67]) | 1826.87 → 1744.38 (-82.49 [-128.42, -56.23]) |
+| shape-with-filter | 2763.61 → 0.28 (-2763.33 [-2804.47, -2729.01]) | 2965.98 → 0.96 (-2965.02 [-2972.38, -2921.79]) |
+| shape-count-traversal | 131.51 → 80.92 (-50.60 [-62.69, -42.82]) | 171.32 → 125.64 (-45.68 [-64.51, -41.20]) |
+| schema-relationship-histogram | 131.96 → 86.02 (-45.94 [-51.13, -39.81]) | 151.13 → 117.64 (-33.50 [-56.68, -20.13]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 24.524 → 23.244 | 6213.926 → 3765.176 | 253.445 → 154.288 | 11920.641 → 6350.203 |
+| BA | 23.110 → 20.408 | 6222.168 → 3768.000 | 252.711 → 150.395 | 12604.598 → 6432.793 |
+| AB | 24.372 → 19.980 | 6215.387 → 3768.191 | 252.245 → 151.138 | 12294.352 → 6437.469 |
+
+Readiness improved by 1.230–4.285 s. The complete query mix finished
+26.240–27.536 s sooner. Each phase's CPU and peak RSS fell in all three pairs.
+Loading includes fresh server startup through verified readiness. Query timing
+includes complete consumption of the requested results. CPU and kernel
+high-water RSS use separate frozen process snapshots per phase. The measurements
+cover warm resident graph files. The mixed-query phase does not provide CPU or
+peak RSS for individual queries.
+
+**Decision.** Keep the scalar scan. The grouped WITH query and the other slow
+queries above improved at both percentiles in every pair. Across the full
+catalog 123 of 438 individual p50/p95 comparisons increased. The largest
+positive median p95 change was +2.179 ms for the targeted parameter-as-literal
+query (paired changes +2.179, +2.580, −0.256 ms). The largest positive median
+p50 change was +0.459 ms for SKIP. These observations remain in the record.
+Three matched pairs describe the variation in this workload. They do not give
+a confidence interval or establish a speedup for every request.
+
+The exact candidate `4f08228a` passed 611 Rust workspace tests, with one
+pre-existing ignored test, strict Clippy and formatting. The real CRUD and
+Taskboard apps passed build, all four save forms and dual-graph HTTP queries.
+All 14 grouped-query HTTP checks matched the independent record decoder
+and the previous implementation. The clean Linux CLI SHA-256 was
+`464125b1b72235e05b1b2418194aca16f1b7b221afe2c18c3a05b11b9649bf08`.
+The comparison seal is
+`d32c385fd51424616beebcec5515a31c212d29618f3037efde348da64dd61ae8`.
+The complete result SHA-256 is
+`9b456ae3f9611de2d44cea5d4fd5df89f3fc957ec8a4648f433f1249c7d54713`.
+All per-case and per-request observations and phase snapshots are retained
+under `attempt053-resource/runs/054-4f08228a31e85e1ac8da644addcc9fa66939f7eb`.
+The independent decoded CSVs, hash manifest and adverse samples are in
+`graphite-resource-offline-audit/054-final`. This comparison is acceptance
+evidence for loading and multi-graph query execution. The complete trusted
+pipeline on the final revision separately verifies graph construction,
+readback, response integrity, stability and OOM behavior.
+
+### 2026-11-04 - Attempt 055: Validate partition record offsets and reuse scalar grouping across tags
+
+Review of attempt 054 identified two places where a missing node offset was
+treated as the first bytes of the data file. Both the general masked-key scan
+and the single-column scan now report the node ID and tag when a record is
+missing. A sorted list for one tag can use the scalar scan for any declared
+raw string field. Predicates, multiple columns, multi-tag scans and unsorted
+lists retain the general path. Source encounter order, group weights and work
+polling remain part of both implementations.
+
+A two-source fixture checks grouped counts, row order and graph provenance for
+a LocalVariable column. Corrupt type-index fixtures exercise both missing
+offset paths. All 33 partition tests passed on the CI core fixture, and all
+244 default Cypher tests and strict Clippy passed. For the integrated review
+head, repeat the fixed three AB / BA / AB comparisons with main `a5c96f71`,
+the same pinned 64 graphs, all 73 global queries, and complete response-body
+oracles. Compare per-case p50 and p95 from twenty pressure observations per arm
+at concurrency four. Preserve each paired observation and enforce separate
++5% CPU and RSS limits for loading and the full query mix in each pair.
+
+**Matched result and decision.** Keep the checked scalar grouping path.
+The integrated candidate `1e96a064` passed all 10,074 responses, with zero
+OOM events. The tables show milliseconds for the actual main and candidate
+pair giving each median paired difference, followed by the full range of
+the three paired differences. Each arm contributes twenty observations
+per query at concurrency four. The p50 and p95 are nearest ranks 10 and 19.
+
+| Query | p50 main → candidate (Δ [range]) | p95 main → candidate (Δ [range]) |
+|---|---:|---:|
+| shape-with-aggregate | 680.56 → 525.78 (-154.78 [-163.62, -149.57]) | 765.80 → 616.05 (-149.75 [-214.15, -62.47]) |
+| shape-order-by | 2337.87 → 1775.92 (-561.95 [-591.41, -550.43]) | 2493.42 → 1890.56 (-602.86 [-703.71, -549.11]) |
+| shape-order-by-desc | 2382.21 → 1773.49 (-608.72 [-641.13, -585.33]) | 2487.37 → 1848.97 (-638.40 [-766.37, -586.58]) |
+| shape-collect | 1778.49 → 1652.49 (-126.00 [-128.56, -80.81]) | 1973.50 → 1794.99 (-178.51 [-229.83, -59.21]) |
+| shape-with-filter | 2858.53 → 0.28 (-2858.24 [-2866.20, -2800.67]) | 2974.93 → 0.65 (-2974.28 [-3022.68, -2950.95]) |
+| shape-count-traversal | 130.19 → 84.17 (-46.02 [-49.99, -43.55]) | 182.50 → 127.55 (-54.95 [-94.76, -29.91]) |
+| schema-relationship-histogram | 124.73 → 87.26 (-37.47 [-43.76, -34.24]) | 149.74 → 109.75 (-39.99 [-44.15, -25.43]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 26.632 → 22.838 | 6214.305 → 3769.039 | 257.885 → 151.595 | 12132.340 → 6555.496 |
+| BA | 23.372 → 20.532 | 6226.133 → 3775.262 | 254.520 → 151.118 | 11984.602 → 6314.664 |
+| AB | 24.819 → 22.822 | 6210.031 → 3765.871 | 256.759 → 153.981 | 12067.812 → 6278.223 |
+
+All seven listed slow cases improved at both percentiles in every pair,
+and all twelve phase-specific CPU/RSS checks were within the 5% limit.
+Across all cases, 79 of 438 individual pair-percentile comparisons
+increased. The largest positive median changes were 0.39 ms p50 and
+1.39 ms p95. Three pairs describe the variation on these warm, pinned
+inputs. The resource observations cover loading and the full mixed query
+workload. The new JS importer and its two real applications have separate
+construction and correctness evidence in the frontend guide.
+
+The Linux binary SHA-256 is
+`318c9d31335b599302ce52304fe1c3c45dbe5b7cc56ccd6c7fe2f3ddbb3ef34d`.
+The seal SHA-256 is
+`fa7eb718e29dd8ea1b589eea535498776b48351c8439933c677894e07c42f103`.
+The complete result SHA-256 is
+`1624112441c8919bda333bbb6e3b0543c5ee5b813e4296e72094fe537333ec9a`.
+The sealed `attempt053-resource/runs/055-1e96a06481017ef52bf4f2b5d7414fc14a5a03c4`
+archive retains every case, request receipt and phase resource snapshot.
+
+### 2026-11-04 - Attempt 056: stop after enough rows pass a total projected filter
+
+The existing shortcut recognizes one CallSite projection and a single null
+test. The candidate applies the same cutoff to a single-tag scan when the
+projected values have infallible scalar reads, the predicate only uses those
+values and literals, and the final projection preserves them. Ordered,
+aggregated or distinct results and potentially failing expressions retain their
+normal execution path. One row predicate represents the chosen execution mode.
+The ordinary path specializes to an always-true function.
+
+Compare the integrated candidate against main `a5c96f71` using the fixed
+attempt 055 protocol. Run three pairs in AB / BA / AB order, using 64 real
+graphs in every request, all 73 query cases, complete response consumption and
+the frozen result oracle. For each case and arm collect 20 pressure samples at
+concurrency four, reporting nearest-rank p50 and p95 and every paired
+difference. Keep loading and full-mix CPU and peak RSS separate and apply the
+5% limit independently in each pair. The unit tests establish which additional
+query shapes qualify and that late errors remain visible.
+
+**Matched result and decision.** Retain the total-filter cutoff. All 10,074
+responses matched the oracle, including 8,760 pressure requests, and all six
+processes completed with zero OOM events. The table shows main and candidate
+milliseconds for the pair producing the median difference, followed by the
+range of differences across three pairs.
+
+| Query | p50 main → candidate (Δ [range]) | p95 main → candidate (Δ [range]) |
+|---|---:|---:|
+| shape-with-filter | 2805.548 → 0.354 (−2805.194 [−2828.787, −2799.565]) | 2990.572 → 3.195 (−2987.377 [−3046.153, −2958.032]) |
+| shape-order-by | 2367.064 → 1725.534 (−641.529 [−642.226, −630.295]) | 2480.463 → 1826.167 (−654.296 [−690.412, −641.356]) |
+| shape-order-by-desc | 2415.210 → 1753.723 (−661.487 [−696.312, −656.397]) | 2500.244 → 1822.670 (−677.575 [−687.992, −639.662]) |
+| shape-collect | 1793.378 → 1636.041 (−157.337 [−162.980, −134.893]) | 1865.743 → 1727.744 (−137.999 [−216.867, −88.977]) |
+| shape-with-aggregate | 673.969 → 509.657 (−164.313 [−181.208, −163.154]) | 779.099 → 624.658 (−154.441 [−168.588, −85.051]) |
+| shape-count-traversal | 129.140 → 79.744 (−49.396 [−50.102, −38.623]) | 173.282 → 128.120 (−45.162 [−61.119, −39.613]) |
+| schema-relationship-histogram | 123.488 → 86.344 (−37.143 [−42.981, −36.164]) | 136.354 → 114.813 (−21.541 [−64.825, −11.944]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 26.510 → 22.149 | 6223.059 → 3765.305 | 258.207 → 149.459 | 12179.086 → 6276.188 |
+| BA | 25.610 → 20.381 | 6212.898 → 3766.918 | 258.039 → 149.265 | 12221.352 → 6367.730 |
+| AB | 26.887 → 23.865 | 6210.828 → 3772.074 | 256.585 → 149.892 | 11902.461 → 6492.727 |
+
+All twelve loading and mixed-query CPU/RSS comparisons met their 5% limits.
+Load readiness improved by 2.797–5.072 s and the complete query mix by
+28.500–29.552 s. Across the catalog, 97 individual pair-percentile differences
+were positive. The largest positive median differences were 0.119 ms p50 and
+1.900 ms p95. The sample describes warm-cache loading and queries on the
+integrated candidate. It does not isolate how much each review change
+contributed. Tests on two-source fixtures separately checked the newly eligible
+Field, Parameter and Return queries, row provenance, pagination and late errors.
+
+Candidate `bd228a1a` produced binary SHA-256
+`ecd7f324b7b8ecaeff93fa4d3dd5fdfdd31e05f6a6303baf055513ca2fa94420`.
+The seal SHA-256 is
+`39dd017db58af2a0fc157307591d547c8f6173cc9a13ae537aa4dbe4880f04da`.
+The complete result SHA-256 is
+`bad0e43556e1558e099d117f09fad6c9eea5c5390e9bb722be30cd8651374366`.
+
+### 2026-11-04 - Attempt 057: check the representable CSR edge count during loading
+
+The loader computes forward row offsets from cumulative decoded edge counts.
+Its unsigned 32-bit offsets cannot represent a graph with more than
+4,294,967,295 edges. An unchecked cast could wrap and invalidate the reverse
+builder's monotonicity assumption. Check the declared count before reserving
+capacity, cap that reservation by the available labels, and check each decoded
+row boundary before appending it. This retains support for short label files
+and avoids an additional scan of the offset array.
+
+Boundary tests exercise the largest representable count and its successor
+without allocating a large graph. A persisted fixture checks inaccurate count
+hints and rejection of an oversized declaration. For the cumulative candidate,
+repeat the attempt 056 protocol against main `a5c96f71`: the same 64 pinned
+graphs in every request, 73 cases, three AB / BA / AB pairs, 20 pressure
+samples per case per arm at concurrency four, complete response consumption,
+and separate 5% CPU and peak RSS limits for loading and for the query mix.
+
+**Result.** All 10,074 requests matched their complete expected responses and
+all six server processes finished with zero OOM events. Per case and arm, p50
+and p95 are nearest ranks 10 and 19 of the 20 concurrent pressure samples.
+The table gives main and candidate milliseconds for the pair producing the
+median difference, followed by the full three-pair difference range.
+
+| Case | p50 A→B (Δ) [min,max] ms | p95 A→B (Δ) [min,max] ms |
+|---|---|---|
+| `shape-with-filter` | 2,884.846→0.373 / -2,884.473 [-2,919.972, -2,826.730] | 3,045.321→1.954 / -3,043.367 [-3,215.976, -2,984.762] |
+| `shape-order-by` | 2,376.472→1,750.321 / -626.151 [-676.400, -597.635] | 2,460.052→1,809.671 / -650.380 [-847.508, -578.892] |
+| `shape-order-by-desc` | 2,433.119→1,750.345 / -682.774 [-715.682, -643.892] | 2,512.744→1,824.170 / -688.575 [-936.364, -595.545] |
+| `shape-collect` | 1,793.113→1,681.790 / -111.323 [-186.751, -102.870] | 1,850.589→1,781.262 / -69.327 [-227.057, -41.842] |
+| `shape-with-aggregate` | 729.779→557.167 / -172.612 [-187.816, -168.318] | 768.979→596.845 / -172.133 [-261.017, -127.073] |
+| `shape-group-count` | 333.539→311.276 / -22.262 [-25.661, -21.415] | 361.727→338.863 / -22.864 [-50.501, -21.859] |
+| `shape-distinct` | 350.284→327.965 / -22.319 [-37.630, -21.386] | 396.729→354.224 / -42.505 [-119.781, -37.758] |
+| `shape-count-traversal` | 124.314→82.319 / -41.995 [-50.670, -37.934] | 162.802→93.506 / -69.296 [-91.175, -46.303] |
+| `schema-relationship-histogram` | 120.994→87.301 / -33.693 [-46.702, -29.422] | 157.048→107.817 / -49.231 [-72.613, -45.542] |
+
+| Pair | Phase | CPU s, A→B (Δ) | Kernel peak RSS MiB, A→B (Δ) |
+|---:|---|---:|---:|
+| 1 | loading | 26.458→23.520 (-11.105%) | 6,213.699→3,768.488 (-39.352%) |
+| 1 | query | 265.327→152.672 (-42.459%) | 12,381.410→6,169.207 (-50.174%) |
+| 2 | loading | 24.972→21.943 (-12.129%) | 6,223.125→3,777.137 (-39.305%) |
+| 2 | query | 262.224→152.031 (-42.023%) | 12,071.691→6,657.945 (-44.847%) |
+| 3 | loading | 26.093→22.948 (-12.054%) | 6,214.688→3,764.496 (-39.426%) |
+| 3 | query | 256.635→152.165 (-40.708%) | 12,127.629→6,425.008 (-47.022%) |
+
+All twelve CPU and peak RSS comparisons met their independent 5% bounds.
+Time to readiness fell by 2.873–3.078 s and the full query mix completed
+28.439–30.432 s sooner. All seven predeclared slow queries improved at both
+percentiles in each pair. Of the 73 cases, 11 had a positive paired median
+difference at p50 and 14 at p95. Five had higher p95 in all three pairs. The
+largest median p95 increase was 0.574 → 2.884 ms (+2.310 ms) on
+`targeted/global-wide-parameterized-as-literal`. The largest median p50
+increase was 1.338 → 2.080 ms (+0.742 ms). In total 97 of the 438 individual
+paired percentile differences were positive.
+
+Retain the CSR check for correctness. This warm-cache comparison measures the
+cumulative PR against main. It does not isolate the effect of the CSR check
+or establish equal or better latency for every query. The Linux executable
+from `e56c4ada` has SHA-256
+`0122ea5440f2969020feda5f83d0a80f64cd8fd813086bf49d27d8b6c6984db6`.
+The run seal is
+`b106f030611c857828ebb4aadfdd6dd09290a4d0dd2917004bf12a5eec6689ee`.
+The full result is
+`000613784af999ed7149446c343dbb8a1c7b35ff1695a1d8d545170668110f54`.

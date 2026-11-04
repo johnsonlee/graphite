@@ -22400,3 +22400,18 @@ Decision: the two missing evidence categories are now measured, but the candidat
 merge-ready. Native loading/query resources pass; real64 construction RSS fails, APK construction
 CPU fails in both orders, APK BA RSS fails, the large APK baseline preflight cannot complete under
 the fixed heap, and the previously reported order-by latency regressions remain unresolved.
+
+### 2026-11-04 — Attempt 135: reuse UTF-16 keys during interchange import
+
+The importer at `5510f1b9` converts both operands to UTF-16 on each sort
+comparison. The candidate caches one encoded key per unique string and uses
+those units both to assign IDs in Java comparison order and to write the
+serialized dictionary. It checks the single-segment limit before allocating
+a potentially oversized key. The cached keys are released before encoding
+the graph records.
+
+All 135 storage tests passed, including readback of an empty dictionary, a
+40,000-unit string and supplementary characters whose Java order differs from
+UTF-8 order. Strict storage Clippy passed. Retain the change for the simpler
+encoding path. The tests establish format correctness. They provide no
+latency, CPU or RSS measurement for construction.
