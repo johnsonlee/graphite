@@ -223,8 +223,21 @@ public enum ObjectiveCSyntax {
         }
 
         mutating func parseFile() {
+            var linkageDepth = 0
             while let token = peek() {
                 switch token.text {
+                // A linkage specification can wrap a whole public C header. Its
+                // braces group declarations, unlike function bodies and initializers.
+                case "extern" where peek(1)?.text == "\"C\"":
+                    advance()
+                    advance()
+                    if peek()?.text == "{" {
+                        advance()
+                        linkageDepth += 1
+                    }
+                case "}" where linkageDepth > 0:
+                    advance()
+                    linkageDepth -= 1
                 case "@interface", "@implementation", "@protocol": parseContainer()
                 default: parseCDeclaration()
                 }
@@ -359,7 +372,7 @@ public enum ObjectiveCSyntax {
                     }
                     sawBody = true
                     if tokens.contains(where: { $0.text == "struct" || $0.text == "union" }) {
-                        parseInstanceVariables()
+                        parseInstanceVariables(cDeclaration: true)
                     } else {
                         skipBalanced()
                     }
@@ -436,7 +449,7 @@ public enum ObjectiveCSyntax {
             facts.declarations[position] = SyntaxDeclaration(
                 position: position,
                 parameterTypes: parameterTypes(header.parameters),
-                returnType: spell(Array(returnTokens), assumeNonnull: assumeNonnull),
+                returnType: spell(Array(returnTokens), assumeNonnull: assumeNonnull, cDeclaration: true),
                 isStatic: true
             )
         }
@@ -453,10 +466,11 @@ public enum ObjectiveCSyntax {
                     if let split = Parser.splitDeclarator(parameter), !split.type.isEmpty { parameter = split.type }
                 } else if parameter.count >= 2, let last = parameter.last, last.kind == .identifier,
                           !Parser.cTypeKeywords.contains(last.text), Parser.nullabilityKeywords[last.text] == nil,
-                          parameter[parameter.count - 2].text != "." {
+                          parameter[parameter.count - 2].text != ".",
+                          parameter.dropLast().contains(where: { !Parser.cTypeModifiers.contains($0.text) }) {
                     parameter.removeLast()
                 }
-                return spell(parameter, assumeNonnull: assumeNonnull)
+                return spell(parameter, assumeNonnull: assumeNonnull, cDeclaration: true)
             }
         }
 
@@ -464,7 +478,7 @@ public enum ObjectiveCSyntax {
             let tokens = tokens.filter { !Parser.declarationSpecifiers.contains($0.text) }
             for (typeTokens, name) in Parser.declarators(of: tokens) {
                 let position = SourcePosition(path: path, line: name.line, column: name.column)
-                let type = spell(typeTokens, assumeNonnull: assumeNonnull)
+                let type = spell(typeTokens, assumeNonnull: assumeNonnull, cDeclaration: true)
                 facts.declarations[position] = SyntaxDeclaration(position: position, parameterTypes: [], returnType: type, isStatic: true)
             }
         }
@@ -625,7 +639,7 @@ public enum ObjectiveCSyntax {
         /// turn of the loop consumes at least one token or returns: a member marker
         /// (`-`, `+`, `@property`, `@end`) inside the block means the block was never
         /// closed, and the members are the container's.
-        mutating func parseInstanceVariables() {
+        mutating func parseInstanceVariables(cDeclaration: Bool = false) {
             advance()
             while let token = peek() {
                 switch token.text {
@@ -642,7 +656,7 @@ public enum ObjectiveCSyntax {
                     let before = index
                     for (typeTokens, name) in declarators(until: ";") {
                         let position = SourcePosition(path: path, line: name.line, column: name.column)
-                        let type = spell(typeTokens, assumeNonnull: assumeNonnull)
+                        let type = spell(typeTokens, assumeNonnull: assumeNonnull, cDeclaration: cDeclaration)
                         facts.declarations[position] = SyntaxDeclaration(position: position, parameterTypes: [], returnType: type, isStatic: false)
                     }
                     if index == before { advance() }
@@ -767,9 +781,18 @@ public enum ObjectiveCSyntax {
 
         static let pointerLikeNames: Set<String> = ["id", "instancetype", "Class", "SEL"]
 
+        static let cTypeModifiers: Set<String> = ["const", "volatile", "restrict", "__restrict", "__restrict__", "struct", "union", "enum"]
+
         /// The type the tokens spell, the way Clang prints it, with its nullability.
-        func spell(_ tokens: [Token], assumeNonnull: Bool, nullability explicit: String? = nil) -> String {
+        func spell(_ tokens: [Token], assumeNonnull: Bool, nullability explicit: String? = nil, cDeclaration: Bool = false) -> String {
             var words: [String] = []
+            // A C typedef can look like an export attribute. Keep its spelling when
+            // it is the only base type, as in "const WEBP_CSP_MODE *".
+            let baseNames = cDeclaration ? tokens.prefix { !["(", "[", "*", "^", "<"].contains($0.text) }.filter {
+                $0.kind == .identifier && !Parser.cTypeModifiers.contains($0.text)
+                    && !Parser.declarationSpecifiers.contains($0.text) && Parser.nullabilityKeywords[$0.text] == nil
+            } : []
+            let baseName = baseNames.count == 1 ? baseNames.first : nil
             var nullability = explicit
             var inlineNullability = false
             var skipGroup = false
@@ -805,7 +828,7 @@ public enum ObjectiveCSyntax {
                     skipGroup = true
                     continue
                 }
-                if Parser.isMarkerMacro(token.text) {
+                if Parser.isMarkerMacro(token.text), token != baseName {
                     // `UIKIT_EXTERN`, `CF_RETURNS_RETAINED`: a marker, with its arguments when it has any.
                     if let next = tokens.firstIndex(where: { $0 == token }), next + 1 < tokens.count, tokens[next + 1].text == "(" { skipGroup = true }
                     continue
@@ -816,7 +839,11 @@ public enum ObjectiveCSyntax {
                 }
                 words.append(token.text)
             }
-            if words.isEmpty { words = ["id"] }
+            if words.isEmpty {
+                // Objective-C allows an implicit object type; C has no such default.
+                if cDeclaration { return "" }
+                words = ["id"]
+            }
             var text = ""
             var previous = ""
             for word in words {

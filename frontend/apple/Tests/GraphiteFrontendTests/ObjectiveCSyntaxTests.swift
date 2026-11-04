@@ -123,6 +123,50 @@ final class ObjectiveCSyntaxTests: XCTestCase {
         "\(declaration.isStatic ? "+" : "-")(\(declaration.returnType ?? "?"))\(declaration.parameterTypes)"
     }
 
+    func testCLinkageGroupsContainDeclarationsRatherThanAnOpaqueBody() throws {
+        let path = "/src/Stream.h"
+        let source = """
+        #ifdef __cplusplus
+        extern "C" {
+        #endif
+        typedef enum { MODE_RGB = 0 } COLOR_MODE;
+        typedef struct Stream {
+            const uint8_t *bytes;
+            size_t length;
+            COLOR_MODE colorspace;
+        } Stream;
+        static inline int isRGB(const COLOR_MODE mode) { return mode == MODE_RGB; }
+        void use_mode(const COLOR_MODE, const COLOR_MODE *value);
+        int32_t stream_read(void *stream, uint16_t *value);
+        extern "C" { extern const int defaultMode; }
+        static inline int helper(void) {
+            const char *local = "C";
+            return local[0];
+        }
+        #ifdef __cplusplus
+        }
+        #endif
+        extern "C" unsigned long after(void);
+        int outside;
+        """
+        let facts = ObjectiveCSyntax.parse(source: source, path: path)
+        func at(_ name: String) throws -> String {
+            describe(try declaration(facts, name, in: source, path: path))
+        }
+        XCTAssertEqual(try at("bytes"), "-(const uint8_t *)[]")
+        XCTAssertEqual(try at("length"), "-(size_t)[]")
+        XCTAssertEqual(try at("colorspace"), "-(COLOR_MODE)[]")
+        XCTAssertEqual(try at("isRGB"), "+(int)[\"const COLOR_MODE\"]")
+        XCTAssertEqual(try at("use_mode"), "+(void)[\"const COLOR_MODE\", \"const COLOR_MODE *\"]")
+        XCTAssertEqual(try at("stream_read"), "+(int32_t)[\"void *\", \"uint16_t *\"]")
+        XCTAssertEqual(try at("defaultMode"), "+(const int)[]")
+        XCTAssertEqual(try at("helper"), "+(int)[]")
+        XCTAssertEqual(try at("after"), "+(unsigned long)[]")
+        XCTAssertEqual(try at("outside"), "+(int)[]")
+        XCTAssertNil(facts.declarations[Self.position(of: "local", in: source, path: path)])
+        XCTAssertEqual(facts.declarations.count, 10)
+    }
+
     func testHeaderDeclarations() throws {
         let path = "/src/LegacyStore.h"
         let source = Self.header
