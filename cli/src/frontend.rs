@@ -16,13 +16,15 @@ pub(crate) enum Lang {
     Js,
 }
 
+const JS_ALIASES: &[&str] = &["javascript", "ts", "typescript", "es"];
+
 impl Lang {
     pub(crate) fn parse(value: &str) -> Result<Self, String> {
         match value {
             "jvm" => Ok(Self::Jvm),
-            "js" | "javascript" | "ts" | "typescript" => Ok(Self::Js),
+            name if name == "js" || JS_ALIASES.contains(&name) => Ok(Self::Js),
             _ => Err(format!(
-                "unknown frontend '{value}'; available: jvm, js (alias: ts)"
+                "unknown frontend '{value}'; available: jvm, js (aliases: ts, es)"
             )),
         }
     }
@@ -417,7 +419,7 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
         },
     );
     if frontend.lang == "js" {
-        m.insert("aliases".into(), json!(["javascript", "ts", "typescript"]));
+        m.insert("aliases".into(), json!(JS_ALIASES));
         m.insert("ir_schema".into(), json!(["graphite-graph-v1"]));
         m.insert("writes".into(), json!("graph-json"));
     } else {

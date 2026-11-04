@@ -12,6 +12,7 @@ import tempfile
 from threading import Thread
 
 ARCHIVE = "graphite-frontend-js.tgz"
+SELECTORS = ("js", "ts", "es")
 
 
 def check(root, cli, assets, version):
@@ -60,7 +61,7 @@ def check(root, cli, assets, version):
         thread = Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
-            for selector in ("js", "ts"):
+            for selector in SELECTORS:
                 home = root / selector
                 home.mkdir()
                 (home / ".curlrc").write_text(
@@ -74,15 +75,16 @@ def check(root, cli, assets, version):
                     run(home, "frontend", "describe", selector, success=False)
                     shutil.copyfile(assets / archive.name, archive)
                 run(home, "frontend", "install", selector)
-                for alias in ("js", "ts"):
+                for alias in SELECTORS:
                     info = json.loads(run(home, "frontend", "describe", alias).stdout)
+                    assert "es" in info["aliases"], info
                     assert info["version"] == version and info["kind"] == "node", info
                     assert Path(info["path"]).is_relative_to(home / ".graphite/frontends/js" / version), info
         finally:
             server.shutdown()
             thread.join()
 
-    for selector in ("js", "ts"):
+    for selector in SELECTORS:
         home = root / selector
         graph = f"{selector}.graphite"
         run(home, "build", "--lang", selector, "app.mjs", "-o", graph, path=runtime)

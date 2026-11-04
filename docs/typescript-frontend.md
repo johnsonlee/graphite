@@ -18,7 +18,7 @@ runs project build scripts nor installs target dependencies. The directory scan
 includes `dist/cache` and `.next/server/app/cache`, and skips `.next/cache`,
 `node_modules` and `.git`. Source `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx` files
 and `tsconfig.json` are rejected with a
-compile-first message. The `ts` selector is an alias for artifact analysis,
+compile-first message. The `ts` and `es` selectors are aliases for artifact analysis,
 not a request to parse TypeScript source.
 
 ## Install, build and query
@@ -39,12 +39,12 @@ graphite query /tmp/project.graphite \
 graphite serve --graph project:/tmp/project.graphite
 ```
 
-Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `ts` and
+Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `es`, `ts` and
 `typescript` select the same frontend. With no selector, the existing JVM build
 path is preserved. Discovery uses `GRAPHITE_FRONTEND_JS`, then its compatibility
 alias `GRAPHITE_FRONTEND_TS`, then `graphite-frontend-js` or
 `graphite-frontend-ts` on `PATH`, then the highest installed release version under
-`~/.graphite/frontends/js/`. `graphite frontend install ts` uses that same
+`~/.graphite/frontends/js/`. `graphite frontend install ts` and `graphite frontend install es` use that same
 installation. For an unversioned development CLI, pass the release version
 explicitly with `graphite frontend install js --version <version>`.
 `GRAPHITE_NODE` selects the Node executable for a JavaScript entry

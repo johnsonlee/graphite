@@ -70,7 +70,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build CLI
       run: cargo build --release --locked -p graphite-cli
-    - name: Package and install both frontend names in clean homes
+    - name: Package and install the JS, TS and ES selectors in clean homes
       run: |
         RELEASE_VERSION="$GRAPHITE_VERSION" npm run package:release --prefix frontend/web
         python3 .github/scripts/check-js-frontend-install.py --cli target/release/graphite \

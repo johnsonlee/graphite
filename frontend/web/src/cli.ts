@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { analyze, UsageError } from './analyzer.js';
 import { writeInterchange } from './interchange.js';
 
-const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts language selector is an alias for compiled-JavaScript analysis.\nNode.js 20 or newer is required.\n`;
+const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts and es language selectors are aliases for compiled-JavaScript analysis.\nNode.js 20 or newer is required.\n`;
 function printInfo(arg: string | undefined): boolean {
   if (arg === '--help' || arg === '-h') process.stdout.write(help);
   else if (arg === '--version' || arg === '-V') console.log(`graphite ${JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version}`);

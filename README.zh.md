@@ -95,7 +95,7 @@ Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进
 
 JVM 前端支持读取 JVM 和 Android 产物。构建这些图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
 
-**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。分析需要 Node.js 20 或更新版本。使用当前 Graphite 发行版的 CLI 安装前端后，即可建图和查询。
+**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 和 `--lang es` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。分析需要 Node.js 20 或更新版本。使用当前 Graphite 发行版的 CLI 安装前端后，即可建图和查询。
 
 ```bash
 graphite frontend install js
@@ -106,7 +106,7 @@ graphite query /tmp/project.graphite \
   --format json
 ```
 
-分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 安装相同的包，其中已包含 TypeScript 解析器及其标准库声明。
+分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 和 `graphite frontend install es` 安装相同的包，其中已包含 TypeScript 解析器及其标准库声明。
 
 **开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
 

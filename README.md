@@ -145,7 +145,7 @@ can be analyzed without their source checkout.
 
 The **JavaScript artifact frontend** accepts emitted `.js`, `.mjs` and `.cjs`
 files or a compiled artifact directory such as `.next`, `dist` or `build` via
-`graphite build --lang js` (`--lang ts` is an alias). A single-file entry follows
+`graphite build --lang js` (`ts` and `es` are aliases). A single-file entry follows
 resolved JavaScript dependencies under its parent directory. Pass a directory
 to include unrelated entries as well. Compile the target project first with its
 own build tools. With Node.js 20+ on `PATH`, install the frontend once for your
@@ -157,7 +157,7 @@ graphite build --lang js ./dist -o project.graphite
 graphite verify project.graphite
 ```
 
-`graphite frontend install ts` installs the same package. The package includes
+`graphite frontend install ts` and `graphite frontend install es` install the same package. The package includes
 the TypeScript parser and its standard library declarations. Saved graphs use
 the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
 See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).

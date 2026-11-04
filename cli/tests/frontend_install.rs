@@ -8,7 +8,7 @@ fn all_js_install_aliases_share_one_versioned_install() {
         .join(".graphite/frontends/js/2.6.0/package/dist/cli.js");
     std::fs::create_dir_all(entry.parent().unwrap()).unwrap();
     std::fs::write(&entry, "// installed frontend").unwrap();
-    for alias in ["js", "ts", "javascript", "typescript"] {
+    for alias in ["js", "ts", "javascript", "typescript", "es"] {
         let output = Command::new(env!("CARGO_BIN_EXE_graphite"))
             .args(["frontend", "install", alias, "--version", "v2.6.0"])
             .env("HOME", home.path())
