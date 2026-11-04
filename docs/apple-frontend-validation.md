@@ -5,8 +5,14 @@
 The production reader now enumerates distinct compiler records when a selected
 physical Swift source was compiled in multiple contexts. It retains each module's
 USRs and includes the caller and module when deduplicating call occurrences.
-Single-record Swift and non-Swift inputs keep the existing IndexStoreDB occurrence
-path. Record failures throw rather than silently returning a first-provider graph.
+Nonempty single-record Swift and non-Swift inputs keep the existing IndexStoreDB
+occurrence path. When that path returns no Swift occurrences but the unit references
+a record, the frontend reads the compiler record to distinguish a legitimately empty
+source from an unreadable record. Missing or damaged records fail before replacing
+IR even when other files have valid occurrences. A compiler-built regression verifies
+both failures preserve the existing valid IR, while empty and import-only files
+remain supported. Multiple-record failures also throw rather than silently returning
+a first-provider graph.
 Position-based attribute emission also retains each distinct declaration owner.
 
 A real compiler-built fixture uses two targets compiling a symlinked source in two
@@ -14,10 +20,24 @@ fresh checkout roots. Both graphs contain the two module-qualified types, fields
 attributes and callers of the same callee at the same physical source position;
 repeated path aliases do not duplicate them. The fixture checks that each module's
 formal parameter and direct returned call stay attached to that module's method.
-The complete [81-test Swift run](apple-frontend-evidence/2026-11-05/graphite-flow-multimodule-full-tests.log)
-passes, including selected resources from the real Signal bundle. Independent
-all-record validation on the pinned Linux SwiftPM corpus remains pending; the
-historical baseline pins remain unchanged.
+The complete [82-test Swift run](apple-frontend-evidence/2026-11-05/graphite-record-integrity-full-tests.log)
+passes, including selected resources from the real Signal bundle. The
+[independent Linux all-record run](apple-frontend-evidence/2026-11-05/shared-source-union-verification.json)
+at `eae18212` passes in two fresh checkout roots using the fixed Swift 6.1.3 image,
+source revision and dependency lock. Both roots select 482 files and preserve all
+39,467 occurrence/relation USRs from the independent compiler-record reader. Their
+normalized raw compiler facts and full models agree; all six saved-graph owner
+queries return exactly one result. An independent
+[whole-IR comparison](apple-frontend-evidence/2026-11-05/shared-source-root-semantic-comparison.json)
+confirms every byte after the header chunk is identical, with 62,716 nodes, 30,439
+edges and 21,450 strings. All metadata and the 1,055 `ASSIGN` and 376 `RETURN_VALUE`
+edges match, including owner and argument-slot checks. Only the two declared
+physical-root values in the header differ. Historical baseline pins remain unchanged. A separate
+[macOS real-SwiftPM check](apple-frontend-evidence/2026-11-05/swiftpm-local-index-union.json)
+compares 483 selected files and exactly 39,677 occurrence/relation USRs against an
+independent Python reader of libIndexStore. The three shared files' type definitions
+and explicit caller/callee tuples match individually. This single existing checkout
+check does not substitute for the fresh dual-root Linux validation.
 
 Supported Swift bodies now emit `Parameter` → existing argument-reference `ASSIGN`
 edges and direct-call → `Return` `RETURN_VALUE` edges. Existing argument nodes,
@@ -41,7 +61,32 @@ checks `OWSLocalizedString.swift:26` through IR, production import, mapped reloa
 native queries: four formals bind only slots 0, 1, 3 and 4; slot 2 `.main.app` stays
 unknown; all five original argument references survive; the direct call returns to
 the wrapper's return endpoint. The actual English resource is queryable, and no
-resource lookup relationship is invented. These are correctness checks only.
+resource lookup relationship is invented. The latest complete saved graph also
+passes [HTTP serving checks](apple-frontend-evidence/2026-11-05/signal-flow-http-verification.json):
+two fully consumed scoped queries return the exact English resource value and the
+wrapper's direct-call return owner; each reports exactly one result. The server was
+stopped after validation. The later record-integrity release (`4d1ec27b…`) repeated
+the full Signal directory build and produced a byte-identical 78,283,195-byte graph,
+with SHA-256 `6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d`.
+Its [independent identity and 19-entry verification](apple-frontend-evidence/2026-11-05/signal-record-integrity-verification.json)
+links the unchanged graph and CLI to the prior exact query and HTTP results; those
+queries are not counted as new executions. These are correctness checks only.
+
+The SwiftFormat candidate correctness pin now reflects the hosted Linux graph's
+277 additional `Parameter` and 73 `Return` nodes. The independent
+[pre-flow semantic comparison](apple-frontend-evidence/2026-11-05/swiftformat-flow-comparison.json)
+on macOS preserves all 32,543 pre-flow nodes, 14,661 edges, metadata, strings and
+ordered argument slots, and verifies every additional edge's owner and slot.
+[Provenance](apple-frontend-evidence/2026-11-05/swiftformat-flow-provenance.json)
+keeps the platform-specific counts separate: Linux adds 350 nodes and 208 edges;
+macOS adds 344 nodes and 202 edges. The latter does not substitute for the hosted
+shape. The earlier `332c0d8` baseline also has legitimate private-owner and return
+signature differences; a separate
+[compiler-backed proof](apple-frontend-evidence/2026-11-05/swiftformat-compiler-correction-proof.json)
+accounts for those corrections instead of treating its strict comparison as an
+unchanged graph. Candidate SwiftPM and SwiftFormat pins were updated only after
+these correctness checks. Baseline pins and performance limits remain fixed;
+these transitions do not establish performance acceptance.
 
 ## Selected bundle resources and indexed method anchors (2026-11-05)
 
@@ -74,8 +119,8 @@ The [four exact assertions](apple-frontend-evidence/2026-11-05/objc-method-ancho
 cover `_dateWithMSDOSFormat:`, `_gregorian`, `zipInfo:setAttributesOfItemAtPath:` and
 `zipInfo:setDate:`. The older inventories below remain historical observations.
 
-Current local checks pass 75 Swift tests (including the real Signal bundle), 56 CLI
-tests and CLI Clippy. These construction and resource checks are correctness-only,
+At the resource-inventory milestone, local checks passed 75 Swift tests (including
+the real Signal bundle), 56 CLI tests and CLI Clippy. These construction and resource checks are correctness-only,
 not performance measurements. The unresolved baseline index/shape mismatch remains
 under a separate manually enabled correctness investigation described below; no pin
 or threshold is bypassed.
@@ -118,8 +163,10 @@ but select different module contexts for those three files, producing the 21,459
 versus 21,430 string counts. All 91 side-only strings have semantic references;
 this is missing module information rather than unused-string noise. The
 [decoded evidence](apple-frontend-evidence/2026-11-05/shared-source-baseline-analysis.json)
-retains both results. The production repair and independent all-record validation
-are in progress; no pin or threshold has been relaxed.
+retains both results. The production repair now passes the independent all-record validation above.
+The historical `0818c68e` reference still emits only one provider and can fail its
+old string-count pin; candidate correctness does not waive that baseline failure.
+No historical baseline pin or performance threshold has been relaxed.
 
 This follow-up addresses dispatch, output-directory, SwiftPM indexing/header discovery,
 real-source signature, cross-language query, and release-artifact verification gaps

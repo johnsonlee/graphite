@@ -73,11 +73,16 @@ require `--scheme`. Simulator builds avoid requiring a signing identity.
 
 The DerivedData must belong to the same source checkout and intended build. Index
 records contain source paths; copying a checkout without rebuilding does not update
-those records. When none of the selected source files has indexed occurrences, the
+those records. Use separate fresh DerivedData when changing schemes or build
+configurations: a reused store can retain compilation contexts from earlier builds,
+and the frontend preserves the contexts present in that store. When none of the selected source files has indexed occurrences, the
 frontend fails before creating or replacing the IR. Check the checkout, scheme,
 configuration and DerivedData path, then rebuild. Sources excluded from a target
 need not all have occurrences; a declaration-only graph can legitimately have no
-call-site nodes.
+call-site nodes. If a compiler unit references a selected Swift source's missing or
+damaged record, the build also fails before replacing the IR; rebuild the affected
+DerivedData. Legitimately empty or import-only source files do not cause that
+failure.
 
 ## Inventory a selected built application's resources
 

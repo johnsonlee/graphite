@@ -1,0 +1,168 @@
+{
+  "artifactId": 13354988727,
+  "artifactZipSha256": "ea0b4c4f659d4e1f96461221bed664d652a188675fad5fa30fd1ce2fc072b270",
+  "artifacts": "/Users/johnsonlee/.codex/benchmarks/apple-validation/apple-index-union-41891850641",
+  "commit": "eae182125e42cc14c024da9a320e8f98397fdd09",
+  "inputs": {
+    "frontend": "91861f11214e2c383466d3c874395de8a6fbe6674689e7f80f70c3a35426078a",
+    "jar": "a2b85b853106f1bdba212c3856b1d1ad7c7a253e8ccbc6727a45c8ad3110d066",
+    "manifest": "b1cebc33015899591f979898cc1821bf506acb0187dc1ad98adbb1543213a378",
+    "model": "dfeb62461d311564b191d473e4bfd5ea1089f8a32b6eaf2fd51c70a0774a596b"
+  },
+  "normalizedDifferences": {},
+  "passed": true,
+  "purpose": "Independent correctness-only fresh dual-root SwiftPM verification. No timing or resource measurements.",
+  "roots": {
+    "temp": {
+      "artifactSha256": {
+        "frontend.log": "10d9b1c0697dcf54b4e1154ede8a98f33fbc15bea6dc3f4186ba62d628744ba3",
+        "model.json": "ef7c0157e6b5ac33e052315129ddaf732da9b8d18194b4e935fe6dcffda791a0",
+        "oracle-occurrences.jsonl": "53fad8929c74670784856c879fe907c75c799f525e3d4b249ca20cdbe9b67d1f",
+        "oracle-records.json": "d3841f132f5d0f51a2d13d1667727335ddc6bf49567b9c2ce128ba15d76d94a3",
+        "oracle.json": "d2fd44f705691f32ce0c924815498ea3a949b88086dfbe4cdeb809999828f950",
+        "shared-models.json": "4b4b3c655708ba010d23157f91d80b997f7d98e6c2d3fae24a1b0d6b92134294"
+      },
+      "distinctUSRs": 39467,
+      "files": 482,
+      "observation": {
+        "irSha256": "bf6b798a8636239b110555dc8ae89fb623a2b65cfeec94b357da06ca21233b76",
+        "librarySha256": "29fa355a47106b490d557ae30fc599b51066c5bceb9cf4d8c49c52c074f87696",
+        "methods": 4558,
+        "ownerQueries": {
+          "context-PackageDescription": 1,
+          "context-PackageLoading": 1,
+          "plugin-PackagePlugin": 1,
+          "plugin-SPMBuildCore": 1,
+          "serialization-PackageDescription": 1,
+          "serialization-PackageLoading": 1
+        },
+        "shape": {
+          "annotations": 913,
+          "callSites": 25152,
+          "constants": 3435,
+          "edges": 30439,
+          "fields": 5497,
+          "files": 482,
+          "methods": 4604,
+          "nodes": 62716,
+          "strings": 21450,
+          "types": 1832
+        }
+      },
+      "oracleModelDifferences": {},
+      "shared": {
+        "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+          "calls": 0,
+          "members": 308,
+          "types": 76
+        },
+        "Sources/PackageLoading/ContextModel.swift": {
+          "calls": 26,
+          "members": 18,
+          "types": 8
+        },
+        "Sources/PackagePlugin/PluginMessages.swift": {
+          "calls": 0,
+          "members": 266,
+          "types": 78
+        }
+      },
+      "source": {
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyRevisions": {
+          "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+          "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+          "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+          "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+          "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+          "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+          "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+          "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+          "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+          "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+          "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+          "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+        },
+        "lockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+        "root": "/__w/_temp/corpus",
+        "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+      }
+    },
+    "workspace": {
+      "artifactSha256": {
+        "frontend.log": "e557c593726a16950f09258a2dffe78c549c8083f578c7e15248661cd8aeaff7",
+        "model.json": "ef7c0157e6b5ac33e052315129ddaf732da9b8d18194b4e935fe6dcffda791a0",
+        "oracle-occurrences.jsonl": "53fad8929c74670784856c879fe907c75c799f525e3d4b249ca20cdbe9b67d1f",
+        "oracle-records.json": "d3841f132f5d0f51a2d13d1667727335ddc6bf49567b9c2ce128ba15d76d94a3",
+        "oracle.json": "d2fd44f705691f32ce0c924815498ea3a949b88086dfbe4cdeb809999828f950",
+        "shared-models.json": "4b4b3c655708ba010d23157f91d80b997f7d98e6c2d3fae24a1b0d6b92134294"
+      },
+      "distinctUSRs": 39467,
+      "files": 482,
+      "observation": {
+        "irSha256": "c3bcce496693edaae81681c905e9e0abddbe231c9b7a263c4aa8ff324f99ec29",
+        "librarySha256": "29fa355a47106b490d557ae30fc599b51066c5bceb9cf4d8c49c52c074f87696",
+        "methods": 4558,
+        "ownerQueries": {
+          "context-PackageDescription": 1,
+          "context-PackageLoading": 1,
+          "plugin-PackagePlugin": 1,
+          "plugin-SPMBuildCore": 1,
+          "serialization-PackageDescription": 1,
+          "serialization-PackageLoading": 1
+        },
+        "shape": {
+          "annotations": 913,
+          "callSites": 25152,
+          "constants": 3435,
+          "edges": 30439,
+          "fields": 5497,
+          "files": 482,
+          "methods": 4604,
+          "nodes": 62716,
+          "strings": 21450,
+          "types": 1832
+        }
+      },
+      "oracleModelDifferences": {},
+      "shared": {
+        "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+          "calls": 0,
+          "members": 308,
+          "types": 76
+        },
+        "Sources/PackageLoading/ContextModel.swift": {
+          "calls": 26,
+          "members": 18,
+          "types": 8
+        },
+        "Sources/PackagePlugin/PluginMessages.swift": {
+          "calls": 0,
+          "members": 266,
+          "types": 78
+        }
+      },
+      "source": {
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyRevisions": {
+          "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+          "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+          "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+          "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+          "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+          "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+          "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+          "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+          "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+          "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+          "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+          "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+        },
+        "lockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+        "root": "/__w/graphite/graphite/corpus",
+        "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+      }
+    }
+  },
+  "run": "https://github.com/johnsonlee/graphite/actions/runs/41891850641"
+}

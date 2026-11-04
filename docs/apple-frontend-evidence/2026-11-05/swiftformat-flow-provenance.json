@@ -1,0 +1,123 @@
+{
+  "scope": "SwiftFormat semantic correctness. Hosted counts are not interchangeable with local macOS compiler-index counts.",
+  "hosted": {
+    "base": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "candidate": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32880,
+      "edges": 14863,
+      "strings": 7173,
+      "sourceDataflow": {
+        "parameters": 277,
+        "directCallReturns": 73
+      }
+    },
+    "delta": {
+      "nodes": 350,
+      "edges": 208,
+      "strings": 0
+    },
+    "baseRevision": "0818c68ecd084e14e80a978f7940c6d9d03e1a9a",
+    "candidateRevision": "eae182125e42cc14c024da9a320e8f98397fdd09",
+    "platform": "Hosted Linux x64 swift:6.1",
+    "artifactId": 13353398409,
+    "runId": 41891824626,
+    "url": "https://github.com/johnsonlee/graphite/actions/runs/41891824626/artifacts/13353398409",
+    "artifactSha256": "724f89e93e49f0ca6210e719d6c8b68d35e7e7d2286d9e22d3381be360d4ba63",
+    "boundary": "Aggregate counts and declared flow counts only. Artifact contains no IR. Hosted edge delta is not independently attributed by kind."
+  },
+  "local": {
+    "platform": "macOS 14.3 23D56 arm64",
+    "swiftVersion": "Apple Swift version 6.1.3 (swift-6.1.3-RELEASE), target arm64-apple-macosx14.0",
+    "corpusUrl": "https://github.com/nicklockwood/SwiftFormat.git",
+    "corpusCommit": "173d2cb252474cd8e8baeaf13636f5d565408ec9",
+    "corpusTree": "44c78c63d08b069a33d008bf33db64de407c2eef",
+    "corpusSelectedFileDigests": "compiler-correction-proof.json#sourceTreeSha256",
+    "index": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftformat-flow-audit-2026-11-05/corpus/.build/debug/index/store",
+    "toolchain": "/Users/johnsonlee/Library/Developer/Toolchains/swift-6.1.3-RELEASE.xctoolchain",
+    "libIndexStoreSHA256": "a7021e6a8ac74c3e1f19e65f44ca20b98fca513ad71f7d471c65cbacf3438053",
+    "binaries": {
+      "base": {
+        "archivedBinary": "bin/base",
+        "sha256": "d3c760ed4e38bcf6111ab62faedaac7fb0a3a2d7030023204c25794496537082",
+        "revision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "ir": "base.ir",
+        "irSHA256": "f8869960bead43a600e391cd9837cf305f4aa2f209228981c6adb626febfcddb",
+        "provenance": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pre-measurement-environment.json",
+        "buildLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/base-frontend-build.log",
+        "revisionAlias": "0818c68ecd084e14e80a978f7940c6d9d03e1a9a",
+        "aliasEvidence": "The actual binary is the historical 332c0d8 build. Source equivalence only: both commits have exactly this frontend/apple tree.",
+        "frontendTree": "1deb1cade3b2a13bef8af3cd6d9c57a42d6fece4"
+      },
+      "pre-flow": {
+        "archivedBinary": "bin/pre-flow",
+        "sha256": "f59439a148560bc1e0f0cddc80cf133d2a607ce4c6e25cf09c08c58768822923",
+        "revision": null,
+        "ir": "pre-flow.ir",
+        "irSHA256": "8fd33b4047d055fae5564244352559a90f2350dc33996ba071b40805d334fa89",
+        "provenance": "docs/apple-frontend-evidence/2026-11-05/resource-summary.json",
+        "invocation": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-resources-v3-safe-e2e/invocation.json",
+        "scope": "Historical resource checkpoint identified by executable SHA, before basic source dataflow. Used exclusively for change attribution."
+      },
+      "candidate": {
+        "archivedBinary": "bin/candidate",
+        "sha256": "4d1ec27b902fab6b5c59360ebc8c6dd742245a1ec7361c8a1c4920fcd885fa0a",
+        "revision": "39643c11173b56fb7ddd54e93ece8510d8dff85d",
+        "ir": "candidate.ir",
+        "irSHA256": "0ef968877350dc8b8adaa037b282a24525c14ee64b4ec2c3e05300513610d2cd",
+        "frontendTree": "b6d1bab403dabdf1633df76e5fcd361fe9caa591"
+      }
+    }
+  },
+  "reproduction": {
+    "command": "bash \"/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftformat-flow-audit-2026-11-05/reproduce-correctness.sh\" \"/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftformat-flow-audit-2026-11-05\" \"/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftformat-flow-audit-2026-11-05-repro\" \"/Users/johnsonlee/.codex/worktrees/19db/graphite\"",
+    "pythonProtobuf": "5.28.3",
+    "protoc": "4.28.3",
+    "graphiteSchemaSHA256": "98e8d38d55c33c0bfa1379f2351cc81d68d9561b1e673d507aca4d3b7ecb45b7",
+    "compilerOracle": "backend/bench/apple-index-oracle.py",
+    "compilerOracleSHA256": "913f244f7fc280bffd397222b3a6b320fd7fc171f0338eeb4102a602d6b25cd7"
+  },
+  "localResults": {
+    "preFlowVsCurrent": "pre-flow-comparison.json: strict preservation passed (all 7 checks), +277 Parameter, +67 Return, +135 ASSIGN, +67 RETURN_VALUE.",
+    "originalVsCurrent": "semantic-comparison.json: strict preservation failed: private-owner and deinit signature corrections. compiler-correction-proof.json verifies corrected descriptors against true compiler USRs/demangles, retains all 14661 original PARAMETER_PASS edges and argument slots.",
+    "correctedInstances": {
+      "field": 67,
+      "method": 5,
+      "local_variable": 383,
+      "call_site": 654
+    },
+    "localDelta": {
+      "nodes": 344,
+      "edges": 202,
+      "strings": 0
+    }
+  },
+  "fileSha256": {
+    "verify-flow-ir.py": "3627fb3ae7324e4cb485d119e4ac4d5d0254e64510890dc05d592a2d06e27a84",
+    "verify-corrections.py": "72868a1717a21a29af660ca96228decf00627f7babe563646555a746befdc9e5",
+    "characterize.py": "8cd350d7d770105427cda52bc148d16af7c457653f8eb93b1a537e75321c2ba5",
+    "graphite_ir_pb2.py": "83768076e13126e9e3939baa8e8b8a604fa1bcf9655d1739fc744ef97dfb2ba2",
+    "reproduce-correctness.sh": "3e2404da4824b3ad7f248e9ade73c941bdeb82d95e26ecf9d8245b6633157fab",
+    "pre-flow-comparison.json": "107b490672d88374b9c28eb7522ce75c0ccd09ada99389cdddd9534a95838f33",
+    "semantic-comparison.json": "8fe18329544f7e37811168fac42902ff22663e6710fdbe114eda1104e5236e06",
+    "semantic-leaf-changes.json": "d745bef0e4110806707852d5d34a512f075ad3c91fcd76a1094f39c4d4dbfccb",
+    "compiler-correction-proof.json": "d4d2321edaa8ad458a7480eb0fa50147e2a2ef356fd938dfb252877728eda036"
+  }
+}
