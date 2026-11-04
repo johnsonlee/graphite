@@ -22400,3 +22400,112 @@ Decision: the two missing evidence categories are now measured, but the candidat
 merge-ready. Native loading/query resources pass; real64 construction RSS fails, APK construction
 CPU fails in both orders, APK BA RSS fails, the large APK baseline preflight cannot complete under
 the fixed heap, and the previously reported order-by latency regressions remain unresolved.
+
+### Attempt157 — stream total WITH projections and filters before the final LIMIT (2026-11-05)
+
+**Predeclared hypothesis and protocol.** The current native `shape-with-filter` materializes
+every CallSite projection before applying the WITH predicate and final LIMIT. Stream consecutive
+non-aggregating, non-distinct WITH projections and predicates into the final RETURN, counting
+only surviving rows toward SKIP/LIMIT and the server's extra-row probe. Admit only expressions
+proved total; retain the eager fallback for potentially failing expressions, declarations,
+OPTIONAL, ordering and aggregations so late errors remain observable.
+
+The cumulative baseline is `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. Reuse the saved real64
+JAR graphs from the verified PR191 construction (Android-all, Tika, Hive and Kotlin compiler,
+16 distinct shards each, including declared-type sidecars). Product construction is unchanged;
+do not rebuild these inputs on every query iteration. A fast multi-graph correctness handoff
+must precede pressure measurement. Run module correctness and lint before performance acceptance.
+
+Use the baseline's trusted Rust native controller, its unchanged 73-case catalog and complete
+HTTP-body consumption boundary: one first-use oracle, two warmups, twenty measured requests
+per case at four closed-loop workers, plus its fixed forty-request isolated diagnostic stage
+when pressure p50 is below 100 ms. Report each case's nearest-rank p50/p95 separately, retain
+all original samples/failures, and keep first-use and warm pressure observations separate.
+Run baseline/candidate then candidate/baseline on the same host, with one server resident at a
+time. Independently sample each server's loading and query-window CPU and peak RSS; each resource
+must satisfy the existing +5% ceiling independently. No JVM heap increase, timing threshold
+relaxation, single-graph performance substitute or saturation/throughput claim is authorized.
+Record background host activity and uncertainty rather than discarding unfavorable samples.
+
+The declaration above preceded implementation and measurement; corrected results and the
+retention decision are recorded below. It does not itself establish performance acceptance.
+
+**First diagnostic and feedback repair.** Candidate
+`e2fe6238936a2a950eb50c36e5080370e3a77df5` passed 232 Cypher library tests using the real
+core correctness fixture, module/all-target Clippy, formatting and release compilation. The
+first paired native run at `/tmp/graphite-query-opt-attempt157/ab` completed every request and
+all 73 exact typed-response comparisons, but the suite failed because the frozen candidate
+directory lacked `product-identity.txt`. Keep that failed suite and its raw samples unchanged;
+do not relabel its timings as acceptance. Add an independently verified freeze/consumer handoff
+before another pressure run. Its loading RSS also differed by more than 5% under uncontrolled
+filesystem cache state, so it supplies no loading acceptance.
+
+Independent review found a correctness gap before accepting the candidate: a raw property
+getter can panic on an invalid string ID in a later source, even when its expression contains
+no potentially failing operator. Add cancellable, graph-snapshot-cached checked record/string-ID
+validation before admitting early termination; validation failure must decline the plan and
+preserve the original eager failure and first-error order. Charge first-use validation to the
+query. Retain the expression proof as well, and keep unsupported getter domains on fallback.
+
+**Corrected candidate and controlled-cache protocol.** The implementation now validates complete
+CallSite framing and all four raw string IDs through a cancellable Graph-instance certificate.
+Any invalid source declines the whole streaming plan before output; aliases retain their proved
+CallSite domain, while unsupported getters use the original pipeline. Correctness covers late
+invalid IDs and distinct first-error payloads at LIMIT 0/1, cancelled/retried certificates,
+snapshot reload, NULLs, aliases, duplicates, source order, provenance, SKIP and the extra-row probe.
+The final pre-measurement checks pass 233 Cypher and 125 Storage library tests with the real
+core correctness fixture, both modules' all-target/all-feature Clippy, formatting and release
+compilation. Logs/source hashes: `/tmp/graphite-query-opt-with-validity-verification.json`.
+
+The producer now atomically freezes the binary with its exact committed v2 product identity,
+tree, revision and binary hash and verifies that handoff before measurement. A separately frozen
+local variant of the a5 Rust controller adds only per-arm filesystem-cache preparation, before
+`run_revision` and its existing server timers; query texts, samples, budgets, complete response
+validation and acceptance constraints are unchanged. Its embedded helper reads the same 1,152
+native input files (7,497,850,081 bytes) with a 256 KiB buffer and requires mincore to show every
+input page resident before launching either arm. Preparation resources and time are recorded
+separately; query indexes remain uninitialized. This is warm filesystem cache plus first-use
+queries, not disk-cold or query-warm initialization. The real64 handoff passed without starting
+a server. Frozen protocol, minimal harness diff and hashes are under
+`/tmp/graphite-query-opt-local-warm-filecache-harness/`; this local variant is not an unchanged
+trusted hosted controller or hosted acceptance. Subsequent measurements retain all variability
+and still enforce independent +5% loading/query CPU and RSS limits.
+
+**Corrected measured candidate:** `a266301cf1a573c1f66f34c9b5c9c169135c1021`, binary SHA-256
+`7286f3eae3b615db105c08e4406bad0c1a1731fb68f8475b0368422908dd4005`.
+Both corrected AB and BA runs completed with all trusted native correctness/capacity checks
+passing. Independent audit rehashed and validated all 17,356 complete response bodies, 73-case
+sampling, graph scope, ordering, duplicates, NULL/missing fields and provenance. Every arm's
+same-file-cache preparation passed. Raw evidence and independently recomputed observations:
+`/tmp/graphite-query-opt-attempt157/{ab-corrected,ba-corrected,audit-corrected-abba}`.
+
+| WITH query metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| Pressure p50 | 2,942.711 → 0.438 ms | -2,942.273 ms | 2,767.502 → 0.447 ms | -2,767.055 ms |
+| Pressure p95 | 3,833.655 → 0.563 ms | -3,833.091 ms | 3,035.977 → 0.541 ms | -3,035.436 ms |
+| First-use request | 2,941.955 → 108.380 ms | -2,833.575 ms | 2,901.624 → 108.542 ms | -2,793.082 ms |
+| Complete query window | 79.358 → 56.293 s | -23.065 s | 71.871 → 55.846 s | -16.025 s |
+
+First-use request values include the first all-source certificate check and competition from
+other oracle queries; they are not isolated certificate timings. Cache preparation is separate
+(1.02–1.90 s/arm). These are four-worker closed-loop observations, not saturation evidence.
+
+| Operation/resource | AB base → candidate | Delta | BA base → candidate | Delta |
+| --- | ---: | ---: | ---: | ---: |
+| Loading CPU | 20.250 → 20.510 s | +1.284% | 20.330 → 20.360 s | +0.148% |
+| Loading peak RSS | 6.697 → 6.857 GB | +2.393% | 6.603 → 6.746 GB | +2.164% |
+| Query CPU | 310.820 → 231.690 s | -25.458% | 297.150 → 233.510 s | -21.417% |
+| Query peak RSS | 16.976 → 10.510 GB | -38.090% | 16.316 → 10.367 GB | -36.460% |
+
+All eight independent resource constraints pass. Pressure p50 improves in both orders for
+68/73 cases and mixes direction for five; p95 improves in both for 53 and mixes for twenty.
+No pressure case regresses in both orders. The isolated stage retains two direction-consistent
+p95 increases: relationship histogram 29.226→35.075 ms (+5.849 ms) and 25.994→28.267 ms
+(+2.273 ms); wide-contains 0.439→0.998 ms (+0.559 ms) and 0.329→0.398 ms (+0.069 ms).
+Do not drop those observations, claim every latency recovered, or select another favorable run.
+These unchanged execution paths remain visible in the cumulative comparison.
+
+Decision: retain the verified large WITH benefit, correct results and resource-compliant
+increment for composition in the requested sequence. This is not complete all-case latency
+acceptance, a construction/loading speedup claim, or hosted benchmark acceptance.
+

@@ -257,6 +257,9 @@ pub struct Graph {
     /// the planner asks it for every graph on every query, and the answer is a fact
     /// about the graph, not the query.
     property_names_in_dictionary: std::sync::OnceLock<[bool; 4]>,
+    /// Complete CallSite framing and in-range scalar IDs, proved on first query.
+    /// Cancellation never publishes a partial validation result.
+    call_site_scalar_validity: std::sync::OnceLock<bool>,
     /// One lazily built column per entry of [`crate::columns::RAW_STRING_FIELDS`].
     string_columns: Vec<std::sync::OnceLock<crate::columns::StringColumn>>,
 }
@@ -380,6 +383,7 @@ impl Graph {
             call_site_index,
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
+            call_site_scalar_validity: std::sync::OnceLock::new(),
             string_columns: (0..crate::columns::RAW_STRING_FIELDS.len())
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
@@ -780,6 +784,43 @@ impl Graph {
     /// a CallSite whose complete variable-length record is truncated.
     pub fn call_site_scalar_strings(&self, id: NodeId) -> Option<CallSiteStrings> {
         read_call_site_scalar_strings(&self.nodedata, self.node_offset(id)?)
+    }
+
+    /// Prove the complete CallSite scalar domain before a query omits later rows.
+    /// This certificate belongs to an immutable loaded graph, not its path/name.
+    /// A malformed record declines the optimization, keeping the eager evaluator's
+    /// first-error order. An interrupted attempt publishes neither true nor false.
+    pub fn call_site_scalar_records_valid<E>(
+        &self,
+        mut check: impl FnMut() -> Result<(), E>,
+    ) -> Result<bool, E> {
+        check()?;
+        if let Some(valid) = self.call_site_scalar_validity.get() {
+            return Ok(*valid);
+        }
+        let mut valid = true;
+        for &id in self.ids_by_tag(TAG_CALL_SITE_NODE) {
+            check()?;
+            let Some(fields) = self.call_site_scalar_strings(id) else {
+                valid = false;
+                break;
+            };
+            if [
+                fields.caller_class,
+                fields.caller_name,
+                fields.callee_class,
+                fields.callee_name,
+            ]
+            .iter()
+            .any(|&sid| sid as usize >= self.strings.len())
+            {
+                valid = false;
+                break;
+            }
+        }
+        check()?;
+        let _ = self.call_site_scalar_validity.set(valid);
+        Ok(valid)
     }
 
     pub fn node(&self, id: NodeId) -> Option<Node> {
@@ -1806,3 +1847,96 @@ mod csr_prefix_tests;
 #[cfg(test)]
 #[path = "call_site_scalar_tests.rs"]
 mod call_site_scalar_tests;
+
+#[cfg(test)]
+mod call_site_validity_tests {
+    use super::*;
+
+    fn fixture() -> Option<Graph> {
+        let path = std::env::var_os("GRAPHITE_INDEX_FIXTURE")?;
+        Some(Graph::load(Path::new(&path)).unwrap())
+    }
+
+    #[test]
+    fn complete_validity_is_cached_per_graph_and_cancelled_attempts_retry() {
+        let Some(graph) = fixture() else { return };
+        let count = graph.ids_by_tag(TAG_CALL_SITE_NODE).len();
+        assert!(count > 0);
+        let mut checks = 0;
+        let result = graph.call_site_scalar_records_valid(|| {
+            checks += 1;
+            if checks == 2 {
+                Err("cancelled during first record")
+            } else {
+                Ok(())
+            }
+        });
+        assert_eq!(result, Err("cancelled during first record"));
+        assert!(graph.call_site_scalar_validity.get().is_none());
+        checks = 0;
+        assert_eq!(
+            graph.call_site_scalar_records_valid(|| {
+                checks += 1;
+                Ok::<(), ()>(())
+            }),
+            Ok(true)
+        );
+        assert_eq!(checks, count + 2);
+        checks = 0;
+        assert_eq!(
+            graph.call_site_scalar_records_valid(|| {
+                checks += 1;
+                Ok::<(), ()>(())
+            }),
+            Ok(true)
+        );
+        assert_eq!(checks, 1, "warm proof does not reread records");
+        let Some(reloaded) = fixture() else { return };
+        assert!(reloaded.call_site_scalar_validity.get().is_none());
+    }
+
+    #[test]
+    fn invalid_ids_phantoms_and_truncated_records_decline_without_panicking() {
+        for kind in 0..3 {
+            let Some(mut graph) = fixture() else { return };
+            let id = graph.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+            let offset = graph.node_offset(id).unwrap();
+            let mut bytes = graph.nodedata.to_vec();
+            match kind {
+                0 => bytes[offset + 5..offset + 9].copy_from_slice(&u32::MAX.to_be_bytes()),
+                1 => graph.type_index[TAG_CALL_SITE_NODE as usize].push(u32::MAX),
+                _ => bytes.truncate(offset + 6),
+            }
+            graph.nodedata = Bytes::owned(bytes);
+            if kind == 0 {
+                let mut checks = 0;
+                assert_eq!(
+                    graph.call_site_scalar_records_valid(|| {
+                        checks += 1;
+                        if checks == 3 {
+                            Err("cancel before publishing false")
+                        } else {
+                            Ok(())
+                        }
+                    }),
+                    Err("cancel before publishing false")
+                );
+                assert!(graph.call_site_scalar_validity.get().is_none());
+            }
+            assert_eq!(
+                graph.call_site_scalar_records_valid(|| Ok::<(), ()>(())),
+                Ok(false)
+            );
+            assert_eq!(graph.call_site_scalar_validity.get(), Some(&false));
+            let mut checks = 0;
+            assert_eq!(
+                graph.call_site_scalar_records_valid(|| {
+                    checks += 1;
+                    Ok::<(), ()>(())
+                }),
+                Ok(false)
+            );
+            assert_eq!(checks, 1);
+        }
+    }
+}

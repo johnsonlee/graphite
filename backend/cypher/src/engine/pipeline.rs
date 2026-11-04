@@ -247,6 +247,13 @@ impl Executor {
                         }
                     }
                     if !*optional {
+                        if let Some(plan) =
+                            super::with_stream::WithStreamPlan::build(&clauses[i..], &rows)
+                        {
+                            if let Some(result) = plan.run(self, &matcher, &ev)? {
+                                return Ok(result);
+                            }
+                        }
                         if let Some(shape) = FusedShape::detect(&clauses[i..]) {
                             let out = self.run_fused(&matcher, &ev, rows, patterns, &shape)?;
                             return Ok(out);
@@ -860,7 +867,7 @@ impl Executor {
 
     /// Enumerate matches of `patterns` from `row`, applying the WHERE filter (and scan pushdown).
     #[allow(clippy::too_many_arguments)]
-    fn stream_match(
+    pub(super) fn stream_match(
         &self,
         matcher: &Matcher,
         ev: &Evaluator,
@@ -1453,7 +1460,7 @@ fn simple_property_keys(items: &[ReturnItem], variable: &str) -> Option<Vec<Stri
 /// expression back to Cypher. That is a string build and an allocation per column, and
 /// it does not depend on the row -- doing it inside the row loop cost a `LIMIT 200`
 /// query a thousand redundant renderings.
-fn item_names(items: &[ReturnItem]) -> Vec<String> {
+pub(super) fn item_names(items: &[ReturnItem]) -> Vec<String> {
     items
         .iter()
         .map(|it| {
@@ -1465,7 +1472,7 @@ fn item_names(items: &[ReturnItem]) -> Vec<String> {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn project_row(
+pub(super) fn project_row(
     ev: &Evaluator,
     row: &Row,
     items: Option<&[ReturnItem]>,
