@@ -502,6 +502,61 @@ impl CallSiteStringIndex {
         })
     }
 
+    /// Validate a property's complete CSR before using its order to skip graph work.
+    /// `visit` proves each posting against the graph and may cancel the proof.
+    pub fn validate_property<E>(
+        &self,
+        property: usize,
+        mut visit: impl FnMut(u32, u32) -> Result<bool, E>,
+    ) -> Result<bool, E> {
+        let Some(csr) = self.properties.get(property) else {
+            return Ok(false);
+        };
+        let mut start = 0;
+        let mut previous_string = None;
+        for i in 0..csr.used_string_ids.len {
+            let raw_sid = csr.used_string_ids.get(&self.map, i);
+            let Ok(sid) = u32::try_from(raw_sid) else {
+                return Ok(false);
+            };
+            if sid as usize >= self.string_count
+                || previous_string.is_some_and(|previous| previous >= sid)
+            {
+                return Ok(false);
+            }
+            previous_string = Some(sid);
+            let Ok(end) = usize::try_from(csr.posting_ends.get(&self.map, i)) else {
+                return Ok(false);
+            };
+            if end <= start || end > csr.posting_node_ids.len {
+                return Ok(false);
+            }
+            let mut previous_node = None;
+            for at in start..end {
+                let node = csr.posting_node_ids.get(&self.map, at) as u32;
+                if previous_node.is_some_and(|previous| previous >= node) || !visit(node, sid)? {
+                    return Ok(false);
+                }
+                previous_node = Some(node);
+            }
+            start = end;
+        }
+        Ok(start == self.call_site_count)
+    }
+
+    /// String groups in dictionary order. Validate the complete CSR against the
+    /// graph before relying on this order; DESC reverses groups, never their nodes.
+    pub fn property_values(&self, property: usize, descending: bool) -> Option<PropertyValues<'_>> {
+        let csr = *self.properties.get(property)?;
+        Some(PropertyValues {
+            index: self,
+            csr,
+            front: 0,
+            back: csr.used_string_ids.len,
+            descending,
+        })
+    }
+
     /// The posting range of each of several ascending string ids in one property.
     ///
     /// Found by walking the property's used-id list once, galloping from the previous
@@ -643,6 +698,56 @@ impl TrigramPostings<'_> {
     }
 }
 
+/// A property's string groups; nodes within every group retain ascending ID order.
+/// The accessors remain bounds-checked even when called before graph validation.
+pub struct PropertyValues<'a> {
+    index: &'a CallSiteStringIndex,
+    csr: PropertyCsr,
+    front: usize,
+    back: usize,
+    descending: bool,
+}
+
+impl<'a> Iterator for PropertyValues<'a> {
+    type Item = (u32, NodePostings<'a>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.front == self.back {
+            return None;
+        }
+        let at = if self.descending {
+            self.back -= 1;
+            self.back
+        } else {
+            let at = self.front;
+            self.front += 1;
+            at
+        };
+        let sid = u32::try_from(self.csr.used_string_ids.get(&self.index.map, at)).ok()?;
+        if sid as usize >= self.index.string_count {
+            return None;
+        }
+        let start = if at == 0 {
+            0
+        } else {
+            usize::try_from(self.csr.posting_ends.get(&self.index.map, at - 1)).ok()?
+        };
+        let end = usize::try_from(self.csr.posting_ends.get(&self.index.map, at)).ok()?;
+        if start > end || end > self.csr.posting_node_ids.len {
+            return None;
+        }
+        Some((
+            sid,
+            NodePostings {
+                index: self.index,
+                array: self.csr.posting_node_ids,
+                pos: start,
+                end,
+            },
+        ))
+    }
+}
+
 /// Ascending CallSite node ids for one (property, string) pair.
 pub struct NodePostings<'a> {
     index: &'a CallSiteStringIndex,
@@ -652,6 +757,11 @@ pub struct NodePostings<'a> {
 }
 
 impl NodePostings<'_> {
+    /// The first remaining node without advancing or visiting the posting run.
+    pub fn first(&self) -> Option<u32> {
+        (!self.is_empty()).then(|| self.array.get(&self.index.map, self.pos) as u32)
+    }
+
     pub fn len(&self) -> usize {
         self.end - self.pos
     }
@@ -1140,5 +1250,99 @@ mod tests {
         // all. The table has no such edge, and is what the reader now uses.
         assert!(idx.trigram_string_ids(i32::MAX).is_empty());
         assert!(!idx.may_contain_all(&[i32::MAX]));
+    }
+    fn ordered_fixture() -> CallSiteStringIndex {
+        let strings = ["a", "b", "c"];
+        let nodes = [(1, [0, 1, 2, 0]), (3, [0, 2, 2, 1]), (5, [1, 2, 0, 2])];
+        CallSiteStringIndex::build(
+            strings.len(),
+            &|id| strings[id].into(),
+            &mut nodes.into_iter(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn ordered_csr_validation_and_both_cursors_preserve_group_node_order() {
+        let index = ordered_fixture();
+        let mut visited = Vec::new();
+        assert!(index
+            .validate_property(0, |node, sid| {
+                visited.push((node, sid));
+                Ok::<_, ()>(true)
+            })
+            .unwrap());
+        assert_eq!(visited, [(1, 0), (3, 0), (5, 1)]);
+        let groups = |descending| {
+            index
+                .property_values(0, descending)
+                .unwrap()
+                .map(|(sid, nodes)| (sid, nodes.collect::<Vec<_>>()))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(groups(false), [(0, vec![1, 3]), (1, vec![5])]);
+        assert_eq!(groups(true), [(1, vec![5]), (0, vec![1, 3])]);
+        let (_, mut nodes) = index.property_values(0, false).unwrap().next().unwrap();
+        assert_eq!((nodes.first(), nodes.len()), (Some(1), 2));
+        assert_eq!((nodes.first(), nodes.len()), (Some(1), 2));
+        assert_eq!(nodes.next(), Some(1));
+        assert_eq!((nodes.first(), nodes.len()), (Some(3), 1));
+        assert_eq!(nodes.next(), Some(3));
+        assert_eq!((nodes.first(), nodes.len()), (None, 0));
+        assert!(index.property_values(4, false).is_none());
+        assert!(!index
+            .validate_property(4, |_, _| Ok::<_, ()>(true))
+            .unwrap());
+        let empty =
+            CallSiteStringIndex::build(0, &|_| unreachable!(), &mut std::iter::empty()).unwrap();
+        assert!(empty
+            .validate_property(0, |_, _| Ok::<_, ()>(true))
+            .unwrap());
+        assert_eq!(empty.property_values(0, false).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn ordered_csr_rejects_invalid_sids_bounds_and_node_order_before_use() {
+        for (field, slot, value) in [
+            (0, 0, -1),
+            (0, 1, 0),
+            (0, 1, 3),
+            (1, 0, 0),
+            (1, 0, 4),
+            (1, 1, 2),
+            (2, 1, 1),
+            (2, 0, 4),
+        ] {
+            let mut index = ordered_fixture();
+            let csr = index.properties[0];
+            let array = [csr.used_string_ids, csr.posting_ends, csr.posting_node_ids][field];
+            let IndexBytes::Owned(bytes) = &mut index.map else {
+                unreachable!()
+            };
+            bytes[array.start + slot * 4..array.start + slot * 4 + 4]
+                .copy_from_slice(&i32::to_be_bytes(value));
+            assert!(
+                !index
+                    .validate_property(0, |_, _| Ok::<_, ()>(true))
+                    .unwrap(),
+                "{field}/{slot}/{value}"
+            );
+        }
+        let index = ordered_fixture();
+        assert!(!index
+            .validate_property(0, |node, sid| Ok::<_, ()>((node, sid) != (3, 0)))
+            .unwrap());
+        let mut calls = 0;
+        assert_eq!(
+            index.validate_property(0, |_, _| {
+                calls += 1;
+                if calls == 2 {
+                    Err("cancelled")
+                } else {
+                    Ok(true)
+                }
+            }),
+            Err("cancelled")
+        );
     }
 }

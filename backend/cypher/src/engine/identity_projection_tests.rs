@@ -398,11 +398,16 @@ fn real_identity_projection_matches_generic_rows_provenance_probe_and_scan_work(
                 format!("{:?}", actual.rows),
                 format!("{:?}", &all.rows[..actual.rows.len()])
             );
-            assert_eq!(
-                actual_ex.poll.load(AtomicOrdering::Relaxed),
-                reference_ex.poll.load(AtomicOrdering::Relaxed)
-            );
-            assert!(actual_ex.poll.load(AtomicOrdering::Relaxed) >= all.rows.len() as u64);
+            let actual_work = actual_ex.poll.load(AtomicOrdering::Relaxed);
+            let eager_work = reference_ex.poll.load(AtomicOrdering::Relaxed);
+            assert!(actual_work <= eager_work);
+            if limit.saturating_add(usize::from(probe)) < all.rows.len() {
+                assert!(
+                    actual_work < eager_work,
+                    "the total WITH/filter chain stops after its surviving-row budget"
+                );
+            }
+            assert!(eager_work >= all.rows.len() as u64);
             let body = |result: &QueryResult, ex: &Executor| {
                 result
                     .rows

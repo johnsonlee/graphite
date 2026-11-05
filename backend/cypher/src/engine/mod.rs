@@ -5,11 +5,13 @@ pub mod hop;
 mod id_candidate;
 pub mod matching;
 mod method_source_guard;
+mod ordered_property;
 pub mod partition;
 pub mod pipeline;
 pub mod props;
 pub mod scan;
 mod string_seed;
+mod with_stream;
 
 use crate::context::GraphContext;
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};

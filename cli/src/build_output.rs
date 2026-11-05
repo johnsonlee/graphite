@@ -1,19 +1,13 @@
-//! Same-filesystem staging and packed output publication for frontend builds.
+//! Same-filesystem staging and output publication for frontend builds.
 
 use std::path::{Path, PathBuf};
 
 mod directory;
+mod directory_replace;
+pub(crate) use directory_replace::DirectoryPublication;
 mod packed;
 mod replace;
 mod stale;
-
-pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
-    match std::fs::symlink_metadata(path) {
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(format!("could not inspect {}: {e}", path.display())),
-        Ok(_) => Err(format!("output already exists: {}", path.display())),
-    }
-}
 
 fn create_output_parent(output: &Path) -> Result<(), String> {
     if let Some(parent) = output.parent().filter(|p| !p.as_os_str().is_empty()) {
@@ -24,7 +18,7 @@ fn create_output_parent(output: &Path) -> Result<(), String> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) struct Stage(pub(crate) PathBuf);
+pub(crate) struct Stage(pub(crate) PathBuf, bool);
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Publication {
     CreateNew,
@@ -145,6 +139,21 @@ impl Stage {
         })
     }
 
+    pub(crate) fn rebuild_directory(
+        &mut self,
+        output: &Path,
+        publication: DirectoryPublication,
+    ) -> Result<(), String> {
+        create_output_parent(output)?;
+        publication.publish(self, output)
+    }
+
+    fn retain(&mut self) -> Result<(), String> {
+        self.1 = true;
+        stale::prevent_sweep(&self.0)
+            .map_err(|e| format!("could not retain {}: {e}", self.0.display()))
+    }
+
     pub(crate) fn new(output: &Path) -> std::io::Result<Self> {
         Self::for_output(output, &std::env::temp_dir(), |from, to| {
             std::fs::rename(from, to)
@@ -193,7 +202,7 @@ impl Stage {
     }
 
     fn in_directory(parent: &Path) -> std::io::Result<Self> {
-        Ok(Self(stale::create(parent)?.keep()))
+        Ok(Self(stale::create(parent)?.keep(), false))
     }
 
     pub(crate) fn run(
@@ -239,6 +248,9 @@ fn rename_exclusive(_: &Path, _: &Path) -> std::io::Result<()> {
 
 impl Drop for Stage {
     fn drop(&mut self) {
+        if self.1 {
+            return;
+        }
         if let Err(e) = std::fs::remove_dir_all(&self.0) {
             eprintln!(
                 "Warning: could not remove staging directory {}: {e}",
@@ -252,7 +264,7 @@ impl Drop for Stage {
 mod tests {
     use super::*;
 
-    fn stage_value(output: &Path, value: &str) -> Stage {
+    pub(super) fn stage_value(output: &Path, value: &str) -> Stage {
         let stage = Stage::new(output).unwrap();
         let input = serde_json::json!({"version":1,"methods":[], "nodes":[{"id":0,"kind":"StringConstant","value":value}],"edges":[]});
         graphite_storage::interchange::import_json(input.to_string().as_bytes(), &stage.graph())
@@ -469,7 +481,10 @@ mod tests {
     fn a_directory_created_after_preflight_is_never_replaced() {
         let root = tempfile::tempdir().unwrap();
         let output = root.path().join("saved");
-        require_absent(&output).unwrap();
+        assert_eq!(
+            DirectoryPublication::inspect(&output).unwrap(),
+            DirectoryPublication::CreateNew
+        );
         let stage = Stage::new(&output).unwrap();
         std::fs::create_dir(stage.graph()).unwrap();
         std::fs::write(stage.graph().join("graph.data"), b"complete graph").unwrap();

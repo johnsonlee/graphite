@@ -318,6 +318,31 @@ impl StringTable {
         })
     }
 
+    /// Prove dictionary ordering while allowing a query to cancel first-use work.
+    /// A cancelled proof is never cached; immutable successful proofs are shared.
+    pub fn try_canonical_dictionary<E>(
+        &self,
+        mut poll: impl FnMut() -> Result<(), E>,
+    ) -> Result<bool, E> {
+        poll()?;
+        if let Some(answer) = self.backing.canonical.get() {
+            return Ok(*answer);
+        }
+        let mut answer = true;
+        for i in 1..self.len() {
+            if i & 1023 == 0 {
+                poll()?;
+            }
+            if java_cmp(self.get(i - 1), self.get(i)) != std::cmp::Ordering::Less {
+                answer = false;
+                break;
+            }
+        }
+        poll()?;
+        let _ = self.backing.canonical.set(answer);
+        Ok(answer)
+    }
+
     /// Binary search (strings are sorted by Java `String.compareTo`, i.e. UTF-16 order).
     pub fn index_of(&self, s: &str) -> Option<usize> {
         let (mut lo, mut hi) = (0usize, self.len());
@@ -475,6 +500,32 @@ mod tests {
                 }
             }),
             Err("after empty")
+        );
+    }
+    #[test]
+    fn cancellable_dictionary_proof_keeps_utf16_order_and_retries_after_cancellation() {
+        let strings = table(&["a", "\u{10000}", "\u{e000}"]);
+        assert_eq!(
+            strings.try_canonical_dictionary(|| Err("cancelled")),
+            Err("cancelled")
+        );
+        assert!(strings.backing.canonical.get().is_none());
+        assert!(strings
+            .try_canonical_dictionary(|| Ok::<_, ()>(()))
+            .unwrap());
+        assert_eq!(strings.backing.canonical.get(), Some(&true));
+        assert!(!table(&["b", "a"])
+            .try_canonical_dictionary(|| Ok::<_, ()>(()))
+            .unwrap());
+        assert!(!table(&["a", "a"])
+            .try_canonical_dictionary(|| Ok::<_, ()>(()))
+            .unwrap());
+        assert!(table(&[])
+            .try_canonical_dictionary(|| Ok::<_, ()>(()))
+            .unwrap());
+        assert_eq!(
+            strings.try_canonical_dictionary(|| Err("hot cancellation")),
+            Err("hot cancellation")
         );
     }
 }
