@@ -246,6 +246,10 @@ jobs:
         # readable by standard zip tools, and the same graph as the directory.
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme.graphite" --include com.acme
+        # A leading dash in the filename is valid JVM CLI input after -o.
+        (cd "${RUNNER_TEMP}" && "${GITHUB_WORKSPACE}/target/release/graphite" build acme.jar \
+          --include com.acme -o -1.graphite)
+        ./target/release/graphite verify "${RUNNER_TEMP}/-1.graphite"
         test -f "${RUNNER_TEMP}/acme.graphite"
         test ! -e "${RUNNER_TEMP}"/acme.graphite.build-*
         ./target/release/graphite verify --verbose "${RUNNER_TEMP}/acme.graphite"
@@ -280,6 +284,8 @@ jobs:
         ./target/release/graphite query "${RUNNER_TEMP}/acme.graphite" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-file.csv"
         test "$(wc -l < "${RUNNER_TEMP}/from-dir.csv")" -gt 1
         cmp "${RUNNER_TEMP}/from-dir.csv" "${RUNNER_TEMP}/from-file.csv"
+        ./target/release/graphite query "${RUNNER_TEMP}/-1.graphite" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-dash-file.csv"
+        cmp "${RUNNER_TEMP}/from-dir.csv" "${RUNNER_TEMP}/from-dash-file.csv"
         # Without a frontend the shell says how to get one and exits 2.
         set +e
         env -u GRAPHITE_FRONTEND_JVM HOME="${RUNNER_TEMP}/nohome" PATH=/usr/bin:/bin \
@@ -430,3 +436,5 @@ jobs:
     # MSVC has no jemalloc; the explorer must still build with the system allocator.
     - name: Check
       run: cargo check --workspace --all-targets --locked
+    - name: Test no-clobber output publication on Windows
+      run: cargo test --locked -p graphite-cli build_output

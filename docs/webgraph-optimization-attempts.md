@@ -22401,6 +22401,21 @@ merge-ready. Native loading/query resources pass; real64 construction RSS fails,
 CPU fails in both orders, APK BA RSS fails, the large APK baseline preflight cannot complete under
 the fixed heap, and the previously reported order-by latency regressions remain unresolved.
 
+### 2026-11-04 — Attempt 135: reuse UTF-16 keys during interchange import
+
+The importer at `5510f1b9` converts both operands to UTF-16 on each sort
+comparison. The candidate caches one encoded key per unique string and uses
+those units both to assign IDs in Java comparison order and to write the
+serialized dictionary. It checks the single-segment limit before allocating
+a potentially oversized key. The cached keys are released before encoding
+the graph records.
+
+All 135 storage tests passed, including readback of an empty dictionary, a
+40,000-unit string and supplementary characters whose Java order differs from
+UTF-8 order. Strict storage Clippy passed. Retain the change for the simpler
+encoding path. The tests establish format correctness. They provide no
+latency, CPU or RSS measurement for construction.
+
 ### Attempt157 — stream total WITH projections and filters before the final LIMIT (2026-11-05)
 
 **Predeclared hypothesis and protocol.** The current native `shape-with-filter` materializes
@@ -23127,3 +23142,39 @@ Attempts157–159,160,161,162 remain separate immutable archives, alongside chec
 all measured source refs and prerequisite-bound git bundles. Final controls retain original
 failed labels and all timestamps needed for later independent recomputation. Final code differs
 from measured b592 only by this documentation update; no PR has been created or hosted gate run.
+
+
+### PR199 integration with newer main (2026-11-05)
+
+PR199 was opened from the six-attempt branch at5c97de8c. Main had advanced to
+7c59d7993be51f0807495890d068effcfaff155b, introducing the JavaScript frontend plus
+new filtered-WITH/top-K and owned-collect changes. Resolve the pipeline and append-only
+history conflicts by retaining both sides: WITH streaming/indexed/grouped paths, incremental
+aggregate states/prefix caps, main's projected-row predicate/accepted-row budget and bounded
+order preparation. Final collect buffers retain main's shrink_to_fit behavior.
+
+Integration exposed a correctness overlap: after the stream plan declined malformed CallSite
+data, main's schema-only filtered-WITH proof could still stop at LIMIT0/1 before a later bad
+SID. Require the same complete CallSite framing/string-ID certificate for that early-stop
+path. Other raw record/property domains have no equivalent certificate and stay eager; literal
+and id-only projections retain main's optimization because id checks only a bounded complete
+node-offset slot and never decodes a record or SID. This is a correctness restriction, not a
+performance-recovery claim for those other domains.
+
+Two focused regressions compare bad CallSite/Field SIDs at LIMIT0/1, source-first-error order,
+string comparison (which forces the newly merged filter path), IS NOT NULL overlap and safe
+id/literal exceptions against a singleton-UNWIND eager oracle. An initial tiny CallSite fixture
+was rejected while Graph::load tried to build its missing CSR; retain that fixture-setup failure
+and use the strict native-core copied-index variant to exercise the intended query-time error.
+Both corrected regressions and all288 Cypher library tests pass with the existing native-core
+and required wire/inherited fixtures. Integrated root Storage146 tests, workspace all-target/
+all-feature Clippy with denied warnings, formatting and diff checks also pass. Unchanged fixture
+exports are reused; no additional JVM heap, graph construction or performance run is introduced.
+Verification: /tmp/graphite-query-opt-main-merge-verification.json and
+/tmp/graphite-query-opt-pr199-{storage-tests,workspace-clippy}.log.
+
+The sealed157–162 measurements remain historical evidence for a5c96f71→b592a301, not
+measurements of the newly integrated PR head against main. Hosted benchmark-regression-gate
+correctness/completion/OOM proof and any matched post-integration real64 performance acceptance
+remain pending. Existing single-graph diagnostic timings and hosted report-only timings cannot
+substitute. PR: https://github.com/johnsonlee/graphite/pull/199.

@@ -372,9 +372,13 @@ fn real_identity_projection_matches_generic_rows_provenance_probe_and_scan_work(
         .all(|r| matches!(&r["c"], Value::Str(s) if !s.is_empty())));
     assert_eq!(QueryResult::graph_ids(&all.rows[0]), ["a"]);
     assert_eq!(QueryResult::graph_ids(all.rows.last().unwrap()), ["z"]);
+    // Isolate RETURN's identity projection. An extra pass-through WITH keeps
+    // both sides on the full scan even when a small literal limit is present.
+    // The fused filtered-prefix plan has separate work and equivalence tests.
+    let full_scan_prefix = prefix.replace("RETURN c", "WITH c RETURN c");
     for limit in [0, 1, 200, all.rows.len(), all.rows.len() + 1] {
         let (actual_clauses, reference_clauses) =
-            generic_clauses(&format!("{prefix} LIMIT {limit}"));
+            generic_clauses(&format!("{full_scan_prefix} LIMIT {limit}"));
         for probe in [false, true] {
             let mut actual_ex = Executor::new(sources.clone(), true);
             let mut reference_ex = Executor::new(sources.clone(), true);

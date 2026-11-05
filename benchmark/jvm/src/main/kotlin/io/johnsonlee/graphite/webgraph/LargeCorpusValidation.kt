@@ -138,6 +138,55 @@ internal object LargeCorpusBaselines {
             ApprovedCorpusCounts(
                 nodes = 3_292_214, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
                 methods = 264_628, callSites = 922_876
+            ),
+        // PR #193 (ac7df2b3): resolving static fields to their declarations merges 558 Tika, 761 Hive
+        // and 550 Kotlin compiler nodes. Whole-JAR checks in CI run 41738605252 confirmed all five counts.
+        ("26a030f6e3be700397d2979d87cae0dc62d73d107ff15a11084600dd96c57989" to "tika") to
+            ApprovedCorpusCounts(
+                nodes = 3_900_545, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
+                methods = 317_985, callSites = 1_006_172
+            ),
+        ("26a030f6e3be700397d2979d87cae0dc62d73d107ff15a11084600dd96c57989" to "hive") to
+            ApprovedCorpusCounts(
+                nodes = 5_992_153, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
+                methods = 452_507, callSites = 1_443_886
+            ),
+        ("26a030f6e3be700397d2979d87cae0dc62d73d107ff15a11084600dd96c57989" to "kotlin-compiler") to
+            ApprovedCorpusCounts(
+                nodes = 3_291_664, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
+                methods = 264_628, callSites = 922_876
+            ),
+        // PR #193 after merging #194 (8ca97ecc): run 41764623126 confirms the same whole-JAR counts.
+        ("28eabd41c03937e579d3c5117918a723c2d3634a15282fb48be3d54452d7e4a3" to "tika") to
+            ApprovedCorpusCounts(
+                nodes = 3_900_545, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
+                methods = 317_985, callSites = 1_006_172
+            ),
+        ("28eabd41c03937e579d3c5117918a723c2d3634a15282fb48be3d54452d7e4a3" to "hive") to
+            ApprovedCorpusCounts(
+                nodes = 5_992_153, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
+                methods = 452_507, callSites = 1_443_886
+            ),
+        ("28eabd41c03937e579d3c5117918a723c2d3634a15282fb48be3d54452d7e4a3" to "kotlin-compiler") to
+            ApprovedCorpusCounts(
+                nodes = 3_291_664, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
+                methods = 264_628, callSites = 922_876
+            ),
+        // PR #193 after merging #197 (fa7e38d1): run 41824455946 confirms the same whole-JAR counts.
+        ("97e9ed053cde34a6607dc92858062c3b0a7a1346a2798fab584745b9c835c349" to "tika") to
+            ApprovedCorpusCounts(
+                nodes = 3_900_545, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
+                methods = 317_985, callSites = 1_006_172
+            ),
+        ("97e9ed053cde34a6607dc92858062c3b0a7a1346a2798fab584745b9c835c349" to "hive") to
+            ApprovedCorpusCounts(
+                nodes = 5_992_153, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
+                methods = 452_507, callSites = 1_443_886
+            ),
+        ("97e9ed053cde34a6607dc92858062c3b0a7a1346a2798fab584745b9c835c349" to "kotlin-compiler") to
+            ApprovedCorpusCounts(
+                nodes = 3_291_664, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
+                methods = 264_628, callSites = 922_876
             )
     )
 

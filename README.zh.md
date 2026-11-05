@@ -4,7 +4,7 @@
 
 [English](README.md) · 简体中文
 
-**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码和 JavaScript/TypeScript 项目编译后的 JavaScript 产物转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
@@ -93,7 +93,20 @@ Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进
 
 ## 前端支持
 
-当前发布的前端支持读取 JVM 和 Android 产物。构建图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
+JVM 前端支持读取 JVM 和 Android 产物。构建这些图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
+
+**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 和 `--lang es` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。在 macOS 或 Linux（x86-64、ARM64）上，用当前 Graphite 发行版的 CLI 安装前端即可建图，无需另装 Node.js、Bun 或 npm。
+
+```bash
+graphite frontend install js
+graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
+graphite verify /tmp/project.graphite
+graphite query /tmp/project.graphite \
+  "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
+  --format json
+```
+
+分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 和 `graphite frontend install es` 安装同一个可执行文件，其中包含 Bun 运行时、TypeScript 解析器及其标准库声明。
 
 **开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
 
@@ -148,7 +161,7 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 ### Homebrew formula 安装的内容
 
-`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。原来面向 jar 版 formula 编写的所有命令行均可原样使用，包括 `--profile` 以及 `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` 堆内存设置。
+`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。运行 `graphite build --help` 或 `graphite build --lang js --help` 可查看对应前端的选项。
 
 未指定 JVM 参数时，`graphite build` 会检查所选 JVM 是否支持以下 G1 配置，并将其用于 jar 形式的 JVM 前端，包括 JAR 和 APK 输入。最大堆仍为 8 GiB：
 
@@ -531,6 +544,7 @@ Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI
 ```
 graphite/
 ├── frontend/
+│   ├── web/                # JavaScript 编译产物前端（发布为独立可执行文件）
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)

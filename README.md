@@ -4,7 +4,7 @@
 
 English · [简体中文](README.zh.md)
 
-**Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
+**Structured codebase context for LLMs.** Graphite turns JVM bytecode and compiled JavaScript artifacts into a queryable program graph — so AI agents can understand your codebase without reading every file.
 
 [Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
@@ -139,9 +139,29 @@ other.
 
 ## Frontend Support
 
-The current released frontend reads JVM and Android artifacts. Graph building
+The JVM frontend reads JVM and Android artifacts. Building these graphs
 requires Java; APK analysis also requires Android platform jars. These inputs
 can be analyzed without their source checkout.
+
+The **JavaScript artifact frontend** accepts emitted `.js`, `.mjs` and `.cjs`
+files or a compiled artifact directory such as `.next`, `dist` or `build` via
+`graphite build --lang js` (`ts` and `es` are aliases). A single-file entry follows
+resolved JavaScript dependencies under its parent directory. Pass a directory
+to include unrelated entries as well. Compile the target project first with its
+own build tools. On macOS or Linux (x86-64 or ARM64), install the frontend
+for your Graphite release and build the graph:
+
+```sh
+graphite frontend install js
+graphite build --lang js ./dist -o project.graphite
+graphite verify project.graphite
+```
+
+`graphite frontend install ts` and `graphite frontend install es` install the same executable.
+It includes the Bun runtime, TypeScript parser and standard library declarations,
+so building a graph requires no separate Node.js, Bun or npm installation. Saved graphs use
+the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
+See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).
 
 **In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
 adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
@@ -201,8 +221,11 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 `graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
 `build` through the JVM frontend, `graphite.jar`, which the formula installs next to it
-together with `openjdk@17`. Every command line written for the jar-based formula works
-unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
+together with `openjdk@17`. Use `JAVA_OPTS` or `JAVA_TOOL_OPTIONS` to configure the JVM heap.
+To profile a JVM build, put `--profile` before the `--` separator, for example
+`graphite build --profile -o app.graphite -- app.jar`. The shell forwards arguments
+after `--` to the frontend as positional inputs. Run `graphite help build` for shell options and
+`graphite build --help` or `graphite build --lang js --help` for frontend options.
 
 When no JVM options are supplied, `graphite build` checks whether the selected
 JVM supports the following G1 configuration and uses it for the JAR frontend,
@@ -733,6 +756,7 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 ```
 graphite/
 ├── frontend/
+│   ├── web/                # JavaScript artifact frontend (standalone release binary)
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
@@ -775,6 +799,22 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 `sha256sum -c` format is written next to the container, so a copy or download is checked
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
+
+A container moved without its sidecar can be rebuilt after its internal manifest and
+entry checksums verify. If a sidecar exists, it must match. For a rebuild both frontends claim
+`app.graphite.lock`, publish the new SHA-256 sidecar, then replace the container. If container publication
+fails, it restores the previous sidecar. An unlocked reader can observe the old
+container with the new checksum between the two renames. On Linux and macOS the
+next rebuild can recover an interrupted publication if the recorded publisher
+exited in this boot and PID namespace. Under an exclusive lock it verifies the
+container and identifies the recorded checksum before restoring the previous
+sidecar state. A live publisher, older or incomplete records, changed files, or
+an unconfirmed process scope require manual inspection. In that case,
+check `app.graphite.lock/owner.pid` if present and confirm all publishers have
+exited. The recorded PID is a hint and may have been reused. If the container
+exists, run `graphite verify app.graphite` and inspect `app.graphite.lock/previous.sha256`
+to restore the matching sidecar if needed. Remove only the confirmed abandoned
+Graphite lock directory, then retry.
 
 ```bash
 graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256

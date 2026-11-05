@@ -5,10 +5,12 @@ backend) on top of `main` at #128.
 
 **Reading this document:** this is a design proposal anchored to the baseline
 above, not a current feature inventory. The Rust CLI now runs `query`, `serve`,
-and `mcp`, while `build` delegates to the JVM frontend.
+and `mcp`, while `build` delegates to the selected language frontend.
 [PR #154](https://github.com/johnsonlee/graphite/pull/154) implements the Swift / iOS
-frontend and protobuf Graph IR and is currently in progress. The TypeScript
-frontend remains a proposal; neither should be read as a released capability.
+frontend and protobuf Graph IR and is currently in progress. The JavaScript artifact
+frontend is implemented separately; see its
+[current setup and limitations](typescript-frontend.md). The full Graph IR migration
+below remains a proposal, and the Swift work is not a released capability.
 See the [README architecture](../README.md#architecture) and
 [runnable demo](quickstart-demo.md) for the current user workflow.
 
@@ -72,7 +74,7 @@ Non-goals
 | Layer | Component | Language | Owns |
 |---|---|---|---|
 | Frontend | `graphite-frontend-jvm` | Kotlin (existing `sootup`, `core` under `frontend/jvm/`) | JAR/WAR/APK/AAR/class dirs → IR |
-| Frontend | `graphite-frontend-web` | TypeScript (new) | TS/JS projects → IR |
+| Frontend | `graphite-frontend-web` | TypeScript (new) | Compiled JS artifacts → graph interchange |
 | Frontend | `graphite-frontend-apple` | Swift (new) | Swift/ObjC modules → IR |
 | Contract | Graph IR | spec + Rust reader/writer, thin writers per language | Section 4 |
 | Backend | `graphite-ir` | Rust (new crate) | IR schema, reader, writer, validation, JSONL bridge |
@@ -374,7 +376,7 @@ graphite frontend list|install|describe
 ```
 
 `build` picks the frontend by `--lang`, by input extension (`.jar/.war/.apk/.aar/.dex` →
-jvm; `package.json`/`tsconfig.json` → web; `Package.swift`/`.xcodeproj` → apple), or by
+jvm; compiled `.js`/`.mjs`/`.cjs` artifacts → web; `Package.swift`/`.xcodeproj` → apple), or by
 an explicit executable. Everything after the frontend's own `--` is passed through, so
 `--include`, `--android-sdk` and the other SootUp options keep working unchanged.
 
@@ -414,10 +416,14 @@ artifact in its language's own ecosystem, and the CLI fetches, verifies and runs
 | Frontend | Artifact | Published to | Runtime it needs |
 |---|---|---|---|
 | jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
-| web | npm package `@johnsonlee/graphite-frontend-web` with a `bin` | npm; GitHub Release tarball | Node 20+ |
+| js (aliases ts, es) | `graphite-frontend-js-<target>` with Bun, TypeScript and library declarations | GitHub Release executable and SHA-256 checksum per platform | Bundled Bun runtime |
 | apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
 
-How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
+For the shipped JS frontend, `graphite frontend install js` (aliases `ts` and `es`) fetches
+the package for the CLI's release by default. See the [installation and lookup
+rules](typescript-frontend.md#install-build-and-query).
+
+The proposed general frontend protocol discovers frontends in this order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
 executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
 If none is present, `graphite build` prints the exact `graphite frontend install <lang>`
 command and exits 2; `graphite frontend install` downloads the newest release asset whose
@@ -477,22 +483,27 @@ Becomes `graphite-frontend-jvm` with no analysis change; the only work is the IR
 (`arrow-java`) and the `describe` command. Kotlin, Java, Scala and Groovy are all covered
 at the bytecode level, which is why this frontend stays on the JVM.
 
-### 8.2 Web: TypeScript and JavaScript
+### 8.2 Web: compiled JavaScript artifacts
 
-Frontend: TypeScript compiler API (or `ts-morph` over it), which gives a resolved program
-for TS and for JS with `allowJs`/`checkJs`, including type information, symbol resolution,
-decorators and JSX. Input: a `tsconfig.json`/`package.json` project or a workspace
-(npm/pnpm/yarn workspaces, each package a `Module`). Mapping: modules → `Module`; classes,
-interfaces, enums, type aliases → `Type`; functions, methods, properties, arrow-function
-members → `Member`; calls, `new`, JSX elements and tagged templates → `CallSite` with the
-resolved symbol (or the syntactic callee text when unresolved, as SootUp does for
-reflection); decorators → `Annotation`; literals → `Constant`; `package.json`, `.env`,
-JSON/YAML config → `Resource`/`ResourceValue`. Data flow: assignments, parameter passing,
-returns and property stores from the checker's flow nodes; that is enough for the queries
-Graphite serves today (`value CONTAINS`, argument constants, endpoints). Routes and
-endpoints: framework adapters (Express/Koa/Nest routes, Next.js pages) as extension
-properties under `web.`. Bundled/minified inputs are out of scope for the first version;
-source maps can be a later input.
+The implemented frontend uses the TypeScript compiler API to analyze emitted
+JavaScript. Compile the target project using its own build tool first, then pass
+`.js`, `.mjs`, `.cjs`, or an artifact directory such as `.next`, `dist` or `build`.
+The explicit selectors `--lang js` and `--lang ts` use the same artifact frontend;
+TS/TSX/JSX source and `tsconfig.json` inputs are rejected. Graphite does not invoke
+project build scripts or install target dependencies during analysis.
+
+Graph identities and line numbers describe emitted modules/functions. Bundling,
+minification and compiler lowering can change these names and locations; source
+maps are not an input to the graph. Client and server output can be built into
+separate graphs and queried together using the existing Rust server. This does
+not itself infer React component lifecycles, Next.js routing or client/server
+runtime boundaries. Such framework extraction is additional work, not a
+property of accepting compiled framework artifacts.
+
+See [the artifact frontend guide](typescript-frontend.md) for its implemented
+graph model, limitations and build/save/query verification. The generic
+Module/Type/Member schema and framework `web.` extensions described elsewhere in
+this proposal remain future design, not guarantees of the artifact frontend.
 
 ### 8.3 Apple: Swift and Objective-C
 
@@ -525,7 +536,7 @@ Each is a frontend with the same three commands; none needs a backend change.
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK
   dependency once the JVM frontend is optional), and each frontend to its ecosystem (the
-  jar to the Release and Maven Central, the Web frontend to npm, the Apple frontend to the
+  jar to the Release and Maven Central, the JS frontend to the Release, the Apple frontend to the
   Release).
 - `graphite frontend install jvm` fetches the matching frontend into `~/.graphite/frontends/`
   (Section 6.6 for the artifacts, resolution order and the compatibility contract).

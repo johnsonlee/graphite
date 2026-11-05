@@ -1,0 +1,17 @@
+{
+  "name": "@graphite/frontend-ts",
+  "version": "2.5.0",
+  "private": true,
+  "description": "Compiled JavaScript artifact frontend for Graphite",
+  "type": "module",
+  "bin": { "graphite-frontend-js": "dist/cli.js", "graphite-frontend-ts": "dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "package:release": "npm run build && bun scripts/package-release.mjs"
+  },
+  "dependencies": { "typescript": "5.9.3" },
+  "devDependencies": { "@types/node": "20.19.43" }
+}

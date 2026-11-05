@@ -216,3 +216,104 @@ fn cancelled_and_timed_out_seed_scans_keep_their_errors() {
         .unwrap_err();
     assert!(matches!(err, CypherError::Timeout(0)));
 }
+
+#[test]
+fn inline_literal_seed_defers_predicates_that_need_later_bindings() {
+    for predicate in [
+        "r.kind = 'PARAMETER_PASS'",
+        "n.callee_name = 'success'",
+        "r.kind = $kind",
+        "(s.value = 'needle' AND r.kind = 'PARAMETER_PASS') OR (s.value = 'other' AND n.line = 1)",
+    ] {
+        let query = format!(
+            "MATCH (s:StringConstant {{value: 'needle'}})-[r]->(n) WHERE {predicate} RETURN n"
+        );
+        let (patterns, predicate) = parsed(&query);
+        let plan = StringSeedPlan::build(&patterns, predicate.as_ref(), &Row::new())
+            .expect("inline literal must retain its seed optimization");
+        assert!(
+            plan.conjunct.is_none(),
+            "must defer later bindings: {query}"
+        );
+    }
+    let (patterns, predicate) = parsed(
+        "MATCH (s:StringConstant {value: 'needle'})-[r]->(n) WHERE s.value STARTS WITH 'need' RETURN n",
+    );
+    let plan = StringSeedPlan::build(&patterns, predicate.as_ref(), &Row::new()).unwrap();
+    assert!(
+        plan.conjunct.is_some(),
+        "self-contained WHERE still seeds the walk"
+    );
+}
+
+#[test]
+fn persisted_inline_literal_relationship_filters_match_generic_across_graphs() {
+    use serde_json::json;
+    struct Temp(PathBuf);
+    impl Drop for Temp {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+    let path = Temp(std::env::temp_dir().join(format!(
+        "graphite-string-seed-bindings-{}",
+        std::process::id()
+    )));
+    let caller = json!({"declaringClass":"client.js", "name":"save", "parameterTypes":[], "returnType":"void"});
+    let success = json!({"declaringClass":"alerts", "name":"success", "parameterTypes":["string"], "returnType":"void"});
+    let other = json!({"declaringClass":"alerts", "name":"other", "parameterTypes":["string"], "returnType":"void"});
+    let graph_json = json!({"version":1,"methods":[caller,success,other],"nodes":[
+        {"id":0,"kind":"StringConstant","value":"User added"},
+        {"id":1,"kind":"CallSite","caller":caller,"callee":success,"line":10,"receiver":null,"arguments":[0]},
+        {"id":2,"kind":"CallSite","caller":caller,"callee":other,"line":11,"receiver":null,"arguments":[0]},
+        {"id":3,"kind":"StringConstant","value":"Unrelated"}
+    ],"edges":[
+        {"from":0,"to":1,"kind":"PARAMETER_PASS"},
+        {"from":0,"to":2,"kind":"ASSIGN"},
+        {"from":3,"to":1,"kind":"PARAMETER_PASS"}
+    ]});
+    graphite_storage::interchange::import_json(
+        serde_json::to_vec(&graph_json).unwrap().as_slice(),
+        &path.0,
+    )
+    .unwrap();
+    let ex = multi(Arc::new(Graph::load(&path.0).unwrap())).with_params(
+        [
+            ("kind".into(), Value::str("PARAMETER_PASS")),
+            ("name".into(), Value::str("success")),
+        ]
+        .into_iter()
+        .collect(),
+    );
+    for predicate in [
+        "r.kind = 'PARAMETER_PASS'",
+        "n.callee_name = 'success'",
+        "r.kind = $kind AND n.callee_name = $name",
+        "s.value STARTS WITH 'User' AND r.kind = 'PARAMETER_PASS'",
+        "(s.value = 'User added' AND r.kind = 'PARAMETER_PASS') OR (s.value = 'absent' AND n.callee_name = 'other')",
+    ] {
+        let suffix = format!("-[r]->(n:CallSiteNode) WHERE {predicate} RETURN graphId(s) AS graph, s.value AS value, r.kind AS kind, n.callee_name AS name ORDER BY graph");
+        let query = format!("MATCH (s:StringConstant {{value: 'User added'}}){suffix}");
+        // A nonliteral inline value leaves candidate enumeration to the general matcher.
+        let generic = format!("MATCH (s:StringConstant {{value: 'User added' + ''}}){suffix}");
+        let (patterns, pred) = parsed(&generic);
+        assert!(StringSeedPlan::build(&patterns, pred.as_ref(), &Row::new()).is_none());
+        let actual = ex.execute(&query, None).unwrap();
+        let expected = ex.execute(&generic, None).unwrap();
+        assert_eq!(format!("{actual:?}"), format!("{expected:?}"), "{query}");
+        assert_eq!(actual.rows.len(), 2, "one match from each actual graph: {query}");
+        for (row, graph) in actual.rows.iter().zip(["first", "second"]) {
+            assert_eq!(row["graph"].as_str(), Some(graph));
+            assert_eq!(row["value"].as_str(), Some("User added"));
+            assert_eq!(row["kind"].as_str(), Some("PARAMETER_PASS"));
+            assert_eq!(row["name"].as_str(), Some("success"));
+        }
+    }
+    let rejected = ex.execute(
+        "MATCH (s:StringConstant {value: 'User added'})-[r]->(n) WHERE r.kind = 'PARAMETER_PASS' AND n.callee_name = 'other' RETURN n", None,
+    ).unwrap();
+    assert!(
+        rejected.rows.is_empty(),
+        "deferred predicates must still filter complete rows"
+    );
+}

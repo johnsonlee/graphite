@@ -213,10 +213,13 @@ impl AggregateState {
             }
             Kind::Extreme { best, .. } => Ok(best.map(|(v, _)| v).unwrap_or(Value::Null)),
             Kind::Collect {
-                values,
+                mut values,
                 weighted: false,
                 ..
-            } => Ok(Value::list(values)),
+            } => {
+                values.shrink_to_fit();
+                Ok(Value::list(values))
+            }
             Kind::Collect { weighted: true, .. } => Err(CypherError::Runtime(format!(
                 "Aggregation {} cannot be applied to weighted rows",
                 agg.name

@@ -1,15 +1,35 @@
 //! Locating and describing frontends.
 //!
-//! A frontend turns compiled artifacts into a graph. The only one today is the JVM
-//! frontend, shipped as `graphite.jar` (the Kotlin CLI, whose `build` runs the SootUp
-//! analysis). This module finds it, finds a `java` to run it with, and reports what it
-//! found. Nothing here touches the real environment directly: every lookup goes through
+//! Frontends turn compiled artifacts into graphs. The JVM frontend runs SootUp;
+//! the JavaScript frontend analyzes emitted JS using a bundled TypeScript compiler.
+//! This module locates their launchers and runtimes and reports what it found. Nothing here touches the real environment directly: every lookup goes through
 //! [`Env`], so the search order is unit-tested against fake homes and PATHs.
 
 use serde_json::{json, Map, Value};
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Lang {
+    Jvm,
+    Js,
+}
+
+const MANAGED_FRONTENDS: &str = "~/.graphite/frontends";
+const JS_ALIASES: &[&str] = &["javascript", "ts", "typescript", "es"];
+
+impl Lang {
+    pub(crate) fn parse(value: &str) -> Result<Self, String> {
+        match value {
+            "jvm" => Ok(Self::Jvm),
+            name if name == "js" || JS_ALIASES.contains(&name) => Ok(Self::Js),
+            _ => Err(format!(
+                "unknown frontend '{value}'; available: jvm, js (aliases: ts, es)"
+            )),
+        }
+    }
+}
 
 /// The environment a lookup runs in: variables, the running executable, the home
 /// directory. Built from the process by [`Env::from_process`], or by hand in tests.
@@ -51,6 +71,10 @@ impl Env {
 
     /// The first executable called `name` on `PATH` (`name.exe` on Windows).
     pub fn which(&self, name: &str) -> Option<PathBuf> {
+        self.which_matching(name, Path::is_file)
+    }
+
+    fn which_matching(&self, name: &str, accept: impl Fn(&Path) -> bool) -> Option<PathBuf> {
         let candidates: Vec<String> = if cfg!(windows) {
             vec![format!("{name}.exe"), name.to_string()]
         } else {
@@ -58,7 +82,7 @@ impl Env {
         };
         self.path_dirs()
             .into_iter()
-            .find_map(|dir| candidates.iter().map(|c| dir.join(c)).find(|p| p.is_file()))
+            .find_map(|dir| candidates.iter().map(|c| dir.join(c)).find(|p| accept(p)))
     }
 
     /// `~/.graphite/frontends`, where `graphite frontend install` puts frontends.
@@ -74,7 +98,9 @@ impl Env {
 pub enum Launch {
     /// A jar, run as `java -jar <jar> <args>`.
     Jar(PathBuf),
-    /// An executable (`graphite-frontend-jvm` launcher), run directly.
+    /// A JavaScript entry point, run as `node <script> <args>`.
+    Node(PathBuf),
+    /// A native frontend or a user-supplied launcher, run directly.
     Executable(PathBuf),
 }
 
@@ -88,9 +114,32 @@ pub struct Frontend {
 }
 
 impl Frontend {
+    /// The base launcher, before a subcommand or process-specific options.
+    pub fn command(&self, env: &Env) -> Result<std::process::Command, String> {
+        use std::process::Command;
+        Ok(match &self.launch {
+            Launch::Jar(jar) => {
+                let mut cmd = Command::new(locate_java(env)?);
+                cmd.arg("-jar").arg(jar);
+                cmd
+            }
+            Launch::Node(script) => {
+                let mut cmd = Command::new(locate_node(env)?);
+                cmd.arg(script);
+                cmd
+            }
+            Launch::Executable(program)
+                if self.lang == "js" && self.found_via == MANAGED_FRONTENDS =>
+            {
+                managed_js_command(program)
+            }
+            Launch::Executable(program) => Command::new(program),
+        })
+    }
+
     pub fn path(&self) -> &Path {
         match &self.launch {
-            Launch::Jar(p) | Launch::Executable(p) => p,
+            Launch::Jar(p) | Launch::Node(p) | Launch::Executable(p) => p,
         }
     }
 }
@@ -103,6 +152,150 @@ pub const JAVA_VAR: &str = "GRAPHITE_JAVA";
 pub const JVM_FRONTEND_JAR: &str = "graphite-frontend-jvm.jar";
 /// The asset name on a GitHub release.
 pub const JVM_RELEASE_ASSET: &str = "graphite.jar";
+
+pub(crate) fn managed_js_command(program: &Path) -> std::process::Command {
+    let mut cmd = std::process::Command::new(program);
+    // Keep the embedded runtime in application mode. User Bun flags can
+    // otherwise launch the Bun CLI or preload code.
+    cmd.env_remove("BUN_BE_BUN").env_remove("BUN_OPTIONS");
+    cmd
+}
+
+/// A static Graphite CLI can run on either Linux libc. Select the frontend
+/// whose ELF interpreter is available on this host, independently of how the
+/// Rust binary was linked.
+pub fn js_release_asset() -> Result<String, String> {
+    js_release_asset_for(std::env::consts::OS, std::env::consts::ARCH, |loader| {
+        Path::new(loader).is_file()
+    })
+}
+
+fn js_release_asset_for(
+    os: &str,
+    arch: &str,
+    exists: impl Fn(&str) -> bool,
+) -> Result<String, String> {
+    let target = match (os, arch) {
+        ("macos", "aarch64" | "x86_64") => format!("{arch}-apple-darwin"),
+        ("linux", "aarch64" | "x86_64") => {
+            let gnu = if arch == "aarch64" {
+                "/lib/ld-linux-aarch64.so.1"
+            } else {
+                "/lib64/ld-linux-x86-64.so.2"
+            };
+            let musl = format!("/lib/ld-musl-{arch}.so.1");
+            let musl_available = exists(&musl);
+            // Alpine's gcompat and older libc6-compat expose a GNU loader path
+            // that launches musl. Select the native binary on those hosts.
+            let native_musl =
+                musl_available && (exists("/etc/alpine-release") || exists("/lib/libgcompat.so.0"));
+            let libc = if !native_musl && exists(gnu) {
+                "gnu"
+            } else if musl_available {
+                "musl"
+            } else {
+                return Err(format!(
+                    "no compatible JS frontend for {os}/{arch}: expected {gnu} or {musl}"
+                ));
+            };
+            format!("{arch}-unknown-linux-{libc}")
+        }
+        _ => {
+            return Err(format!(
+            "no JS frontend release for {os}/{arch}; use {JS_FRONTEND_VAR} to supply a frontend"
+        ))
+        }
+    };
+    Ok(format!("graphite-frontend-js-{target}"))
+}
+
+/// Pin the emitted-JavaScript frontend entry point or executable launcher.
+pub const JS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_JS";
+/// Compatibility alias for the same JavaScript frontend.
+pub const TS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_TS";
+/// Pin the Node.js runtime used for a JavaScript entry point.
+pub const NODE_VAR: &str = "GRAPHITE_NODE";
+
+pub(crate) fn is_launcher(path: &Path) -> bool {
+    let Ok(meta) = path.metadata() else {
+        return false;
+    };
+    if !meta.is_file() {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        meta.permissions().mode() & 0o111 != 0
+    }
+    #[cfg(not(unix))]
+    {
+        path.extension().is_some_and(|ext| {
+            ["exe", "com", "cmd", "bat"]
+                .iter()
+                .any(|suffix| ext.eq_ignore_ascii_case(suffix))
+        })
+    }
+}
+
+/// Emitted-JavaScript analysis is opt-in. Prefer the JS name, retaining TS aliases.
+pub fn locate_js(env: &Env) -> Option<Frontend> {
+    for variable in [JS_FRONTEND_VAR, TS_FRONTEND_VAR] {
+        if let Some(path) = env.var_path(variable) {
+            let launch = match path.extension().and_then(|e| e.to_str()) {
+                Some("js" | "mjs" | "cjs") if path.is_file() => Launch::Node(path),
+                _ if is_launcher(&path) => Launch::Executable(path),
+                _ => {
+                    eprintln!(
+                        "Warning: {variable}={} is not a usable JavaScript file or executable launcher; continuing frontend discovery.",
+                        path.display()
+                    );
+                    continue;
+                }
+            };
+            return Some(Frontend {
+                lang: "js",
+                launch,
+                found_via: variable,
+            });
+        }
+    }
+    ["graphite-frontend-js", "graphite-frontend-ts"]
+        .iter()
+        .find_map(|name| {
+            env.which_matching(name, is_launcher).map(|path| Frontend {
+                lang: "js",
+                launch: Launch::Executable(path),
+                found_via: "PATH",
+            })
+        })
+        .or_else(|| {
+            let installed = env.frontends_dir()?.join("js");
+            Some(Frontend {
+                lang: "js",
+                launch: Launch::Executable(newest_installed(
+                    &installed,
+                    &js_release_asset().ok()?,
+                    is_launcher,
+                    |name| semver::Version::parse(name).ok(),
+                )?),
+                found_via: MANAGED_FRONTENDS,
+            })
+        })
+}
+
+pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
+    env.var_path(NODE_VAR).or_else(|| env.which("node")).ok_or_else(|| {
+        format!("node not found. This JavaScript entry point needs Node.js: put node on PATH or set {NODE_VAR}.")
+    })
+}
+
+pub fn missing_js_message() -> String {
+    format!(
+        "No JavaScript artifact frontend found. Install it with `graphite frontend install js`, \
+         or set {JS_FRONTEND_VAR} to a built JavaScript frontend entry point."
+    )
+}
 
 /// Find the JVM frontend. The order, first match wins:
 ///
@@ -150,35 +343,34 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
         });
     }
     let installed = env.frontends_dir()?.join("jvm");
-    let jar = newest_installed_jar(&installed)?;
+    let jar = newest_installed(&installed, JVM_FRONTEND_JAR, Path::is_file, |name| {
+        Some(VersionKey::parse(name))
+    })?;
     Some(Frontend {
         lang: "jvm",
         launch: Launch::Jar(jar),
-        found_via: "~/.graphite/frontends",
+        found_via: MANAGED_FRONTENDS,
     })
 }
 
-/// The jar of the highest-versioned *complete* install under `dir`, comparing dotted
-/// numeric components first and pre-release suffixes after (`2.5.0` > `2.5.0-rc.1` >
-/// `2.4.9`). A version directory without the jar (an install that failed or is still
-/// downloading) is not a candidate, so it never hides an older install that works.
-fn newest_installed_jar(dir: &Path) -> Option<PathBuf> {
-    let mut versions: Vec<(VersionKey, PathBuf)> = std::fs::read_dir(dir)
+/// Find the entry point of the highest-versioned complete install. An unfinished
+/// installation never hides a usable older frontend.
+fn newest_installed<K: Ord>(
+    dir: &Path,
+    entry_point: &str,
+    usable: fn(&Path) -> bool,
+    version_key: impl Fn(&str) -> Option<K>,
+) -> Option<PathBuf> {
+    std::fs::read_dir(dir)
         .ok()?
-        .filter_map(|e| e.ok())
-        .map(|e| e.path().join(JVM_FRONTEND_JAR))
-        .filter(|jar| jar.is_file())
-        .map(|jar| {
-            let version = jar
-                .parent()
-                .and_then(Path::file_name)
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
-            (VersionKey::parse(&version), jar)
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let path = entry.path().join(entry_point);
+            let version = version_key(&entry.file_name().to_string_lossy())?;
+            usable(&path).then_some((version, path))
         })
-        .collect();
-    versions.sort();
-    versions.pop().map(|(_, jar)| jar)
+        .max()
+        .map(|(_, path)| path)
 }
 
 /// Sort key for a version string: numeric components, then a flag for "is a release"
@@ -269,6 +461,7 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
         "kind".into(),
         json!(match frontend.launch {
             Launch::Jar(_) => "jar",
+            Launch::Node(_) => "node",
             Launch::Executable(_) => "executable",
         }),
     );
@@ -277,11 +470,25 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
     m.insert("version".into(), json!(version));
     m.insert(
         "inputs".into(),
-        json!(["jar", "war", "apk", "aar", "dex", "class directory"]),
+        if frontend.lang == "js" {
+            json!([
+                ".js",
+                ".mjs",
+                ".cjs",
+                "compiled artifact directory (.next, dist, build)"
+            ])
+        } else {
+            json!(["jar", "war", "apk", "aar", "dex", "class directory"])
+        },
     );
-    // The jar-era frontend writes the persisted graph itself; it emits no IR yet.
-    m.insert("ir_schema".into(), json!([]));
-    m.insert("writes".into(), json!("persisted-graph"));
+    if frontend.lang == "js" {
+        m.insert("aliases".into(), json!(JS_ALIASES));
+        m.insert("ir_schema".into(), json!(["graphite-graph-v1"]));
+        m.insert("writes".into(), json!("graph-json"));
+    } else {
+        m.insert("ir_schema".into(), json!([]));
+        m.insert("writes".into(), json!("persisted-graph"));
+    }
     Value::Object(m)
 }
 
@@ -400,6 +607,79 @@ mod tests {
         assert_eq!(found.launch, Launch::Executable(launcher));
         assert_eq!(found.found_via, "PATH");
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn js_assets_match_supported_hosts_and_prefer_an_available_gnu_interpreter() {
+        for (arch, gnu) in [
+            ("aarch64", "/lib/ld-linux-aarch64.so.1"),
+            ("x86_64", "/lib64/ld-linux-x86-64.so.2"),
+        ] {
+            let musl = format!("/lib/ld-musl-{arch}.so.1");
+            let darwin_asset = js_release_asset_for("macos", arch, |_| false).unwrap();
+            assert_eq!(
+                darwin_asset,
+                format!("graphite-frontend-js-{arch}-apple-darwin")
+            );
+            for (paths, libc) in [
+                (vec![gnu], "gnu"),
+                (vec![musl.as_str()], "musl"),
+                (vec![gnu, &musl], "gnu"),
+                (vec![gnu, &musl, "/etc/alpine-release"], "musl"),
+                (vec![gnu, &musl, "/lib/libgcompat.so.0"], "musl"),
+            ] {
+                assert_eq!(
+                    js_release_asset_for("linux", arch, |path| paths.contains(&path)).unwrap(),
+                    format!("graphite-frontend-js-{arch}-unknown-linux-{libc}")
+                );
+            }
+            let missing = js_release_asset_for("linux", arch, |_| false).unwrap_err();
+            assert!(missing.contains(gnu) && missing.contains(&musl));
+        }
+        for (os, arch) in [("windows", "x86_64"), ("linux", "riscv64")] {
+            assert!(js_release_asset_for(os, arch, |_| true)
+                .unwrap_err()
+                .contains(&format!("{os}/{arch}")));
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn js_discovery_picks_the_newest_complete_host_executable_and_keeps_overrides() {
+        use std::os::unix::fs::PermissionsExt;
+        let Ok(asset) = js_release_asset() else {
+            return;
+        };
+        let root = tempfile::tempdir().unwrap();
+        let mut env = Env {
+            home: Some(root.path().into()),
+            ..Default::default()
+        };
+        let base = env.frontends_dir().unwrap().join("js");
+        let executable = |file: PathBuf| {
+            touch(&file);
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755)).unwrap();
+        };
+        for v in ["2.5.0", "2.6.0-rc.2", "2.6.0-rc.10", ".tmp-install"] {
+            executable(base.join(v).join(&asset));
+        }
+        touch(&base.join("9.0.0").join(&asset)); // incomplete or non-executable
+        executable(base.join("9.1.0/graphite-frontend-js-foreign-target"));
+        touch(&base.join("9.2.0/package/dist/cli.js"));
+        assert_eq!(
+            locate_js(&env).unwrap().path(),
+            base.join("2.6.0-rc.10").join(&asset)
+        );
+        let stable = base.join("2.6.0+release").join(&asset);
+        executable(stable.clone());
+        let managed = locate_js(&env).unwrap();
+        assert_eq!(managed.launch, Launch::Executable(stable));
+        assert_eq!(managed.found_via, "~/.graphite/frontends");
+        let pinned = root.path().join("custom.js");
+        touch(&pinned);
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), pinned.clone().into_os_string());
+        assert_eq!(locate_js(&env).unwrap().launch, Launch::Node(pinned));
     }
 
     #[test]
@@ -527,6 +807,72 @@ mod tests {
         let d = describe(&fe, None);
         assert_eq!(d["kind"], "executable");
         assert!(d["version"].is_null());
+    }
+
+    #[test]
+    fn javascript_discovery_preserves_ts_alias_and_prefers_explicit_js_names() {
+        let root = temp_dir("ts");
+        let make_launcher = |name: &str| {
+            let path = root.join(format!("{name}{}", std::env::consts::EXE_SUFFIX));
+            touch(&path);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+            }
+            path
+        };
+        let launcher = make_launcher("graphite-frontend-ts");
+        let mut env = env_with(&[("PATH", &root)]);
+        assert_eq!(
+            locate_js(&env).unwrap().launch,
+            Launch::Executable(launcher.clone())
+        );
+        for extension in ["js", "mjs", "cjs"] {
+            let entry = root.join(format!("cli.{extension}"));
+            touch(&entry);
+            env.vars
+                .insert(TS_FRONTEND_VAR.into(), entry.clone().into_os_string());
+            let frontend = locate_js(&env).unwrap();
+            assert_eq!(frontend.launch, Launch::Node(entry));
+            let descriptor = describe(&frontend, Some("1.0.0".into()));
+            assert_eq!(descriptor["name"], "js");
+            assert_eq!(descriptor["kind"], "node");
+            assert_eq!(descriptor["writes"], "graph-json");
+            assert_eq!(descriptor["inputs"][0], ".js");
+        }
+        let source = root.join("cli.ts");
+        touch(&source);
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), source.into_os_string());
+        assert_eq!(locate_js(&env).unwrap().found_via, "PATH");
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), launcher.clone().into_os_string());
+        assert_eq!(
+            locate_js(&env).unwrap().launch,
+            Launch::Executable(launcher)
+        );
+        let preferred_entry = root.join("preferred.js");
+        env.vars.insert(
+            JS_FRONTEND_VAR.into(),
+            preferred_entry.clone().into_os_string(),
+        );
+        assert_eq!(locate_js(&env).unwrap().found_via, TS_FRONTEND_VAR);
+        touch(&preferred_entry);
+        let preferred = locate_js(&env).unwrap();
+        assert_eq!(preferred.launch, Launch::Node(preferred_entry));
+        assert_eq!(preferred.found_via, JS_FRONTEND_VAR);
+        env.vars.remove(JS_FRONTEND_VAR);
+        env.vars.remove(TS_FRONTEND_VAR);
+        let js_launcher = make_launcher("graphite-frontend-js");
+        assert_eq!(
+            locate_js(&env).unwrap().launch,
+            Launch::Executable(js_launcher)
+        );
+        assert!(locate_node(&env).is_err());
+        env.vars.insert(NODE_VAR.into(), "/custom/node".into());
+        assert_eq!(locate_node(&env).unwrap(), PathBuf::from("/custom/node"));
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
