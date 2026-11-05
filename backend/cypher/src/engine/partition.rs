@@ -573,6 +573,31 @@ impl PartitionPlan {
         if p.path_variable.is_some() || p.rels.iter().any(|r| !r.properties.is_empty()) {
             return None;
         }
+        // Partitions below classify a node by the resolved tag domain. Extra
+        // labels must accept that entire domain, or the ordinary matcher must
+        // enforce their intersection before aggregation.
+        for node in &p.nodes {
+            match resolve_node_class(&node.labels) {
+                NodeClass::Method => {
+                    if node
+                        .labels
+                        .iter()
+                        .any(|label| !super::props::is_method_label(label))
+                    {
+                        return None;
+                    }
+                }
+                NodeClass::Tags(tags) => {
+                    for label in node.labels.iter().skip(1) {
+                        let allowed = super::props::label_tags(label)?;
+                        if tags.iter().any(|tag| !allowed.contains(tag)) {
+                            return None;
+                        }
+                    }
+                }
+                NodeClass::None => return None,
+            }
+        }
         let mut consumed = 1;
         let mut where_clause = match_where;
         if let Some(Clause::Where(e)) = clauses.get(1) {

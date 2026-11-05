@@ -23248,3 +23248,62 @@ relabeling its observations. New same-code/data and same-data/code controls use
 independently built executables and explicit dataset provenance. This attempt
 retains the cache-isolation guard and the concurrent rebase integration fix;
 it does not remove metadata or weaken late-error detection to obtain speed.
+
+### Attempt313 — materialize only bounded winning CallSite groups (2026-11-05)
+
+**Parent and observed tradeoff.** Retain attempt312 at `152abe6e`: all complete
+real64 responses matched, collect p95 fell from about1.8seconds to about1millisecond,
+and the full mixed query CPU fell approximately60%. All three declared loading and
+query CPU/kernel-peak-RSS pairs met their independent5% bounds. The same workload
+showed higher grouped count/WITH latency: removing the long collect request changed
+the closed-loop in-flight combination. Conservative HTTP interval analysis shows
+group/group overlap in20/20 requests per round rather than2/20. This is evidence of
+changed overlap, not proof of a particular hardware or scheduling cause. A separate
+64-graph CPU sample identifies `grouped_call_site_property` allocation, per-source
+sorting and grouped-WITH projection as the remaining implementation work. Sampled
+run timings are diagnostic and excluded from acceptance.
+
+**Predeclared hypothesis.** After every source proves its complete string dictionary,
+CallSite frames, IDs, property/postings coverage and ordering, accumulate global
+counts in borrowed-text compact state. Retain each group's first source/node encounter.
+Select only the bounded highest-count/first-encounter winners, or the first groups
+passing the already-supported complete global count predicate. Allocate ordinary
+rows, strings and full contributing-graph provenance only for those winners. Use
+certified dictionary and CSR presence to recover provenance, without enumerating
+posting runs for discarded groups. Keep unsupported shapes and failed proofs on the
+unchanged raw/generic path. Do not change data, storage layout, predicate support,
+feature coverage or concurrency to obtain numbers.
+
+**Correctness.** All304 Cypher library tests pass with native-core and every required
+declared-type/inherited fixture; strict workspace all-target/all-feature Clippy,
+format and diff checks pass. New direct-entry and true-generic differential tests
+cover stable ties, every scalar field, late-source winner/threshold changes, exact
+threshold exclusion, complete provenance, empty/zero outputs, malformed/stale/unsorted
+or duplicate index evidence, and cached cancellation. The true generic oracle also
+exposed existing extra-label admission bugs in count/partition fallback. Reject
+additional labels that do not cover the entire proven domain; valid aliases retain
+the strategy and other cases reach the ordinary matcher. This is a correctness
+restriction, not a new label-intersection optimization. Initial failing tests are
+retained; the initial len-zero lint diagnostic survives only in the tool transcript
+because its intermediate file was overwritten. No performance sample was lost.
+
+**Matched validation.** The immediate runtime parent is152abe6e, equivalent to the
+CI-only merge0e82c44a. The accepted current main runtime is97488be2, equivalent to
+CI-only mainc86fe745. Freeze all actual binaries before rebuilding; use independent
+physical targets and record exact source/executable identities. Reuse sealed real64
+production inputs under the already-proven unchanged JVM writer/build closure.
+First measure the incremental parent/candidate on identical saved head graphs, then
+the cumulative candidate against main on the declared base/head graph sets. Preserve
+73 exact global64 query texts, complete typed response checks, four workers, two
+warmups and twenty measured requests per case across AB/BA/AB rounds. Do not compare
+focused five-case absolute values with the full73-case mix. Preserve all earlier
+runs, positive/negative differences and failures.
+
+**Independent conclusions.** Loading includes readiness and all first-use responses;
+query CPU is its complete mixed pressure-stage delta, while kernel RSS is the
+separately declared fresh-server lifetime peak. Check each operation/pair CPU and RSS
+against independent5% limits. Report every case's p50/p95 and paired ranges, complete
+workload time, correctness and stability separately. Source tests establish no
+performance benefit by themselves. Final measured results and the keep/revert decision
+are sealed in the immutable PR154 benchmark attachment and its experiment-history
+copy; do not interpret an intermediate positive increment as completed recovery.

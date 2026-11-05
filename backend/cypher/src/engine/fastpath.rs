@@ -16,6 +16,10 @@ use graphite_storage::node::{read_call_site_strings, StrId, TAG_CALL_SITE_NODE};
 use graphite_storage::Graph;
 use indexmap::IndexMap;
 
+mod bounded_groups;
+
+pub(super) use bounded_groups::bounded_call_site_groups;
+
 /// `MATCH (n[:Label]) RETURN count(*)` / `count(n)` — answered from node counts.
 pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<QueryResult>> {
     // A trailing LIMIT is tolerated: `execute(query, max_rows)` appends one, and a
@@ -64,9 +68,24 @@ pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<Quer
         return Ok(None);
     }
     let tags = match resolve_node_class(&patterns[0].nodes[0].labels) {
-        NodeClass::Tags(t) => t,
+        NodeClass::Tags(t) => {
+            if p.nodes[0].labels.iter().skip(1).any(|label| {
+                !super::props::label_tags(label)
+                    .is_some_and(|allowed| t.iter().all(|tag| allowed.contains(tag)))
+            }) {
+                return Ok(None);
+            }
+            t
+        }
         // Method nodes are counted from metadata; an unknown label counts nothing.
         NodeClass::Method => {
+            if p.nodes[0]
+                .labels
+                .iter()
+                .any(|label| !super::props::is_method_label(label))
+            {
+                return Ok(None);
+            }
             let per_source: Vec<i64> = ex
                 .sources
                 .iter()
@@ -120,15 +139,25 @@ pub fn grouped_call_site_property(
     ex: &Executor,
     clauses: &[Clause],
 ) -> CypherResult<Option<QueryResult>> {
-    grouped_call_site_property_with_counts(ex, clauses, indexed_call_site_property_counts)
+    grouped_call_site_property_impl(ex, clauses, indexed_call_site_property_counts, true)
 }
 
-// The row merge, count sort, LIMIT and provenance remain one shared implementation.
-// Tests supply the retained raw counter as an independent index-free oracle.
+// Retain the original full-row merge/sort path for an independent index-free
+// test oracle, without the bounded winner specialization.
+#[cfg(test)]
 fn grouped_call_site_property_with_counts(
     ex: &Executor,
     clauses: &[Clause],
     counts_for: fn(&Executor, &Graph, usize) -> CypherResult<IndexMap<StrId, i64>>,
+) -> CypherResult<Option<QueryResult>> {
+    grouped_call_site_property_impl(ex, clauses, counts_for, false)
+}
+
+fn grouped_call_site_property_impl(
+    ex: &Executor,
+    clauses: &[Clause],
+    counts_for: fn(&Executor, &Graph, usize) -> CypherResult<IndexMap<StrId, i64>>,
+    bounded: bool,
 ) -> CypherResult<Option<QueryResult>> {
     // Shape: MATCH, RETURN, then optional ORDER BY and LIMIT.
     let (patterns, items) = match match_shape_prefix(clauses)? {
@@ -159,7 +188,9 @@ fn grouped_call_site_property_with_counts(
     if !matches!(
         resolve_node_class(&patterns[0].nodes[0].labels),
         NodeClass::Tags(ref t) if t.as_slice() == [TAG_CALL_SITE_NODE]
-    ) {
+    ) || patterns[0].nodes[0].labels.iter().any(|label| {
+        !super::props::label_tags(label).is_some_and(|tags| tags.contains(&TAG_CALL_SITE_NODE))
+    }) {
         return Ok(None);
     }
     // Only "order by the count alias, descending" is accelerated. A bare `count(*)`
@@ -188,6 +219,15 @@ fn grouped_call_site_property_with_counts(
             .clone()
             .unwrap_or_else(|| to_cypher_string(&items[1].expr)),
     ];
+    if bounded {
+        if let Some(limit) = limit {
+            if let Some(result) =
+                bounded_call_site_groups(ex, field, &columns, limit, None, descending_by_count)?
+            {
+                return Ok(Some(result));
+            }
+        }
+    }
     // Counting by string id keeps each graph's aggregation in integers. Groups are
     // one per value across every graph, as the baseline aggregates the union of the
     // sources' rows: a value seen in two graphs is one row, its counts summed and
