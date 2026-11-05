@@ -1,0 +1,375 @@
+apple-corpus-calibration (signal-ios)	Set up job	﻿2026-10-08T14:51:14.4331850Z Current runner version: '2.337.0'
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4349680Z ##[group]Runner Image Provisioner
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4350330Z Hosted Compute Agent
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4350710Z Version: 20260828.587
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4351130Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4351630Z Build Date: 2026-08-28T16:44:25Z
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4352070Z Worker ID: {9601443a-1277-4dd7-875b-599aa3d83084}
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4352550Z Azure Region: westus
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4352910Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4353800Z ##[group]Operating System
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4354190Z macOS
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4354510Z 15.7.9
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4354830Z 24G830
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4355150Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4355490Z ##[group]Runner Image
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4355870Z Image: macos-15-arm64
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4356230Z Version: 20260907.0337.1
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4356960Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260907.0337/images/macos/macos-15-arm64-Readme.md
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4358100Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4358750Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4359480Z ##[group]GITHUB_TOKEN Permissions
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4360830Z Contents: read
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4361190Z Metadata: read
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4361530Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4363050Z Secret source: Actions
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4363630Z Cache mode: write
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4364070Z Prepare workflow directory
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.4915630Z Prepare all required actions
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.5003240Z Getting action download info
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:14.9842410Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:15.2955960Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:15.7101630Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:16.2569030Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:16.7090040Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+apple-corpus-calibration (signal-ios)	Set up job	2026-10-08T14:51:17.2759650Z Complete job name: apple-corpus-calibration (signal-ios)
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	﻿2026-10-08T14:51:17.3596490Z ##[group]Run actions/checkout@v7
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3597410Z with:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3597980Z   ref: 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3598720Z   repository: johnsonlee/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3604690Z   token: ***
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3605200Z   ssh-strict: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3605710Z   ssh-user: git
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3606230Z   persist-credentials: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3606820Z   clean: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3607350Z   sparse-checkout-cone-mode: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3607980Z   fetch-depth: 1
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3608500Z   fetch-tags: false
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3609040Z   show-progress: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3609830Z   lfs: false
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3610330Z   submodules: false
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3610900Z   set-safe-directory: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3611600Z   allow-unsafe-pr-checkout: false
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3612690Z env:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3613260Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3613900Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3614490Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3615230Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3615930Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.3616680Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.7474290Z Syncing repository: johnsonlee/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.7476520Z ##[group]Getting Git version info
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.7477540Z Working directory is '/Users/runner/work/graphite/graphite'
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.7481700Z [command]/opt/homebrew/bin/git version
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8036210Z git version 2.55.0
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8078560Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8094110Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/ef7742de-baf2-49c8-a5fe-1b3734ef066d/.gitconfig'
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8105590Z Temporarily overriding HOME='/Users/runner/work/_temp/ef7742de-baf2-49c8-a5fe-1b3734ef066d' before making global git config changes
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8111150Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8115720Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8372960Z Deleting the contents of '/Users/runner/work/graphite/graphite'
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8374640Z ##[group]Determining repository object format
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8376300Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8380770Z ##[group]Initializing the repository
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8384970Z [command]/opt/homebrew/bin/git init /Users/runner/work/graphite/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8615940Z hint: Using 'master' as the name for the initial branch. This default branch name
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8618900Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8623930Z hint: to use in all of your new repositories, which will suppress this warning,
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8626380Z hint: call:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8628000Z hint:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8631820Z hint: 	git config --global init.defaultBranch <name>
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8635200Z hint:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8636650Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8639560Z hint: 'development'. The just-created branch can be renamed via this command:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8640670Z hint:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8641370Z hint: 	git branch -m <name>
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8643100Z hint:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8644010Z hint: Disable this message with "git config set advice.defaultBranchName false"
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8646100Z Initialized empty Git repository in /Users/runner/work/graphite/graphite/.git/
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8648610Z [command]/opt/homebrew/bin/git remote add origin https://github.com/johnsonlee/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8754570Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8756280Z ##[group]Disabling automatic garbage collection
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8758740Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8930350Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8957520Z ##[group]Setting up auth
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8961530Z Removing SSH command configuration
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.8964090Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:17.9058450Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.1604690Z Removing HTTP extra header
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.1637810Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.1715100Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.3222260Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.3267350Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.3305470Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.4961590Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5011810Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git.path /Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5124700Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5261710Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5342070Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5411690Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5440580Z ##[group]Fetching the repository
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:18.5442000Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7058360Z From https://github.com/johnsonlee/graphite
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7059790Z  * branch            357a6206a8a13fa2491d5ecaae16801493a89448 -> FETCH_HEAD
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7066670Z [command]/opt/homebrew/bin/git rev-parse --verify --quiet 357a6206a8a13fa2491d5ecaae16801493a89448^{object}
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7144900Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7150820Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7151780Z ##[group]Determining the checkout info
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7152750Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7160560Z [command]/opt/homebrew/bin/git sparse-checkout disable
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7251180Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7319780Z ##[group]Checking out the ref
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.7321680Z [command]/opt/homebrew/bin/git checkout --progress --force 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.8831210Z HEAD is now at 357a620 Resolve copied framework headers and Swift sendable signatures
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.8864920Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.8984610Z [command]/opt/homebrew/bin/git log -1 --format=%H
+apple-corpus-calibration (signal-ios)	Run actions/checkout@v7	2026-10-08T14:51:19.9105740Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	﻿2026-10-08T14:51:19.9435870Z ##[group]Run maxim-lobanov/setup-xcode@v1
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9436320Z with:
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9436570Z   xcode-version: 16.4
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9436790Z env:
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9437050Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9437470Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9437760Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9438050Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9438440Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:19.9439570Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:20.0414380Z Switching Xcode to version '16.4'...
+apple-corpus-calibration (signal-ios)	Select the corpus compiler	2026-10-08T14:51:20.1484640Z Xcode is set to 16.4.0 (16F6)
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	﻿2026-10-08T14:51:20.1656560Z ##[group]Run actions/setup-java@v5
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1656830Z with:
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657030Z   distribution: temurin
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657230Z   java-version: 17
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657450Z   java-package: jdk
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657600Z   check-latest: false
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657770Z   set-default: true
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1657940Z   verify-signature: false
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1658130Z   server-id: github
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1658310Z   server-username: GITHUB_ACTOR
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1658570Z   server-password: GITHUB_TOKEN
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1658780Z   overwrite-settings: true
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1658980Z   job-status: success
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1660980Z   token: ***
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1661170Z   show-download-progress: false
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1661380Z env:
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1661530Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1661750Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1661930Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1662190Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1662510Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1662790Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.1663430Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3504630Z ##[group]Installed distributions
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3575130Z Resolved Java 17.0.20+101 from tool-cache
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3575560Z Setting Java 17.0.20+101 as the default
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3588020Z Creating toolchains.xml for JDK version 17 from temurin
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3676350Z Writing to /Users/runner/.m2/toolchains.xml
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3680740Z 
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3681620Z Java configuration:
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3682510Z   Distribution: temurin
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3683490Z   Version: 17.0.20+101
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3684760Z   Path: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3688430Z 
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3690490Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3743380Z Creating settings.xml with server-id: github
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3743810Z Writing to /Users/runner/.m2/settings.xml
+apple-corpus-calibration (signal-ios)	Run actions/setup-java@v5	2026-10-08T14:51:20.3744420Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	﻿2026-10-08T14:51:20.3953320Z ##[group]Run actions/download-artifact@v8
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3954060Z with:
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3954340Z   name: release-v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3954610Z   path: dry-run
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3954790Z   merge-multiple: false
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3955030Z   repository: johnsonlee/graphite
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3955260Z   run-id: 37794100367
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3955500Z   skip-decompress: false
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3955710Z   digest-mismatch: error
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3955910Z env:
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3956100Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3956350Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3956880Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3957160Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3957430Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3957730Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3958200Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3958870Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3959300Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.3959460Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.5405020Z Downloading single artifact
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.8844070Z Preparing to download the following artifacts:
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:20.8846420Z - release-v2.11.3-apple-validation.3 (ID: 11558358183, Size: 104057364, Expected Digest: sha256:0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345)
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:21.4301080Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/5a22544b-7623-4687-99eb-b5460af5b718/workflow-job-run-812102e3-5da6-5bcb-b604-047e312301bb/artifacts/2a0af7fe4df4bc80dedab45798fdf588a22db20b0469ddbf570e2f402266d1c8.zip
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:21.4360970Z Starting download of artifact to: /Users/runner/work/graphite/graphite/dry-run
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:21.8061970Z (node:1173) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:21.8064610Z (Use `node --trace-deprecation ...` to show where the warning was created)
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:33.1592550Z SHA256 digest of downloaded artifact is 0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:33.1594640Z Artifact download completed successfully.
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:33.1595170Z Total of 1 artifact(s) downloaded
+apple-corpus-calibration (signal-ios)	Run actions/download-artifact@v8	2026-10-08T14:51:33.1606890Z Download artifact has finished successfully
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	﻿2026-10-08T14:51:33.1880690Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1881190Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1881530Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1882090Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-aarch64-apple-darwin.tar.gz"[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1895550Z [36;1m(cd "${ASSETS}" && shasum -a 256 -c "${ASSET}.sha256" graphite.jar.sha256)[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1896900Z [36;1mmkdir -p "${RUNNER_TEMP}/calibration-frontend" calibration-results[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1898220Z [36;1mtar -xzf "${ASSETS}/${ASSET}" -C "${RUNNER_TEMP}/calibration-frontend"[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1899540Z [36;1mcp "backend/bench/apple-frontend-corpus-xcode.json" calibration-results/corpus.json[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1900780Z [36;1mpython3 - <<'PY'[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1901490Z [36;1mimport json, os, pathlib[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1902590Z [36;1moriginal = json.loads(pathlib.Path("calibration-results/corpus.json").read_text())[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1903990Z [36;1munpinned = {**original, "shape": None, "files": None, "ceilings": None, "baselineShapes": {}}[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1906000Z [36;1mpathlib.Path("calibration-results/unpinned-corpus.json").write_text(json.dumps(unpinned, indent=2) + "\n")[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1907520Z [36;1mpathlib.Path("calibration-results/scope.json").write_text(json.dumps({[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1908870Z [36;1m    "purpose": "real-source calibration only", "performanceAcceptance": False,[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1910330Z [36;1m    "revision": os.environ["GITHUB_SHA"], "releaseVersion": os.environ["RELEASE_VERSION"],[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1912360Z [36;1m    "baseline": os.environ["BASELINE_SHA"], "baselinePurpose": "shape calibration only; no paired acceptance", "timedBoundary": "existing compiler index store through IR emission",[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1914490Z [36;1m    "excluded": ["compilation", "import/save timing", "graph load", "server query latency"],[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1915700Z [36;1m}, indent=2) + "\n")[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.1916300Z [36;1mPY[0m
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2729070Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2729550Z env:
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2729800Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2730120Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2730480Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2730780Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2731150Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2731550Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2732040Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2732790Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2733330Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.2733540Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.5075130Z graphite-frontend-apple-2.11.3-apple-validation.3-aarch64-apple-darwin.tar.gz: OK
+apple-corpus-calibration (signal-ios)	Verify and unpack the final frontend release asset	2026-10-08T14:51:33.7222920Z graphite.jar: OK
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	﻿2026-10-08T14:51:34.1628130Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1628790Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1629130Z [36;1mpython3 backend/bench/prepare-apple-corpus.py \[0m
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1629820Z [36;1m  --corpus "backend/bench/apple-frontend-corpus-xcode.json" --out "${RUNNER_TEMP}/corpus" \[0m
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1630560Z [36;1m  --derived-data "${RUNNER_TEMP}/derived-data" --log calibration-results/prepare.log[0m
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1673250Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1674510Z env:
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1675360Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1676290Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1677170Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1678040Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1678940Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1679380Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1679960Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1680730Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1681630Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.1681850Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.3970290Z Preparing corpus: git init --quiet /Users/runner/work/_temp/corpus
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.4243290Z Preparing corpus: git -C /Users/runner/work/_temp/corpus remote add origin https://github.com/signalapp/Signal-iOS.git
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:34.4353300Z Preparing corpus: git -C /Users/runner/work/_temp/corpus fetch --quiet --depth 1 origin dc04157b3adef68af2136a12478f455e41e5d2e0
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:37.7519870Z Preparing corpus: git -C /Users/runner/work/_temp/corpus checkout --quiet dc04157b3adef68af2136a12478f455e41e5d2e0
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:38.6313990Z Preparing corpus: git -C /Users/runner/work/_temp/corpus submodule update --init --depth 1 Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:51:54.5366430Z Preparing corpus: /Users/runner/work/_temp/corpus/Pods/SignalRingRTC/bin/set-up-for-cocoapods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:52:06.0603410Z Preparing corpus: xcodebuild -workspace /Users/runner/work/_temp/corpus/Signal.xcworkspace -scheme Signal -configuration Debug -derivedDataPath /Users/runner/work/_temp/derived-data -destination generic/platform=iOS Simulator -jobs 4 build COMPILER_INDEX_STORE_ENABLE=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5148500Z error: corpus preparation failed (exit 65); see /Users/runner/work/graphite/graphite/calibration-results/prepare.log
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5257550Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5361450Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5462960Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5573350Z SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/Attestation/Attestation.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5574440Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5694110Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5795880Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5894160Z SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/Attestation/AttestationVerifier.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.5997500Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6099830Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6204440Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6309470Z SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/Connection/AttestedCallError.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6413350Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6517400Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6619340Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6725500Z SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/AttestedConnectionConfig.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6839190Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.6951370Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7065170Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7167190Z SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/HttpConnection/HttpCallable/AttestedHttpCallable.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7290480Z     cd /Users/runner/work/_temp/corpus/Pods
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7414640Z     
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7515680Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7623440Z SwiftDriverJobDiscovery normal arm64 Compiling attest.http.swift, attest.pb.swift, blockchain.pb.swift, consensus_client.http.swift, consensus_client.pb.swift, consensus_common.http.swift, consensus_common.pb.swift, consensus_config.pb.swift, external.pb.swift, fog_common.pb.swift, HTTPCallOptions.swift, HTTPCallType.swift, HTTPClient.swift (in target 'LibMobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7728190Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7929910Z SwiftCompile normal x86_64 Compiling\ TransactionSubmitter.swift,\ TransferPayload.swift,\ TransportProtocol.swift,\ TransportProtocol+CombinedSupportedProtocols.swift,\ TransportProtocol+CombinedTimetout.swift,\ TxOut.swift,\ TxOutConfirmationNumber.swift,\ TxOutContext.swift,\ TxOutMembershipProof.swift,\ TxOutMemoBuilder.swift,\ TxOutMemoParser.swift,\ TxOutProtocol.swift,\ TxOutSelectionStrategy.swift,\ TxOutSelector.swift,\ TxOutUtils.swift,\ UInt32+Crc32.swift,\ UnsignedInteger+SafeArithmetic.swift,\ UnsignedInteger+SafeComparison.swift,\ URL+Prefix.swift,\ UrlLoadBalancer.swift,\ URLRequest+ProtoHeaders.swift,\ VersionedCryptoBox.swift,\ WrappedNIOSSLCertificateValidator.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/TransactionSubmitter.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Encodings/TransferPayload.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/TransportProtocol.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/ProtocolSpecific/Combined/TransportProtocol+CombinedSupportedProtocols.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/ProtocolSpecific/Combined/TransportProtocol+CombinedTimetout.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOut.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Outputs/TxOutConfirmationNumber.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Outputs/TxOutContext.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutMembershipProof.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/TxOutMemoBuilder.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Memos/TxOutMemoParser.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutProtocol.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Inputs/TxOutSelectionStrategy.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Inputs/TxOutSelector.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutUtils.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/UInt32+Crc32.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/SafeArithmetic/UnsignedInteger+SafeArithmetic.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/SafeArithmetic/UnsignedInteger+SafeComparison.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/Utils/URL+Prefix.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/UrlLoadBalancer.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/Utils/URLRequest+ProtoHeaders.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Crypto/VersionedCryptoBox.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/HTTPOnly/WrappedNIOSSLCertificateValidator.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.7963960Z Command SwiftCompile failed with a nonzero exit code
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8066680Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8170510Z /Users/runner/work/_temp/corpus/Signal.xcodeproj: warning: tasks in 'Copy Headers' are delayed by unsandboxed script phases; set ENABLE_USER_SCRIPT_SANDBOXING=YES to enable sandboxing (in target 'SignalUI' from project 'Signal')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8278430Z /Users/runner/work/_temp/corpus/Signal.xcodeproj: warning: tasks in 'Copy Headers' are delayed by unsandboxed script phases; set ENABLE_USER_SCRIPT_SANDBOXING=YES to enable sandboxing (in target 'SignalServiceKit' from project 'Signal')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8389740Z note: Run script build phase '[CP-User] Download libsignal-ffi if not in cache' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'LibSignalClient' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8494530Z ** BUILD FAILED **
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8597040Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8717100Z 
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8860010Z The following build commands failed:
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.8970680Z 	SwiftCompile normal x86_64 Compiling\ FogView+TxOutFetcher.swift,\ FogViewConnection.swift,\ FogViewHttpConnection.swift,\ FogViewKeyScanner.swift,\ FogViewUtils.swift,\ ForgetOfframp.swift,\ GetOfframpStatus.swift,\ GrpcProtocolConnectionFactory+HTTPonly.swift,\ HexEncoding.swift,\ HistoricalTransaction.swift,\ HttpCallable.swift,\ HttpCallResult.swift,\ HttpConnection.swift,\ HttpProtocolConnectionFactory.swift,\ HttpRequester.swift,\ ImmutableOnceReadLock.swift,\ InfallibleDataSerializable.swift,\ InfiniteIteratorProtocol.swift,\ InitiateOfframp.swift,\ JSONSerialization+Verification.swift,\ KeyImage.swift,\ KeyImageSpentTracker.swift,\ KnownTxOut.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Fog/View/FogView+TxOutFetcher.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/Connection/Connections/FogViewConnection.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/HttpConnection/HttpConnections/FogViewHttpConnection.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Fog/FogViewKeyScanner.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Fog/View/FogViewUtils.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Mistyswap/ForgetOfframp.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Mistyswap/GetOfframpStatus.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/ProtocolSpecific/Combined/GrpcProtocolConnectionFactory+HTTPonly.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/Encoding/HexEncoding.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Memos/HistoricalTransaction.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/HttpConnection/HttpCallable/HttpCallable.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/Utils/HttpCallResult.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/HttpConnection/HttpConnection.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/HttpProtocolConnectionFactory.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/HttpRequester.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/Locks/ImmutableOnceReadLock.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/Serialization/InfallibleDataSerializable.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/InfiniteIterator/InfiniteIteratorProtocol.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Mistyswap/InitiateOfframp.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/JSONSerialization+Verification.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/KeyImage.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/KeyImageSpentTracker.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/KnownTxOut.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.9083110Z 	SwiftCompile normal x86_64 /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Fog/View/FogView+TxOutFetcher.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.9195930Z 	SwiftCompile normal x86_64 Compiling\ TransactionSubmitter.swift,\ TransferPayload.swift,\ TransportProtocol.swift,\ TransportProtocol+CombinedSupportedProtocols.swift,\ TransportProtocol+CombinedTimetout.swift,\ TxOut.swift,\ TxOutConfirmationNumber.swift,\ TxOutContext.swift,\ TxOutMembershipProof.swift,\ TxOutMemoBuilder.swift,\ TxOutMemoParser.swift,\ TxOutProtocol.swift,\ TxOutSelectionStrategy.swift,\ TxOutSelector.swift,\ TxOutUtils.swift,\ UInt32+Crc32.swift,\ UnsignedInteger+SafeArithmetic.swift,\ UnsignedInteger+SafeComparison.swift,\ URL+Prefix.swift,\ UrlLoadBalancer.swift,\ URLRequest+ProtoHeaders.swift,\ VersionedCryptoBox.swift,\ WrappedNIOSSLCertificateValidator.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/TransactionSubmitter.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Encodings/TransferPayload.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/TransportProtocol.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/ProtocolSpecific/Combined/TransportProtocol+CombinedSupportedProtocols.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/ProtocolSpecific/Combined/TransportProtocol+CombinedTimetout.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOut.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Outputs/TxOutConfirmationNumber.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Outputs/TxOutContext.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutMembershipProof.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/TxOutMemoBuilder.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Memos/TxOutMemoParser.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutProtocol.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Inputs/TxOutSelectionStrategy.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Transaction/Inputs/TxOutSelector.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Ledger/TxOutUtils.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/UInt32+Crc32.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/SafeArithmetic/UnsignedInteger+SafeArithmetic.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Utils/SafeArithmetic/UnsignedInteger+SafeComparison.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/Utils/URL+Prefix.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Network/UrlLoadBalancer.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/HTTPS/Utils/URLRequest+ProtoHeaders.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/Sources/Common/Crypto/VersionedCryptoBox.swift /Users/runner/work/_temp/corpus/Pods/MobileCoin/HTTPOnly/WrappedNIOSSLCertificateValidator.swift (in target 'MobileCoin' from project 'Pods')
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.9324000Z 	Building workspace Signal with scheme Signal and configuration Debug
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.9428310Z (4 failures)
+apple-corpus-calibration (signal-ios)	Prepare the pinned real source corpus	2026-10-08T14:56:50.9726440Z ##[error]Process completed with exit code 1.
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	﻿2026-10-08T14:56:51.0543290Z ##[group]Run actions/upload-artifact@v7
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0543720Z with:
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0544340Z   name: apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0544890Z   path: calibration-results/
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0545170Z   if-no-files-found: error
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0545490Z   retention-days: 30
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0545660Z   compression-level: 6
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0545980Z   overwrite: false
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0546580Z   include-hidden-files: false
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0546930Z   archive: true
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0547270Z env:
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0547520Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0548000Z   DRY_RUN: true
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0548360Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0548710Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0549060Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0549440Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0550040Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0550970Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0551540Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:51.0552020Z ##[endgroup]
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.0441800Z With the provided path, there will be 5 files uploaded
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.0653330Z Artifact name is valid!
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.0757050Z Root directory input is valid!
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.3954810Z Uploading artifact: apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.3.zip
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.4189600Z Beginning upload of artifact content to blob storage
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:52.9893310Z Uploaded bytes 238900
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.0811740Z Finished uploading artifact content to blob storage!
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.0913190Z SHA256 digest of uploaded artifact is 103131cef4672ca141c8bc8a17487417dcd1ab2df18cf6c1f9510b95d046ebb8
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.1015830Z Finalizing artifact upload
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.5882210Z Artifact apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.3 successfully finalized. Artifact ID 11558891215
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.5991680Z Artifact apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.3 has been successfully uploaded! Final size is 238900 bytes. Artifact ID is 11558891215
+apple-corpus-calibration (signal-ios)	Run actions/upload-artifact@v7	2026-10-08T14:56:53.6102260Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37794100367/artifacts/11558891215
+apple-corpus-calibration (signal-ios)	Post Run actions/setup-java@v5	﻿2026-10-08T14:56:53.6453570Z Post job cleanup.
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	﻿2026-10-08T14:56:53.9911310Z Post job cleanup.
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.2456630Z [command]/opt/homebrew/bin/git version
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.3311650Z git version 2.55.0
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.3846070Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/c6296adf-440c-40be-b3e2-0b0b6c7ad2e3/.gitconfig'
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.3968870Z Temporarily overriding HOME='/Users/runner/work/_temp/c6296adf-440c-40be-b3e2-0b0b6c7ad2e3' before making global git config changes
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.4066060Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.4169150Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.4474410Z Removing SSH command configuration
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.4576410Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.4884170Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.7200260Z Removing HTTP extra header
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.7303800Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:54.7523810Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0187380Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0299600Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0424330Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0543980Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0647140Z includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.0774390Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.1081210Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.1184540Z /Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.1495660Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-856b70c8\-086f\-445e\-88f5\-87c17f5a0013\.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.1806540Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.1910160Z /Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.2116950Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-856b70c8\-086f\-445e\-88f5\-87c17f5a0013\.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.2426860Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.2532820Z /github/runner_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.2842070Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-856b70c8\-086f\-445e\-88f5\-87c17f5a0013\.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.3150710Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.3252150Z /github/runner_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.3562080Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-856b70c8\-086f\-445e\-88f5\-87c17f5a0013\.config
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.3875700Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (signal-ios)	Post Run actions/checkout@v7	2026-10-08T14:56:55.4336420Z Removing credentials config '/Users/runner/work/_temp/git-credentials-856b70c8-086f-445e-88f5-87c17f5a0013.config'
+apple-corpus-calibration (signal-ios)	Complete job	﻿2026-10-08T14:56:55.4747930Z Cleaning up orphan processes

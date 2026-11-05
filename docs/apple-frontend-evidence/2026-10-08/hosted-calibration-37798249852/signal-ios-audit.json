@@ -1,0 +1,231 @@
+{
+  "scope": {
+    "purpose": "real-source calibration only",
+    "performanceAcceptance": false,
+    "revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+    "releaseVersion": "2.11.3-apple-validation.4",
+    "baseline": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+    "baselinePurpose": "shape calibration only; no paired acceptance",
+    "timedBoundary": "existing compiler index store through IR emission",
+    "excluded": [
+      "compilation",
+      "import/save timing",
+      "graph load",
+      "server query latency"
+    ]
+  },
+  "toolchain": {
+    "platform": "macOS-15.7.9-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "swift": "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)\nTarget: arm64-apple-macosx15.0",
+    "xcode": "Xcode 16.4\nBuild version 16F6"
+  },
+  "candidate": {
+    "shape": {
+      "files": 3853,
+      "types": 9334,
+      "methods": 43578,
+      "fields": 37077,
+      "callSites": 200315,
+      "constants": 39516,
+      "annotations": 5771,
+      "nodes": 449760,
+      "edges": 206597,
+      "strings": 140713
+    },
+    "irSha": "cb6111bffd6a33a42a393c687e58d4828bb7164ce6e656ee2bd68f31b57e0c6d",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/signalapp/Signal-iOS.git",
+        "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
+        "submodules": {
+          "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+          "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+        }
+      },
+      "command": [
+        "/Users/runner/work/_temp/calibration-frontend/graphite-frontend-apple",
+        "build",
+        "--project",
+        "/Users/runner/work/_temp/corpus/Signal.xcworkspace",
+        "--derived-data",
+        "/Users/runner/work/_temp/derived-data",
+        "--skip-build",
+        "--out",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/apple-frontend-bench-zxg_o71u/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": null,
+      "wallMs": 51951.327583000195,
+      "cpuMs": 37378.531,
+      "userMs": 30797.784,
+      "systemMs": 6580.746999999999,
+      "peakRssBytes": 969916416,
+      "exitCode": 0,
+      "shape": {
+        "files": 3853,
+        "types": 9334,
+        "methods": 43578,
+        "fields": 37077,
+        "callSites": 200315,
+        "constants": 39516,
+        "annotations": 5771,
+        "nodes": 449760,
+        "edges": 206597,
+        "strings": 140713
+      },
+      "sha256": "cb6111bffd6a33a42a393c687e58d4828bb7164ce6e656ee2bd68f31b57e0c6d"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 45720.037208000125,
+        "min": 44764.81391700008,
+        "max": 49665.77591600003,
+        "raw": [
+          45720.037208000125,
+          45148.65587500003,
+          49665.77591600003,
+          49323.93016599985,
+          44764.81391700008
+        ]
+      },
+      "cpuMs": {
+        "median": 36758.423,
+        "min": 35606.882999999994,
+        "max": 37917.726,
+        "raw": [
+          35628.950000000004,
+          36758.423,
+          37917.726,
+          37843.736,
+          35606.882999999994
+        ]
+      },
+      "peakRssMiB": {
+        "median": 925.328125,
+        "min": 919.6875,
+        "max": 933.65625,
+        "raw": [
+          920.65625,
+          933.65625,
+          925.328125,
+          926.484375,
+          919.6875
+        ]
+      }
+    },
+    "baselineRevision": null
+  },
+  "baseline": {
+    "shape": {
+      "files": 2594,
+      "types": 6718,
+      "methods": 31695,
+      "fields": 27524,
+      "callSites": 156129,
+      "constants": 34428,
+      "annotations": 4943,
+      "nodes": 357780,
+      "edges": 169184,
+      "strings": 111202
+    },
+    "irSha": "26fefc73e304793c78d76e50fa3955ec7e6c45368d16688b3b8fa6789ad81b55",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/signalapp/Signal-iOS.git",
+        "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
+        "submodules": {
+          "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+          "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+        }
+      },
+      "command": [
+        "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+        "build",
+        "--project",
+        "/Users/runner/work/_temp/corpus/Signal.xcworkspace",
+        "--derived-data",
+        "/Users/runner/work/_temp/derived-data",
+        "--skip-build",
+        "--out",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/apple-frontend-bench-hjft3c9g/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+      "wallMs": 39142.176750000086,
+      "cpuMs": 28390.104,
+      "userMs": 23780.673,
+      "systemMs": 4609.431,
+      "peakRssBytes": 812679168,
+      "exitCode": 0,
+      "shape": {
+        "files": 2594,
+        "types": 6718,
+        "methods": 31695,
+        "fields": 27524,
+        "callSites": 156129,
+        "constants": 34428,
+        "annotations": 4943,
+        "nodes": 357780,
+        "edges": 169184,
+        "strings": 111202
+      },
+      "sha256": "26fefc73e304793c78d76e50fa3955ec7e6c45368d16688b3b8fa6789ad81b55"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 28062.417625000082,
+        "min": 26661.808500000006,
+        "max": 30964.288375000026,
+        "raw": [
+          26915.104374999828,
+          28062.417625000082,
+          26661.808500000006,
+          28192.716250000103,
+          30964.288375000026
+        ]
+      },
+      "cpuMs": {
+        "median": 25164.619000000002,
+        "min": 24467.679,
+        "max": 27469.449999999997,
+        "raw": [
+          24579.8,
+          25164.619000000002,
+          24467.679,
+          26027.778000000002,
+          27469.449999999997
+        ]
+      },
+      "peakRssMiB": {
+        "median": 766.0625,
+        "min": 762.09375,
+        "max": 776.65625,
+        "raw": [
+          764.5,
+          776.65625,
+          768.515625,
+          766.0625,
+          762.09375
+        ]
+      }
+    },
+    "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+  },
+  "proposedCeilings": {
+    "wallMs": 74500,
+    "rssMiB": 1408
+  },
+  "policy": "hosted-bootstrap-ceiling-policy.md, declared before inspecting candidate samples at 2026-10-08T15:32:34.797571+00:00; sampling may already have occurred.",
+  "performanceAcceptance": false
+}

@@ -1,0 +1,127 @@
+{
+  "IRSummary": {
+    "strings": 130944,
+    "edges": 199849,
+    "nodes": 560895
+  },
+  "irNodeKinds": {
+    "AnnotationNode": 6280,
+    "BooleanConstant": 4536,
+    "CallSiteNode": 190396,
+    "DoubleConstant": 675,
+    "FieldNode": 34748,
+    "IntConstant": 7131,
+    "LocalVariable": 154938,
+    "LongConstant": 1,
+    "NullConstant": 2253,
+    "ParameterNode": 12217,
+    "ResourceFileNode": 91,
+    "ResourceValueNode": 123844,
+    "ReturnNode": 3481,
+    "StringConstant": 20304
+  },
+  "savedNodeKinds": {
+    "AnnotationNode": 6280,
+    "BooleanConstant": 4536,
+    "CallSiteNode": 190396,
+    "DoubleConstant": 675,
+    "FieldNode": 34748,
+    "IntConstant": 7131,
+    "LocalVariable": 154938,
+    "LongConstant": 1,
+    "NullConstant": 2253,
+    "ParameterNode": 12217,
+    "ResourceFileNode": 91,
+    "ResourceValueNode": 123844,
+    "ReturnNode": 3481,
+    "StringConstant": 20304
+  },
+  "irEdgeKinds": {
+    "DataFlowEdge": 199849
+  },
+  "savedEdgeKinds": {
+    "DataFlowEdge": 199849
+  },
+  "reverseEdgesScanned": 199849,
+  "nodeIdsScanned": 560895,
+  "metadata": {
+    "methods": {
+      "savedEntries": 42519,
+      "irEntries": 42519
+    },
+    "serializedMethods": {
+      "savedEntries": 42519,
+      "irEntries": 42519
+    },
+    "classOrigins": {
+      "savedEntries": 8416,
+      "irEntries": 8416
+    },
+    "memberAnnotations": {
+      "savedEntries": 5881,
+      "irEntries": 5881
+    },
+    "artifactDependencies": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "syntheticIdentities": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "branchScopes": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "localDefinitions": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "hierarchyTypeKeys": 6296,
+    "hierarchyKeysWithSupertype": 5308,
+    "hierarchyKeysWithSubtype": 1305,
+    "serializedSupertypes": {
+      "savedEntries": 5308,
+      "irEntries": 5308
+    },
+    "serializedSubtypes": {
+      "savedEntries": 1305,
+      "irEntries": 1305
+    },
+    "enumValues": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "serializedEnumEntries": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "IRRawEnumEntries": 10037,
+    "publicEnumIndexIR": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "publicEnumIndexSaved": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "signalEnumLookup": {
+      "uniqueDeclaredCases": 10027,
+      "mappedEmptyArrays": 10027,
+      "undefinedSentinelAbsent": true
+    },
+    "declaredTypes": {
+      "types": 0,
+      "methods": 0,
+      "fields": 0,
+      "classes": 0
+    },
+    "binaryResourceAccessorEntries": {
+      "savedEntries": 0,
+      "irEntries": 0
+    }
+  },
+  "differences": {},
+  "exampleDifferences": [],
+  "matched": true
+}

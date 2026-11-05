@@ -48,7 +48,149 @@ struct DecodedIR {
         case .booleanConstant(let c): return "\(c.value)"
         case .nullConstant: return "nil"
         case .localVariable(let v): return "<\(str(v.name))>"
+        case .parameter(let p): return "<parameter:\(p.index)>"
         default: return "?"
+        }
+    }
+}
+
+/// Exercise SwiftPM itself: its release indexing defaults and header discovery differ
+/// from the directory-based fixtures used by the other frontend tests.
+final class SwiftPMFrontendRegressionTests: XCTestCase {
+    private func package(_ files: [String: String], run: (URL) throws -> Void) throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("graphite-swiftpm-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        for (path, text) in files {
+            let file = root.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try text.write(to: file, atomically: true, encoding: .utf8)
+        }
+        try run(root)
+    }
+
+    func testReleaseBuildProducesAnIndexedGraph() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "ReleaseProbe", targets: [.target(name: "ReleaseProbe")])
+            """,
+            "Sources/ReleaseProbe/Probe.swift": """
+            public struct Probe {
+                public static func read(_ key: String) -> Bool { true }
+                public static func run() -> Bool { read("release.flag") }
+            }
+            """,
+        ]) { root in
+            var options = BuildOptions()
+            options.package = root.path
+            options.configuration = "release"
+            let output = root.appendingPathComponent("release.graphite-ir")
+            let result = try Frontend(options: options).build(to: output)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: result.indexStore))
+            let graph = try DecodedIR(url: output)
+            XCTAssertEqual(graph.origins.map(\.className), ["ReleaseProbe.Probe"])
+            let call = try XCTUnwrap(graph.callSites.first { graph.str($0.callee.name) == "read(_:)" })
+            XCTAssertEqual(graph.signature(call.caller), "ReleaseProbe.Probe.run()() -> Swift.Bool")
+            XCTAssertEqual(graph.signature(call.callee), "ReleaseProbe.Probe.read(_:)(Swift.String) -> Swift.Bool")
+            XCTAssertEqual(call.arguments.map(graph.literal), ["\"release.flag\""])
+        }
+    }
+
+    func testSourceSelectionRequiresIndexOccurrencesNotGraphNodes() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "ScopeProbe", targets: [.target(name: "ScopeProbe")])
+            """,
+            "Sources/ScopeProbe/Marker.swift": "public protocol Marker {}",
+            "Other/Marker.swift": "public protocol Unindexed {}",
+        ]) { root in
+            let output = root.appendingPathComponent("scope.graphite-ir")
+            var options = BuildOptions()
+            options.package = root.path
+            let build = try Frontend(options: options).build(to: output)
+            let metadata = try DecodedIR(url: output)
+            XCTAssertEqual(metadata.origins.map(\.className), ["ScopeProbe.Marker"])
+            XCTAssertTrue(metadata.nodes.isEmpty)
+            XCTAssertEqual(build.filesWithOccurrences, 1)
+
+            options = BuildOptions()
+            options.indexStore = build.indexStore
+            options.sources = [root.appendingPathComponent("Other/Marker.swift").path]
+            let saved = try Data(contentsOf: output)
+            let absent = root.appendingPathComponent("unmatched.graphite-ir")
+            for target in [output, absent] {
+                XCTAssertThrowsError(try Frontend(options: options).build(to: target)) {
+                    guard case FrontendError.noIndexedSources(let store, let files) = $0 else {
+                        return XCTFail("unexpected error: \($0)")
+                    }
+                    XCTAssertEqual(store, build.indexStore)
+                    XCTAssertEqual(files, 1)
+                }
+            }
+            XCTAssertEqual(try Data(contentsOf: output), saved)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: absent.path))
+
+            options.sources.append(root.appendingPathComponent("Sources/ScopeProbe/Marker.swift").path)
+            let partial = try Frontend(options: options).build(to: absent)
+            XCTAssertEqual(partial.files, 2)
+            XCTAssertEqual(partial.filesWithOccurrences, 1)
+            XCTAssertEqual(try DecodedIR(url: absent).origins.map(\.className), ["ScopeProbe.Marker"])
+        }
+    }
+
+    func testSwiftPMIncludesObjectiveCHeaderDeclarationsAndNullability() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "Legacy", targets: [
+                .target(name: "Legacy", path: "Custom/Legacy", exclude: ["Excluded"], publicHeadersPath: "Public")
+            ])
+            """,
+            "Custom/Legacy/Public/Legacy.h": """
+            #pragma clang assume_nonnull begin
+            @protocol Reading
+            @property (readonly) int enabled;
+            - (const char *)readName;
+            @end
+            __attribute__((objc_root_class))
+            @interface Legacy
+            @property (readonly) int count;
+            - (const char *)lookup:(const char *)key;
+            @end
+            #pragma clang assume_nonnull end
+            """,
+            "Custom/Legacy/Legacy.m": """
+            #import "Legacy.h"
+            @implementation Legacy
+            - (int)count { return 1; }
+            - (const char *)lookup:(const char *)key { return key; }
+            @end
+            """,
+            "Custom/Legacy/Excluded/Ignore.h": "@interface Ignored\n@end\n",
+        ]) { root in
+            var options = BuildOptions()
+            options.package = root.path
+            let output = root.appendingPathComponent("legacy.graphite-ir")
+            let result = try Frontend(options: options).build(to: output)
+            XCTAssertEqual(result.files, 2, "the implementation and custom public header, excluding ignored headers")
+            let graph = try DecodedIR(url: output)
+            XCTAssertTrue(graph.origins.contains { $0.className == "Reading" || $0.className == "Legacy.Reading" })
+            let fields = graph.nodes.values.compactMap { node -> GraphiteIRField? in
+                if case .field(let field)? = node.kind { return field }
+                return nil
+            }
+            XCTAssertEqual(Set(fields.map { "\(graph.str($0.field.name)): \(graph.type($0.field.type))" }), ["enabled: int", "count: int"])
+            let lookup = try XCTUnwrap(graph.methods.first { graph.str($0.name) == "lookup:" })
+            XCTAssertEqual(lookup.parameterTypes.map(graph.type), ["const char * _Nonnull"])
+            XCTAssertEqual(graph.type(lookup.returnType), "const char * _Nonnull")
+            let readName = try XCTUnwrap(graph.methods.first { graph.str($0.name) == "readName" })
+            XCTAssertEqual(readName.parameterTypes, [])
+            XCTAssertEqual(graph.type(readName.returnType), "const char * _Nonnull")
+            XCTAssertFalse(graph.origins.contains { $0.className.contains("Ignored") })
         }
     }
 }
@@ -216,7 +358,8 @@ final class FrontendTests: XCTestCase {
             let id = ir.nodes.first { $0.value.callSite == site }!.key
             for argument in site.arguments { XCTAssertTrue(flows.contains("\(argument)->\(id)")) }
         }
-        XCTAssertEqual(flows.count, ir.edges.count)
+        XCTAssertEqual(flows.count, sites.reduce(0) { $0 + $1.arguments.count })
+        XCTAssertTrue(ir.edges.allSatisfy { [.parameterPass, .assign, .returnValue].contains($0.dataFlow.kind) })
         XCTAssertEqual(sites.count, 24)
     }
 

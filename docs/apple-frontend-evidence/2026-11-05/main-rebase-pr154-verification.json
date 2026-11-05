@@ -1,0 +1,78 @@
+{
+  "branch": "codex/pr154-0818-correctness-onto-main-7c59",
+  "main": "7c59d7993be51f0807495890d068effcfaff155b",
+  "firstCommit": "8c5b16928bd4f0b15fc279624f480139670ee468",
+  "head": "d2a21a1b24fefc631e4bff15bc1d6abc95f0aa23",
+  "oldLocalHead": "3d41966b64e94fa4a7423058cfa4047de2c8400c",
+  "integratedAppleTree": "d3b97b9e27f15dd6eabb581af2e5d76fe6c71e20",
+  "unchangedMainObjects": {
+    "frontend/web": "d0b938c9a970036eedd23073a181ccf85aacb992",
+    "benchmark": "fcfb99cf4a6ab3fd6f880d3f4908e8f1ea5d2985",
+    ".github/workflows/benchmark.yml": "34ca5af36a4fa85e1da47c9e5773bac82be97f74",
+    ".github/workflows/benchmark-comment.yml": "fb34e4ec29504f04e6a2cc33ee5fa299a2296651",
+    ".github/workflows/typescript.yml": "6e36e80f2435c808b4fecc24b3eff8236532a3c5",
+    "CONVENTIONS.md": "826f5aa2d9face93a7a1ac8b3ad3d7be4c1e604a",
+    "cli/src/build_output.rs": "65f61cd4817a3bfa4b34a7bf2ef31d378e94a545",
+    "cli/src/install/js.rs": "fbc925dfadaff327be6bc61009498295970422db"
+  },
+  "jvm": {
+    "main": "7c59d7993be51f0807495890d068effcfaff155b",
+    "integrationDiffSHA256": "56a61665817bdac47f0377400491c35320fd00a3bf441c6caa078fdaf0866d82",
+    "jarSHA256": "2881d1dd80abb7da309d24edd0d1ea80a5d60b69702ec0e58d2233395e2df3e6",
+    "irSHA256": "bcac16ff2e3a02fc3e42c6d923532acc4d713a2a05093239d6a709d051fd5969",
+    "irEmitterCommit": "3d41966b64e94fa4a7423058cfa4047de2c8400c",
+    "savedQueries": {
+      "PackageDescription-config": [
+        {
+          "facts": "1"
+        }
+      ],
+      "PackageLoading-config": [
+        {
+          "facts": "1"
+        }
+      ],
+      "PackagePlugin-subpath": [
+        {
+          "facts": "1"
+        }
+      ],
+      "SPMBuildCore-subpath": [
+        {
+          "facts": "1"
+        }
+      ],
+      "PackageDescription-encoder": [
+        {
+          "facts": "1"
+        }
+      ],
+      "PackageLoading-encoder": [
+        {
+          "facts": "1"
+        }
+      ]
+    },
+    "gradleSuites": {
+      "io.johnsonlee.graphite.ir.IrReaderTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "io.johnsonlee.graphite.cli.ImportCommandTest": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "cliFastSuiteCounts": [
+    102,
+    3,
+    3
+  ],
+  "clippyLog": "../cli-clippy.log",
+  "scope": "Local rebase with Swift repair, correctness verification and release workflow tests. No remote refs modified by coordinator."
+}

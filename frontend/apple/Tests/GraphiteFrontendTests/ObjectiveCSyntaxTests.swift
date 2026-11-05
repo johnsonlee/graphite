@@ -123,6 +123,50 @@ final class ObjectiveCSyntaxTests: XCTestCase {
         "\(declaration.isStatic ? "+" : "-")(\(declaration.returnType ?? "?"))\(declaration.parameterTypes)"
     }
 
+    func testCLinkageGroupsContainDeclarationsRatherThanAnOpaqueBody() throws {
+        let path = "/src/Stream.h"
+        let source = """
+        #ifdef __cplusplus
+        extern "C" {
+        #endif
+        typedef enum { MODE_RGB = 0 } COLOR_MODE;
+        typedef struct Stream {
+            const uint8_t *bytes;
+            size_t length;
+            COLOR_MODE colorspace;
+        } Stream;
+        static inline int isRGB(const COLOR_MODE mode) { return mode == MODE_RGB; }
+        void use_mode(const COLOR_MODE, const COLOR_MODE *value);
+        int32_t stream_read(void *stream, uint16_t *value);
+        extern "C" { extern const int defaultMode; }
+        static inline int helper(void) {
+            const char *local = "C";
+            return local[0];
+        }
+        #ifdef __cplusplus
+        }
+        #endif
+        extern "C" unsigned long after(void);
+        int outside;
+        """
+        let facts = ObjectiveCSyntax.parse(source: source, path: path)
+        func at(_ name: String) throws -> String {
+            describe(try declaration(facts, name, in: source, path: path))
+        }
+        XCTAssertEqual(try at("bytes"), "-(const uint8_t *)[]")
+        XCTAssertEqual(try at("length"), "-(size_t)[]")
+        XCTAssertEqual(try at("colorspace"), "-(COLOR_MODE)[]")
+        XCTAssertEqual(try at("isRGB"), "+(int)[\"const COLOR_MODE\"]")
+        XCTAssertEqual(try at("use_mode"), "+(void)[\"const COLOR_MODE\", \"const COLOR_MODE *\"]")
+        XCTAssertEqual(try at("stream_read"), "+(int32_t)[\"void *\", \"uint16_t *\"]")
+        XCTAssertEqual(try at("defaultMode"), "+(const int)[]")
+        XCTAssertEqual(try at("helper"), "+(int)[]")
+        XCTAssertEqual(try at("after"), "+(unsigned long)[]")
+        XCTAssertEqual(try at("outside"), "+(int)[]")
+        XCTAssertNil(facts.declarations[Self.position(of: "local", in: source, path: path)])
+        XCTAssertEqual(facts.declarations.count, 10)
+    }
+
     func testHeaderDeclarations() throws {
         let path = "/src/LegacyStore.h"
         let source = Self.header
@@ -169,6 +213,66 @@ final class ObjectiveCSyntaxTests: XCTestCase {
         XCTAssertEqual(facts.declarations.count, 29)
         XCTAssertTrue(facts.calls.isEmpty)
         XCTAssertTrue(facts.attributes.isEmpty)
+    }
+
+    func testIndexedMethodRecoveryRequiresTheFullSelectorRoleAndExactUTF8Position() throws {
+        let path = "/src/Zip.m"
+        let source = """
+        @implementation Zip
+        + (long)existing { return 1; }
+        - (void)previous {
+        #if LEGACY
+            if (old) {
+        #else
+            if (modern) {
+        #endif
+            }
+        }
+        /*é*/ + (void)zipInfo:(zip_fileinfo *)info setDate:(NSDate *)date
+        { }
+        + (NSCalendar *)calendar { return nil; }
+        - (NSDate *)dateFrom:(UInt32)msdos { return nil; }
+        + (MAYBE_TYPE)macroType { return 0; }
+        + (int)split:
+        #if WIDE
+            (long)n
+        #else
+            (int)n
+        #endif
+        { return 0; }
+        @end
+        """
+        typealias Anchor = ObjectiveCSyntax.IndexedMethod
+        func position(_ name: String) -> SourcePosition { Self.position(of: name, in: source, path: path) }
+        func anchor(_ name: String, selector: String, isStatic: Bool) -> Anchor {
+            Anchor(position: position(name), selector: selector, isStatic: isStatic)
+        }
+        func recover(_ anchors: [Anchor]) -> SyntaxFacts {
+            ObjectiveCSyntax.parse(bytes: Array(source.utf8), path: path, indexedMethods: anchors)
+        }
+        let zip = anchor("zipInfo", selector: "zipInfo:setDate:", isStatic: true)
+        let calendar = anchor("calendar", selector: "calendar", isStatic: true)
+        let date = anchor("dateFrom", selector: "dateFrom:", isStatic: false)
+        let original = recover([])
+        XCTAssertNil(original.declarations[zip.position])
+        XCTAssertEqual(try describe(XCTUnwrap(original.declarations[position("existing")])), "+(long)[]")
+        let recovered = recover([zip, calendar, date, anchor("existing", selector: "different", isStatic: false),
+            anchor("macroType", selector: "macroType", isStatic: true), anchor("split", selector: "split:", isStatic: true)])
+        XCTAssertEqual(try describe(XCTUnwrap(recovered.declarations[zip.position])), "+(void)[\"zip_fileinfo *\", \"NSDate *\"]")
+        XCTAssertEqual(try describe(XCTUnwrap(recovered.declarations[calendar.position])), "+(NSCalendar *)[]")
+        XCTAssertEqual(try describe(XCTUnwrap(recovered.declarations[date.position])), "-(NSDate *)[\"UInt32\"]")
+        XCTAssertEqual(recovered.declarations[position("existing")], original.declarations[position("existing")])
+        XCTAssertNil(recovered.declarations[position("macroType")])
+        XCTAssertNil(recovered.declarations[position("split")])
+        for bad in [
+            anchor("zipInfo", selector: "zipInfo:", isStatic: true),
+            anchor("zipInfo", selector: "zipInfo:setOther:", isStatic: true),
+            anchor("zipInfo", selector: zip.selector, isStatic: false),
+            Anchor(position: SourcePosition(path: path, line: zip.position.line, column: zip.position.column - 1), selector: zip.selector, isStatic: true),
+            Anchor(position: SourcePosition(path: "/different/Zip.m", line: zip.position.line, column: zip.position.column), selector: zip.selector, isStatic: true),
+        ] {
+            XCTAssertEqual(recover([bad]).declarations, original.declarations)
+        }
     }
 
     func testImplementationDeclarations() throws {

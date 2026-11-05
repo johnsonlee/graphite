@@ -1,0 +1,128 @@
+{
+  "purpose": "HTTP serving correctness, two fully consumed scoped queries, no performance measurement",
+  "serverCommand": [
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/bin/graphite",
+    "serve",
+    "--graph",
+    "signal:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/graphs/signal.graphite",
+    "--port",
+    "55799"
+  ],
+  "graphSha256": "31788b41dc78ae25c46f2614125254bc5dfeb934d794aa51964b277ed0a2eeaf",
+  "cliSha256": "0f9e2181d5aa2e2efde2e200fbc48c871d180f04452f30ed00a64104640432c9",
+  "passed": true,
+  "requests": {
+    "localized": {
+      "method": "GET",
+      "url": "http://127.0.0.1:55799/api/graphs/signal/cypher?query=MATCH+%28r%3AResourceValue%29+WHERE+r.key+%3D+%27DATABASE_VIEW_OVERLAY_TITLE%27+AND+r.profile+%3D+%27en%27+RETURN+r.path%2C+r.key%2C+r.value%2C+r.profile&limit=20",
+      "query": "MATCH (r:ResourceValue) WHERE r.key = 'DATABASE_VIEW_OVERLAY_TITLE' AND r.profile = 'en' RETURN r.path, r.key, r.value, r.profile",
+      "expected": {
+        "columns": [
+          "r.path",
+          "r.key",
+          "r.value",
+          "r.profile"
+        ],
+        "rows": [
+          {
+            "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+            "r.value": "Optimizing Database",
+            "r.profile": "en"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      },
+      "response": {
+        "columns": [
+          "r.path",
+          "r.key",
+          "r.value",
+          "r.profile"
+        ],
+        "rows": [
+          {
+            "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+            "r.value": "Optimizing Database",
+            "r.profile": "en"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    },
+    "flow-result": {
+      "method": "GET",
+      "url": "http://127.0.0.1:55799/api/graphs/signal/cypher?query=MATCH+%28c%3ACallSite%29-%5Be%3ADATAFLOW%5D-%3E%28r%3AReturn%29+WHERE+c.caller_name%3D%27OWSLocalizedString%28_%3AtableName%3Avalue%3Acomment%3A%29%27+AND+e.kind%3D%27RETURN_VALUE%27+RETURN+c.callee_name+AS+sourceCall%2C+r.method+AS+owner&limit=20",
+      "query": "MATCH (c:CallSite)-[e:DATAFLOW]->(r:Return) WHERE c.caller_name='OWSLocalizedString(_:tableName:value:comment:)' AND e.kind='RETURN_VALUE' RETURN c.callee_name AS sourceCall, r.method AS owner",
+      "expected": {
+        "columns": [
+          "sourceCall",
+          "owner"
+        ],
+        "rows": [
+          {
+            "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      },
+      "response": {
+        "columns": [
+          "sourceCall",
+          "owner"
+        ],
+        "rows": [
+          {
+            "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    }
+  },
+  "pid": 22518,
+  "graphs": {
+    "data": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e",
+    "loadMode": "MAPPED",
+    "count": 1,
+    "totals": {
+      "nodes": 560895,
+      "edges": 199849,
+      "methods": 42519,
+      "callSites": 190396
+    },
+    "graphs": [
+      {
+        "id": "signal",
+        "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/graphs/signal.graphite",
+        "loadMode": "MAPPED",
+        "loadedAt": "2026-11-04T20:34:47.388232Z",
+        "nodes": 560895,
+        "edges": 199849,
+        "methods": 42519,
+        "callSites": 190396
+      }
+    ]
+  },
+  "serverStopped": true,
+  "serverExit": -15
+}

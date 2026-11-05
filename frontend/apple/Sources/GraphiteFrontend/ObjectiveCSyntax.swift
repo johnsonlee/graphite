@@ -18,19 +18,30 @@ import Foundation
 /// (`NS_SWIFT_NAME(...)`, `API_AVAILABLE(...)`) are skipped. Preprocessor lines, comments
 /// and string literals are ignored, so the pass reads a file without compiling it.
 public enum ObjectiveCSyntax {
+    struct IndexedMethod: Hashable {
+        let position: SourcePosition
+        let selector: String
+        let isStatic: Bool
+    }
+
     public static func parse(path: String) throws -> SyntaxFacts {
+        try parse(path: path, indexedMethods: [])
+    }
+
+    static func parse(path: String, indexedMethods: [IndexedMethod]) throws -> SyntaxFacts {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
-        return parse(bytes: [UInt8](data), path: path)
+        return parse(bytes: [UInt8](data), path: path, indexedMethods: indexedMethods)
     }
 
     public static func parse(source: String, path: String) -> SyntaxFacts {
         parse(bytes: Array(source.utf8), path: path)
     }
 
-    static func parse(bytes: [UInt8], path: String) -> SyntaxFacts {
+    static func parse(bytes: [UInt8], path: String, indexedMethods: [IndexedMethod] = []) -> SyntaxFacts {
         var lexer = Lexer(bytes: bytes)
         var parser = Parser(tokens: lexer.tokenize(), path: path)
         parser.parseFile()
+        parser.recoverIndexedMethods(indexedMethods)
         return parser.facts
     }
 
@@ -223,8 +234,21 @@ public enum ObjectiveCSyntax {
         }
 
         mutating func parseFile() {
+            var linkageDepth = 0
             while let token = peek() {
                 switch token.text {
+                // A linkage specification can wrap a whole public C header. Its
+                // braces group declarations, unlike function bodies and initializers.
+                case "extern" where peek(1)?.text == "\"C\"":
+                    advance()
+                    advance()
+                    if peek()?.text == "{" {
+                        advance()
+                        linkageDepth += 1
+                    }
+                case "}" where linkageDepth > 0:
+                    advance()
+                    linkageDepth -= 1
                 case "@interface", "@implementation", "@protocol": parseContainer()
                 default: parseCDeclaration()
                 }
@@ -359,7 +383,7 @@ public enum ObjectiveCSyntax {
                     }
                     sawBody = true
                     if tokens.contains(where: { $0.text == "struct" || $0.text == "union" }) {
-                        parseInstanceVariables()
+                        parseInstanceVariables(cDeclaration: true)
                     } else {
                         skipBalanced()
                     }
@@ -436,7 +460,7 @@ public enum ObjectiveCSyntax {
             facts.declarations[position] = SyntaxDeclaration(
                 position: position,
                 parameterTypes: parameterTypes(header.parameters),
-                returnType: spell(Array(returnTokens), assumeNonnull: assumeNonnull),
+                returnType: spell(Array(returnTokens), assumeNonnull: assumeNonnull, cDeclaration: true),
                 isStatic: true
             )
         }
@@ -453,10 +477,11 @@ public enum ObjectiveCSyntax {
                     if let split = Parser.splitDeclarator(parameter), !split.type.isEmpty { parameter = split.type }
                 } else if parameter.count >= 2, let last = parameter.last, last.kind == .identifier,
                           !Parser.cTypeKeywords.contains(last.text), Parser.nullabilityKeywords[last.text] == nil,
-                          parameter[parameter.count - 2].text != "." {
+                          parameter[parameter.count - 2].text != ".",
+                          parameter.dropLast().contains(where: { !Parser.cTypeModifiers.contains($0.text) }) {
                     parameter.removeLast()
                 }
-                return spell(parameter, assumeNonnull: assumeNonnull)
+                return spell(parameter, assumeNonnull: assumeNonnull, cDeclaration: true)
             }
         }
 
@@ -464,7 +489,7 @@ public enum ObjectiveCSyntax {
             let tokens = tokens.filter { !Parser.declarationSpecifiers.contains($0.text) }
             for (typeTokens, name) in Parser.declarators(of: tokens) {
                 let position = SourcePosition(path: path, line: name.line, column: name.column)
-                let type = spell(typeTokens, assumeNonnull: assumeNonnull)
+                let type = spell(typeTokens, assumeNonnull: assumeNonnull, cDeclaration: true)
                 facts.declarations[position] = SyntaxDeclaration(position: position, parameterTypes: [], returnType: type, isStatic: true)
             }
         }
@@ -555,11 +580,50 @@ public enum ObjectiveCSyntax {
             }
         }
 
-        mutating func parseMethod(isStatic: Bool) {
+        /// An unpreprocessed method body can contain two alternative opening braces
+        /// and only one closing brace. The file walk then skips later methods. For a
+        /// missing compiler occurrence, read a complete, explicit signature on its
+        /// own line. Never scan a neighboring declaration or infer conditional types.
+        mutating func recoverIndexedMethods(_ anchors: [IndexedMethod]) {
+            let missing = Set(anchors.filter { $0.position.path == path && facts.declarations[$0.position] == nil })
+            guard !missing.isEmpty else { return }
+            let byLine = Dictionary(grouping: missing, by: { $0.position.line })
+            var start = 0
+            var regionMarkerSeen = false
+            while start < tokens.count {
+                let line = tokens[start].line
+                var end = start + 1
+                while end < tokens.count, tokens[end].line == line { end += 1 }
+                defer { start = end }
+                if tokens[start..<end].contains(where: { $0.kind == .pragma || $0.text == "NS_ASSUME_NONNULL_BEGIN" }) {
+                    regionMarkerSeen = true
+                }
+                // Regional nullability depends on preprocessor state outside the
+                // isolated signature. Do not infer it from a partial token stream.
+                guard !regionMarkerSeen, let candidates = byLine[line], candidates.count == 1,
+                      let anchor = candidates.first,
+                      tokens[start].text == (anchor.isStatic ? "+" : "-") else { continue }
+                // A body may start on the next line. Keep the terminator so an
+                // abbreviated selector or trailing macro cannot match a prefix.
+                let limit = end < tokens.count && tokens[end].line == line + 1 && tokens[end].text == "{" ? end + 1 : end
+                guard let terminator = tokens[start..<limit].firstIndex(where: { $0.text == "{" || $0.text == ";" }) else { continue }
+                var local = Parser(tokens: Array(tokens[start...terminator]), path: path)
+                local.parseMethod(isStatic: anchor.isStatic, expected: anchor)
+                if let declared = local.facts.declarations[anchor.position] {
+                    facts.declarations[anchor.position] = declared
+                }
+            }
+        }
+
+        mutating func parseMethod(isStatic: Bool, expected: IndexedMethod? = nil) {
             advance()
             var returnType = spell([], assumeNonnull: assumeNonnull)
             if let open = peek(), open.text == "(" {
-                returnType = spell(balancedGroup(), assumeNonnull: assumeNonnull)
+                let type = balancedGroup()
+                if expected != nil && !Parser.isPlainWrittenType(type) { return }
+                returnType = spell(type, assumeNonnull: assumeNonnull)
+            } else if expected != nil {
+                return
             }
             guard let first = peek(), first.kind == .identifier, !first.text.hasPrefix("@") else {
                 skipToEndOfMember()
@@ -567,22 +631,41 @@ public enum ObjectiveCSyntax {
             }
             advance()
             var parameterTypes: [String] = []
+            var selector = first.text
             while let colon = peek(), colon.text == ":" {
                 advance()
+                selector += ":"
                 if let open = peek(), open.text == "(" {
-                    parameterTypes.append(spell(balancedGroup(), assumeNonnull: assumeNonnull))
+                    let type = balancedGroup()
+                    if expected != nil && !Parser.isPlainWrittenType(type) { return }
+                    parameterTypes.append(spell(type, assumeNonnull: assumeNonnull))
                 } else {
+                    if expected != nil { return }
                     parameterTypes.append(spell([], assumeNonnull: assumeNonnull))
                 }
-                if let name = peek(), name.kind == .identifier { advance() }
+                if let name = peek(), name.kind == .identifier { advance() } else if expected != nil { return }
                 // The next selector part is an identifier followed by `:`; an empty part is a bare `:`.
                 if let next = peek(), next.kind == .identifier, let after = peek(1), after.text == ":" {
+                    selector += next.text
                     advance()
                 }
             }
             let position = SourcePosition(path: path, line: first.line, column: first.column)
+            if let expected {
+                guard position == expected.position, selector == expected.selector,
+                      let end = peek(), end.text == "{" || end.text == ";" else { return }
+            }
             facts.declarations[position] = SyntaxDeclaration(position: position, parameterTypes: parameterTypes, returnType: returnType, isStatic: isStatic)
-            skipToEndOfMember()
+            if expected == nil { skipToEndOfMember() }
+        }
+
+        static func isPlainWrittenType(_ type: [Token]) -> Bool {
+            type.contains { $0.kind == .identifier && !cTypeModifiers.contains($0.text)
+                && !droppedQualifiers.contains($0.text) && !declarationSpecifiers.contains($0.text)
+                && nullabilityKeywords[$0.text] == nil } && type.allSatisfy {
+                $0.text == "*" || ($0.kind == .identifier && !$0.text.hasPrefix("@")
+                    && !$0.text.hasPrefix("__attribute") && !isMarkerMacro($0.text))
+            }
         }
 
         mutating func parseProperty() {
@@ -625,7 +708,7 @@ public enum ObjectiveCSyntax {
         /// turn of the loop consumes at least one token or returns: a member marker
         /// (`-`, `+`, `@property`, `@end`) inside the block means the block was never
         /// closed, and the members are the container's.
-        mutating func parseInstanceVariables() {
+        mutating func parseInstanceVariables(cDeclaration: Bool = false) {
             advance()
             while let token = peek() {
                 switch token.text {
@@ -642,7 +725,7 @@ public enum ObjectiveCSyntax {
                     let before = index
                     for (typeTokens, name) in declarators(until: ";") {
                         let position = SourcePosition(path: path, line: name.line, column: name.column)
-                        let type = spell(typeTokens, assumeNonnull: assumeNonnull)
+                        let type = spell(typeTokens, assumeNonnull: assumeNonnull, cDeclaration: cDeclaration)
                         facts.declarations[position] = SyntaxDeclaration(position: position, parameterTypes: [], returnType: type, isStatic: false)
                     }
                     if index == before { advance() }
@@ -767,9 +850,18 @@ public enum ObjectiveCSyntax {
 
         static let pointerLikeNames: Set<String> = ["id", "instancetype", "Class", "SEL"]
 
+        static let cTypeModifiers: Set<String> = ["const", "volatile", "restrict", "__restrict", "__restrict__", "struct", "union", "enum"]
+
         /// The type the tokens spell, the way Clang prints it, with its nullability.
-        func spell(_ tokens: [Token], assumeNonnull: Bool, nullability explicit: String? = nil) -> String {
+        func spell(_ tokens: [Token], assumeNonnull: Bool, nullability explicit: String? = nil, cDeclaration: Bool = false) -> String {
             var words: [String] = []
+            // A C typedef can look like an export attribute. Keep its spelling when
+            // it is the only base type, as in "const WEBP_CSP_MODE *".
+            let baseNames = cDeclaration ? tokens.prefix { !["(", "[", "*", "^", "<"].contains($0.text) }.filter {
+                $0.kind == .identifier && !Parser.cTypeModifiers.contains($0.text)
+                    && !Parser.declarationSpecifiers.contains($0.text) && Parser.nullabilityKeywords[$0.text] == nil
+            } : []
+            let baseName = baseNames.count == 1 ? baseNames.first : nil
             var nullability = explicit
             var inlineNullability = false
             var skipGroup = false
@@ -805,7 +897,7 @@ public enum ObjectiveCSyntax {
                     skipGroup = true
                     continue
                 }
-                if Parser.isMarkerMacro(token.text) {
+                if Parser.isMarkerMacro(token.text), token != baseName {
                     // `UIKIT_EXTERN`, `CF_RETURNS_RETAINED`: a marker, with its arguments when it has any.
                     if let next = tokens.firstIndex(where: { $0 == token }), next + 1 < tokens.count, tokens[next + 1].text == "(" { skipGroup = true }
                     continue
@@ -816,7 +908,11 @@ public enum ObjectiveCSyntax {
                 }
                 words.append(token.text)
             }
-            if words.isEmpty { words = ["id"] }
+            if words.isEmpty {
+                // Objective-C allows an implicit object type; C has no such default.
+                if cDeclaration { return "" }
+                words = ["id"]
+            }
             var text = ""
             var previous = ""
             for word in words {

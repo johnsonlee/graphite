@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "columns": [
+      "c.caller_class",
+      "c.caller_name",
+      "c.callee_class",
+      "c.callee_name",
+      "c.line"
+    ],
+    "rows": [
+      {
+        "c.caller_class": "Signal.AddToBlockListViewController",
+        "c.caller_name": "viewDidLoad()",
+        "c.callee_class": "UIView",
+        "c.callee_name": "autoPinEdge(toSuperviewEdge:)",
+        "c.line": 33
+      },
+      {
+        "c.caller_class": "Signal.NewCallViewController",
+        "c.caller_name": "viewDidLoad()",
+        "c.callee_class": "UIView",
+        "c.callee_name": "autoPinEdge(toSuperviewEdge:)",
+        "c.line": 33
+      }
+    ],
+    "rowCount": 2
+  },
+  "fixed": {
+    "columns": [
+      "c.caller_class",
+      "c.caller_name",
+      "c.callee_class",
+      "c.callee_name",
+      "c.line"
+    ],
+    "rows": [
+      {
+        "c.caller_class": "Signal.NewCallViewController",
+        "c.caller_name": "viewDidLoad()",
+        "c.callee_class": "UIView",
+        "c.callee_name": "autoPinEdgeToSuperviewEdge:",
+        "c.line": 33
+      },
+      {
+        "c.caller_class": "Signal.AddToBlockListViewController",
+        "c.caller_name": "viewDidLoad()",
+        "c.callee_class": "UIView",
+        "c.callee_name": "autoPinEdgeToSuperviewEdge:",
+        "c.line": 33
+      }
+    ],
+    "rowCount": 2
+  }
+}

@@ -1,0 +1,877 @@
+﻿2026-10-08T15:08:37.1026179Z Current runner version: '2.337.0'
+2026-10-08T15:08:37.1051388Z ##[group]Runner Image Provisioner
+2026-10-08T15:08:37.1052342Z Hosted Compute Agent
+2026-10-08T15:08:37.1052937Z Version: 20261002.596
+2026-10-08T15:08:37.1053645Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T15:08:37.1054399Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T15:08:37.1055105Z Worker ID: {127fdd0a-53c1-4401-8003-49c2017fec48}
+2026-10-08T15:08:37.1055875Z Region: westus
+2026-10-08T15:08:37.1056448Z Cloud: Azure
+2026-10-08T15:08:37.1057027Z ##[endgroup]
+2026-10-08T15:08:37.1058669Z ##[group]Operating System
+2026-10-08T15:08:37.1059440Z Ubuntu
+2026-10-08T15:08:37.1060074Z 24.04.5
+2026-10-08T15:08:37.1060902Z LTS
+2026-10-08T15:08:37.1061406Z ##[endgroup]
+2026-10-08T15:08:37.1062035Z ##[group]Runner Image
+2026-10-08T15:08:37.1062659Z Image: ubuntu-24.04
+2026-10-08T15:08:37.1063276Z Version: 20261004.327.1
+2026-10-08T15:08:37.1064577Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T15:08:37.1066202Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T15:08:37.1067184Z ##[endgroup]
+2026-10-08T15:08:37.1068719Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:08:37.1071010Z Contents: read
+2026-10-08T15:08:37.1071735Z Metadata: read
+2026-10-08T15:08:37.1072301Z ##[endgroup]
+2026-10-08T15:08:37.1074489Z Secret source: Actions
+2026-10-08T15:08:37.1075577Z Cache mode: write
+2026-10-08T15:08:37.1076253Z Prepare workflow directory
+2026-10-08T15:08:37.1686064Z Prepare all required actions
+2026-10-08T15:08:37.1735384Z Getting action download info
+2026-10-08T15:08:37.5472623Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:08:37.6544224Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:89b12181fb390509a0842a86cc55eeb8eb928c1d)
+2026-10-08T15:08:37.8968899Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-08T15:08:38.5331762Z Complete job name: binaries (ubuntu-latest, aarch64-unknown-linux-musl, true, qemu-aarch64-static)
+2026-10-08T15:08:38.6092319Z ##[group]Run actions/checkout@v7
+2026-10-08T15:08:38.6093291Z with:
+2026-10-08T15:08:38.6093830Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:38.6094504Z   repository: johnsonlee/graphite
+2026-10-08T15:08:38.6098442Z   token: ***
+2026-10-08T15:08:38.6098938Z   ssh-strict: true
+2026-10-08T15:08:38.6099425Z   ssh-user: git
+2026-10-08T15:08:38.6099911Z   persist-credentials: true
+2026-10-08T15:08:38.6100653Z   clean: true
+2026-10-08T15:08:38.6101142Z   sparse-checkout-cone-mode: true
+2026-10-08T15:08:38.6101712Z   fetch-depth: 1
+2026-10-08T15:08:38.6102189Z   fetch-tags: false
+2026-10-08T15:08:38.6102677Z   show-progress: true
+2026-10-08T15:08:38.6103165Z   lfs: false
+2026-10-08T15:08:38.6103621Z   submodules: false
+2026-10-08T15:08:38.6104109Z   set-safe-directory: true
+2026-10-08T15:08:38.6104665Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:08:38.6105524Z env:
+2026-10-08T15:08:38.6106035Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:38.6106696Z   DRY_RUN: true
+2026-10-08T15:08:38.6107236Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:38.6107856Z ##[endgroup]
+2026-10-08T15:08:38.7109901Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:08:38.7113211Z ##[group]Getting Git version info
+2026-10-08T15:08:38.7114533Z Working directory is '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:38.7116542Z [command]/usr/bin/git version
+2026-10-08T15:08:38.7203515Z git version 2.55.0
+2026-10-08T15:08:38.7215622Z ##[endgroup]
+2026-10-08T15:08:38.7227179Z Temporarily overriding HOME='/home/runner/work/_temp/37077e41-f657-4f7c-a477-5e7b75197e86' before making global git config changes
+2026-10-08T15:08:38.7229755Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:08:38.7235831Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:08:38.7288712Z Deleting the contents of '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:38.7292844Z ##[group]Determining repository object format
+2026-10-08T15:08:38.7294432Z ##[endgroup]
+2026-10-08T15:08:38.7295895Z ##[group]Initializing the repository
+2026-10-08T15:08:38.7298789Z [command]/usr/bin/git init /home/runner/work/graphite/graphite
+2026-10-08T15:08:38.7404865Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:08:38.7406686Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:08:38.7409681Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:08:38.7411346Z hint: call:
+2026-10-08T15:08:38.7412064Z hint:
+2026-10-08T15:08:38.7412959Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:08:38.7414036Z hint:
+2026-10-08T15:08:38.7415092Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:08:38.7416884Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:08:38.7418209Z hint:
+2026-10-08T15:08:38.7418935Z hint: 	git branch -m <name>
+2026-10-08T15:08:38.7419788Z hint:
+2026-10-08T15:08:38.7421049Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:08:38.7422213Z Initialized empty Git repository in /home/runner/work/graphite/graphite/.git/
+2026-10-08T15:08:38.7425111Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:08:38.7469525Z ##[endgroup]
+2026-10-08T15:08:38.7471246Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:08:38.7473032Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T15:08:38.7509723Z ##[endgroup]
+2026-10-08T15:08:38.7512241Z ##[group]Setting up auth
+2026-10-08T15:08:38.7512945Z Removing SSH command configuration
+2026-10-08T15:08:38.7519154Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:08:38.7558233Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:08:38.7917438Z Removing HTTP extra header
+2026-10-08T15:08:38.7923989Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:08:38.7963278Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:08:38.8183085Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:08:38.8188095Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:08:38.8226710Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:08:38.8464841Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:08:38.8503763Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git.path /home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:08:38.8537392Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:08:38.8573651Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:08:38.8608042Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:08:38.8637655Z ##[endgroup]
+2026-10-08T15:08:38.8638514Z ##[group]Fetching the repository
+2026-10-08T15:08:38.8644432Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:39.8015741Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:08:39.8018372Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:08:39.8026759Z [command]/usr/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:08:39.8057397Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:39.8063367Z ##[endgroup]
+2026-10-08T15:08:39.8065233Z ##[group]Determining the checkout info
+2026-10-08T15:08:39.8067200Z ##[endgroup]
+2026-10-08T15:08:39.8068389Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T15:08:39.8120753Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:08:39.8153883Z ##[group]Checking out the ref
+2026-10-08T15:08:39.8157639Z [command]/usr/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:39.9050310Z Note: switching to '1ba3808f79db8190ecd278a3853ab7a27d5abac9'.
+2026-10-08T15:08:39.9051554Z 
+2026-10-08T15:08:39.9052317Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T15:08:39.9054086Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T15:08:39.9055830Z state without impacting any branches by switching back to a branch.
+2026-10-08T15:08:39.9056852Z 
+2026-10-08T15:08:39.9057628Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T15:08:39.9059718Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T15:08:39.9061550Z 
+2026-10-08T15:08:39.9062150Z   git switch -c <new-branch-name>
+2026-10-08T15:08:39.9063176Z 
+2026-10-08T15:08:39.9063989Z Or undo this operation with:
+2026-10-08T15:08:39.9065267Z 
+2026-10-08T15:08:39.9066061Z   git switch -
+2026-10-08T15:08:39.9067110Z 
+2026-10-08T15:08:39.9069313Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T15:08:39.9071769Z 
+2026-10-08T15:08:39.9073002Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:08:39.9079267Z ##[endgroup]
+2026-10-08T15:08:39.9116932Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T15:08:39.9151038Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:39.9873885Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-08T15:08:39.9875181Z with:
+2026-10-08T15:08:39.9876141Z   targets: aarch64-unknown-linux-musl
+2026-10-08T15:08:39.9877316Z   toolchain: stable
+2026-10-08T15:08:39.9878249Z env:
+2026-10-08T15:08:39.9879164Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:39.9880606Z   DRY_RUN: true
+2026-10-08T15:08:39.9881633Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:39.9882847Z ##[endgroup]
+2026-10-08T15:08:39.9967976Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-08T15:08:40.0044069Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-08T15:08:40.0045364Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-08T15:08:40.0047327Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-08T15:08:40.0049450Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-08T15:08:40.0051103Z [36;1m  exit 1[0m
+2026-10-08T15:08:40.0052515Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-08T15:08:40.0054204Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-08T15:08:40.0056243Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0058230Z [36;1m  else[0m
+2026-10-08T15:08:40.0059802Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0061979Z [36;1m  fi[0m
+2026-10-08T15:08:40.0063180Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-08T15:08:40.0065233Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0067035Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-08T15:08:40.0069093Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0071138Z [36;1melse[0m
+2026-10-08T15:08:40.0072162Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0073391Z [36;1mfi[0m
+2026-10-08T15:08:40.0391169Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:40.0392688Z env:
+2026-10-08T15:08:40.0393667Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:40.0394941Z   DRY_RUN: true
+2026-10-08T15:08:40.0396045Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:40.0397379Z   toolchain: stable
+2026-10-08T15:08:40.0398365Z ##[endgroup]
+2026-10-08T15:08:40.0554988Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=58]
+2026-10-08T15:08:40.0565569Z ##[start-action display=Construct rustup command line;id=__dtolnay_rust-toolchain.flags]
+2026-10-08T15:08:40.0608067Z ##[group]Run echo "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT
+2026-10-08T15:08:40.0610641Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0613050Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0614940Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:40.0677536Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:40.0678840Z env:
+2026-10-08T15:08:40.0679716Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:40.0680988Z   DRY_RUN: true
+2026-10-08T15:08:40.0681940Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:40.0683157Z   targets: aarch64-unknown-linux-musl
+2026-10-08T15:08:40.0684356Z   components: 
+2026-10-08T15:08:40.0685191Z ##[endgroup]
+2026-10-08T15:08:40.0803486Z ##[end-action id=__dtolnay_rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=23]
+2026-10-08T15:08:40.0810004Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-08T15:08:40.0851256Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-08T15:08:40.0853043Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-08T15:08:40.0920853Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:40.0922165Z env:
+2026-10-08T15:08:40.0923118Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:40.0924226Z   DRY_RUN: true
+2026-10-08T15:08:40.0925151Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:40.0926293Z ##[endgroup]
+2026-10-08T15:08:40.1036510Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=22]
+2026-10-08T15:08:40.1043196Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-08T15:08:40.1092230Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-08T15:08:40.1093577Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-08T15:08:40.1096307Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-08T15:08:40.1098991Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-08T15:08:40.1100489Z [36;1mfi[0m
+2026-10-08T15:08:40.1164612Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:40.1165889Z env:
+2026-10-08T15:08:40.1166719Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:40.1167814Z   DRY_RUN: true
+2026-10-08T15:08:40.1168895Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:40.1170232Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:40.1171240Z ##[endgroup]
+2026-10-08T15:08:40.1277400Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=23]
+2026-10-08T15:08:40.1284045Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-08T15:08:40.1297560Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-08T15:08:40.1313438Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-08T15:08:40.1353345Z ##[group]Run log=$(mktemp)
+2026-10-08T15:08:40.1354304Z [36;1mlog=$(mktemp)[0m
+2026-10-08T15:08:40.1355230Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-08T15:08:40.1356258Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-08T15:08:40.1358664Z [36;1m  if rustup toolchain install stable --target aarch64-unknown-linux-musl --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-08T15:08:40.1361258Z [36;1m    break[0m
+2026-10-08T15:08:40.1362094Z [36;1m  else[0m
+2026-10-08T15:08:40.1362905Z [36;1m    status=$?[0m
+2026-10-08T15:08:40.1363844Z [36;1m  fi[0m
+2026-10-08T15:08:40.1365007Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-08T15:08:40.1367070Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-08T15:08:40.1368833Z [36;1m    exit "$status"[0m
+2026-10-08T15:08:40.1369751Z [36;1m  fi[0m
+2026-10-08T15:08:40.1371232Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-08T15:08:40.1372824Z [36;1m  sleep 30[0m
+2026-10-08T15:08:40.1373665Z [36;1mdone[0m
+2026-10-08T15:08:40.1438211Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:40.1439462Z env:
+2026-10-08T15:08:40.1440413Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:40.1441494Z   DRY_RUN: true
+2026-10-08T15:08:40.1442390Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:40.1443523Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:40.1444542Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-08T15:08:40.1445481Z ##[endgroup]
+2026-10-08T15:08:40.4566831Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-08T15:08:40.7002402Z info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+2026-10-08T15:08:40.7257614Z info: downloading component rust-std
+2026-10-08T15:08:42.9437546Z 
+2026-10-08T15:08:42.9512789Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.99.0 (b940084d7 2026-09-28) (from rustc 1.99.0 (b940084d7 2026-09-28))
+2026-10-08T15:08:42.9513680Z 
+2026-10-08T15:08:42.9564808Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=2824]
+2026-10-08T15:08:42.9573905Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-08T15:08:42.9601903Z ##[group]Run rustup default stable --force-non-host
+2026-10-08T15:08:42.9602346Z [36;1mrustup default stable --force-non-host[0m
+2026-10-08T15:08:42.9665637Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:42.9666047Z env:
+2026-10-08T15:08:42.9666310Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:42.9666642Z   DRY_RUN: true
+2026-10-08T15:08:42.9666945Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:42.9667345Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:42.9667643Z ##[endgroup]
+2026-10-08T15:08:42.9789808Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-10-08T15:08:42.9797397Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-10-08T15:08:42.9798023Z 
+2026-10-08T15:08:42.9871604Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-08T15:08:42.9872254Z 
+2026-10-08T15:08:42.9888600Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=31]
+2026-10-08T15:08:42.9891914Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-08T15:08:42.9916203Z ##[group]Run DATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-08T15:08:42.9917100Z [36;1mDATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-08T15:08:42.9917797Z [36;1mHASH=$(rustc +stable --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-08T15:08:42.9918346Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-08T15:08:42.9980056Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:42.9980846Z env:
+2026-10-08T15:08:42.9981117Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:42.9981450Z   DRY_RUN: true
+2026-10-08T15:08:42.9981743Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:42.9982111Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:42.9982410Z ##[endgroup]
+2026-10-08T15:08:43.0674373Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=78]
+2026-10-08T15:08:43.0677338Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-08T15:08:43.0701306Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-08T15:08:43.0701781Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-08T15:08:43.0702174Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-08T15:08:43.0702507Z [36;1mfi[0m
+2026-10-08T15:08:43.0767375Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:43.0767788Z env:
+2026-10-08T15:08:43.0768054Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.0768397Z   DRY_RUN: true
+2026-10-08T15:08:43.0768678Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.0769029Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.0769347Z ##[endgroup]
+2026-10-08T15:08:43.0857572Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=17]
+2026-10-08T15:08:43.0860060Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-08T15:08:43.0882628Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-08T15:08:43.0883204Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-08T15:08:43.0883602Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-08T15:08:43.0883941Z [36;1mfi[0m
+2026-10-08T15:08:43.0942345Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:43.0942744Z env:
+2026-10-08T15:08:43.0943004Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.0943325Z   DRY_RUN: true
+2026-10-08T15:08:43.0943598Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.0943937Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.0944236Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:08:43.0944502Z ##[endgroup]
+2026-10-08T15:08:43.1032128Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=17]
+2026-10-08T15:08:43.1034811Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-08T15:08:43.1058513Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-08T15:08:43.1059090Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-08T15:08:43.1059851Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-08T15:08:43.1060993Z [36;1m  if rustc +stable --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-08T15:08:43.1061626Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-08T15:08:43.1062213Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-08T15:08:43.1062945Z [36;1m  elif rustc +stable --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-08T15:08:43.1063561Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-08T15:08:43.1064128Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-08T15:08:43.1064521Z [36;1m  fi[0m
+2026-10-08T15:08:43.1064764Z [36;1mfi[0m
+2026-10-08T15:08:43.1122619Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:43.1123007Z env:
+2026-10-08T15:08:43.1123276Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.1123593Z   DRY_RUN: true
+2026-10-08T15:08:43.1123872Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.1124204Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.1124498Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:08:43.1124762Z   CARGO_TERM_COLOR: always
+2026-10-08T15:08:43.1125025Z ##[endgroup]
+2026-10-08T15:08:43.1452476Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=41]
+2026-10-08T15:08:43.1455549Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-08T15:08:43.1479603Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-08T15:08:43.1480923Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-08T15:08:43.1481616Z [36;1mif rustc +stable --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-08T15:08:43.1482133Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-08T15:08:43.1482502Z [36;1mfi[0m
+2026-10-08T15:08:43.1546457Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:43.1546858Z env:
+2026-10-08T15:08:43.1547139Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.1547458Z   DRY_RUN: true
+2026-10-08T15:08:43.1547742Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.1548077Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.1548381Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:08:43.1548643Z   CARGO_TERM_COLOR: always
+2026-10-08T15:08:43.1548909Z ##[endgroup]
+2026-10-08T15:08:43.1754177Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=29]
+2026-10-08T15:08:43.1758990Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-08T15:08:43.1782388Z ##[group]Run rustc +stable --version --verbose
+2026-10-08T15:08:43.1782781Z [36;1mrustc +stable --version --verbose[0m
+2026-10-08T15:08:43.1844918Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:08:43.1845323Z env:
+2026-10-08T15:08:43.1845584Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.1845903Z   DRY_RUN: true
+2026-10-08T15:08:43.1846174Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.1846510Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.1846817Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:08:43.1847084Z   CARGO_TERM_COLOR: always
+2026-10-08T15:08:43.1847352Z ##[endgroup]
+2026-10-08T15:08:43.2027898Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-08T15:08:43.2028542Z binary: rustc
+2026-10-08T15:08:43.2028932Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-08T15:08:43.2029409Z commit-date: 2026-09-28
+2026-10-08T15:08:43.2029851Z host: x86_64-unknown-linux-gnu
+2026-10-08T15:08:43.2030649Z release: 1.99.0
+2026-10-08T15:08:43.2031456Z LLVM version: 23.1.1
+2026-10-08T15:08:43.2050616Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=29]
+2026-10-08T15:08:43.2135263Z ##[group]Run cargo install cross --locked
+2026-10-08T15:08:43.2135697Z [36;1mcargo install cross --locked[0m
+2026-10-08T15:08:43.2136069Z [36;1msudo apt-get install -y -q qemu-user-static[0m
+2026-10-08T15:08:43.2199288Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:08:43.2199592Z env:
+2026-10-08T15:08:43.2200023Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:43.2200583Z   DRY_RUN: true
+2026-10-08T15:08:43.2200860Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:43.2201202Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:08:43.2201497Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:08:43.2201770Z   CARGO_TERM_COLOR: always
+2026-10-08T15:08:43.2202040Z ##[endgroup]
+2026-10-08T15:08:44.1547108Z [1m[92m    Updating[0m crates.io index
+2026-10-08T15:08:44.3086503Z [1m[92m Downloading[0m crates ...
+2026-10-08T15:08:44.4536288Z [1m[92m  Downloaded[0m cross v0.2.5
+2026-10-08T15:08:44.5578246Z [1m[92m  Installing[0m cross v0.2.5
+2026-10-08T15:08:44.5596460Z [1m[92m    Updating[0m crates.io index
+2026-10-08T15:08:44.7505742Z [1m[33mwarning[0m: package `dunce v1.0.2` in Cargo.lock is yanked in registry `crates-io`
+2026-10-08T15:08:44.7506648Z   [1m[94m|[0m
+2026-10-08T15:08:44.7507083Z   [1m[94m= [0m[1mhelp[0m: consider running without --locked
+2026-10-08T15:08:45.1561983Z [1m[92m    Updating[0m crates.io index
+2026-10-08T15:08:45.1899277Z [1m[92m Downloading[0m crates ...
+2026-10-08T15:08:45.2058188Z [1m[92m  Downloaded[0m adler v1.0.2
+2026-10-08T15:08:45.2075489Z [1m[92m  Downloaded[0m rustc-demangle v0.1.21
+2026-10-08T15:08:45.2093069Z [1m[92m  Downloaded[0m tempfile v3.3.0
+2026-10-08T15:08:45.2116250Z [1m[92m  Downloaded[0m thiserror v1.0.31
+2026-10-08T15:08:45.2171191Z [1m[92m  Downloaded[0m unicode-ident v1.0.1
+2026-10-08T15:08:45.2185088Z [1m[92m  Downloaded[0m addr2line v0.17.0
+2026-10-08T15:08:45.2211393Z [1m[92m  Downloaded[0m shell-words v1.1.0
+2026-10-08T15:08:45.2214160Z [1m[92m  Downloaded[0m owo-colors v3.4.0
+2026-10-08T15:08:45.2241032Z [1m[92m  Downloaded[0m proc-macro2 v1.0.40
+2026-10-08T15:08:45.2262530Z [1m[92m  Downloaded[0m once_cell v1.13.0
+2026-10-08T15:08:45.2285428Z [1m[92m  Downloaded[0m atty v0.2.14
+2026-10-08T15:08:45.2300079Z [1m[92m  Downloaded[0m backtrace v0.3.66
+2026-10-08T15:08:45.2404546Z [1m[92m  Downloaded[0m const-sha1 v0.2.0
+2026-10-08T15:08:45.2417317Z [1m[92m  Downloaded[0m which v4.2.5
+2026-10-08T15:08:45.2431555Z [1m[92m  Downloaded[0m fastrand v1.7.0
+2026-10-08T15:08:45.2444373Z [1m[92m  Downloaded[0m version_check v0.9.4
+2026-10-08T15:08:45.2458009Z [1m[92m  Downloaded[0m cfg-if v1.0.0
+2026-10-08T15:08:45.2470063Z [1m[92m  Downloaded[0m directories v4.0.1
+2026-10-08T15:08:45.2483723Z [1m[92m  Downloaded[0m either v1.7.0
+2026-10-08T15:08:45.2496042Z [1m[92m  Downloaded[0m proc-macro-error-attr v1.0.4
+2026-10-08T15:08:45.2505521Z [1m[92m  Downloaded[0m remove_dir_all v0.5.3
+2026-10-08T15:08:45.2514072Z [1m[92m  Downloaded[0m autocfg v1.1.0
+2026-10-08T15:08:45.2528559Z [1m[92m  Downloaded[0m rustc_version v0.4.0
+2026-10-08T15:08:45.2541013Z [1m[92m  Downloaded[0m strsim v0.10.0
+2026-10-08T15:08:45.2554865Z [1m[92m  Downloaded[0m supports-color v1.3.0
+2026-10-08T15:08:45.2577886Z [1m[92m  Downloaded[0m dirs-sys v0.3.7
+2026-10-08T15:08:45.2588945Z [1m[92m  Downloaded[0m home v0.5.3
+2026-10-08T15:08:45.2597724Z [1m[92m  Downloaded[0m os_str_bytes v6.1.0
+2026-10-08T15:08:45.2617767Z [1m[92m  Downloaded[0m bitflags v1.3.2
+2026-10-08T15:08:45.2650512Z [1m[92m  Downloaded[0m clap_lex v0.2.4
+2026-10-08T15:08:45.2659463Z [1m[92m  Downloaded[0m ctrlc v3.2.2
+2026-10-08T15:08:45.2676857Z [1m[92m  Downloaded[0m is_ci v1.1.1
+2026-10-08T15:08:45.2686186Z [1m[92m  Downloaded[0m serde_ignored v0.1.3
+2026-10-08T15:08:45.2698347Z [1m[92m  Downloaded[0m indenter v0.3.3
+2026-10-08T15:08:45.2709655Z [1m[92m  Downloaded[0m itoa v1.0.2
+2026-10-08T15:08:45.2723569Z [1m[92m  Downloaded[0m shell-escape v0.1.5
+2026-10-08T15:08:45.2733180Z [1m[92m  Downloaded[0m clap_derive v3.2.7
+2026-10-08T15:08:45.2753201Z [1m[92m  Downloaded[0m heck v0.4.0
+2026-10-08T15:08:45.2772008Z [1m[92m  Downloaded[0m thiserror-impl v1.0.31
+2026-10-08T15:08:45.2781140Z [1m[92m  Downloaded[0m termcolor v1.1.3
+2026-10-08T15:08:45.2797576Z [1m[92m  Downloaded[0m semver v1.0.12
+2026-10-08T15:08:45.2822924Z [1m[92m  Downloaded[0m quote v1.0.20
+2026-10-08T15:08:45.2850681Z [1m[92m  Downloaded[0m proc-macro-error v1.0.4
+2026-10-08T15:08:45.2887747Z [1m[92m  Downloaded[0m eyre v0.6.8
+2026-10-08T15:08:45.2921519Z [1m[92m  Downloaded[0m ryu v1.0.10
+2026-10-08T15:08:45.2953656Z [1m[92m  Downloaded[0m cc v1.0.73
+2026-10-08T15:08:45.2976348Z [1m[92m  Downloaded[0m indexmap v1.9.1
+2026-10-08T15:08:45.3006908Z [1m[92m  Downloaded[0m textwrap v0.15.0
+2026-10-08T15:08:45.3026448Z [1m[92m  Downloaded[0m miniz_oxide v0.5.3
+2026-10-08T15:08:45.3046180Z [1m[92m  Downloaded[0m serde_derive v1.0.138
+2026-10-08T15:08:45.3069874Z [1m[92m  Downloaded[0m toml v0.5.9
+2026-10-08T15:08:45.3093645Z [1m[92m  Downloaded[0m serde v1.0.138
+2026-10-08T15:08:45.3122970Z [1m[92m  Downloaded[0m hashbrown v0.12.2
+2026-10-08T15:08:45.3159489Z [1m[92m  Downloaded[0m memchr v2.5.0
+2026-10-08T15:08:45.3201210Z [1m[92m  Downloaded[0m serde_json v1.0.82
+2026-10-08T15:08:45.3272819Z [1m[92m  Downloaded[0m object v0.29.0
+2026-10-08T15:08:45.3355335Z [1m[92m  Downloaded[0m syn v1.0.98
+2026-10-08T15:08:45.3604826Z [1m[92m  Downloaded[0m clap v3.2.8
+2026-10-08T15:08:45.3709157Z [1m[92m  Downloaded[0m nix v0.24.1
+2026-10-08T15:08:45.3810044Z [1m[92m  Downloaded[0m libc v0.2.126
+2026-10-08T15:08:45.4061185Z [1m[92m  Downloaded[0m color-eyre v0.6.1
+2026-10-08T15:08:45.4232525Z [1m[92m  Downloaded[0m gimli v0.26.1
+2026-10-08T15:08:45.4672467Z [1m[92m   Compiling[0m proc-macro2 v1.0.40
+2026-10-08T15:08:45.4673192Z [1m[92m   Compiling[0m unicode-ident v1.0.1
+2026-10-08T15:08:45.4673827Z [1m[92m   Compiling[0m quote v1.0.20
+2026-10-08T15:08:45.4674434Z [1m[92m   Compiling[0m libc v0.2.126
+2026-10-08T15:08:48.1962960Z [1m[92m   Compiling[0m syn v1.0.98
+2026-10-08T15:08:51.1858060Z [1m[92m   Compiling[0m version_check v0.9.4
+2026-10-08T15:08:51.1872603Z [1m[92m   Compiling[0m serde_derive v1.0.138
+2026-10-08T15:08:51.2820079Z [1m[92m   Compiling[0m cfg-if v1.0.0
+2026-10-08T15:08:51.4252809Z [1m[92m   Compiling[0m memchr v2.5.0
+2026-10-08T15:08:51.4521711Z [1m[92m   Compiling[0m proc-macro-error-attr v1.0.4
+2026-10-08T15:08:51.5129628Z [1m[92m   Compiling[0m serde v1.0.138
+2026-10-08T15:08:51.5565580Z [1m[92m   Compiling[0m proc-macro-error v1.0.4
+2026-10-08T15:08:51.6303366Z [1m[92m   Compiling[0m autocfg v1.1.0
+2026-10-08T15:08:51.6361310Z [1m[92m   Compiling[0m cc v1.0.73
+2026-10-08T15:08:51.9564685Z [1m[92m   Compiling[0m indexmap v1.9.1
+2026-10-08T15:08:52.3570830Z [1m[92m   Compiling[0m atty v0.2.14
+2026-10-08T15:08:52.4410839Z [1m[92m   Compiling[0m backtrace v0.3.66
+2026-10-08T15:08:52.5159884Z [1m[92m   Compiling[0m eyre v0.6.8
+2026-10-08T15:08:52.6221737Z [1m[92m   Compiling[0m semver v1.0.12
+2026-10-08T15:08:52.6251043Z [1m[92m   Compiling[0m once_cell v1.13.0
+2026-10-08T15:08:52.7399113Z [1m[92m   Compiling[0m is_ci v1.1.1
+2026-10-08T15:08:52.7791838Z [1m[92m   Compiling[0m bitflags v1.3.2
+2026-10-08T15:08:52.8055705Z [1m[92m   Compiling[0m gimli v0.26.1
+2026-10-08T15:08:52.8112209Z [1m[92m   Compiling[0m adler v1.0.2
+2026-10-08T15:08:52.8946492Z [1m[92m   Compiling[0m miniz_oxide v0.5.3
+2026-10-08T15:08:53.0061569Z [1m[92m   Compiling[0m supports-color v1.3.0
+2026-10-08T15:08:53.2145007Z [1m[92m   Compiling[0m object v0.29.0
+2026-10-08T15:08:54.5643159Z [1m[92m   Compiling[0m rustc-demangle v0.1.21
+2026-10-08T15:08:55.1941535Z [1m[92m   Compiling[0m addr2line v0.17.0
+2026-10-08T15:08:55.2501432Z [1m[92m   Compiling[0m os_str_bytes v6.1.0
+2026-10-08T15:08:55.4166209Z [1m[92m   Compiling[0m indenter v0.3.3
+2026-10-08T15:08:55.4495729Z [1m[92m   Compiling[0m heck v0.4.0
+2026-10-08T15:08:55.4752234Z [1m[92m   Compiling[0m hashbrown v0.12.2
+2026-10-08T15:08:55.5551719Z [1m[92m   Compiling[0m serde_json v1.0.82
+2026-10-08T15:08:55.8232329Z [1m[92m   Compiling[0m clap_derive v3.2.7
+2026-10-08T15:08:56.7401917Z [1m[92m   Compiling[0m clap_lex v0.2.4
+2026-10-08T15:08:56.9952381Z [1m[92m   Compiling[0m thiserror-impl v1.0.31
+2026-10-08T15:08:57.6181897Z [1m[92m   Compiling[0m owo-colors v3.4.0
+2026-10-08T15:08:57.8081809Z [1m[92m   Compiling[0m nix v0.24.1
+2026-10-08T15:08:57.8542277Z [1m[92m   Compiling[0m dirs-sys v0.3.7
+2026-10-08T15:08:58.1325453Z [1m[92m   Compiling[0m textwrap v0.15.0
+2026-10-08T15:08:58.4521679Z [1m[92m   Compiling[0m itoa v1.0.2
+2026-10-08T15:08:58.5262190Z [1m[92m   Compiling[0m ryu v1.0.10
+2026-10-08T15:08:58.5621323Z [1m[92m   Compiling[0m termcolor v1.1.3
+2026-10-08T15:08:58.6841482Z [1m[92m   Compiling[0m cross v0.2.5
+2026-10-08T15:08:58.8684244Z [1m[92m   Compiling[0m strsim v0.10.0
+2026-10-08T15:08:58.8762317Z [1m[92m   Compiling[0m fastrand v1.7.0
+2026-10-08T15:08:58.9995793Z [1m[92m   Compiling[0m remove_dir_all v0.5.3
+2026-10-08T15:08:59.0246214Z [1m[92m   Compiling[0m either v1.7.0
+2026-10-08T15:08:59.0611598Z [1m[92m   Compiling[0m tempfile v3.3.0
+2026-10-08T15:08:59.1511756Z [1m[92m   Compiling[0m which v4.2.5
+2026-10-08T15:08:59.3009108Z [1m[92m   Compiling[0m clap v3.2.8
+2026-10-08T15:08:59.4124707Z [1m[92m   Compiling[0m ctrlc v3.2.2
+2026-10-08T15:08:59.4285798Z [1m[92m   Compiling[0m color-eyre v0.6.1
+2026-10-08T15:08:59.4941622Z [1m[92m   Compiling[0m directories v4.0.1
+2026-10-08T15:08:59.6997697Z [1m[92m   Compiling[0m thiserror v1.0.31
+2026-10-08T15:08:59.7423545Z [1m[92m   Compiling[0m rustc_version v0.4.0
+2026-10-08T15:09:00.1471764Z [1m[92m   Compiling[0m shell-words v1.1.0
+2026-10-08T15:09:00.2381743Z [1m[92m   Compiling[0m home v0.5.3
+2026-10-08T15:09:00.2492014Z [1m[92m   Compiling[0m shell-escape v0.1.5
+2026-10-08T15:09:00.3128738Z [1m[92m   Compiling[0m const-sha1 v0.2.0
+2026-10-08T15:09:00.7410040Z [1m[92m   Compiling[0m serde_ignored v0.1.3
+2026-10-08T15:09:00.7411134Z [1m[92m   Compiling[0m toml v0.5.9
+2026-10-08T15:09:19.9508588Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 36.36s
+2026-10-08T15:09:19.9551592Z [1m[92m  Installing[0m /home/runner/.cargo/bin/cross
+2026-10-08T15:09:19.9552216Z [1m[92m  Installing[0m /home/runner/.cargo/bin/cross-util
+2026-10-08T15:09:19.9991176Z [1m[92m   Installed[0m package `cross v0.2.5` (executables `cross`, `cross-util`)
+2026-10-08T15:09:21.0820412Z Reading package lists...
+2026-10-08T15:09:21.2944877Z Building dependency tree...
+2026-10-08T15:09:21.2956094Z Reading state information...
+2026-10-08T15:09:21.4618966Z The following NEW packages will be installed:
+2026-10-08T15:09:21.4621496Z   qemu-user-static
+2026-10-08T15:09:21.4838174Z 0 upgraded, 1 newly installed, 0 to remove and 6 not upgraded.
+2026-10-08T15:09:21.4838848Z Need to get 14.7 MB of archives.
+2026-10-08T15:09:21.4839757Z After this operation, 137 MB of additional disk space will be used.
+2026-10-08T15:09:21.4840682Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-08T15:09:21.6588646Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 qemu-user-static amd64 1:8.2.2+ds-0ubuntu1.18 [14.7 MB]
+2026-10-08T15:09:22.5684066Z Fetched 14.7 MB in 1s (17.4 MB/s)
+2026-10-08T15:09:22.5916891Z Selecting previously unselected package qemu-user-static.
+2026-10-08T15:09:22.6185629Z (Reading database ... 
+2026-10-08T15:09:22.6186115Z (Reading database ... 5%
+2026-10-08T15:09:22.6186816Z (Reading database ... 10%
+2026-10-08T15:09:22.6187079Z (Reading database ... 15%
+2026-10-08T15:09:22.6187326Z (Reading database ... 20%
+2026-10-08T15:09:22.6187567Z (Reading database ... 25%
+2026-10-08T15:09:22.6190415Z (Reading database ... 30%
+2026-10-08T15:09:22.6190868Z (Reading database ... 35%
+2026-10-08T15:09:22.6191265Z (Reading database ... 40%
+2026-10-08T15:09:22.6192134Z (Reading database ... 45%
+2026-10-08T15:09:22.6192503Z (Reading database ... 50%
+2026-10-08T15:09:22.6237837Z (Reading database ... 55%
+2026-10-08T15:09:22.7368787Z (Reading database ... 60%
+2026-10-08T15:09:22.9417009Z (Reading database ... 65%
+2026-10-08T15:09:23.1465005Z (Reading database ... 70%
+2026-10-08T15:09:23.3093998Z (Reading database ... 75%
+2026-10-08T15:09:23.4504555Z (Reading database ... 80%
+2026-10-08T15:09:23.5956454Z (Reading database ... 85%
+2026-10-08T15:09:23.7965996Z (Reading database ... 90%
+2026-10-08T15:09:23.9532033Z (Reading database ... 95%
+2026-10-08T15:09:23.9532546Z (Reading database ... 100%
+2026-10-08T15:09:23.9533149Z (Reading database ... 203191 files and directories currently installed.)
+2026-10-08T15:09:23.9575038Z Preparing to unpack .../qemu-user-static_1%3a8.2.2+ds-0ubuntu1.18_amd64.deb ...
+2026-10-08T15:09:23.9602700Z Unpacking qemu-user-static (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-08T15:09:24.3751547Z Setting up qemu-user-static (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-08T15:09:24.3800890Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-08T15:09:24.3821286Z Not building database; man-db/auto-update is not 'true'.
+2026-10-08T15:09:24.3834820Z Processing triggers for systemd (255.4-1ubuntu8.17) ...
+2026-10-08T15:09:25.0766729Z 
+2026-10-08T15:09:25.0767283Z Running kernel seems to be up-to-date.
+2026-10-08T15:09:25.0767630Z 
+2026-10-08T15:09:25.0767768Z No services need to be restarted.
+2026-10-08T15:09:25.0768162Z 
+2026-10-08T15:09:25.0768414Z No containers need to be restarted.
+2026-10-08T15:09:25.0768824Z 
+2026-10-08T15:09:25.0769145Z No user sessions are running outdated binaries.
+2026-10-08T15:09:25.0769652Z 
+2026-10-08T15:09:25.0770394Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-08T15:09:25.8943469Z ##[group]Run if [ "true" = "true" ]; then
+2026-10-08T15:09:25.8943834Z [36;1mif [ "true" = "true" ]; then[0m
+2026-10-08T15:09:25.8944292Z [36;1m  cross build --release --locked --target aarch64-unknown-linux-musl -p graphite-cli[0m
+2026-10-08T15:09:25.8944735Z [36;1melse[0m
+2026-10-08T15:09:25.8945110Z [36;1m  cargo build --release --locked --target aarch64-unknown-linux-musl -p graphite-cli[0m
+2026-10-08T15:09:25.8945537Z [36;1mfi[0m
+2026-10-08T15:09:25.9007266Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:09:25.9007513Z env:
+2026-10-08T15:09:25.9007738Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:09:25.9008016Z   DRY_RUN: true
+2026-10-08T15:09:25.9008248Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:09:25.9008542Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:09:25.9008799Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:09:25.9009014Z   CARGO_TERM_COLOR: always
+2026-10-08T15:09:25.9009263Z   GRAPHITE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:09:25.9009639Z   GRAPHITE_COMMIT: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:09:25.9009957Z ##[endgroup]
+2026-10-08T15:09:27.1067470Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-08T15:09:27.1621752Z 
+2026-10-08T15:09:27.1699274Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-08T15:09:27.1699811Z 
+2026-10-08T15:09:27.3120992Z info: downloading component rust-src
+2026-10-08T15:09:28.3745358Z Unable to find image 'ghcr.io/cross-rs/aarch64-unknown-linux-musl:0.2.5' locally
+2026-10-08T15:09:28.9238507Z 0.2.5: Pulling from cross-rs/aarch64-unknown-linux-musl
+2026-10-08T15:09:29.0826326Z 72d9f18d70f3: Pulling fs layer
+2026-10-08T15:09:29.0826984Z ec6cdaf17c64: Pulling fs layer
+2026-10-08T15:09:29.0827266Z 2694f27ab4e4: Pulling fs layer
+2026-10-08T15:09:29.0827534Z ddf70d12b190: Pulling fs layer
+2026-10-08T15:09:29.0827829Z 62af5371fe90: Pulling fs layer
+2026-10-08T15:09:29.0828259Z 5e752465741e: Pulling fs layer
+2026-10-08T15:09:29.0828686Z 364d8ff29c36: Pulling fs layer
+2026-10-08T15:09:29.0829117Z 44a2de794de5: Pulling fs layer
+2026-10-08T15:09:29.0829573Z 2bb4106c7a38: Pulling fs layer
+2026-10-08T15:09:29.0830008Z 94afa7bae3eb: Pulling fs layer
+2026-10-08T15:09:29.0830696Z dbeead33c4a1: Pulling fs layer
+2026-10-08T15:09:29.0831180Z 5aeabe53b11d: Pulling fs layer
+2026-10-08T15:09:29.0831649Z b97b49f86ff6: Pulling fs layer
+2026-10-08T15:09:29.0832091Z acd395ce7438: Pulling fs layer
+2026-10-08T15:09:29.0832504Z 849efdd90b58: Pulling fs layer
+2026-10-08T15:09:29.0832833Z dbeead33c4a1: Waiting
+2026-10-08T15:09:29.0833256Z ddf70d12b190: Waiting
+2026-10-08T15:09:29.0833861Z 5e752465741e: Waiting
+2026-10-08T15:09:29.0834087Z 5aeabe53b11d: Waiting
+2026-10-08T15:09:29.0834464Z 62af5371fe90: Waiting
+2026-10-08T15:09:29.0834686Z 364d8ff29c36: Waiting
+2026-10-08T15:09:29.0834896Z b97b49f86ff6: Waiting
+2026-10-08T15:09:29.0835103Z acd395ce7438: Waiting
+2026-10-08T15:09:29.0835351Z 44a2de794de5: Waiting
+2026-10-08T15:09:29.0835672Z 849efdd90b58: Waiting
+2026-10-08T15:09:29.0835888Z 2bb4106c7a38: Waiting
+2026-10-08T15:09:29.0836097Z 94afa7bae3eb: Waiting
+2026-10-08T15:09:29.2853470Z ec6cdaf17c64: Verifying Checksum
+2026-10-08T15:09:29.2854995Z ec6cdaf17c64: Download complete
+2026-10-08T15:09:29.4976781Z ddf70d12b190: Verifying Checksum
+2026-10-08T15:09:29.4977707Z ddf70d12b190: Download complete
+2026-10-08T15:09:29.9179528Z 72d9f18d70f3: Verifying Checksum
+2026-10-08T15:09:29.9180402Z 72d9f18d70f3: Download complete
+2026-10-08T15:09:30.1443509Z 5e752465741e: Download complete
+2026-10-08T15:09:30.5672557Z 62af5371fe90: Verifying Checksum
+2026-10-08T15:09:30.5673386Z 62af5371fe90: Download complete
+2026-10-08T15:09:30.7791959Z 44a2de794de5: Verifying Checksum
+2026-10-08T15:09:30.7792527Z 44a2de794de5: Download complete
+2026-10-08T15:09:30.9014954Z 72d9f18d70f3: Pull complete
+2026-10-08T15:09:31.1446966Z 2bb4106c7a38: Verifying Checksum
+2026-10-08T15:09:31.1447743Z 2bb4106c7a38: Download complete
+2026-10-08T15:09:31.3418316Z 94afa7bae3eb: Download complete
+2026-10-08T15:09:31.5516984Z 364d8ff29c36: Verifying Checksum
+2026-10-08T15:09:31.5517997Z 364d8ff29c36: Download complete
+2026-10-08T15:09:31.8231186Z 5aeabe53b11d: Download complete
+2026-10-08T15:09:32.0246273Z b97b49f86ff6: Verifying Checksum
+2026-10-08T15:09:32.0247098Z b97b49f86ff6: Download complete
+2026-10-08T15:09:32.1552833Z ec6cdaf17c64: Pull complete
+2026-10-08T15:09:32.2388604Z acd395ce7438: Verifying Checksum
+2026-10-08T15:09:32.2389614Z acd395ce7438: Download complete
+2026-10-08T15:09:32.4502281Z 849efdd90b58: Verifying Checksum
+2026-10-08T15:09:32.4502903Z 849efdd90b58: Download complete
+2026-10-08T15:09:34.6718114Z 2694f27ab4e4: Verifying Checksum
+2026-10-08T15:09:34.6718687Z 2694f27ab4e4: Download complete
+2026-10-08T15:09:38.2804658Z dbeead33c4a1: Verifying Checksum
+2026-10-08T15:09:38.2805204Z dbeead33c4a1: Download complete
+2026-10-08T15:09:42.1419203Z 2694f27ab4e4: Pull complete
+2026-10-08T15:09:42.1534894Z ddf70d12b190: Pull complete
+2026-10-08T15:09:44.4707466Z 62af5371fe90: Pull complete
+2026-10-08T15:09:44.4802972Z 5e752465741e: Pull complete
+2026-10-08T15:09:45.0317175Z 364d8ff29c36: Pull complete
+2026-10-08T15:09:45.0388462Z 44a2de794de5: Pull complete
+2026-10-08T15:09:45.1781801Z 2bb4106c7a38: Pull complete
+2026-10-08T15:09:45.1846284Z 94afa7bae3eb: Pull complete
+2026-10-08T15:09:51.1409876Z dbeead33c4a1: Pull complete
+2026-10-08T15:09:51.1534446Z 5aeabe53b11d: Pull complete
+2026-10-08T15:09:51.1667407Z b97b49f86ff6: Pull complete
+2026-10-08T15:09:51.1753691Z acd395ce7438: Pull complete
+2026-10-08T15:09:51.1822522Z 849efdd90b58: Pull complete
+2026-10-08T15:09:51.1858057Z Digest: sha256:702154f52b2d8091671aa2c84d5582d849f949977228c735ff8462f93cc0e1e4
+2026-10-08T15:09:51.1872565Z Status: Downloaded newer image for ghcr.io/cross-rs/aarch64-unknown-linux-musl:0.2.5
+2026-10-08T15:09:51.4818444Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-10-08T15:09:51.4819312Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-10-08T15:09:51.4819799Z [1m[92m   Compiling[0m quote v1.0.47
+2026-10-08T15:09:51.4820714Z [1m[92m   Compiling[0m libc v0.2.189
+2026-10-08T15:09:51.5463923Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-10-08T15:09:51.6181730Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-10-08T15:09:51.8174761Z [1m[92m   Compiling[0m parking_lot_core v0.9.12
+2026-10-08T15:09:51.9130279Z [1m[92m   Compiling[0m smallvec v1.16.0
+2026-10-08T15:09:52.2267517Z [1m[92m   Compiling[0m syn v3.0.5
+2026-10-08T15:09:52.3835197Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-10-08T15:09:52.3836006Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-10-08T15:09:52.5302038Z [1m[92m   Compiling[0m pin-project-lite v0.2.17
+2026-10-08T15:09:52.5698561Z [1m[92m   Compiling[0m scopeguard v1.2.0
+2026-10-08T15:09:52.6080872Z [1m[92m   Compiling[0m lock_api v0.4.14
+2026-10-08T15:09:52.8368119Z [1m[92m   Compiling[0m futures-core v0.3.34
+2026-10-08T15:09:52.9009216Z [1m[92m   Compiling[0m crossbeam-utils v0.8.23
+2026-10-08T15:09:53.0354940Z [1m[92m   Compiling[0m parking_lot v0.12.5
+2026-10-08T15:09:53.2681698Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.21
+2026-10-08T15:09:53.3799970Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-10-08T15:09:53.5499665Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-10-08T15:09:53.9726304Z [1m[92m   Compiling[0m tracing-core v0.1.36
+2026-10-08T15:09:54.4409907Z [1m[92m   Compiling[0m hybrid-array v0.4.15
+2026-10-08T15:09:55.0736765Z [1m[92m   Compiling[0m http v1.5.0
+2026-10-08T15:09:55.4299821Z [1m[92m   Compiling[0m errno v0.3.14
+2026-10-08T15:09:55.5218281Z [1m[92m   Compiling[0m log v0.4.34
+2026-10-08T15:09:55.5902689Z [1m[92m   Compiling[0m crossbeam-deque v0.8.8
+2026-10-08T15:09:55.6976506Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-10-08T15:09:55.7036620Z [1m[92m   Compiling[0m signal-hook-registry v1.4.8
+2026-10-08T15:09:55.7092768Z [1m[92m   Compiling[0m tokio-macros v2.7.2
+2026-10-08T15:09:56.1055569Z [1m[92m   Compiling[0m http-body v1.1.0
+2026-10-08T15:09:56.1799868Z [1m[92m   Compiling[0m mio v1.2.3
+2026-10-08T15:09:56.4870787Z [1m[92m   Compiling[0m socket2 v0.6.5
+2026-10-08T15:09:56.5426119Z [1m[92m   Compiling[0m syn v2.0.119
+2026-10-08T15:09:56.8397804Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-10-08T15:09:56.9657877Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-10-08T15:09:57.1231946Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-10-08T15:09:57.2352414Z [1m[92m   Compiling[0m tokio v1.53.1
+2026-10-08T15:09:57.4085785Z [1m[92m   Compiling[0m block-buffer v0.12.1
+2026-10-08T15:09:57.5127668Z [1m[92m   Compiling[0m crypto-common v0.2.2
+2026-10-08T15:09:57.5295147Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-10-08T15:09:57.6132028Z [1m[92m   Compiling[0m const-oid v0.10.2
+2026-10-08T15:09:57.8780291Z [1m[92m   Compiling[0m find-msvc-tools v0.1.12
+2026-10-08T15:09:58.0287792Z [1m[92m   Compiling[0m utf8parse v0.2.2
+2026-10-08T15:09:58.0788585Z [1m[92m   Compiling[0m tower-service v0.3.3
+2026-10-08T15:09:58.1212917Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-10-08T15:09:58.2231134Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-10-08T15:09:58.5001067Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-10-08T15:09:58.8984779Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-10-08T15:09:58.9294346Z [1m[92m   Compiling[0m thiserror v2.0.20
+2026-10-08T15:09:59.0853911Z [1m[92m   Compiling[0m serde v1.0.229
+2026-10-08T15:09:59.2026755Z [1m[92m   Compiling[0m crc32fast v1.5.1
+2026-10-08T15:09:59.2451518Z [1m[92m   Compiling[0m indexmap v2.14.2
+2026-10-08T15:09:59.3702347Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-10-08T15:09:59.4439297Z [1m[92m   Compiling[0m digest v0.11.3
+2026-10-08T15:09:59.5573300Z [1m[92m   Compiling[0m cc v1.4.5
+2026-10-08T15:10:00.1514317Z [1m[92m   Compiling[0m anstyle-parse v1.0.0
+2026-10-08T15:10:01.1531925Z [1m[92m   Compiling[0m tracing-attributes v0.1.31
+2026-10-08T15:10:01.7994008Z [1m[92m   Compiling[0m aho-corasick v1.1.5
+2026-10-08T15:10:02.0072114Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-10-08T15:10:02.1859436Z [1m[92m   Compiling[0m tracing v0.1.44
+2026-10-08T15:10:02.5434450Z [1m[92m   Compiling[0m thiserror-impl v2.0.20
+2026-10-08T15:10:03.5616085Z [1m[92m   Compiling[0m futures-channel v0.3.34
+2026-10-08T15:10:03.7482263Z [1m[92m   Compiling[0m cpufeatures v0.3.1
+2026-10-08T15:10:03.7919577Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-10-08T15:10:03.8979203Z [1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+2026-10-08T15:10:03.9394268Z [1m[92m   Compiling[0m either v1.18.0
+2026-10-08T15:10:04.1096126Z [1m[92m   Compiling[0m atomic-waker v1.1.2
+2026-10-08T15:10:04.1679913Z [1m[92m   Compiling[0m colorchoice v1.0.5
+2026-10-08T15:10:04.2259661Z [1m[92m   Compiling[0m anstyle-query v1.1.5
+2026-10-08T15:10:04.2701363Z [1m[92m   Compiling[0m tower-layer v0.3.3
+2026-10-08T15:10:04.4594185Z [1m[92m   Compiling[0m sync_wrapper v1.0.2
+2026-10-08T15:10:04.5007954Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-10-08T15:10:04.6914368Z [1m[92m   Compiling[0m slab v0.4.12
+2026-10-08T15:10:04.7805186Z [1m[92m   Compiling[0m futures-task v0.3.34
+2026-10-08T15:10:04.8198200Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-10-08T15:10:04.8871606Z [1m[92m   Compiling[0m anstyle v1.0.14
+2026-10-08T15:10:05.0931253Z [1m[92m   Compiling[0m httpdate v1.0.3
+2026-10-08T15:10:05.4242303Z [1m[92m   Compiling[0m hyper v1.11.1
+2026-10-08T15:10:06.9900746Z [1m[92m   Compiling[0m regex-automata v0.4.18
+2026-10-08T15:10:09.2568145Z [1m[92m   Compiling[0m anstream v1.0.0
+2026-10-08T15:10:09.7225197Z [1m[92m   Compiling[0m futures-util v0.3.34
+2026-10-08T15:10:11.7925053Z [1m[92m   Compiling[0m form_urlencoded v1.2.2
+2026-10-08T15:10:11.9720919Z [1m[92m   Compiling[0m rayon v1.12.0
+2026-10-08T15:10:12.2724736Z [1m[92m   Compiling[0m sha2 v0.11.0
+2026-10-08T15:10:14.1793181Z [1m[92m   Compiling[0m tikv-jemalloc-sys v0.5.4+5.3.0-patched
+2026-10-08T15:10:14.6932369Z [1m[92m   Compiling[0m http-body-util v0.1.5
+2026-10-08T15:10:14.7010531Z [1m[92m   Compiling[0m memmap2 v0.9.11
+2026-10-08T15:10:14.9345983Z [1m[92m   Compiling[0m mime v0.3.17
+2026-10-08T15:10:14.9709826Z [1m[92m   Compiling[0m anyhow v1.0.104
+2026-10-08T15:10:15.1389477Z [1m[92m   Compiling[0m heck v0.5.0
+2026-10-08T15:10:15.2661464Z [1m[92m   Compiling[0m strsim v0.11.1
+2026-10-08T15:10:15.3867859Z [1m[92m   Compiling[0m clap_lex v1.1.0
+2026-10-08T15:10:15.6656584Z [1m[92m   Compiling[0m ryu v1.0.23
+2026-10-08T15:10:15.9316531Z [1m[92m   Compiling[0m lazy_static v1.5.0
+2026-10-08T15:10:15.9732521Z [1m[92m   Compiling[0m sharded-slab v0.1.7
+2026-10-08T15:10:16.1645936Z [1m[92m   Compiling[0m serde_urlencoded v0.7.1
+2026-10-08T15:10:16.3752827Z [1m[92m   Compiling[0m clap_builder v4.6.6
+2026-10-08T15:10:16.5092577Z [1m[92m   Compiling[0m clap_derive v4.6.4
+2026-10-08T15:10:17.3140085Z [1m[92m   Compiling[0m axum-core v0.5.6
+2026-10-08T15:10:18.0681471Z [1m[92m   Compiling[0m graphite-storage v2.5.0 (/project/backend/storage)
+2026-10-08T15:10:21.0370399Z [1m[92m   Compiling[0m tower v0.5.3
+2026-10-08T15:10:21.4670498Z [1m[92m   Compiling[0m regex v1.13.1
+2026-10-08T15:10:23.2425899Z [1m[92m   Compiling[0m hyper-util v0.1.20
+2026-10-08T15:10:23.5541721Z [1m[92m   Compiling[0m tracing-log v0.2.0
+2026-10-08T15:10:23.8537603Z [1m[92m   Compiling[0m serde_path_to_error v0.1.20
+2026-10-08T15:10:24.3105553Z [1m[92m   Compiling[0m thread_local v1.1.10
+2026-10-08T15:10:24.5167124Z [1m[92m   Compiling[0m matchit v0.8.4
+2026-10-08T15:10:25.1268205Z [1m[92m   Compiling[0m nu-ansi-term v0.50.3
+2026-10-08T15:10:25.6075352Z [1m[92m   Compiling[0m iana-time-zone v0.1.65
+2026-10-08T15:10:26.0251679Z [1m[92m   Compiling[0m chrono v0.4.45
+2026-10-08T15:10:27.7846297Z [1m[92m   Compiling[0m tracing-subscriber v0.3.23
+2026-10-08T15:10:29.1842028Z [1m[92m   Compiling[0m axum v0.8.9
+2026-10-08T15:10:30.5634267Z [1m[92m   Compiling[0m graphite-cypher v2.5.0 (/project/backend/cypher)
+2026-10-08T15:10:33.0248348Z [1m[92m   Compiling[0m uuid v1.26.0
+2026-10-08T15:10:34.1264260Z [1m[92m   Compiling[0m clap v4.6.6
+2026-10-08T15:10:38.8775890Z [1m[92m   Compiling[0m graphite-explore v2.5.0 (/project/backend/explore)
+2026-10-08T15:11:28.0133728Z [1m[92m   Compiling[0m tikv-jemallocator v0.5.4
+2026-10-08T15:11:28.0549060Z [1m[92m   Compiling[0m graphite-cli v2.5.0 (/project/cli)
+2026-10-08T15:11:31.9995239Z [1m[33mwarning[0m[1m: linker stderr: + set -euo pipefail[0m
+2026-10-08T15:11:32.0068258Z          [1m+ main -Wl,--fix-cortex-a53-843419 /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crt1.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crti.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtbegin.o /target/aarch64-unknown-linux-musl/release/deps/rustc6xrYnJ/symbols.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.00.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.01.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.02.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.03.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.04.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.05.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.06.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.07.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.08.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.09.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.10.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.11.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.12.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.13.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.14.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.15.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.78qf6e8dnm00tzi8dprnwm5gb.rcgu.o -Wl,--as-needed -Wl,-Bstatic /target/aarch64-unknown-linux-musl/release/deps/libtikv_jemallocator-c7f17c34046c60f0.rlib /target/aarch64-unknown-linux-musl/release/deps/libtikv_jemalloc_sys-34c02cb47c2910ae.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_explore-958eded2dbbbbfdc.rlib /target/aarch64-unknown-linux-musl/release/deps/libchrono-f9f271b0ef3e4d31.rlib /target/aarch64-unknown-linux-musl/release/deps/libiana_time_zone-dc2eaafdb9d97032.rlib /target/aarch64-unknown-linux-musl/release/deps/libnum_traits-ad9897af0ded1ccf.rlib /target/aarch64-unknown-linux-musl/release/deps/libaxum-ee09a85cc4922a62.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_path_to_error-a894be8e951afc39.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_urlencoded-0bb3d8a42f629ac0.rlib /target/aarch64-unknown-linux-musl/release/deps/libryu-d4642e0077929b3b.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde-7fa376d311af82b3.rlib /target/aarch64-unknown-linux-musl/release/deps/libform_urlencoded-905dbfbf284b2295.rlib /target/aarch64-unknown-linux-musl/release/deps/libpercent_encoding-927ff3e1cd9a7070.rlib /target/aarch64-unknown-linux-musl/release/deps/libhyper_util-58223140d9fcf970.rlib /target/aarch64-unknown-linux-musl/release/deps/libhyper-677cb02dfbe5d0fe.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttparse-21e01a3c5f3f9155.rlib /target/aarch64-unknown-linux-musl/release/deps/libatomic_waker-c4b7a81d0c9145ed.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttpdate-c8504a9660ae3ac3.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_channel-76386daff9a9b328.rlib /target/aarch64-unknown-linux-musl/release/deps/libmatchit-2d6b8b5d1771186f.rlib /target/aarch64-unknown-linux-musl/release/deps/libaxum_core-d0b7ea15805e46a5.rlib /target/aarch64-unknown-linux-musl/release/deps/libmime-7397fc2034ec78e4.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp_body_util-00d14fc0e514b437.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp_body-b8e23fae0f413b67.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp-311dfccca17a30ce.rlib /target/aarch64-unknown-linux-musl/release/deps/libtracing-f0738451619f502a.rlib /target/aarch64-unknown-linux-musl/release/deps/liblog-034cea5ceb7622de.rlib /target/aarch64-unknown-linux-musl/release/deps/libtracing_core-aa56a20aa014fd38.rlib /target/aarch64-unknown-linux-musl/release/deps/libonce_cell-cfc7a11efb4c684c.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower-991c7469f7b4cc38.rlib /target/aarch64-unknown-linux-musl/release/deps/libsync_wrapper-ff8136410f69e3f7.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower_layer-eb17cd674a7dd238.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_util-9ba468cb9a7877f3.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_task-ea9502e55f938e91.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_core-b94280943001f59e.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower_service-e7f7782d51d6678a.rlib /target/aarch64-unknown-linux-musl/release/deps/libtokio-3afea3411ab26c4c.rlib /target/aarch64-unknown-linux-musl/release/deps/libsignal_hook_registry-352b70d28b3140eb.rlib /target/aarch64-unknown-linux-musl/release/deps/liberrno-150a86f9ed5a31d2.rlib /target/aarch64-unknown-linux-musl/release/deps/libsocket2-fe0ff053fbdf2e2e.rlib /target/aarch64-unknown-linux-musl/release/deps/libbytes-0d47b61b578366d4.rlib /target/aarch64-unknown-linux-musl/release/deps/libmio-74451b622cd15c24.rlib /target/aarch64-unknown-linux-musl/release/deps/libpin_project_lite-ab6ec6dec2dce920.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap-2a1a24057baa0717.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap_builder-1afb4a26da88b87a.rlib /target/aarch64-unknown-linux-musl/release/deps/libstrsim-26224deb22887a42.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstream-7ddf02f0f304f2a6.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle_query-84ada79799ffb854.rlib /target/aarch64-unknown-linux-musl/release/deps/libis_terminal_polyfill-4ba7dd38ffc2a326.rlib /target/aarch64-unknown-linux-musl/release/deps/libcolorchoice-92c4ef4c7da9aab8.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle_parse-0c00cc37dabde7d1.rlib /target/aarch64-unknown-linux-musl/release/deps/libutf8parse-74d052a2ea26c017.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap_lex-e035a4dff4b13c52.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle-06403c3109b076a8.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_cypher-a8d8daa8591e54fc.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_json-525c8a6bf99a4763.rlib /target/aarch64-unknown-linux-musl/release/deps/libitoa-edf953c6b9e88c37.rlib /target/aarch64-unknown-linux-musl/release/deps/libzmij-08f8676be709e88a.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex-5c23fac92fa90d9c.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex_automata-c16490973d8cc1fa.rlib /target/aarch64-unknown-linux-musl/release/deps/libaho_corasick-feeca58e767f1d68.rlib /target/aarch64-unknown-linux-musl/release/deps/libmemchr-5168fbe10dc24039.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex_syntax-5622faaba0c36b9e.rlib /target/aarch64-unknown-linux-musl/release/deps/libparking_lot-9e2312ac82681c99.rlib /target/aarch64-unknown-linux-musl/release/deps/libparking_lot_core-612c92d34a3730ed.rlib /target/aarch64-unknown-linux-musl/release/deps/libsmallvec-20448ad28dc1e344.rlib /target/aarch64-unknown-linux-musl/release/deps/liblock_api-c29c2ea404004c76.rlib /target/aarch64-unknown-linux-musl/release/deps/libscopeguard-ceeb4b277d96d112.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_storage-9f29984ce2bfe873.rlib /target/aarch64-unknown-linux-musl/release/deps/librayon-04733a8517444296.rlib /target/aarch64-unknown-linux-musl/release/deps/librayon_core-734644ce839cd766.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_deque-b54c147f1cd6b9bc.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_epoch-03af93b217773635.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_utils-21886bb0d115d8c0.rlib /target/aarch64-unknown-linux-musl/release/deps/libeither-bdc164092ad3c153.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrc32fast-1df3634bafb35b95.rlib /target/aarch64-unknown-linux-musl/release/deps/libsha2-a0dd4697bdc2fcc6.rlib /target/aarch64-unknown-linux-musl/release/deps/libcpufeatures-1f1a5612a0da6851.rlib /target/aarch64-unknown-linux-musl/release/deps/libcfg_if-4ed1e3b2dabbac6d.rlib /target/aarch64-unknown-linux-musl/release/deps/libdigest-117bcd86598cbcb6.rlib /target/aarch64-unknown-linux-musl/release/deps/libconst_oid-452bbe114a658c75.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrypto_common-bcd357e5ab22e6d7.rlib /target/aarch64-unknown-linux-musl/release/deps/libblock_buffer-a346c4bd421006de.rlib /target/aarch64-unknown-linux-musl/release/deps/libhybrid_array-12a44dd1f7947536.rlib /target/aarch64-unknown-linux-musl/release/deps/libtypenum-6bb1d4d50b357798.rlib /target/aarch64-unknown-linux-musl/release/deps/libmemmap2-41f0675a49136b6d.rlib /target/aarch64-unknown-linux-musl/release/deps/liblibc-a3f92aa1e8be6cd1.rlib /target/aarch64-unknown-linux-musl/release/deps/libthiserror-74dbe5e72dda310e.rlib /target/aarch64-unknown-linux-musl/release/deps/libindexmap-268303947e6214fa.rlib /target/aarch64-unknown-linux-musl/release/deps/libequivalent-659e6312360a3cd2.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_core-c69916947065dc5b.rlib /target/aarch64-unknown-linux-musl/release/deps/libhashbrown-efe573d0ff1136cd.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libstd-d4518673a6ad1c78.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libpanic_unwind-63495096348ec7a8.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libobject-1a3675dde1d3d10c.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libmemchr-e5822ebc6e7ed912.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libaddr2line-524341d4b734cef5.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libgimli-aa330f5f804f01a1.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcfg_if-635bc7be72cd8e74.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_demangle-79871fd417b4d23e.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libstd_detect-5e2efbe431eff52b.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libhashbrown-c75972db0045f19f.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_std_workspace_alloc-010ab05b2eca2dfb.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libminiz_oxide-54fc5ed0871b2798.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libadler2-a54446f74dc74f92.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libunwind-c09bae756a6dbd41.rlib -lunwind /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/liblibc-132567afef47fa5f.rlib -lc /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_std_workspace_core-2bd21e56ea4c5090.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/liballoc-fe3c1bd2ce4243b8.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcore-98269afa339f7b11.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcompiler_builtins-1ab0d09588f16ff7.rlib -L /target/aarch64-unknown-linux-musl/release/deps/rustc6xrYnJ/raw-dylibs -Wl,-Bdynamic -Wl,--eh-frame-hdr -Wl,-z,noexecstack -nostartfiles -L /target/aarch64-unknown-linux-musl/release/build/tikv-jemalloc-sys-c2ef262c4b70a5e8/out/build/lib -L /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained -L /rust/lib/rustlib/aarch64-unknown-linux-musl/lib -o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3 -Wl,--gc-sections -static -no-pie -Wl,-z,relro,-z,now -Wl,-O1 -Wl,--strip-debug -nodefaultlibs /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtend.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtn.o[0m
+2026-10-08T15:11:32.0114582Z          [1m+ local release=[0m
+2026-10-08T15:11:32.0115081Z          [1m++ rustc -Vv[0m
+2026-10-08T15:11:32.0115757Z          [1m++ grep '^release:'[0m
+2026-10-08T15:11:32.0116248Z          [1m++ cut -d : -f2[0m
+2026-10-08T15:11:32.0116708Z          [1m+ release=' 1.99.0'[0m
+2026-10-08T15:11:32.0117173Z          [1m+ local minor=[0m
+2026-10-08T15:11:32.0117628Z          [1m++ echo ' 1.99.0'[0m
+2026-10-08T15:11:32.0118080Z          [1m++ cut -d . -f2[0m
+2026-10-08T15:11:32.0118532Z          [1m+ minor=99[0m
+2026-10-08T15:11:32.0118974Z          [1m+ ((  minor >= 48  ))[0m
+2026-10-08T15:11:32.0195061Z          [1m+ aarch64-linux-musl-gcc -Wl,--fix-cortex-a53-843419 /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crt1.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crti.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtbegin.o /target/aarch64-unknown-linux-musl/release/deps/rustc6xrYnJ/symbols.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.00.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.01.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.02.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.03.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.04.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.05.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.06.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.07.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.08.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.09.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.10.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.11.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.12.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.13.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.14.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.graphite.d03434f4021e03b1-cgu.15.rcgu.o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3.78qf6e8dnm00tzi8dprnwm5gb.rcgu.o -Wl,--as-needed -Wl,-Bstatic /target/aarch64-unknown-linux-musl/release/deps/libtikv_jemallocator-c7f17c34046c60f0.rlib /target/aarch64-unknown-linux-musl/release/deps/libtikv_jemalloc_sys-34c02cb47c2910ae.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_explore-958eded2dbbbbfdc.rlib /target/aarch64-unknown-linux-musl/release/deps/libchrono-f9f271b0ef3e4d31.rlib /target/aarch64-unknown-linux-musl/release/deps/libiana_time_zone-dc2eaafdb9d97032.rlib /target/aarch64-unknown-linux-musl/release/deps/libnum_traits-ad9897af0ded1ccf.rlib /target/aarch64-unknown-linux-musl/release/deps/libaxum-ee09a85cc4922a62.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_path_to_error-a894be8e951afc39.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_urlencoded-0bb3d8a42f629ac0.rlib /target/aarch64-unknown-linux-musl/release/deps/libryu-d4642e0077929b3b.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde-7fa376d311af82b3.rlib /target/aarch64-unknown-linux-musl/release/deps/libform_urlencoded-905dbfbf284b2295.rlib /target/aarch64-unknown-linux-musl/release/deps/libpercent_encoding-927ff3e1cd9a7070.rlib /target/aarch64-unknown-linux-musl/release/deps/libhyper_util-58223140d9fcf970.rlib /target/aarch64-unknown-linux-musl/release/deps/libhyper-677cb02dfbe5d0fe.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttparse-21e01a3c5f3f9155.rlib /target/aarch64-unknown-linux-musl/release/deps/libatomic_waker-c4b7a81d0c9145ed.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttpdate-c8504a9660ae3ac3.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_channel-76386daff9a9b328.rlib /target/aarch64-unknown-linux-musl/release/deps/libmatchit-2d6b8b5d1771186f.rlib /target/aarch64-unknown-linux-musl/release/deps/libaxum_core-d0b7ea15805e46a5.rlib /target/aarch64-unknown-linux-musl/release/deps/libmime-7397fc2034ec78e4.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp_body_util-00d14fc0e514b437.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp_body-b8e23fae0f413b67.rlib /target/aarch64-unknown-linux-musl/release/deps/libhttp-311dfccca17a30ce.rlib /target/aarch64-unknown-linux-musl/release/deps/libtracing-f0738451619f502a.rlib /target/aarch64-unknown-linux-musl/release/deps/liblog-034cea5ceb7622de.rlib /target/aarch64-unknown-linux-musl/release/deps/libtracing_core-aa56a20aa014fd38.rlib /target/aarch64-unknown-linux-musl/release/deps/libonce_cell-cfc7a11efb4c684c.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower-991c7469f7b4cc38.rlib /target/aarch64-unknown-linux-musl/release/deps/libsync_wrapper-ff8136410f69e3f7.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower_layer-eb17cd674a7dd238.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_util-9ba468cb9a7877f3.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_task-ea9502e55f938e91.rlib /target/aarch64-unknown-linux-musl/release/deps/libfutures_core-b94280943001f59e.rlib /target/aarch64-unknown-linux-musl/release/deps/libtower_service-e7f7782d51d6678a.rlib /target/aarch64-unknown-linux-musl/release/deps/libtokio-3afea3411ab26c4c.rlib /target/aarch64-unknown-linux-musl/release/deps/libsignal_hook_registry-352b70d28b3140eb.rlib /target/aarch64-unknown-linux-musl/release/deps/liberrno-150a86f9ed5a31d2.rlib /target/aarch64-unknown-linux-musl/release/deps/libsocket2-fe0ff053fbdf2e2e.rlib /target/aarch64-unknown-linux-musl/release/deps/libbytes-0d47b61b578366d4.rlib /target/aarch64-unknown-linux-musl/release/deps/libmio-74451b622cd15c24.rlib /target/aarch64-unknown-linux-musl/release/deps/libpin_project_lite-ab6ec6dec2dce920.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap-2a1a24057baa0717.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap_builder-1afb4a26da88b87a.rlib /target/aarch64-unknown-linux-musl/release/deps/libstrsim-26224deb22887a42.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstream-7ddf02f0f304f2a6.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle_query-84ada79799ffb854.rlib /target/aarch64-unknown-linux-musl/release/deps/libis_terminal_polyfill-4ba7dd38ffc2a326.rlib /target/aarch64-unknown-linux-musl/release/deps/libcolorchoice-92c4ef4c7da9aab8.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle_parse-0c00cc37dabde7d1.rlib /target/aarch64-unknown-linux-musl/release/deps/libutf8parse-74d052a2ea26c017.rlib /target/aarch64-unknown-linux-musl/release/deps/libclap_lex-e035a4dff4b13c52.rlib /target/aarch64-unknown-linux-musl/release/deps/libanstyle-06403c3109b076a8.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_cypher-a8d8daa8591e54fc.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_json-525c8a6bf99a4763.rlib /target/aarch64-unknown-linux-musl/release/deps/libitoa-edf953c6b9e88c37.rlib /target/aarch64-unknown-linux-musl/release/deps/libzmij-08f8676be709e88a.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex-5c23fac92fa90d9c.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex_automata-c16490973d8cc1fa.rlib /target/aarch64-unknown-linux-musl/release/deps/libaho_corasick-feeca58e767f1d68.rlib /target/aarch64-unknown-linux-musl/release/deps/libmemchr-5168fbe10dc24039.rlib /target/aarch64-unknown-linux-musl/release/deps/libregex_syntax-5622faaba0c36b9e.rlib /target/aarch64-unknown-linux-musl/release/deps/libparking_lot-9e2312ac82681c99.rlib /target/aarch64-unknown-linux-musl/release/deps/libparking_lot_core-612c92d34a3730ed.rlib /target/aarch64-unknown-linux-musl/release/deps/libsmallvec-20448ad28dc1e344.rlib /target/aarch64-unknown-linux-musl/release/deps/liblock_api-c29c2ea404004c76.rlib /target/aarch64-unknown-linux-musl/release/deps/libscopeguard-ceeb4b277d96d112.rlib /target/aarch64-unknown-linux-musl/release/deps/libgraphite_storage-9f29984ce2bfe873.rlib /target/aarch64-unknown-linux-musl/release/deps/librayon-04733a8517444296.rlib /target/aarch64-unknown-linux-musl/release/deps/librayon_core-734644ce839cd766.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_deque-b54c147f1cd6b9bc.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_epoch-03af93b217773635.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrossbeam_utils-21886bb0d115d8c0.rlib /target/aarch64-unknown-linux-musl/release/deps/libeither-bdc164092ad3c153.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrc32fast-1df3634bafb35b95.rlib /target/aarch64-unknown-linux-musl/release/deps/libsha2-a0dd4697bdc2fcc6.rlib /target/aarch64-unknown-linux-musl/release/deps/libcpufeatures-1f1a5612a0da6851.rlib /target/aarch64-unknown-linux-musl/release/deps/libcfg_if-4ed1e3b2dabbac6d.rlib /target/aarch64-unknown-linux-musl/release/deps/libdigest-117bcd86598cbcb6.rlib /target/aarch64-unknown-linux-musl/release/deps/libconst_oid-452bbe114a658c75.rlib /target/aarch64-unknown-linux-musl/release/deps/libcrypto_common-bcd357e5ab22e6d7.rlib /target/aarch64-unknown-linux-musl/release/deps/libblock_buffer-a346c4bd421006de.rlib /target/aarch64-unknown-linux-musl/release/deps/libhybrid_array-12a44dd1f7947536.rlib /target/aarch64-unknown-linux-musl/release/deps/libtypenum-6bb1d4d50b357798.rlib /target/aarch64-unknown-linux-musl/release/deps/libmemmap2-41f0675a49136b6d.rlib /target/aarch64-unknown-linux-musl/release/deps/liblibc-a3f92aa1e8be6cd1.rlib /target/aarch64-unknown-linux-musl/release/deps/libthiserror-74dbe5e72dda310e.rlib /target/aarch64-unknown-linux-musl/release/deps/libindexmap-268303947e6214fa.rlib /target/aarch64-unknown-linux-musl/release/deps/libequivalent-659e6312360a3cd2.rlib /target/aarch64-unknown-linux-musl/release/deps/libserde_core-c69916947065dc5b.rlib /target/aarch64-unknown-linux-musl/release/deps/libhashbrown-efe573d0ff1136cd.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libstd-d4518673a6ad1c78.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libpanic_unwind-63495096348ec7a8.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libobject-1a3675dde1d3d10c.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libmemchr-e5822ebc6e7ed912.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libaddr2line-524341d4b734cef5.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libgimli-aa330f5f804f01a1.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcfg_if-635bc7be72cd8e74.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_demangle-79871fd417b4d23e.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libstd_detect-5e2efbe431eff52b.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libhashbrown-c75972db0045f19f.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_std_workspace_alloc-010ab05b2eca2dfb.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libminiz_oxide-54fc5ed0871b2798.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libadler2-a54446f74dc74f92.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libunwind-c09bae756a6dbd41.rlib -lunwind /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/liblibc-132567afef47fa5f.rlib -lc /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/librustc_std_workspace_core-2bd21e56ea4c5090.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/liballoc-fe3c1bd2ce4243b8.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcore-98269afa339f7b11.rlib /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/libcompiler_builtins-1ab0d09588f16ff7.rlib -L /target/aarch64-unknown-linux-musl/release/deps/rustc6xrYnJ/raw-dylibs -Wl,-Bdynamic -Wl,--eh-frame-hdr -Wl,-z,noexecstack -nostartfiles -L /target/aarch64-unknown-linux-musl/release/build/tikv-jemalloc-sys-c2ef262c4b70a5e8/out/build/lib -L /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained -L /rust/lib/rustlib/aarch64-unknown-linux-musl/lib -o /target/aarch64-unknown-linux-musl/release/deps/graphite-4f70ba351d02a2f3 -Wl,--gc-sections -static -no-pie -Wl,-z,relro,-z,now -Wl,-O1 -Wl,--strip-debug -nodefaultlibs /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtend.o /rust/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtn.o[0m
+2026-10-08T15:11:32.0252698Z   [1m[94m|[0m
+2026-10-08T15:11:32.0253212Z   [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+2026-10-08T15:11:32.0253482Z 
+2026-10-08T15:11:32.0253730Z [1m[33mwarning[0m: `graphite-cli` (bin "graphite") generated 1 warning
+2026-10-08T15:11:32.0254408Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 1m 40s
+2026-10-08T15:11:32.3684379Z ##[group]Run ASSET="graphite-${RELEASE_VERSION}-aarch64-unknown-linux-musl.tar.gz"
+2026-10-08T15:11:32.3685283Z [36;1mASSET="graphite-${RELEASE_VERSION}-aarch64-unknown-linux-musl.tar.gz"[0m
+2026-10-08T15:11:32.3685723Z [36;1mmkdir -p release-assets[0m
+2026-10-08T15:11:32.3686284Z [36;1mqemu-aarch64-static "target/aarch64-unknown-linux-musl/release/graphite" --version | grep -F "${RELEASE_VERSION}"[0m
+2026-10-08T15:11:32.3686874Z [36;1mcase "aarch64-unknown-linux-musl" in[0m
+2026-10-08T15:11:32.3687450Z [36;1m  *-linux-musl) bash .github/scripts/require-static.sh "target/aarch64-unknown-linux-musl/release/graphite" ;;[0m
+2026-10-08T15:11:32.3687979Z [36;1mesac[0m
+2026-10-08T15:11:32.3688377Z [36;1mtar -czf "release-assets/${ASSET}" -C "target/aarch64-unknown-linux-musl/release" graphite[0m
+2026-10-08T15:11:32.3688938Z [36;1m(cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")[0m
+2026-10-08T15:11:32.3689382Z [36;1mcat "release-assets/${ASSET}.sha256"[0m
+2026-10-08T15:11:32.3752061Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:11:32.3752415Z env:
+2026-10-08T15:11:32.3752628Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:11:32.3752907Z   DRY_RUN: true
+2026-10-08T15:11:32.3753127Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:11:32.3753412Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:11:32.3753665Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:11:32.3753879Z   CARGO_TERM_COLOR: always
+2026-10-08T15:11:32.3754102Z ##[endgroup]
+2026-10-08T15:11:32.4267605Z graphite 2.11.3-apple-validation.4
+2026-10-08T15:11:32.4785136Z target/aarch64-unknown-linux-musl/release/graphite: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, not stripped
+2026-10-08T15:11:33.0968673Z 28dec8617b1d7977f33aee91adc37366d788ec8c8ec7fc4e5c4c4a3c2924bae0  graphite-2.11.3-apple-validation.4-aarch64-unknown-linux-musl.tar.gz
+2026-10-08T15:11:33.1035347Z ##[group]Run actions/upload-artifact@v7
+2026-10-08T15:11:33.1035659Z with:
+2026-10-08T15:11:33.1035892Z   name: binaries-aarch64-unknown-linux-musl
+2026-10-08T15:11:33.1036216Z   path: release-assets/*
+2026-10-08T15:11:33.1036460Z   if-no-files-found: error
+2026-10-08T15:11:33.1036700Z   compression-level: 6
+2026-10-08T15:11:33.1036921Z   overwrite: false
+2026-10-08T15:11:33.1037146Z   include-hidden-files: false
+2026-10-08T15:11:33.1037389Z   archive: true
+2026-10-08T15:11:33.1037586Z env:
+2026-10-08T15:11:33.1037798Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:11:33.1051487Z   DRY_RUN: true
+2026-10-08T15:11:33.1051813Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:11:33.1052136Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T15:11:33.1052412Z   CARGO_INCREMENTAL: 0
+2026-10-08T15:11:33.1052642Z   CARGO_TERM_COLOR: always
+2026-10-08T15:11:33.1052869Z ##[endgroup]
+2026-10-08T15:11:33.2467400Z With the provided path, there will be 2 files uploaded
+2026-10-08T15:11:33.2474361Z Artifact name is valid!
+2026-10-08T15:11:33.2475059Z Root directory input is valid!
+2026-10-08T15:11:33.6405941Z Uploading artifact: binaries-aarch64-unknown-linux-musl.zip
+2026-10-08T15:11:33.6480865Z Beginning upload of artifact content to blob storage
+2026-10-08T15:11:34.6793670Z Uploaded bytes 3852383
+2026-10-08T15:11:34.7548787Z Finished uploading artifact content to blob storage!
+2026-10-08T15:11:34.7549849Z SHA256 digest of uploaded artifact is 0f87cb107f340c06f0b9bb95f44056b781999be9db3808aae190e194a82b0978
+2026-10-08T15:11:34.7551035Z Finalizing artifact upload
+2026-10-08T15:11:35.1638903Z Artifact binaries-aarch64-unknown-linux-musl successfully finalized. Artifact ID 11560145752
+2026-10-08T15:11:35.1640550Z Artifact binaries-aarch64-unknown-linux-musl has been successfully uploaded! Final size is 3852383 bytes. Artifact ID is 11560145752
+2026-10-08T15:11:35.1642557Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11560145752
+2026-10-08T15:11:35.1830708Z Post job cleanup.
+2026-10-08T15:11:35.2657713Z [command]/usr/bin/git version
+2026-10-08T15:11:35.2704314Z git version 2.55.0
+2026-10-08T15:11:35.2750780Z Temporarily overriding HOME='/home/runner/work/_temp/018674f3-0207-4393-ad1e-b21039fbdda2' before making global git config changes
+2026-10-08T15:11:35.2752094Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:11:35.2756750Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:11:35.2790411Z Removing SSH command configuration
+2026-10-08T15:11:35.2797239Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:11:35.2851154Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:11:35.3107972Z Removing HTTP extra header
+2026-10-08T15:11:35.3114408Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:11:35.3152015Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:11:35.3413604Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:11:35.3421670Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:11:35.3458802Z includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:11:35.3459782Z includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:11:35.3460953Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:11:35.3461845Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:11:35.3469626Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:11:35.3517153Z /home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:11:35.3523786Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-7e85a985\-8fae\-40bf\-bd2b\-394fa166693c\.config
+2026-10-08T15:11:35.3571470Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:11:35.3604223Z /home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:11:35.3624312Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-7e85a985\-8fae\-40bf\-bd2b\-394fa166693c\.config
+2026-10-08T15:11:35.3667545Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:11:35.3697719Z /github/runner_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:11:35.3706578Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-7e85a985\-8fae\-40bf\-bd2b\-394fa166693c\.config
+2026-10-08T15:11:35.3752270Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:11:35.3780654Z /github/runner_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config
+2026-10-08T15:11:35.3789455Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-7e85a985\-8fae\-40bf\-bd2b\-394fa166693c\.config
+2026-10-08T15:11:35.3831966Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:11:35.4084250Z Removing credentials config '/home/runner/work/_temp/git-credentials-7e85a985-8fae-40bf-bd2b-394fa166693c.config'
+2026-10-08T15:11:35.4231288Z Cleaning up orphan processes

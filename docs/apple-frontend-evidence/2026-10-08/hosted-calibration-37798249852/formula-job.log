@@ -1,0 +1,399 @@
+﻿2026-10-08T15:25:30.2344430Z Current runner version: '2.337.0'
+2026-10-08T15:25:30.2360130Z ##[group]Runner Image Provisioner
+2026-10-08T15:25:30.2360870Z Hosted Compute Agent
+2026-10-08T15:25:30.2361370Z Version: 20260828.587
+2026-10-08T15:25:30.2361900Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-08T15:25:30.2362480Z Build Date: 2026-08-28T16:44:25Z
+2026-10-08T15:25:30.2363050Z Worker ID: {d7ab8c3c-c6fd-4c4d-af83-e55a51f5194b}
+2026-10-08T15:25:30.2363700Z Azure Region: westus
+2026-10-08T15:25:30.2364160Z ##[endgroup]
+2026-10-08T15:25:30.2365140Z ##[group]Operating System
+2026-10-08T15:25:30.2365540Z macOS
+2026-10-08T15:25:30.2365860Z 26.6.2
+2026-10-08T15:25:30.2366200Z 25G83
+2026-10-08T15:25:30.2366520Z ##[endgroup]
+2026-10-08T15:25:30.2366900Z ##[group]Runner Image
+2026-10-08T15:25:30.2367370Z Image: macos-26-arm64
+2026-10-08T15:25:30.2367810Z Version: 20260907.0351.1
+2026-10-08T15:25:30.2368840Z Included Software: https://github.com/actions/runner-images/blob/macos-26-arm64/20260907.0351/images/macos/macos-26-arm64-Readme.md
+2026-10-08T15:25:30.2369980Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20260907.0351
+2026-10-08T15:25:30.2370660Z ##[endgroup]
+2026-10-08T15:25:30.2371480Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:25:30.2377680Z Contents: read
+2026-10-08T15:25:30.2378050Z Metadata: read
+2026-10-08T15:25:30.2378420Z Packages: read
+2026-10-08T15:25:30.2378780Z ##[endgroup]
+2026-10-08T15:25:30.2380300Z Secret source: Actions
+2026-10-08T15:25:30.2380940Z Cache mode: write
+2026-10-08T15:25:30.2381410Z Prepare workflow directory
+2026-10-08T15:25:30.2796670Z Prepare all required actions
+2026-10-08T15:25:30.2873700Z Getting action download info
+2026-10-08T15:25:30.7378940Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:25:31.3298460Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-08T15:25:31.9101840Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-08T15:25:32.5237330Z Complete job name: install-the-formula (dry run)
+2026-10-08T15:25:32.5963360Z ##[group]Run actions/checkout@v7
+2026-10-08T15:25:32.5966560Z with:
+2026-10-08T15:25:32.5967600Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:32.5968830Z   repository: johnsonlee/graphite
+2026-10-08T15:25:32.5976990Z   token: ***
+2026-10-08T15:25:32.5977910Z   ssh-strict: true
+2026-10-08T15:25:32.5978820Z   ssh-user: git
+2026-10-08T15:25:32.5979780Z   persist-credentials: true
+2026-10-08T15:25:32.5980780Z   clean: true
+2026-10-08T15:25:32.5981720Z   sparse-checkout-cone-mode: true
+2026-10-08T15:25:32.5982800Z   fetch-depth: 1
+2026-10-08T15:25:32.5983720Z   fetch-tags: false
+2026-10-08T15:25:32.5984670Z   show-progress: true
+2026-10-08T15:25:32.5985620Z   lfs: false
+2026-10-08T15:25:32.5986490Z   submodules: false
+2026-10-08T15:25:32.5987910Z   set-safe-directory: true
+2026-10-08T15:25:32.5988990Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:25:32.5992370Z env:
+2026-10-08T15:25:32.5993410Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:32.5994710Z   DRY_RUN: true
+2026-10-08T15:25:32.5995700Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:32.5996880Z ##[endgroup]
+2026-10-08T15:25:33.2276930Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:25:33.2278580Z ##[group]Getting Git version info
+2026-10-08T15:25:33.2279360Z Working directory is '/Users/runner/work/graphite/graphite'
+2026-10-08T15:25:33.2280420Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:25:33.2885670Z git version 2.55.0
+2026-10-08T15:25:33.2954450Z ##[endgroup]
+2026-10-08T15:25:33.2968350Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/9cb92c77-aaf6-4693-b5a4-dc77ae67fdbe/.gitconfig'
+2026-10-08T15:25:33.2973630Z Temporarily overriding HOME='/Users/runner/work/_temp/9cb92c77-aaf6-4693-b5a4-dc77ae67fdbe' before making global git config changes
+2026-10-08T15:25:33.2979690Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:25:33.2992810Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+2026-10-08T15:25:33.3160170Z Deleting the contents of '/Users/runner/work/graphite/graphite'
+2026-10-08T15:25:33.3165380Z ##[group]Determining repository object format
+2026-10-08T15:25:33.3170790Z ##[endgroup]
+2026-10-08T15:25:33.3174610Z ##[group]Initializing the repository
+2026-10-08T15:25:33.3178110Z [command]/opt/homebrew/bin/git init /Users/runner/work/graphite/graphite
+2026-10-08T15:25:33.3473400Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:25:33.3475750Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:25:33.3477780Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:25:33.3479300Z hint: call:
+2026-10-08T15:25:33.3480110Z hint:
+2026-10-08T15:25:33.3481090Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:25:33.3482430Z hint:
+2026-10-08T15:25:33.3483700Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:25:33.3485740Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:25:33.3487330Z hint:
+2026-10-08T15:25:33.3488170Z hint: 	git branch -m <name>
+2026-10-08T15:25:33.3489050Z hint:
+2026-10-08T15:25:33.3490200Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:25:33.3492070Z Initialized empty Git repository in /Users/runner/work/graphite/graphite/.git/
+2026-10-08T15:25:33.3496370Z [command]/opt/homebrew/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:25:33.3604230Z ##[endgroup]
+2026-10-08T15:25:33.3607110Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:25:33.3609890Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-08T15:25:33.3695930Z ##[endgroup]
+2026-10-08T15:25:33.3697660Z ##[group]Setting up auth
+2026-10-08T15:25:33.3698650Z Removing SSH command configuration
+2026-10-08T15:25:33.3700660Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:25:33.3773180Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:25:33.5546180Z Removing HTTP extra header
+2026-10-08T15:25:33.5556710Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:25:33.5646950Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:25:33.6903620Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:25:33.6905500Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:25:33.7253530Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:25:33.8907570Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:25:33.9020460Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git.path /Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:25:33.9101310Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:25:33.9191610Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:25:33.9285600Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:25:33.9358340Z ##[endgroup]
+2026-10-08T15:25:33.9359690Z ##[group]Fetching the repository
+2026-10-08T15:25:33.9374510Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.0256650Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:25:35.0259020Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:25:35.0278230Z [command]/opt/homebrew/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:25:35.0429360Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.0433420Z ##[endgroup]
+2026-10-08T15:25:35.0434990Z ##[group]Determining the checkout info
+2026-10-08T15:25:35.0438980Z ##[endgroup]
+2026-10-08T15:25:35.0440590Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-08T15:25:35.0578240Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:25:35.0710100Z ##[group]Checking out the ref
+2026-10-08T15:25:35.0710940Z [command]/opt/homebrew/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.2793120Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:25:35.2803360Z ##[endgroup]
+2026-10-08T15:25:35.2979660Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-08T15:25:35.3117510Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.3448360Z ##[group]Run actions/download-artifact@v8
+2026-10-08T15:25:35.3448780Z with:
+2026-10-08T15:25:35.3448960Z   name: release-v2.11.3-apple-validation.4
+2026-10-08T15:25:35.3449250Z   path: dry-run
+2026-10-08T15:25:35.3449430Z   merge-multiple: false
+2026-10-08T15:25:35.3449760Z   repository: johnsonlee/graphite
+2026-10-08T15:25:35.3450050Z   run-id: 37798249852
+2026-10-08T15:25:35.3469210Z   skip-decompress: false
+2026-10-08T15:25:35.3469850Z   digest-mismatch: error
+2026-10-08T15:25:35.3470350Z env:
+2026-10-08T15:25:35.3470770Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:35.3471340Z   DRY_RUN: true
+2026-10-08T15:25:35.3471810Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:35.3472580Z ##[endgroup]
+2026-10-08T15:25:35.6159570Z Downloading single artifact
+2026-10-08T15:25:35.9601340Z Preparing to download the following artifacts:
+2026-10-08T15:25:35.9604300Z - release-v2.11.3-apple-validation.4 (ID: 11561030466, Size: 104057988, Expected Digest: sha256:eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696)
+2026-10-08T15:25:36.5353800Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/d97cd4f8-f4a6-4c9a-b2b9-fe1ec5b7999f/workflow-job-run-62403cbc-6b52-5f3c-9c5e-772953032411/artifacts/e1c3514b3e1bb853e8a5910771b5177a871dd0ff035ab41479985fced5e029e1.zip
+2026-10-08T15:25:36.5459440Z Starting download of artifact to: /Users/runner/work/graphite/graphite/dry-run
+2026-10-08T15:25:36.8520750Z (node:1203) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T15:25:36.8624530Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T15:25:47.4043930Z SHA256 digest of downloaded artifact is eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696
+2026-10-08T15:25:47.4068080Z Artifact download completed successfully.
+2026-10-08T15:25:47.4070060Z Total of 1 artifact(s) downloaded
+2026-10-08T15:25:47.4074810Z Download artifact has finished successfully
+2026-10-08T15:25:47.5669250Z ##[group]Run ASSETS="$PWD/dry-run/release-assets"
+2026-10-08T15:25:47.5670800Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+2026-10-08T15:25:47.5681120Z [36;1mFORMULA="$PWD/dry-run/formula/Formula/graphite.rb"[0m
+2026-10-08T15:25:47.5681810Z [36;1msed -i '' "s|https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}|file://${ASSETS}|g" "${FORMULA}"[0m
+2026-10-08T15:25:47.5682470Z [36;1mgrep -c 'file://' "${FORMULA}"[0m
+2026-10-08T15:25:47.5683060Z [36;1m# Homebrew requires formulae to belong to a tap. Keep this tap local to[0m
+2026-10-08T15:25:47.5683580Z [36;1m# the disposable runner and select its formula explicitly, avoiding core.[0m
+2026-10-08T15:25:47.5684190Z [36;1mDRY_RUN_TAP="graphite/dry-run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"[0m
+2026-10-08T15:25:47.5684670Z [36;1mbrew tap-new "${DRY_RUN_TAP}"[0m
+2026-10-08T15:25:47.5685090Z [36;1mcp "${FORMULA}" "$(brew --repository "${DRY_RUN_TAP}")/Formula/graphite.rb"[0m
+2026-10-08T15:25:47.5685890Z [36;1mbrew install --formula "${DRY_RUN_TAP}/graphite"[0m
+2026-10-08T15:25:47.5686300Z [36;1mgraphite --version | grep -F "${RELEASE_VERSION}"[0m
+2026-10-08T15:25:47.5686730Z [36;1mgraphite frontend list[0m
+2026-10-08T15:25:47.5687090Z [36;1mgraphite frontend describe jvm[0m
+2026-10-08T15:25:47.5687540Z [36;1mgraphite frontend describe apple | grep -F '"writes": "ir"'[0m
+2026-10-08T15:25:47.5688090Z [36;1mbrew test "${DRY_RUN_TAP}/graphite"[0m
+2026-10-08T15:25:47.5688560Z [36;1mbash .github/scripts/verify-apple-release.sh "$(command -v graphite)" \[0m
+2026-10-08T15:25:47.5689210Z [36;1m  frontend/apple/Fixtures/AcmeShop "${RUNNER_TEMP}/apple-formula-check"[0m
+2026-10-08T15:25:47.5815660Z shell: /bin/bash -e {0}
+2026-10-08T15:25:47.5816090Z env:
+2026-10-08T15:25:47.5817110Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:47.5818760Z   DRY_RUN: true
+2026-10-08T15:25:47.5819360Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:47.5820590Z ##[endgroup]
+2026-10-08T15:25:47.8065330Z 8
+2026-10-08T15:25:50.4398210Z [33mWarning:[0m [1mtap-new[0m is a developer command, so Homebrew's
+2026-10-08T15:25:50.4403150Z developer mode has been automatically turned on.
+2026-10-08T15:25:50.4405690Z To turn developer mode off, run:
+2026-10-08T15:25:50.4406760Z   brew developer off
+2026-10-08T15:25:50.4407500Z 
+2026-10-08T15:25:51.8043970Z Initialized empty Git repository in /opt/homebrew/Library/Taps/graphite/homebrew-dry-run-37798249852-1/.git/
+2026-10-08T15:25:52.0004480Z [main (root-commit) 40c86a4] Create graphite/dry-run-37798249852-1 tap
+2026-10-08T15:25:52.0017350Z  Committer: Anka <runner@sjc22-bt151-4de8d481-d896-4e67-b747-f9d1aa8fcf84-D2E0AE60E4E1.local>
+2026-10-08T15:25:52.0018730Z  5 files changed, 185 insertions(+)
+2026-10-08T15:25:52.0021350Z  create mode 100644 .github/dependabot.yml
+2026-10-08T15:25:52.0022540Z  create mode 100644 .github/workflows/autobump.yml
+2026-10-08T15:25:52.0023880Z  create mode 100644 .github/workflows/publish.yml
+2026-10-08T15:25:52.0025070Z  create mode 100644 .github/workflows/tests.yml
+2026-10-08T15:25:52.0025680Z  create mode 100644 README.md
+2026-10-08T15:25:52.0489650Z [34m==>[0m [1mCreated graphite/dry-run-37798249852-1[0m
+2026-10-08T15:25:52.0491000Z /opt/homebrew/Library/Taps/graphite/homebrew-dry-run-37798249852-1
+2026-10-08T15:25:52.0491750Z 
+2026-10-08T15:25:52.0492440Z When a pull request making changes to a formula (or formulae) becomes green
+2026-10-08T15:25:52.0494450Z (all checks passed), then you can publish the built bottles.
+2026-10-08T15:25:52.0496840Z To do so, run `brew pr-pull` locally or run the `brew pr-pull`
+2026-10-08T15:25:52.0497520Z workflow with the pull request number and, optionally, the pull
+2026-10-08T15:25:52.0498090Z request's expected head commit SHA.
+2026-10-08T15:25:53.5239540Z [34m==>[0m [1mTrusted formula graphite/dry-run-37798249852-1/graphite[0m
+2026-10-08T15:25:55.1116320Z [34m==>[0m [1mWould install 1 formula:[0m
+2026-10-08T15:25:55.1118190Z graphite
+2026-10-08T15:25:55.4815430Z [34m==>[0m [1mWould install 1 dependency for graphite:[0m
+2026-10-08T15:25:55.4816670Z openjdk@17
+2026-10-08T15:25:55.5252740Z ##[warning]openjdk@17 has been deprecated because it is not maintained upstream! It will be disabled on 2029-09-30.
+2026-10-08T15:25:56.1751400Z [32m==>[0m [1mFetching downloads for: [32mgraphite[39m[0m
+2026-10-08T15:25:56.1942180Z ✔︎ Bottle Manifest openjdk@17 (17.0.20.1)
+2026-10-08T15:25:56.1943670Z ✔︎ Resource graphite--frontend-jvm
+2026-10-08T15:25:56.1944520Z ✔︎ Resource graphite--frontend-apple
+2026-10-08T15:25:56.2821580Z ✔︎ Formula graphite (2.11.3-apple-validation.4)
+2026-10-08T15:26:01.8733400Z ✔︎ Bottle openjdk@17 (17.0.20.1)
+2026-10-08T15:26:01.8736100Z [34m==>[0m [1mInstalling graphite from graphite/dry-run-37798249852-1[0m
+2026-10-08T15:26:02.6394610Z [32m==>[0m [1mInstalling graphite/dry-run-37798249852-1/graphite dependency: [32mopenjdk@17[39m[0m
+2026-10-08T15:26:02.6400980Z ##[warning]openjdk@17 has been deprecated because it is not maintained upstream! It will be disabled on 2029-09-30.
+2026-10-08T15:26:03.1346650Z [34m==>[0m [1mPouring openjdk@17--17.0.20.1.arm64_tahoe.bottle.tar.gz[0m
+2026-10-08T15:26:04.2704350Z 🍺  /opt/homebrew/Cellar/openjdk@17/17.0.20.1: 635 files, 319.4MB
+2026-10-08T15:26:04.2713970Z [32m==>[0m [1mInstalling [32mgraphite/dry-run-37798249852-1/graphite[39m[0m
+2026-10-08T15:26:09.7034990Z 🍺  /opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4: 7 files, 74.9MB, built in 5 seconds
+2026-10-08T15:26:09.7916050Z graphite 2.11.3-apple-validation.4
+2026-10-08T15:26:10.8901020Z jvm	2.11.3-apple-validation.4	/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/libexec/graphite.jar	(via GRAPHITE_FRONTEND_JVM)
+2026-10-08T15:26:10.9064790Z apple	0.1.0	/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/libexec/graphite-frontend-apple	(via next to the graphite executable)
+2026-10-08T15:26:11.1746640Z {
+2026-10-08T15:26:11.1826630Z   "name": "jvm",
+2026-10-08T15:26:11.1894990Z   "kind": "jar",
+2026-10-08T15:26:11.1996800Z   "path": "/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/libexec/graphite.jar",
+2026-10-08T15:26:11.2098640Z   "found_via": "GRAPHITE_FRONTEND_JVM",
+2026-10-08T15:26:11.2108360Z   "version": "2.11.3-apple-validation.4",
+2026-10-08T15:26:11.2122550Z   "inputs": [
+2026-10-08T15:26:11.2123030Z     "jar",
+2026-10-08T15:26:11.2123390Z     "war",
+2026-10-08T15:26:11.2123770Z     "apk",
+2026-10-08T15:26:11.2124120Z     "aar",
+2026-10-08T15:26:11.2125740Z     "dex",
+2026-10-08T15:26:11.2125980Z     "class directory"
+2026-10-08T15:26:11.2126260Z   ],
+2026-10-08T15:26:11.2126500Z   "ir_schema": [],
+2026-10-08T15:26:11.2126770Z   "writes": "persisted-graph"
+2026-10-08T15:26:11.2127190Z }
+2026-10-08T15:26:11.2127590Z   "writes": "ir"
+2026-10-08T15:26:18.7097720Z Fetching gem metadata from https://rubygems.org/.........
+2026-10-08T15:26:18.7648050Z Fetching bindata 3.0.0
+2026-10-08T15:26:18.7655260Z Fetching concurrent-ruby 1.3.8
+2026-10-08T15:26:18.7753000Z Fetching drb 2.2.3
+2026-10-08T15:26:18.7829310Z Fetching elftools 2.0.0
+2026-10-08T15:26:18.8900810Z Fetching logger 1.7.0
+2026-10-08T15:26:18.8943580Z Fetching prism 1.9.0
+2026-10-08T15:26:18.8959120Z Fetching minitest 6.0.6
+2026-10-08T15:26:18.8988200Z Fetching patchelf 1.6.2
+2026-10-08T15:26:18.9148450Z Fetching plist 3.7.2
+2026-10-08T15:26:18.9170000Z Fetching ruby-macho 6.0.0
+2026-10-08T15:26:18.9264540Z Fetching sorbet-runtime 0.6.13454
+2026-10-08T15:26:18.9283270Z Installing drb 2.2.3
+2026-10-08T15:26:18.9325980Z Installing elftools 2.0.0
+2026-10-08T15:26:18.9464060Z Installing bindata 3.0.0
+2026-10-08T15:26:18.9677710Z Installing logger 1.7.0
+2026-10-08T15:26:19.0329460Z Installing patchelf 1.6.2
+2026-10-08T15:26:19.0485650Z Installing prism 1.9.0 with native extensions
+2026-10-08T15:26:19.0737840Z Installing minitest 6.0.6
+2026-10-08T15:26:19.1583680Z Installing plist 3.7.2
+2026-10-08T15:26:19.1619260Z Installing concurrent-ruby 1.3.8
+2026-10-08T15:26:19.1755230Z Installing ruby-macho 6.0.0
+2026-10-08T15:26:19.2130710Z Installing sorbet-runtime 0.6.13454
+2026-10-08T15:26:29.4935320Z Bundle complete! 38 Gemfile dependencies, 11 gems now installed.
+2026-10-08T15:26:29.4936670Z Bundled gems are installed into `../../../../../opt/homebrew/Library/Homebrew/vendor/bundle`
+2026-10-08T15:26:29.5066530Z 2 installed gems you directly depend on are looking for funding.
+2026-10-08T15:26:29.5067570Z   Run `bundle fund` for details
+2026-10-08T15:26:30.2386090Z [32m==>[0m [1mTesting graphite/dry-run-37798249852-1/graphite[0m
+2026-10-08T15:26:32.0981690Z [34m==>[0m [1m/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/bin/graphite --help[0m
+2026-10-08T15:26:32.1411260Z [34m==>[0m [1m/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/bin/graphite fronten[0m
+2026-10-08T15:26:32.6656400Z [34m==>[0m [1m/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/bin/graphite fronten[0m
+2026-10-08T15:26:33.1950710Z {
+2026-10-08T15:26:33.1951740Z   "name": "apple",
+2026-10-08T15:26:33.1952630Z   "kind": "executable",
+2026-10-08T15:26:33.1953870Z   "path": "/opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/libexec/graphite-frontend-apple",
+2026-10-08T15:26:33.1955290Z   "found_via": "next to the graphite executable",
+2026-10-08T15:26:33.1956880Z   "version": "0.1.0",
+2026-10-08T15:26:33.1958010Z   "inputs": [
+2026-10-08T15:26:33.1959410Z     "Package.swift",
+2026-10-08T15:26:33.1959870Z     "xcodeproj",
+2026-10-08T15:26:33.1960210Z     "xcworkspace",
+2026-10-08T15:26:33.1961480Z     "index-store"
+2026-10-08T15:26:33.1961840Z   ],
+2026-10-08T15:26:33.1962550Z   "ir_schema": [
+2026-10-08T15:26:33.1963280Z     1
+2026-10-08T15:26:33.1963830Z   ],
+2026-10-08T15:26:33.1964790Z   "aliases": {
+2026-10-08T15:26:33.1968620Z     "swift": "apple",
+2026-10-08T15:26:33.1969250Z     "ios": "apple",
+2026-10-08T15:26:33.1969770Z     "macos": "apple"
+2026-10-08T15:26:33.1970230Z   },
+2026-10-08T15:26:33.1970500Z   "indexable": [
+2026-10-08T15:26:33.1970690Z     "swift"
+2026-10-08T15:26:33.1971480Z   ],
+2026-10-08T15:26:33.1971710Z   "writes": "ir"
+2026-10-08T15:26:33.1972880Z }
+2026-10-08T15:26:33.2179820Z Running /opt/homebrew/Cellar/graphite/2.11.3-apple-validation.4/libexec/graphite-frontend-apple build
+2026-10-08T15:26:33.2354420Z {"phase": "swift build", "done": 0, "total": 1}
+2026-10-08T15:26:47.2895820Z Building for debugging...
+2026-10-08T15:26:47.2968900Z [0/7] Write acme-tool-entitlement.plist
+2026-10-08T15:26:47.2974500Z [0/7] Write sources
+2026-10-08T15:26:47.4971560Z [3/7] Write swift-version-7974D3F7F03D5E95.txt
+2026-10-08T15:26:48.4882690Z [5/10] Compiling AcmeShop CartService.swift
+2026-10-08T15:26:48.5348860Z [6/11] Emitting module AcmeShop
+2026-10-08T15:26:48.5360440Z [7/11] Compiling AcmeShop Models.swift
+2026-10-08T15:26:48.6652940Z [8/11] Compiling AcmeShop PaymentClient.swift
+2026-10-08T15:26:48.9684430Z [9/13] Compiling AcmeShopTool Tool.swift
+2026-10-08T15:26:48.9688050Z [10/13] Emitting module AcmeShopTool
+2026-10-08T15:26:48.9724860Z [10/13] Write Objects.LinkFileList
+2026-10-08T15:26:49.2454150Z [11/13] Linking acme-tool
+2026-10-08T15:26:49.3171940Z [12/13] Applying acme-tool
+2026-10-08T15:26:49.3187320Z Build complete! (2.09s)
+2026-10-08T15:26:49.3271400Z {"phase": "swift build", "done": 1, "total": 1}
+2026-10-08T15:26:49.3325880Z {"phase": "swift package describe", "done": 0, "total": 1}
+2026-10-08T15:26:56.8169260Z {"phase": "swift package describe", "done": 1, "total": 1}
+2026-10-08T15:26:57.8949060Z {"phase": "index", "done": 0, "total": 4}
+2026-10-08T15:26:57.9578430Z {"phase": "index", "done": 4, "total": 4}
+2026-10-08T15:26:57.9921030Z {"phase": "syntax", "done": 1, "total": 4}
+2026-10-08T15:26:58.0034430Z {"phase": "syntax", "done": 2, "total": 4}
+2026-10-08T15:26:58.0071160Z {"phase": "syntax", "done": 3, "total": 4}
+2026-10-08T15:26:58.0117370Z {"phase": "syntax", "done": 4, "total": 4}
+2026-10-08T15:26:58.0117990Z {"phase": "demangle", "done": 0, "total": 115}
+2026-10-08T15:26:58.0911390Z {"phase": "demangle", "done": 115, "total": 115}
+2026-10-08T15:26:58.0974740Z {"phase": "emit", "done": 0, "total": 1}
+2026-10-08T15:26:58.1017450Z {"phase": "emit", "done": 1, "total": 1}
+2026-10-08T15:26:58.1141480Z graphite-frontend-apple 0.1.0: 4 files, 11 types, 15 methods, 13 fields, 24 call sites, 15 constants, 3 annotations; 68 nodes, 28 edges, 84 strings -> /Users/runner/work/_temp/apple-formula-check/acme.graphite.ir-3417.graphite-ir
+2026-10-08T15:26:58.1649570Z Picked up JAVA_TOOL_OPTIONS: -Xmx8g
+2026-10-08T15:26:58.4497550Z Reading IR from: /Users/runner/work/_temp/apple-formula-check/acme.graphite.ir-3417.graphite-ir
+2026-10-08T15:26:58.7541750Z IR from graphite-frontend-apple 0.1.0 (swift): 68 nodes, 28 edges, 84 strings
+2026-10-08T15:26:58.7542380Z Saving to: /Users/runner/work/_temp/apple-formula-check/acme.graphite.build-3417
+2026-10-08T15:26:59.0381290Z Done.
+2026-10-08T15:26:59.0573980Z Packed 19 entries (83663 bytes) into /Users/runner/work/_temp/apple-formula-check/acme.graphite
+2026-10-08T15:26:59.0576090Z fingerprint: 8f470b8c5413b5247e55acd7c51322487215f327f6eeeabfb46ef5cbe1123ca4
+2026-10-08T15:26:59.0582690Z sha256: 3fcb474e46495179c696b3ebbeaf6edb7b0ba539642743881b5e1737070855d9 (written to /Users/runner/work/_temp/apple-formula-check/acme.graphite.sha256)
+2026-10-08T15:26:59.0693950Z file sha256 ok (3fcb474e46495179c696b3ebbeaf6edb7b0ba539642743881b5e1737070855d9)
+2026-10-08T15:26:59.0695140Z OK: 19 entries verified in /Users/runner/work/_temp/apple-formula-check/acme.graphite
+2026-10-08T15:26:59.0696660Z fingerprint: 8f470b8c5413b5247e55acd7c51322487215f327f6eeeabfb46ef5cbe1123ca4
+2026-10-08T15:26:59.1251840Z "checkout(order:method:)"
+2026-10-08T15:26:59.1307460Z "init(client:)"
+2026-10-08T15:26:59.1729490Z "payments.charge"
+2026-10-08T15:26:59.1873400Z true
+2026-10-08T15:26:59.2187420Z "checkout(order:method:)"
+2026-10-08T15:26:59.2850310Z ##[group]Run actions/upload-artifact@v7
+2026-10-08T15:26:59.2851460Z with:
+2026-10-08T15:26:59.2851920Z   name: apple-formula-check
+2026-10-08T15:26:59.2853040Z   path: /Users/runner/work/_temp/apple-formula-check/*.csv
+/Users/runner/work/_temp/apple-formula-check/*.graphite
+
+2026-10-08T15:26:59.2854340Z   if-no-files-found: warn
+2026-10-08T15:26:59.2854970Z   compression-level: 6
+2026-10-08T15:26:59.2855490Z   overwrite: false
+2026-10-08T15:26:59.2856140Z   include-hidden-files: false
+2026-10-08T15:26:59.2918820Z   archive: true
+2026-10-08T15:26:59.2919010Z env:
+2026-10-08T15:26:59.2919280Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:26:59.2919580Z   DRY_RUN: true
+2026-10-08T15:26:59.2919770Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:26:59.2919980Z ##[endgroup]
+2026-10-08T15:27:00.2610390Z With the provided path, there will be 4 files uploaded
+2026-10-08T15:27:00.2611520Z Artifact name is valid!
+2026-10-08T15:27:00.2613280Z Root directory input is valid!
+2026-10-08T15:27:00.7593980Z Uploading artifact: apple-formula-check.zip
+2026-10-08T15:27:00.7621250Z Beginning upload of artifact content to blob storage
+2026-10-08T15:27:01.1742020Z Uploaded bytes 9029
+2026-10-08T15:27:01.2593070Z Finished uploading artifact content to blob storage!
+2026-10-08T15:27:01.2646620Z SHA256 digest of uploaded artifact is 4e500437c8b6ac89e6b8c3b499ac569bafe0fba74e7c4c0ab22a8f1e8951a6e9
+2026-10-08T15:27:01.2649390Z Finalizing artifact upload
+2026-10-08T15:27:01.7108300Z Artifact apple-formula-check successfully finalized. Artifact ID 11560641229
+2026-10-08T15:27:01.7111200Z Artifact apple-formula-check has been successfully uploaded! Final size is 9029 bytes. Artifact ID is 11560641229
+2026-10-08T15:27:01.7112210Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11560641229
+2026-10-08T15:27:01.7456970Z Post job cleanup.
+2026-10-08T15:27:02.0330180Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:27:02.0539410Z git version 2.55.0
+2026-10-08T15:27:02.1066750Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/68a409b1-7442-4ad1-b75f-a0b37a7b9782/.gitconfig'
+2026-10-08T15:27:02.1168870Z Temporarily overriding HOME='/Users/runner/work/_temp/68a409b1-7442-4ad1-b75f-a0b37a7b9782' before making global git config changes
+2026-10-08T15:27:02.1270130Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:27:02.1370590Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+2026-10-08T15:27:02.1715050Z Removing SSH command configuration
+2026-10-08T15:27:02.1815550Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:27:02.2157130Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:27:02.3975510Z Removing HTTP extra header
+2026-10-08T15:27:02.3994720Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:27:02.4114920Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:27:02.5268900Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:27:02.5274830Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:27:02.5394770Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+2026-10-08T15:27:02.5396110Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:27:02.5397090Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:27:02.5398160Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:27:02.5402040Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+2026-10-08T15:27:02.5475300Z /Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:27:02.5494450Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-523924ce\-9fab\-4eca\-9f03\-5a110814d88c\.config
+2026-10-08T15:27:02.5584940Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:27:02.5693100Z /Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:27:02.5709550Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-523924ce\-9fab\-4eca\-9f03\-5a110814d88c\.config
+2026-10-08T15:27:02.5820480Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:27:02.5909520Z /github/runner_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:27:02.5917300Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-523924ce\-9fab\-4eca\-9f03\-5a110814d88c\.config
+2026-10-08T15:27:02.6022000Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:27:02.6092980Z /github/runner_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config
+2026-10-08T15:27:02.6100720Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-523924ce\-9fab\-4eca\-9f03\-5a110814d88c\.config
+2026-10-08T15:27:02.6216390Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:27:02.7671380Z Removing credentials config '/Users/runner/work/_temp/git-credentials-523924ce-9fab-4eca-9f03-5a110814d88c.config'
+2026-10-08T15:27:02.7801980Z Cleaning up orphan processes

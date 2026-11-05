@@ -27,6 +27,25 @@ public struct SyntaxCall: Equatable {
     public var literals: [LiteralArgument]
 }
 
+/// An explicit source parameter. The slot is its declaration order, independent of
+/// call labels and default values. A wildcard has a slot but no binding in the body.
+public struct SyntaxFormalParameter: Equatable {
+    public let index: Int
+    public let name: String?
+    public let position: SourcePosition
+}
+
+/// Proven source-level facts about a call; missing slots have unknown provenance.
+public struct SyntaxCallFlow: Equatable {
+    public let parameterByArgument: [Int: Int]
+    public let returnsResult: Bool
+}
+
+public struct SyntaxFunctionFlow: Equatable {
+    public let parameters: [SyntaxFormalParameter]
+    public var calls: [SourcePosition: SyntaxCallFlow]
+}
+
 /// An attribute (`@available(...)`, `@objc`, `@Published`) on a declaration, keyed by the
 /// position of the declared name.
 public struct SyntaxAttribute: Equatable {
@@ -52,6 +71,8 @@ public struct SyntaxDeclaration: Equatable {
 /// and declared signatures.
 public struct SyntaxFacts {
     public var calls: [SourcePosition: SyntaxCall] = [:]
+    /// Keyed by the declared name token, never by a textual method signature.
+    public var functionFlows: [SourcePosition: SyntaxFunctionFlow] = [:]
     public var attributes: [SyntaxAttribute] = []
     public var declarations: [SourcePosition: SyntaxDeclaration] = [:]
     /// Objective-C `@synthesize property = ivar`: the property each synthesized instance
@@ -234,6 +255,7 @@ private final class FactVisitor: SyntaxVisitor {
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         record(node.attributes, at: node.name)
+        recordFlow(at: node.name, parameters: node.signature.parameterClause.parameters, body: node.body)
         declare(at: node.name, parameters: node.signature.parameterClause.parameters,
                 returnType: node.signature.returnClause?.type, modifiers: node.modifiers)
         return .visitChildren
@@ -241,7 +263,16 @@ private final class FactVisitor: SyntaxVisitor {
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         record(node.attributes, at: node.initKeyword)
+        recordFlow(at: node.initKeyword, parameters: node.signature.parameterClause.parameters, body: node.body)
         declare(at: node.initKeyword, parameters: node.signature.parameterClause.parameters, returnType: nil, modifiers: node.modifiers)
+        return .visitChildren
+    }
+
+    override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        let key = position(of: node.deinitKeyword)
+        facts.declarations[key] = SyntaxDeclaration(
+            position: key, parameterTypes: [], returnType: "()", isStatic: false
+        )
         return .visitChildren
     }
 
@@ -259,6 +290,76 @@ private final class FactVisitor: SyntaxVisitor {
             }
         }
         return .visitChildren
+    }
+
+    // MARK: Source-level parameter uses and return calls
+
+    private func bindingName(_ token: TokenSyntax) -> String? {
+        guard case .identifier = token.tokenKind else { return nil }
+        return token.text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+    }
+
+    /// Inspect only direct statements in this declaration's own body. A catch,
+    /// closure, switch case or nested declaration is a different lexical scope.
+    /// The normal visitor still records calls in all of them for the call graph.
+    private func recordFlow(at declaration: TokenSyntax, parameters: FunctionParameterListSyntax, body: CodeBlockSyntax?) {
+        let formals = parameters.enumerated().map { index, parameter in
+            let token = parameter.secondName ?? parameter.firstName
+            return SyntaxFormalParameter(index: index, name: bindingName(token), position: position(of: token))
+        }
+        var flow = SyntaxFunctionFlow(parameters: formals, calls: [:])
+        let owner = position(of: declaration)
+        defer { facts.functionFlows[owner] = flow }
+        guard let body, !body.hasError else { return }
+        var visible: [String: Int] = [:]
+        for (parameter, formal) in zip(parameters, formals) {
+            // Property wrappers can transform the bound value; inout parameters
+            // can be overwritten. Do not present them as the incoming value.
+            if let name = formal.name, parameter.attributes.isEmpty,
+               !parameter.type.tokens(viewMode: .sourceAccurate).contains(where: { $0.tokenKind == .keyword(.inout) }) {
+                visible[name] = formal.index
+            }
+        }
+        // A local function can be referenced before its declaration. Other local
+        // declarations (including conditional compilation) may introduce names
+        // we do not resolve, so make no parameter claim in that case.
+        for item in body.statements {
+            if let function = item.item.as(FunctionDeclSyntax.self), let name = bindingName(function.name) {
+                visible.removeValue(forKey: name)
+            } else if item.item.is(DeclSyntax.self), !item.item.is(VariableDeclSyntax.self) {
+                visible.removeAll()
+            }
+        }
+        for item in body.statements {
+            if let variable = item.item.as(VariableDeclSyntax.self) {
+                for binding in variable.bindings {
+                    if variable.attributes.isEmpty, let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
+                       let spelling = bindingName(name) {
+                        visible.removeValue(forKey: spelling)
+                    } else {
+                        visible.removeAll()
+                    }
+                }
+                continue
+            }
+            let returned = item.item.as(ReturnStmtSyntax.self)
+            let expression = returned?.expression ?? item.item.as(ExprSyntax.self)
+            guard let call = expression?.as(FunctionCallExprSyntax.self), let called = calledName(of: call.calledExpression) else {
+                // A guard or a macro can introduce bindings into the subsequent
+                // statements. For unsupported syntax stop attributing arguments.
+                if !item.item.is(FunctionDeclSyntax.self) { visible.removeAll() }
+                continue
+            }
+            var uses: [Int: Int] = [:]
+            for (index, argument) in call.arguments.enumerated() {
+                guard let ref = argument.expression.as(DeclReferenceExprSyntax.self), ref.argumentNames == nil,
+                      let name = bindingName(ref.baseName), let parameter = visible[name] else { continue }
+                uses[index] = parameter
+            }
+            if !uses.isEmpty || returned != nil {
+                flow.calls[position(of: called)] = SyntaxCallFlow(parameterByArgument: uses, returnsResult: returned != nil)
+            }
+        }
     }
 
     // MARK: Declared signatures

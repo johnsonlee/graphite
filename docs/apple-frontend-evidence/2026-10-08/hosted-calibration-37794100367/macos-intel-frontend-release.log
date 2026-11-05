@@ -1,0 +1,357 @@
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	﻿2026-10-08T14:38:45.3024450Z Current runner version: '2.337.0'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3056050Z ##[group]Runner Image Provisioner
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3057100Z Hosted Compute Agent
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3057820Z Version: 20260819.586
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3058560Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3059430Z Build Date: 2026-08-18T23:20:18Z
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3060230Z Worker ID: {1c27966f-44ee-49ed-95bd-a16b34d61946}
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3061080Z Azure Region: westus
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3061730Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3064890Z ##[group]Operating System
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3065880Z macOS
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3066700Z 15.7.9
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3067290Z 24G830
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3067850Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3068460Z ##[group]Runner Image
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3069120Z Image: macos-15
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3069770Z Version: 20260824.0482.1
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3071170Z Included Software: https://github.com/actions/runner-images/blob/macos-15/20260824.0482/images/macos/macos-15-Readme.md
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3073500Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15%2F20260824.0482
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3074780Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3076240Z ##[group]GITHUB_TOKEN Permissions
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3078810Z Contents: read
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3079480Z Metadata: read
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3080200Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3082790Z Secret source: Actions
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3083840Z Cache mode: write
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3084640Z Prepare workflow directory
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3905770Z Prepare all required actions
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.3993280Z Getting action download info
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:45.8606900Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:46.1713990Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:46.6585390Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Set up job	2026-10-08T14:38:47.5751550Z Complete job name: apple-frontend (macos-15-intel, x86_64-apple-darwin)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	﻿2026-10-08T14:38:47.6632160Z ##[group]Run actions/checkout@v7
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6633690Z with:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6634460Z   ref: 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6635410Z   repository: johnsonlee/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6642300Z   token: ***
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6642990Z   ssh-strict: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6643680Z   ssh-user: git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6644380Z   persist-credentials: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6645150Z   clean: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6645850Z   sparse-checkout-cone-mode: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6646680Z   fetch-depth: 1
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6647380Z   fetch-tags: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6648090Z   show-progress: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6648790Z   lfs: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6649490Z   submodules: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6650210Z   set-safe-directory: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6651020Z   allow-unsafe-pr-checkout: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6652470Z env:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6653390Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6654270Z   DRY_RUN: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6655170Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:47.6656130Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0257790Z Syncing repository: johnsonlee/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0261580Z ##[group]Getting Git version info
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0263390Z Working directory is '/Users/runner/work/graphite/graphite'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0266130Z [command]/usr/local/bin/git version
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0647650Z git version 2.55.0
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0681650Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0692120Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/6488dd62-d4b3-48db-b525-3ad01b1549af/.gitconfig'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0713750Z Temporarily overriding HOME='/Users/runner/work/_temp/6488dd62-d4b3-48db-b525-3ad01b1549af' before making global git config changes
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0717850Z Adding repository directory to the temporary git global config as a safe directory
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0722490Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0888430Z Deleting the contents of '/Users/runner/work/graphite/graphite'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0895760Z ##[group]Determining repository object format
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0898910Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0901410Z ##[group]Initializing the repository
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.0906360Z [command]/usr/local/bin/git init /Users/runner/work/graphite/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1325830Z hint: Using 'master' as the name for the initial branch. This default branch name
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1329050Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1331400Z hint: to use in all of your new repositories, which will suppress this warning,
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1333750Z hint: call:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1334860Z hint:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1336310Z hint: 	git config --global init.defaultBranch <name>
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1337880Z hint:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1339360Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1341970Z hint: 'development'. The just-created branch can be renamed via this command:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1344060Z hint:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1345140Z hint: 	git branch -m <name>
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1346870Z hint:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1348750Z hint: Disable this message with "git config set advice.defaultBranchName false"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1351930Z Initialized empty Git repository in /Users/runner/work/graphite/graphite/.git/
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1356930Z [command]/usr/local/bin/git remote add origin https://github.com/johnsonlee/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1484100Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1491280Z ##[group]Disabling automatic garbage collection
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1493130Z [command]/usr/local/bin/git config --local gc.auto 0
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1638510Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1640450Z ##[group]Setting up auth
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1641550Z Removing SSH command configuration
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1648320Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.1803920Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.3370940Z Removing HTTP extra header
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.3375080Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.3477080Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.4766360Z Removing includeIf entries pointing to credentials config files
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.4771760Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.4873410Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.6917030Z [command]/usr/local/bin/git config --file /Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.6922030Z [command]/usr/local/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git.path /Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7004430Z [command]/usr/local/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7106010Z [command]/usr/local/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7212480Z [command]/usr/local/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7309460Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7310800Z ##[group]Fetching the repository
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:48.7318940Z [command]/usr/local/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0142920Z From https://github.com/johnsonlee/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0146580Z  * branch            357a6206a8a13fa2491d5ecaae16801493a89448 -> FETCH_HEAD
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0156790Z [command]/usr/local/bin/git rev-parse --verify --quiet 357a6206a8a13fa2491d5ecaae16801493a89448^{object}
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0272120Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0281440Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0283660Z ##[group]Determining the checkout info
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0286400Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0288330Z [command]/usr/local/bin/git sparse-checkout disable
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0409820Z [command]/usr/local/bin/git config --local --unset-all extensions.worktreeConfig
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0511040Z ##[group]Checking out the ref
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.0514040Z [command]/usr/local/bin/git checkout --progress --force 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.3939480Z HEAD is now at 357a620 Resolve copied framework headers and Swift sendable signatures
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.3963630Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.4143330Z [command]/usr/local/bin/git log -1 --format=%H
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/checkout@v7	2026-10-08T14:38:50.4256380Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	﻿2026-10-08T14:38:50.4688870Z ##[group]Run maxim-lobanov/setup-xcode@v1
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4690970Z with:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4692370Z   xcode-version: 16.4
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4693880Z env:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4695360Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4697400Z   DRY_RUN: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4699040Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.4701310Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:50.5902470Z Switching Xcode to version '16.4'...
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Select the frontend compiler	2026-10-08T14:38:51.0464930Z Xcode is set to 16.4.0 (16F6)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	﻿2026-10-08T14:38:51.2251940Z ##[group]Run frontend/apple/swift.sh build -c release 
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2253190Z [36;1mfrontend/apple/swift.sh build -c release [0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2366220Z shell: /bin/bash -e {0}
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2366790Z env:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2367560Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2368140Z   DRY_RUN: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2368530Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2369280Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:38:51.2370330Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:05.5118650Z Fetching https://github.com/apple/swift-argument-parser.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:05.5122260Z Fetching https://github.com/swiftlang/indexstore-db.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:05.5125550Z Fetching https://github.com/apple/swift-protobuf.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:06.5275000Z [1/6125] Fetching indexstore-db
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:06.5768510Z [2819/25221] Fetching indexstore-db, swift-argument-parser
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:07.3028180Z [25222/80031] Fetching indexstore-db, swift-argument-parser, swift-protobuf
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:16.9700990Z Fetched https://github.com/apple/swift-argument-parser.git from cache (11.46s)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:16.9715250Z Fetched https://github.com/swiftlang/indexstore-db.git from cache (11.46s)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:16.9717420Z Fetched https://github.com/apple/swift-protobuf.git from cache (11.46s)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:16.9807050Z Fetching https://github.com/swiftlang/swift-syntax.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:18.4306550Z [1/80381] Fetching swift-syntax
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:27.4903240Z Fetched https://github.com/swiftlang/swift-syntax.git from cache (10.51s)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:27.5207850Z Creating working copy for https://github.com/swiftlang/indexstore-db.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:28.3102070Z Working copy of https://github.com/swiftlang/indexstore-db.git resolved at release/6.1 (54212fc)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:28.3400100Z Creating working copy for https://github.com/apple/swift-protobuf.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:31.7494200Z Working copy of https://github.com/apple/swift-protobuf.git resolved at 1.38.1
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:31.7954110Z Creating working copy for https://github.com/apple/swift-argument-parser.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:32.1628750Z Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:32.1943860Z Creating working copy for https://github.com/swiftlang/swift-syntax.git
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:39:32.8856350Z Working copy of https://github.com/swiftlang/swift-syntax.git resolved at 601.0.1
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:17.6015690Z [1/1] Compiling plugin GenerateManual
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:19.8705110Z [2/2] Compiling plugin GenerateDoccReference
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.4519500Z [3/3] Compiling plugin SwiftProtobufPlugin
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.4520760Z Building for production...
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.4996670Z [3/106] Write sources
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.5038190Z [8/106] Copying PrivacyInfo.xcprivacy
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.5039180Z [10/106] Write sources
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.7693030Z [12/106] Compiling _SwiftSyntaxCShims dummy.c
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.9389250Z [13/106] Write swift-version--79AA4F9932D1E87A.txt
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:21.9818520Z [14/106] Compiling IndexStoreDB_Support Logging-NonMac.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:22.5207400Z [16/107] Compiling SwiftSyntax601 Empty.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:22.9833060Z [17/108] Compiling SwiftSyntax600 Empty.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:23.3638820Z [18/109] Compiling SwiftSyntax510 Empty.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:23.6795660Z [19/110] Compiling SwiftSyntax509 Empty.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:24.2660940Z [19/111] Compiling IndexStoreDB_Support PatternMatching.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:24.4597670Z [20/111] Compiling IndexStoreDB_Support Logging.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:24.9630610Z [21/112] Compiling IndexStoreDB_Support Path.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:25.4655230Z [22/112] Compiling IndexStoreDB_Support Logging-Mac.mm
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:27.0490920Z [23/112] Compiling IndexStoreDB_Support Concurrency-Mac.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:27.4957570Z [24/112] Compiling IndexStoreDB_Support FilePathWatcher.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:29.0605600Z [25/112] Compiling circular_raw_ostream.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:30.1590200Z [26/112] Compiling raw_ostream.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:34.1840430Z [27/112] Compiling YAMLTraits.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:35.9786120Z [28/112] Compiling YAMLParser.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:36.1076030Z [29/112] Compiling Watchdog.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:36.2371810Z [30/112] Compiling WithColor.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:36.2866670Z [31/112] Compiling Valgrind.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:36.3843410Z [32/112] Compiling UnicodeCaseFold.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:37.5706490Z [33/112] Compiling VersionTuple.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:37.8666730Z [34/112] Compiling Unicode.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:39.5076430Z [35/112] Compiling Twine.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:40.9897760Z [36/112] Compiling Triple.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:41.7824120Z [37/112] Compiling ToolOutputFile.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:43.8643090Z [38/112] Compiling Threading.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:45.5082420Z [39/112] Compiling Timer.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:45.8636870Z [40/112] Compiling TargetParser.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:47.4013600Z [41/112] Compiling StringSaver.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:48.3311400Z [42/112] Compiling StringRef.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:49.0692870Z [43/112] Compiling StringMap.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:49.9475260Z [44/112] Compiling StringExtras.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:52.6670870Z [45/112] Compiling Statistic.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:53.7777910Z [46/112] Compiling SmallVector.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:54.2472010Z [47/112] Compiling SourceMgr.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:55.1265210Z [48/112] Compiling SmallPtrSet.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:55.4859610Z [49/112] Compiling Signposts.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:58.0293430Z [50/112] Compiling Program.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:58.0516800Z [51/112] Compiling Signals.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:40:59.8608770Z [52/112] Compiling PrettyStackTrace.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:00.7570790Z [53/112] Compiling Process.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:02.6535220Z [54/112] Compiling Options.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:03.7404880Z [55/112] Compiling Optional.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:03.9891790Z [56/112] Compiling Path.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:05.1558270Z [57/112] Compiling Mutex.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:05.2658820Z [58/112] Compiling NativeFormatting.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:07.6342320Z [59/112] Compiling Memory.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:08.5662650Z [60/112] Compiling MemoryBuffer.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:10.2995230Z [61/112] Compiling MathExtras.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:12.5839130Z [62/112] Compiling ManagedStatic.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:16.2323610Z [63/112] Compiling MD5.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:17.1046210Z [64/112] Compiling Locale.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:21.7461300Z [65/112] Compiling LineIterator.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:26.6374230Z [66/112] Compiling JSON.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:27.9436660Z [67/112] Compiling Host.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:28.9450470Z [68/112] Compiling Hashing.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:31.3325500Z [69/112] Compiling FormatVariadic.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:31.9571960Z [70/112] Compiling FoldingSet.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:34.4232680Z [71/112] Compiling FileUtilities.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:34.6892180Z [72/112] Compiling ErrorHandling.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:37.1056160Z [73/112] Compiling Errno.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:38.7950360Z [74/112] Compiling Error.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:40.1421680Z [75/112] Compiling Debug.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:40.8974980Z [76/112] Compiling DJB.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:42.5004150Z [77/112] Compiling ConvertUTF.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:42.8457160Z [78/112] Compiling ConvertUTFWrapper.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:45.3831040Z [79/112] Compiling Chrono.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:45.5256950Z [80/112] Compiling Atomic.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:46.9927460Z [81/112] Compiling Allocator.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:49.1527650Z [82/112] Compiling ARMTargetParser.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:49.4917370Z [83/112] Compiling CommandLine.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:50.4454740Z [84/112] Compiling APSInt.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:54.9684970Z [85/112] Compiling APInt.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:55.0339100Z [86/112] Compiling APFloat.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:56.4241350Z [87/112] Compiling AArch64TargetParser.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:56.6570250Z [89/112] Compiling SwiftProtobuf AnyMessageStorage.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:58.6909910Z [89/112] Compiling IndexStoreDB_Index SymbolIndex.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:41:59.1831020Z [90/112] Compiling IndexStoreDB_Index StoreSymbolRecord.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:00.2823080Z [91/112] Compiling IndexStoreDB_Index IndexSystem.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:00.3120280Z [92/112] Compiling IndexStoreDB_Index IndexStoreLibraryProvider.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:02.2291720Z [93/112] Compiling IndexStoreDB_Index FileVisibilityChecker.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:02.6648800Z [94/112] Compiling midl.c
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:02.7522210Z [95/112] Compiling IndexStoreDB_Index FilePathIndex.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:05.1680430Z [96/112] Compiling IndexStoreDB_Database ReadTransaction.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:05.3692940Z [97/112] Compiling mdb.c
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:06.9848080Z [98/112] Compiling IndexStoreDB_Database DatabaseError.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:07.2754430Z [99/112] Compiling IndexStoreDB_Index IndexDatastore.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:08.3993350Z [100/112] Compiling IndexStoreDB_Database ImportTransaction.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:08.8240620Z [101/112] Compiling IndexStoreDB_Core Symbol.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:08.8966990Z [102/112] Write sources
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:09.7698560Z [105/113] Compiling IndexStoreDB_Database Database.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:09.7746010Z [106/113] Write sources
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:10.7380520Z [108/114] Compiling IndexStoreDB_CIndexStoreDB CIndexStoreDB.cpp
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:13.7662510Z [110/115] Compiling ArgumentParserToolInfo ToolInfo.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:20.5524640Z [111/116] Compiling IndexStoreDB IndexDelegate.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:20.5527380Z <module-includes>:1:9: note: in file included from <module-includes>:1:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:20.5540580Z 1 | #import "CIndexStoreDB.h"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:20.5542160Z   |         `- note: in file included from <module-includes>:1:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:20.5543710Z 2 | 
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:29.8711450Z [112/116] Compiling GraphiteIR IRWriter.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:42:39.2949350Z [113/116] Compiling ArgumentParser BashCompletionsGenerator.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:46:30.5395820Z [114/116] Compiling SwiftSyntax AbsolutePosition.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:23.2039190Z [115/117] Compiling SwiftParser Attributes.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:36.9878150Z [116/118] Compiling GraphiteFrontend ClangUSR.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:38.1032360Z [117/119] Compiling graphite_frontend_apple main.swift
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:38.1100250Z [117/119] Write Objects.LinkFileList
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:42.1046590Z [118/119] Linking graphite-frontend-apple
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Build the frontend	2026-10-08T14:47:42.1157590Z Build complete! (516.63s)
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	﻿2026-10-08T14:47:42.1891920Z ##[group]Run ASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-apple-darwin.tar.gz"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1897830Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-apple-darwin.tar.gz"[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1898880Z [36;1mBIN="frontend/apple/.build/release/graphite-frontend-apple"[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1899570Z [36;1m"${BIN}" version[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1900030Z [36;1m"${BIN}" describe | grep -F '"ir_schema": [1]'[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1900580Z [36;1mmkdir -p release-assets[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1901340Z [36;1mtar -czf "release-assets/${ASSET}" -C "$(dirname "${BIN}")" graphite-frontend-apple[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1902370Z [36;1m(cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.1903100Z [36;1mcat "release-assets/${ASSET}.sha256"[0m
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2047770Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2048490Z env:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2048970Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2049750Z   DRY_RUN: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2050480Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2051350Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2052150Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2496190Z 0.1.0
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:42.2646770Z {"name": "graphite-frontend-apple", "version": "0.1.0", "ir_schema": [1], "inputs": ["Package.swift", "xcodeproj", "xcworkspace", "index-store"], "aliases": {"swift": "apple", "ios": "apple", "macos": "apple"}, "indexable": ["swift"]}
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Package	2026-10-08T14:47:43.3569280Z 8d87e4670ba66c88c6e53224e956a7dabe1d9da5556f842bd28e0eb1eb31c768  graphite-frontend-apple-2.11.3-apple-validation.3-x86_64-apple-darwin.tar.gz
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	﻿2026-10-08T14:47:43.3760060Z ##[group]Run actions/upload-artifact@v7
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3760730Z with:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3761130Z   name: apple-frontend-x86_64-apple-darwin
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3761680Z   path: release-assets/*
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3762140Z   if-no-files-found: error
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3762610Z   compression-level: 6
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3763080Z   overwrite: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3763830Z   include-hidden-files: false
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3764620Z   archive: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3765180Z env:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3765570Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3766090Z   DRY_RUN: true
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3766510Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3767120Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.3767700Z ##[endgroup]
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.7266320Z With the provided path, there will be 2 files uploaded
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.7275360Z Artifact name is valid!
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:43.7276420Z Root directory input is valid!
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:44.1709530Z Uploading artifact: apple-frontend-x86_64-apple-darwin.zip
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:44.1752350Z Beginning upload of artifact content to blob storage
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.3974660Z Uploaded bytes 5565751
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.4690270Z Finished uploading artifact content to blob storage!
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.4691590Z SHA256 digest of uploaded artifact is 08ee65fac2e08bc1082aee07b09bd3e8ed2a29cbde3a08b4d065da43b68108c2
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.4692640Z Finalizing artifact upload
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.9116640Z Artifact apple-frontend-x86_64-apple-darwin successfully finalized. Artifact ID 11557249380
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.9118310Z Artifact apple-frontend-x86_64-apple-darwin has been successfully uploaded! Final size is 5565751 bytes. Artifact ID is 11557249380
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Run actions/upload-artifact@v7	2026-10-08T14:47:45.9125240Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37794100367/artifacts/11557249380
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	﻿2026-10-08T14:47:45.9416770Z Post job cleanup.
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0751530Z [command]/usr/local/bin/git version
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0878270Z git version 2.55.0
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0916270Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/d301eb49-d634-4f4f-9bc1-26ae220f8f5b/.gitconfig'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0931170Z Temporarily overriding HOME='/Users/runner/work/_temp/d301eb49-d634-4f4f-9bc1-26ae220f8f5b' before making global git config changes
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0932940Z Adding repository directory to the temporary git global config as a safe directory
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.0936530Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.1051930Z Removing SSH command configuration
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.1059810Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.1159950Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.2415120Z Removing HTTP extra header
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.2421170Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.2515610Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3663680Z Removing includeIf entries pointing to credentials config files
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3669920Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3751080Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3752170Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3753170Z includeif.gitdir:/github/workspace/.git.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3753970Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3761820Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3842090Z /Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3854280Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-ce1cb680\-df38\-4ebe\-b193\-468ff19b6f4c\.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.3955670Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4038090Z /Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4047090Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-ce1cb680\-df38\-4ebe\-b193\-468ff19b6f4c\.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4192630Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4313150Z /github/runner_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4316910Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-ce1cb680\-df38\-4ebe\-b193\-468ff19b6f4c\.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4370700Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4448850Z /github/runner_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4459860Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-ce1cb680\-df38\-4ebe\-b193\-468ff19b6f4c\.config
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.4555850Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Post Run actions/checkout@v7	2026-10-08T14:47:46.5700470Z Removing credentials config '/Users/runner/work/_temp/git-credentials-ce1cb680-df38-4ebe-b193-468ff19b6f4c.config'
+apple-frontend (macos-15-intel, x86_64-apple-darwin)	Complete job	﻿2026-10-08T14:47:46.5867800Z Cleaning up orphan processes

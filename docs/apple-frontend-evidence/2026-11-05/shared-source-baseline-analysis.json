@@ -1,0 +1,2070 @@
+{
+  "observed": {
+    "temp": {
+      "dumpFiles": 481,
+      "dumpUSRs": 39150,
+      "irSha256": "2f0f170b70860f10db020178ab9d5959e73071a1f9943b5ca315c98f15b1eb3e",
+      "librarySha256": "29fa355a47106b490d557ae30fc599b51066c5bceb9cf4d8c49c52c074f87696",
+      "productionFiles": 481,
+      "productionUSRs": 39150,
+      "savedGraphMethods": 4555,
+      "shape": {
+        "annotations": 913,
+        "callSites": 25139,
+        "constants": 3434,
+        "edges": 29000,
+        "fields": 5355,
+        "files": 481,
+        "methods": 4601,
+        "nodes": 60407,
+        "strings": 21459,
+        "types": 1752
+      }
+    },
+    "workspace": {
+      "dumpFiles": 481,
+      "dumpUSRs": 39118,
+      "irSha256": "826e94b25125c4df69312164693929446a3d1288eff0a1b5e0a8413b09fb14bf",
+      "librarySha256": "29fa355a47106b490d557ae30fc599b51066c5bceb9cf4d8c49c52c074f87696",
+      "productionFiles": 481,
+      "productionUSRs": 39118,
+      "savedGraphMethods": 4555,
+      "shape": {
+        "annotations": 913,
+        "callSites": 25139,
+        "constants": 3434,
+        "edges": 29000,
+        "fields": 5355,
+        "files": 481,
+        "methods": 4601,
+        "nodes": 60407,
+        "strings": 21430,
+        "types": 1752
+      }
+    }
+  },
+  "files": {
+    "temp": {
+      "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+        "PackageLoading": 591
+      },
+      "Sources/PackageLoading/ContextModel.swift": {
+        "PackageDescription": 83
+      },
+      "Sources/PackagePlugin/PluginMessages.swift": {
+        "PackagePlugin": 679
+      }
+    },
+    "workspace": {
+      "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+        "PackageDescription": 591
+      },
+      "Sources/PackageLoading/ContextModel.swift": {
+        "PackageLoading": 83
+      },
+      "Sources/PackagePlugin/PluginMessages.swift": {
+        "SPMBuildCore": 679
+      }
+    }
+  },
+  "sources": {
+    "temp": {
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyCheckouts": {
+        "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+        "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+        "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+        "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+        "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+        "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+        "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+        "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+        "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+        "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+        "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+        "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+      },
+      "dependencyLockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+      "root": "/__w/_temp/corpus",
+      "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+    },
+    "workspace": {
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyCheckouts": {
+        "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+        "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+        "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+        "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+        "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+        "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+        "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+        "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+        "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+        "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+        "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+        "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+      },
+      "dependencyLockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+      "root": "/__w/graphite/graphite/corpus",
+      "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+    }
+  },
+  "semanticDifferences": {
+    "CallSite": {
+      "tempOnlyRows": 13,
+      "workspaceOnlyRows": 13,
+      "tempExamples": [
+        [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "FoundationEssentials.JSONEncoder"
+            ],
+            "init()",
+            [],
+            [
+              "FoundationEssentials.JSONEncoder"
+            ]
+          ],
+          36
+        ],
+        [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "FoundationEssentials.JSONEncoder"
+            ],
+            "encode(_:)",
+            [
+              [
+                "A"
+              ]
+            ],
+            [
+              "FoundationEssentials.Data"
+            ]
+          ],
+          37
+        ],
+        [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "Swift.String"
+            ],
+            "init(decoding:as:)",
+            [
+              [
+                "A"
+              ],
+              [
+                "B.Type"
+              ]
+            ],
+            [
+              "Swift.String"
+            ]
+          ],
+          38
+        ],
+        [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageDescription.ContextModel"
+            ]
+          ],
+          [
+            [
+              "Swift.Array"
+            ],
+            "init(_:)",
+            [
+              [
+                "A1"
+              ]
+            ],
+            [
+              "[A]"
+            ]
+          ],
+          42
+        ]
+      ],
+      "workspaceExamples": [
+        [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "FoundationEssentials.JSONEncoder"
+            ],
+            "init()",
+            [],
+            [
+              "FoundationEssentials.JSONEncoder"
+            ]
+          ],
+          36
+        ],
+        [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "FoundationEssentials.JSONEncoder"
+            ],
+            "encode(_:)",
+            [
+              [
+                "A"
+              ]
+            ],
+            [
+              "FoundationEssentials.Data"
+            ]
+          ],
+          37
+        ],
+        [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "encode()",
+            [],
+            [
+              "Swift.String"
+            ]
+          ],
+          [
+            [
+              "Swift.String"
+            ],
+            "init(decoding:as:)",
+            [
+              [
+                "A"
+              ],
+              [
+                "B.Type"
+              ]
+            ],
+            [
+              "Swift.String"
+            ]
+          ],
+          38
+        ],
+        [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageLoading.ContextModel"
+            ]
+          ],
+          [
+            [
+              "Swift.Array"
+            ],
+            "init(_:)",
+            [
+              [
+                "A1"
+              ]
+            ],
+            [
+              "[A]"
+            ]
+          ],
+          42
+        ]
+      ]
+    },
+    "ClassOrigin": {
+      "tempOnlyRows": 80,
+      "workspaceOnlyRows": 80,
+      "tempExamples": [
+        [
+          "PackageLoading.Serialization",
+          "PackageLoading"
+        ],
+        [
+          "PackageLoading.Serialization.BuildConfiguration",
+          "PackageLoading"
+        ],
+        [
+          "PackageLoading.Serialization.BuildSettingCondition",
+          "PackageLoading"
+        ],
+        [
+          "PackageLoading.Serialization.BuildSettingData",
+          "PackageLoading"
+        ]
+      ],
+      "workspaceExamples": [
+        [
+          "PackageDescription.Serialization",
+          "PackageDescription"
+        ],
+        [
+          "PackageDescription.Serialization.BuildConfiguration",
+          "PackageDescription"
+        ],
+        [
+          "PackageDescription.Serialization.BuildSettingCondition",
+          "PackageDescription"
+        ],
+        [
+          "PackageDescription.Serialization.BuildSettingData",
+          "PackageDescription"
+        ]
+      ]
+    },
+    "Field": {
+      "tempOnlyRows": 142,
+      "workspaceOnlyRows": 142,
+      "tempExamples": [
+        [
+          [
+            "PackageLoading.Serialization.BuildConfiguration"
+          ],
+          "config",
+          [
+            "Swift.String"
+          ]
+        ],
+        [
+          [
+            "PackageLoading.Serialization.BuildSettingCondition"
+          ],
+          "platforms",
+          [
+            "[PackageLoading.Serialization.Platform]?"
+          ]
+        ],
+        [
+          [
+            "PackageLoading.Serialization.BuildSettingCondition"
+          ],
+          "config",
+          [
+            "PackageLoading.Serialization.BuildConfiguration?"
+          ]
+        ],
+        [
+          [
+            "PackageLoading.Serialization.BuildSettingCondition"
+          ],
+          "traits",
+          [
+            "Swift.Set<Swift.String>?"
+          ]
+        ]
+      ],
+      "workspaceExamples": [
+        [
+          [
+            "PackageDescription.Serialization.BuildConfiguration"
+          ],
+          "config",
+          [
+            "Swift.String"
+          ]
+        ],
+        [
+          [
+            "PackageDescription.Serialization.BuildSettingCondition"
+          ],
+          "platforms",
+          [
+            "[PackageDescription.Serialization.Platform]?"
+          ]
+        ],
+        [
+          [
+            "PackageDescription.Serialization.BuildSettingCondition"
+          ],
+          "config",
+          [
+            "PackageDescription.Serialization.BuildConfiguration?"
+          ]
+        ],
+        [
+          [
+            "PackageDescription.Serialization.BuildSettingCondition"
+          ],
+          "traits",
+          [
+            "Swift.Set<Swift.String>?"
+          ]
+        ]
+      ]
+    },
+    "Method": {
+      "tempOnlyRows": 2,
+      "workspaceOnlyRows": 2,
+      "tempExamples": [
+        [
+          [
+            "PackageDescription.ContextModel"
+          ],
+          "encode()",
+          [],
+          [
+            "Swift.String"
+          ]
+        ],
+        [
+          [
+            "PackageDescription.ContextModel"
+          ],
+          "decode()",
+          [],
+          [
+            "PackageDescription.ContextModel"
+          ]
+        ]
+      ],
+      "workspaceExamples": [
+        [
+          [
+            "PackageLoading.ContextModel"
+          ],
+          "encode()",
+          [],
+          [
+            "Swift.String"
+          ]
+        ],
+        [
+          [
+            "PackageLoading.ContextModel"
+          ],
+          "decode()",
+          [],
+          [
+            "PackageLoading.ContextModel"
+          ]
+        ]
+      ]
+    },
+    "TypeRelation": {
+      "tempOnlyRows": 20,
+      "workspaceOnlyRows": 20,
+      "tempExamples": [
+        [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.URL"
+          ],
+          [
+            "Swift.Sendable"
+          ],
+          2
+        ],
+        [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.URL"
+          ],
+          [
+            "ArgumentParser.ExpressibleByArgument"
+          ],
+          2
+        ],
+        [
+          [
+            "PackageLoading.Serialization.CLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ],
+        [
+          [
+            "PackageLoading.Serialization.CXXLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      ],
+      "workspaceExamples": [
+        [
+          [
+            "SPMBuildCore.HostToPluginMessage.InputContext.URL"
+          ],
+          [
+            "Swift.Sendable"
+          ],
+          2
+        ],
+        [
+          [
+            "SPMBuildCore.HostToPluginMessage.InputContext.URL"
+          ],
+          [
+            "ArgumentParser.ExpressibleByArgument"
+          ],
+          2
+        ],
+        [
+          [
+            "PackageDescription.Serialization.CLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ],
+        [
+          [
+            "PackageDescription.Serialization.CXXLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      ]
+    }
+  },
+  "onlyTemp": {
+    "uses": {
+      "PackageLoading.Serialization.BuildConfiguration": {
+        "Field.owner": 1
+      },
+      "[PackageLoading.Serialization.Platform]?": {
+        "Field.type": 2
+      },
+      "PackageLoading.Serialization.BuildConfiguration?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.BuildSettingData": {
+        "Field.owner": 3,
+        "Field.type": 4
+      },
+      "PackageLoading.Serialization.BuildSettingCondition?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.PackageDependency.Trait.Condition?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.PackageDependency.Kind": {
+        "Field.type": 1
+      },
+      "Swift.Set<PackageLoading.Serialization.PackageDependency.Trait>?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.Platform": {
+        "Field.owner": 1,
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.TargetDependency]": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.SystemPackageProvider]?": {
+        "Field.type": 2
+      },
+      "PackageLoading.Serialization.PluginCapability?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.CSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.CXXSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.SwiftSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.LinkerSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.PluginUsage]?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.Resource": {
+        "Field.owner": 3
+      },
+      "PackageLoading.Serialization.Resource.Localization?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.Product.ProductType": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.LanguageTag": {
+        "Field.owner": 1
+      },
+      "[PackageLoading.Serialization.SupportedPlatform]?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.LanguageTag?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.Target]": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.Product]": {
+        "Field.type": 1
+      },
+      "Swift.Set<PackageLoading.Serialization.Trait>?": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.PackageDependency]": {
+        "Field.type": 1
+      },
+      "[PackageLoading.Serialization.SwiftVersion]?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.CLanguageStandard?": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.CXXLanguageStandard?": {
+        "Field.type": 1
+      },
+      "PackageDescription.ContextModel.GitInformation?": {
+        "Field.type": 1
+      },
+      "PackageDescription.ContextModel.GitInformation": {
+        "Field.owner": 3
+      },
+      "PackageDescription.ContextModel.StringError": {
+        "Field.owner": 1,
+        "CallSite.callee.declaring": 1,
+        "CallSite.callee.return": 1,
+        "TypeRelation.subtype": 2
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.URL]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Target]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Product]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Package]": {
+        "Field.type": 1
+      },
+      "[Swift.String : PackagePlugin.HostToPluginMessage.InputContext.Tool]": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Tool": {
+        "Field.owner": 2
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.URL": {
+        "Field.owner": 2,
+        "TypeRelation.subtype": 4
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package": {
+        "Field.owner": 8
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.Origin": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.ToolsVersion": {
+        "Field.type": 1,
+        "Field.owner": 3
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency]": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency": {
+        "Field.owner": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Product": {
+        "Field.owner": 3
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Product.ProductInfo": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target": {
+        "Field.owner": 4
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Target.Dependency]": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo": {
+        "Field.type": 1
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File": {
+        "Field.owner": 3
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File.FileType": {
+        "Field.type": 1,
+        "TypeRelation.subtype": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.BuildResult.BuiltArtifact]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase]": {
+        "Field.type": 1
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]": {
+        "Field.type": 1
+      },
+      "PackageLoading.Serialization.CLanguageStandard": {
+        "TypeRelation.subtype": 1
+      },
+      "PackageLoading.Serialization.CXXLanguageStandard": {
+        "TypeRelation.subtype": 1
+      },
+      "PackageLoading.Serialization.Resource.Localization": {
+        "TypeRelation.subtype": 1
+      },
+      "PackagePlugin.PluginToHostMessage.DiagnosticSeverity": {
+        "TypeRelation.subtype": 1
+      }
+    },
+    "examples": {
+      "PackageLoading.Serialization.BuildConfiguration": {
+        "Field.owner": [
+          [
+            "PackageLoading.Serialization.BuildConfiguration"
+          ],
+          "config",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.Platform]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.BuildSettingCondition"
+          ],
+          "platforms",
+          [
+            "[PackageLoading.Serialization.Platform]?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.BuildConfiguration?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.BuildSettingCondition"
+          ],
+          "config",
+          [
+            "PackageLoading.Serialization.BuildConfiguration?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.BuildSettingData": {
+        "Field.owner": [
+          [
+            "PackageLoading.Serialization.BuildSettingData"
+          ],
+          "name",
+          [
+            "Swift.String"
+          ]
+        ],
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.CSetting"
+          ],
+          "data",
+          [
+            "PackageLoading.Serialization.BuildSettingData"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.BuildSettingCondition?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.BuildSettingData"
+          ],
+          "condition",
+          [
+            "PackageLoading.Serialization.BuildSettingCondition?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.PackageDependency.Trait.Condition?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.PackageDependency.Trait"
+          ],
+          "condition",
+          [
+            "PackageLoading.Serialization.PackageDependency.Trait.Condition?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.PackageDependency.Kind": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.PackageDependency"
+          ],
+          "kind",
+          [
+            "PackageLoading.Serialization.PackageDependency.Kind"
+          ]
+        ]
+      },
+      "Swift.Set<PackageLoading.Serialization.PackageDependency.Trait>?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.PackageDependency"
+          ],
+          "traits",
+          [
+            "Swift.Set<PackageLoading.Serialization.PackageDependency.Trait>?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.Platform": {
+        "Field.owner": [
+          [
+            "PackageLoading.Serialization.Platform"
+          ],
+          "name",
+          [
+            "Swift.String"
+          ]
+        ],
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.SupportedPlatform"
+          ],
+          "platform",
+          [
+            "PackageLoading.Serialization.Platform"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.TargetDependency]": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "dependencies",
+          [
+            "[PackageLoading.Serialization.TargetDependency]"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.SystemPackageProvider]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "providers",
+          [
+            "[PackageLoading.Serialization.SystemPackageProvider]?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.PluginCapability?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "pluginCapability",
+          [
+            "PackageLoading.Serialization.PluginCapability?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.CSetting]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "cSettings",
+          [
+            "[PackageLoading.Serialization.CSetting]?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.CXXSetting]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "cxxSettings",
+          [
+            "[PackageLoading.Serialization.CXXSetting]?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.SwiftSetting]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "swiftSettings",
+          [
+            "[PackageLoading.Serialization.SwiftSetting]?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.LinkerSetting]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "linkerSettings",
+          [
+            "[PackageLoading.Serialization.LinkerSetting]?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.PluginUsage]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Target"
+          ],
+          "pluginUsages",
+          [
+            "[PackageLoading.Serialization.PluginUsage]?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.Resource": {
+        "Field.owner": [
+          [
+            "PackageLoading.Serialization.Resource"
+          ],
+          "rule",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.Resource.Localization?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Resource"
+          ],
+          "localization",
+          [
+            "PackageLoading.Serialization.Resource.Localization?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.Product.ProductType": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Product"
+          ],
+          "productType",
+          [
+            "PackageLoading.Serialization.Product.ProductType"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.LanguageTag": {
+        "Field.owner": [
+          [
+            "PackageLoading.Serialization.LanguageTag"
+          ],
+          "tag",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.SupportedPlatform]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "platforms",
+          [
+            "[PackageLoading.Serialization.SupportedPlatform]?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.LanguageTag?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "defaultLocalization",
+          [
+            "PackageLoading.Serialization.LanguageTag?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.Target]": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "targets",
+          [
+            "[PackageLoading.Serialization.Target]"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.Product]": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "products",
+          [
+            "[PackageLoading.Serialization.Product]"
+          ]
+        ]
+      },
+      "Swift.Set<PackageLoading.Serialization.Trait>?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "traits",
+          [
+            "Swift.Set<PackageLoading.Serialization.Trait>?"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.PackageDependency]": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "dependencies",
+          [
+            "[PackageLoading.Serialization.PackageDependency]"
+          ]
+        ]
+      },
+      "[PackageLoading.Serialization.SwiftVersion]?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "swiftLanguageVersions",
+          [
+            "[PackageLoading.Serialization.SwiftVersion]?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.CLanguageStandard?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "cLanguageStandard",
+          [
+            "PackageLoading.Serialization.CLanguageStandard?"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.CXXLanguageStandard?": {
+        "Field.type": [
+          [
+            "PackageLoading.Serialization.Package"
+          ],
+          "cxxLanguageStandard",
+          [
+            "PackageLoading.Serialization.CXXLanguageStandard?"
+          ]
+        ]
+      },
+      "PackageDescription.ContextModel.GitInformation?": {
+        "Field.type": [
+          [
+            "PackageDescription.ContextModel"
+          ],
+          "gitInformation",
+          [
+            "PackageDescription.ContextModel.GitInformation?"
+          ]
+        ]
+      },
+      "PackageDescription.ContextModel.GitInformation": {
+        "Field.owner": [
+          [
+            "PackageDescription.ContextModel.GitInformation"
+          ],
+          "currentTag",
+          [
+            "Swift.String?"
+          ]
+        ]
+      },
+      "PackageDescription.ContextModel.StringError": {
+        "Field.owner": [
+          [
+            "PackageDescription.ContextModel.StringError"
+          ],
+          "description",
+          [
+            "Swift.String"
+          ]
+        ],
+        "CallSite.callee.declaring": [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageDescription.ContextModel"
+            ]
+          ],
+          [
+            [
+              "PackageDescription.ContextModel.StringError"
+            ],
+            "init(description:)",
+            [
+              [
+                "Swift.String"
+              ]
+            ],
+            [
+              "PackageDescription.ContextModel.StringError"
+            ]
+          ],
+          50
+        ],
+        "CallSite.callee.return": [
+          [
+            [
+              "PackageDescription.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageDescription.ContextModel"
+            ]
+          ],
+          [
+            [
+              "PackageDescription.ContextModel.StringError"
+            ],
+            "init(description:)",
+            [
+              [
+                "Swift.String"
+              ]
+            ],
+            [
+              "PackageDescription.ContextModel.StringError"
+            ]
+          ],
+          50
+        ],
+        "TypeRelation.subtype": [
+          [
+            "PackageDescription.ContextModel.StringError"
+          ],
+          [
+            "Swift.Error"
+          ],
+          2
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.URL]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext"
+          ],
+          "paths",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.URL]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Target]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext"
+          ],
+          "targets",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.Target]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Product]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext"
+          ],
+          "products",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.Product]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Package]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext"
+          ],
+          "packages",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.Package]"
+          ]
+        ]
+      },
+      "[Swift.String : PackagePlugin.HostToPluginMessage.InputContext.Tool]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext"
+          ],
+          "accessibleTools",
+          [
+            "[Swift.String : PackagePlugin.HostToPluginMessage.InputContext.Tool]"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Tool": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Tool"
+          ],
+          "path",
+          [
+            "Swift.Int"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.URL": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.URL"
+          ],
+          "baseURLId",
+          [
+            "Swift.Int?"
+          ]
+        ],
+        "TypeRelation.subtype": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.URL"
+          ],
+          [
+            "Swift.Sendable"
+          ],
+          2
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package"
+          ],
+          "identity",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.Origin": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package"
+          ],
+          "origin",
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package.Origin"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.ToolsVersion": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package"
+          ],
+          "toolsVersion",
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package.ToolsVersion"
+          ]
+        ],
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package.ToolsVersion"
+          ],
+          "major",
+          [
+            "Swift.Int"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package"
+          ],
+          "dependencies",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency]"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Package.Dependency"
+          ],
+          "packageId",
+          [
+            "Swift.Int"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Product": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Product"
+          ],
+          "name",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Product.ProductInfo": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Product"
+          ],
+          "info",
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Product.ProductInfo"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target"
+          ],
+          "name",
+          [
+            "Swift.String"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.InputContext.Target.Dependency]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target"
+          ],
+          "dependencies",
+          [
+            "[PackagePlugin.HostToPluginMessage.InputContext.Target.Dependency]"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target"
+          ],
+          "info",
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File": {
+        "Field.owner": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File"
+          ],
+          "basePathId",
+          [
+            "Swift.Int"
+          ]
+        ]
+      },
+      "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File.FileType": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File"
+          ],
+          "type",
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File.FileType"
+          ]
+        ],
+        "TypeRelation.subtype": [
+          [
+            "PackagePlugin.HostToPluginMessage.InputContext.Target.TargetInfo.File.FileType"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.BuildResult.BuiltArtifact]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.BuildResult"
+          ],
+          "builtArtifacts",
+          [
+            "[PackagePlugin.HostToPluginMessage.BuildResult.BuiltArtifact]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.TestResult"
+          ],
+          "testTargets",
+          [
+            "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.TestResult.TestTarget"
+          ],
+          "testCases",
+          [
+            "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase]"
+          ]
+        ]
+      },
+      "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]": {
+        "Field.type": [
+          [
+            "PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase"
+          ],
+          "tests",
+          [
+            "[PackagePlugin.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]"
+          ]
+        ]
+      },
+      "PackageLoading.Serialization.CLanguageStandard": {
+        "TypeRelation.subtype": [
+          [
+            "PackageLoading.Serialization.CLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      },
+      "PackageLoading.Serialization.CXXLanguageStandard": {
+        "TypeRelation.subtype": [
+          [
+            "PackageLoading.Serialization.CXXLanguageStandard"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      },
+      "PackageLoading.Serialization.Resource.Localization": {
+        "TypeRelation.subtype": [
+          [
+            "PackageLoading.Serialization.Resource.Localization"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      },
+      "PackagePlugin.PluginToHostMessage.DiagnosticSeverity": {
+        "TypeRelation.subtype": [
+          [
+            "PackagePlugin.PluginToHostMessage.DiagnosticSeverity"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      }
+    },
+    "notReferenced": [],
+    "distinctChangedStrings": 60,
+    "slots": {
+      "Field.owner": 39,
+      "Field.type": 49,
+      "CallSite.callee.declaring": 1,
+      "CallSite.callee.return": 1,
+      "TypeRelation.subtype": 11
+    }
+  },
+  "onlyWorkspace": {
+    "uses": {
+      "[PackageDescription.Serialization.Platform]?": {
+        "Field.type": 2
+      },
+      "PackageDescription.Serialization.BuildConfiguration?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.BuildSettingCondition?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.PackageDependency.Trait.Condition?": {
+        "Field.type": 1
+      },
+      "Swift.Set<PackageDescription.Serialization.PackageDependency.Trait>?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.Resource]?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.TargetDependency]": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.SystemPackageProvider]?": {
+        "Field.type": 2
+      },
+      "PackageDescription.Serialization.PluginCapability?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.CSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.CXXSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.SwiftSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.LinkerSetting]?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.PluginUsage]?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.Resource.Localization?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.SupportedPlatform]?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.LanguageTag?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.Target]": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.Product]": {
+        "Field.type": 1
+      },
+      "Swift.Set<PackageDescription.Serialization.Trait>?": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.PackageDependency]": {
+        "Field.type": 1
+      },
+      "[PackageDescription.Serialization.SwiftVersion]?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.CLanguageStandard?": {
+        "Field.type": 1
+      },
+      "PackageDescription.Serialization.CXXLanguageStandard?": {
+        "Field.type": 1
+      },
+      "PackageLoading.ContextModel.StringError": {
+        "Field.owner": 1,
+        "CallSite.callee.declaring": 1,
+        "CallSite.callee.return": 1,
+        "TypeRelation.subtype": 2
+      },
+      "[SPMBuildCore.HostToPluginMessage.BuildResult.BuiltArtifact]": {
+        "Field.type": 1
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget]": {
+        "Field.type": 1
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase]": {
+        "Field.type": 1
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]": {
+        "Field.type": 1
+      },
+      "SPMBuildCore.PluginToHostMessage.CommandConfiguration": {
+        "Field.owner": 6
+      },
+      "SPMBuildCore.PluginToHostMessage.DiagnosticSeverity": {
+        "TypeRelation.subtype": 1
+      }
+    },
+    "examples": {
+      "[PackageDescription.Serialization.Platform]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.BuildSettingCondition"
+          ],
+          "platforms",
+          [
+            "[PackageDescription.Serialization.Platform]?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.BuildConfiguration?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.BuildSettingCondition"
+          ],
+          "config",
+          [
+            "PackageDescription.Serialization.BuildConfiguration?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.BuildSettingCondition?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.BuildSettingData"
+          ],
+          "condition",
+          [
+            "PackageDescription.Serialization.BuildSettingCondition?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.PackageDependency.Trait.Condition?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.PackageDependency.Trait"
+          ],
+          "condition",
+          [
+            "PackageDescription.Serialization.PackageDependency.Trait.Condition?"
+          ]
+        ]
+      },
+      "Swift.Set<PackageDescription.Serialization.PackageDependency.Trait>?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.PackageDependency"
+          ],
+          "traits",
+          [
+            "Swift.Set<PackageDescription.Serialization.PackageDependency.Trait>?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.Resource]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "resources",
+          [
+            "[PackageDescription.Serialization.Resource]?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.TargetDependency]": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "dependencies",
+          [
+            "[PackageDescription.Serialization.TargetDependency]"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.SystemPackageProvider]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "providers",
+          [
+            "[PackageDescription.Serialization.SystemPackageProvider]?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.PluginCapability?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "pluginCapability",
+          [
+            "PackageDescription.Serialization.PluginCapability?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.CSetting]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "cSettings",
+          [
+            "[PackageDescription.Serialization.CSetting]?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.CXXSetting]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "cxxSettings",
+          [
+            "[PackageDescription.Serialization.CXXSetting]?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.SwiftSetting]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "swiftSettings",
+          [
+            "[PackageDescription.Serialization.SwiftSetting]?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.LinkerSetting]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "linkerSettings",
+          [
+            "[PackageDescription.Serialization.LinkerSetting]?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.PluginUsage]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Target"
+          ],
+          "pluginUsages",
+          [
+            "[PackageDescription.Serialization.PluginUsage]?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.Resource.Localization?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Resource"
+          ],
+          "localization",
+          [
+            "PackageDescription.Serialization.Resource.Localization?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.SupportedPlatform]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "platforms",
+          [
+            "[PackageDescription.Serialization.SupportedPlatform]?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.LanguageTag?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "defaultLocalization",
+          [
+            "PackageDescription.Serialization.LanguageTag?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.Target]": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "targets",
+          [
+            "[PackageDescription.Serialization.Target]"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.Product]": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "products",
+          [
+            "[PackageDescription.Serialization.Product]"
+          ]
+        ]
+      },
+      "Swift.Set<PackageDescription.Serialization.Trait>?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "traits",
+          [
+            "Swift.Set<PackageDescription.Serialization.Trait>?"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.PackageDependency]": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "dependencies",
+          [
+            "[PackageDescription.Serialization.PackageDependency]"
+          ]
+        ]
+      },
+      "[PackageDescription.Serialization.SwiftVersion]?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "swiftLanguageVersions",
+          [
+            "[PackageDescription.Serialization.SwiftVersion]?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.CLanguageStandard?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "cLanguageStandard",
+          [
+            "PackageDescription.Serialization.CLanguageStandard?"
+          ]
+        ]
+      },
+      "PackageDescription.Serialization.CXXLanguageStandard?": {
+        "Field.type": [
+          [
+            "PackageDescription.Serialization.Package"
+          ],
+          "cxxLanguageStandard",
+          [
+            "PackageDescription.Serialization.CXXLanguageStandard?"
+          ]
+        ]
+      },
+      "PackageLoading.ContextModel.StringError": {
+        "Field.owner": [
+          [
+            "PackageLoading.ContextModel.StringError"
+          ],
+          "description",
+          [
+            "Swift.String"
+          ]
+        ],
+        "CallSite.callee.declaring": [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageLoading.ContextModel"
+            ]
+          ],
+          [
+            [
+              "PackageLoading.ContextModel.StringError"
+            ],
+            "init(description:)",
+            [
+              [
+                "Swift.String"
+              ]
+            ],
+            [
+              "PackageLoading.ContextModel.StringError"
+            ]
+          ],
+          50
+        ],
+        "CallSite.callee.return": [
+          [
+            [
+              "PackageLoading.ContextModel"
+            ],
+            "decode()",
+            [],
+            [
+              "PackageLoading.ContextModel"
+            ]
+          ],
+          [
+            [
+              "PackageLoading.ContextModel.StringError"
+            ],
+            "init(description:)",
+            [
+              [
+                "Swift.String"
+              ]
+            ],
+            [
+              "PackageLoading.ContextModel.StringError"
+            ]
+          ],
+          50
+        ],
+        "TypeRelation.subtype": [
+          [
+            "PackageLoading.ContextModel.StringError"
+          ],
+          [
+            "Swift.Error"
+          ],
+          2
+        ]
+      },
+      "[SPMBuildCore.HostToPluginMessage.BuildResult.BuiltArtifact]": {
+        "Field.type": [
+          [
+            "SPMBuildCore.HostToPluginMessage.BuildResult"
+          ],
+          "builtArtifacts",
+          [
+            "[SPMBuildCore.HostToPluginMessage.BuildResult.BuiltArtifact]"
+          ]
+        ]
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget]": {
+        "Field.type": [
+          [
+            "SPMBuildCore.HostToPluginMessage.TestResult"
+          ],
+          "testTargets",
+          [
+            "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget]"
+          ]
+        ]
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase]": {
+        "Field.type": [
+          [
+            "SPMBuildCore.HostToPluginMessage.TestResult.TestTarget"
+          ],
+          "testCases",
+          [
+            "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase]"
+          ]
+        ]
+      },
+      "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]": {
+        "Field.type": [
+          [
+            "SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase"
+          ],
+          "tests",
+          [
+            "[SPMBuildCore.HostToPluginMessage.TestResult.TestTarget.TestCase.Test]"
+          ]
+        ]
+      },
+      "SPMBuildCore.PluginToHostMessage.CommandConfiguration": {
+        "Field.owner": [
+          [
+            "SPMBuildCore.PluginToHostMessage.CommandConfiguration"
+          ],
+          "version",
+          [
+            "Swift.Int"
+          ]
+        ]
+      },
+      "SPMBuildCore.PluginToHostMessage.DiagnosticSeverity": {
+        "TypeRelation.subtype": [
+          [
+            "SPMBuildCore.PluginToHostMessage.DiagnosticSeverity"
+          ],
+          [
+            "Swift.String"
+          ],
+          1
+        ]
+      }
+    },
+    "notReferenced": [],
+    "distinctChangedStrings": 31,
+    "slots": {
+      "Field.type": 30,
+      "Field.owner": 7,
+      "CallSite.callee.declaring": 1,
+      "CallSite.callee.return": 1,
+      "TypeRelation.subtype": 3
+    }
+  }
+}

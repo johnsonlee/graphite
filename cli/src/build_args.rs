@@ -15,6 +15,7 @@ const VALUE_OPTIONS: &[&str] = &[
     "--derived-data",
     "--index-store",
     "--sources",
+    "--resource-bundle",
     "-o",
     "--output",
     "--include",

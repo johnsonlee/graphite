@@ -1,0 +1,18 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "kind": "real-source",
+  "label": "signal-ios",
+  "repository": "https://github.com/signalapp/Signal-iOS.git",
+  "commit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+  "input": "xcodeproj",
+  "files": null,
+  "shape": null,
+  "ceilings": null,
+  "note": "Real upstream source corpus. Graph shape, file count and bootstrap ceilings are pending measured evidence; the comparator fails closed until the shape is pinned. No synthetic timing is accepted.",
+  "project": "Signal.xcworkspace",
+  "scheme": "Signal",
+  "submodules": {
+    "Pods": "77c21193e6b5e4f8cbd86abaf46631fd242322f4"
+  },
+  "baselineShapes": {}
+}

@@ -1,0 +1,104 @@
+{
+  "app_delegate": {
+    "query": "MATCH (m:Method) WHERE m.name = 'application(_:didFinishLaunchingWithOptions:)' RETURN m.class, m.name, m.return_type",
+    "result": {
+      "columns": [
+        "m.class",
+        "m.name",
+        "m.return_type"
+      ],
+      "rows": [
+        {
+          "m.class": "Signal.AppDelegate",
+          "m.name": "application(_:didFinishLaunchingWithOptions:)",
+          "m.return_type": "Swift.Bool"
+        }
+      ],
+      "rowCount": 1
+    }
+  },
+  "sha": {
+    "query": "MATCH (m:Method) WHERE m.name = 'computeSHA256Digest(_:)' RETURN m.class, m.parameter_types, m.return_type",
+    "result": {
+      "columns": [
+        "m.class",
+        "m.parameter_types",
+        "m.return_type"
+      ],
+      "rows": [
+        {
+          "m.class": "__C.Cryptography",
+          "m.parameter_types": [
+            "Foundation.Data"
+          ],
+          "m.return_type": "Foundation.Data?"
+        }
+      ],
+      "rowCount": 1
+    }
+  },
+  "c_types": {
+    "query": "MATCH (m:Method) WHERE m.name IN ['sqlite3_open16','mz_stream_read_uint16','WebPIsRGBMode'] RETURN m.name, m.parameter_types, m.return_type ORDER BY m.name",
+    "result": {
+      "columns": [
+        "m.name",
+        "m.parameter_types",
+        "m.return_type"
+      ],
+      "rows": [
+        {
+          "m.name": "WebPIsRGBMode",
+          "m.parameter_types": [
+            "WEBP_CSP_MODE"
+          ],
+          "m.return_type": "int"
+        },
+        {
+          "m.name": "mz_stream_read_uint16",
+          "m.parameter_types": [
+            "void *",
+            "uint16_t *"
+          ],
+          "m.return_type": "int32_t"
+        },
+        {
+          "m.name": "sqlite3_open16",
+          "m.parameter_types": [
+            "const void *",
+            "sqlite3 **"
+          ],
+          "m.return_type": "int"
+        }
+      ],
+      "rowCount": 3
+    }
+  },
+  "webp_fields": {
+    "query": "MATCH (f:Field) WHERE f.name IN ['bytes','size'] AND f.class = 'WebPData' RETURN f.class, f.name, f.type ORDER BY f.name",
+    "result": {
+      "columns": [
+        "f.class",
+        "f.name",
+        "f.type"
+      ],
+      "rows": [
+        {
+          "f.class": "WebPData",
+          "f.name": "bytes",
+          "f.type": "const uint8_t *"
+        },
+        {
+          "f.class": "WebPData",
+          "f.name": "size",
+          "f.type": "size_t"
+        }
+      ],
+      "rowCount": 2
+    }
+  },
+  "verify": {
+    "exitCode": 0,
+    "stdout": "file sha256 ok (f483043499d6bf1b29e72d6737a5cf692dbef610058525cd1e9ec9950b1fd92d)\nOK: 19 entries verified in /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-final-e2e/graphs/signal.graphite\nfingerprint: 12a0984655b640de1441e30f405cf0c2608f2b04d487670b4e9a3ca540e956ed\n",
+    "stderr": ""
+  }
+}

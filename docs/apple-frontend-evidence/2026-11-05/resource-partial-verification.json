@@ -1,0 +1,24 @@
+{
+  "purpose": "correctness only",
+  "refusedExit": 3,
+  "existingGraphPreservedSha256": "5249a52e2b99293bdafdc385f75f7b317a337b68dfad89efeba2cb9cd79b5493",
+  "allowedPartialExit": 0,
+  "query": "MATCH (r:ResourceValue) WHERE r.path = 'org.example.Partial/Info.plist' RETURN r.key, r.value ORDER BY r.key",
+  "result": {
+    "columns": [
+      "r.key",
+      "r.value"
+    ],
+    "rows": [
+      {
+        "r.key": "CFBundleIdentifier",
+        "r.value": "org.example.Partial"
+      },
+      {
+        "r.key": "Preserved",
+        "r.value": "known-value"
+      }
+    ],
+    "rowCount": 2
+  }
+}

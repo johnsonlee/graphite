@@ -1,0 +1,19 @@
+{
+  "boundary": "Display-name-independent lowering check: node/edge multiset preserves call source line and receiver presence, literals and other node identities. Caller/callee display names are excluded due Swift-to-ObjC selector resolution; separate index-fact check anchors every old call by actual caller/callee USR and source path+line+column. Signature types/owners also excluded as intentional corrections.",
+  "nodes": {
+    "before": 60956,
+    "after": 60956,
+    "missing": 0,
+    "added": 0,
+    "missingKinds": {},
+    "missingExamples": []
+  },
+  "edges": {
+    "before": 29247,
+    "after": 29247,
+    "missing": 0,
+    "added": 0,
+    "missingKinds": {},
+    "missingExamples": []
+  }
+}

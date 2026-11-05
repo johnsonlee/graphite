@@ -8,9 +8,11 @@ public enum FrontendError: Error, CustomStringConvertible {
     case noInput
     case buildFailed(Int32)
     case describeFailed(Int32)
+    case manifestFailed(Int32)
     case packageUnreadable
     case noSwift
     case noSources(String)
+    case noIndexedSources(store: String, files: Int)
     case noDemangler
     case noXcodebuild
     case xcodebuildFailed(Int32)
@@ -24,9 +26,14 @@ public enum FrontendError: Error, CustomStringConvertible {
                 "or --index-store <dir> with --sources <dir>"
         case .buildFailed(let code): return "swift build failed with exit code \(code)"
         case .describeFailed(let code): return "swift package describe failed with exit code \(code)"
+        case .manifestFailed(let code): return "swift package dump-package failed with exit code \(code)"
         case .packageUnreadable: return "swift package describe printed no targets"
         case .noSwift: return "no swift executable found; set GRAPHITE_SWIFT or put swift on PATH"
         case .noSources(let path): return "no Swift or Objective-C sources under \(path)"
+        case .noIndexedSources(let store, let files):
+            return "no indexed symbols for the selected sources (files: \(files), index store: \(store)); " +
+                "check that the source paths match the indexed checkout and that the index store " +
+                "was built for the intended scheme and configuration"
         case .noDemangler: return "no swift-demangle found; set GRAPHITE_SWIFT_DEMANGLE or put the toolchain on PATH"
         case .noXcodebuild: return "no xcodebuild found; an Xcode project needs Xcode (set GRAPHITE_XCODEBUILD or put it on PATH)"
         case .xcodebuildFailed(let code): return "xcodebuild failed with exit code \(code)"
@@ -59,6 +66,9 @@ public struct BuildOptions {
     /// Source roots (directories or files) to walk for `.swift`, `.m`, `.mm` and `.h` files
     /// instead of what the package or project implies.
     public var sources: [String] = []
+    /// Explicit built application/extension bundles to inventory. These do not imply
+    /// a proven relationship between a code call and any resource value.
+    public var resourceBundles: [String] = []
     public var skipBuild = false
     public var configuration = "debug"
     public var environment = ProcessInfo.processInfo.environment
@@ -80,6 +90,8 @@ public struct Progress {
 public struct BuildResult {
     public var summary: EmitSummary
     public var files: Int
+    public var filesWithOccurrences: Int
+    public var resourceOmissions: [AppleResources.Omission]
     public var indexStore: String
 }
 
@@ -111,12 +123,25 @@ public struct Frontend {
         progress(Progress(phase: "index", done: 0, total: files.count))
         let reader = try IndexReader(storePath: storePath, libraryPath: libraryPath)
         let model = try reader.read(files: files)
+        guard !model.filesWithOccurrences.isEmpty else {
+            throw FrontendError.noIndexedSources(store: storePath, files: files.count)
+        }
         progress(Progress(phase: "index", done: files.count, total: files.count))
 
         var facts: [String: SyntaxFacts] = [:]
-        for (index, file) in files.enumerated() {
-            facts[file] = Frontend.isSwift(file) ? try SyntaxFacts.parse(path: file) : try ObjectiveCSyntax.parse(path: file)
-            progress(Progress(phase: "syntax", done: index + 1, total: files.count))
+        let syntaxFiles = Frontend.sourceFilesForSyntax(files, model: model)
+        var indexedMethods: [String: [ObjectiveCSyntax.IndexedMethod]] = [:]
+        for member in model.members where member.kind == .method || member.kind == .initializer {
+            guard let usr = ClangUSR.parse(member.symbol.usr), let selector = usr.member,
+                  usr.memberKind == .instanceMethod || usr.memberKind == .classMethod else { continue }
+            for position in [member.position, member.declaration].compactMap({ $0 }) where !Frontend.isSwift(position.path) {
+                indexedMethods[position.path, default: []].append(.init(position: position, selector: selector, isStatic: usr.memberKind == .classMethod))
+            }
+        }
+        for (index, file) in syntaxFiles.enumerated() {
+            facts[file] = Frontend.isSwift(file) ? try SyntaxFacts.parse(path: file)
+                : try ObjectiveCSyntax.parse(path: file, indexedMethods: indexedMethods[file] ?? [])
+            progress(Progress(phase: "syntax", done: index + 1, total: syntaxFiles.count))
         }
 
         progress(Progress(phase: "demangle", done: 0, total: model.symbols.count))
@@ -134,12 +159,21 @@ public struct Frontend {
         header.options["files"] = String(files.count)
         header.options["swift_files"] = String(swiftFiles.count)
         header.options["objc_files"] = String(files.count - swiftFiles.count)
+        header.options["source_dataflow"] = "bound-parameters,direct-call-returns"
+        if !options.resourceBundles.isEmpty {
+            header.options["resource_bundles"] = String(decoding: try JSONSerialization.data(
+                withJSONObject: options.resourceBundles.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path }
+            ), as: UTF8.self)
+        }
         let writer = try IRWriter(url: output, header: header)
         let emitter = Emitter(writer: writer, model: model, facts: facts, demangled: demangled)
         progress(Progress(phase: "emit", done: 0, total: 1))
-        let summary = try emitter.emit()
+        let summary = try emitter.emit(resourceBundles: options.resourceBundles.map { URL(fileURLWithPath: $0) })
         progress(Progress(phase: "emit", done: 1, total: 1))
-        return BuildResult(summary: summary, files: files.count, indexStore: storePath)
+        return BuildResult(
+            summary: summary, files: files.count, filesWithOccurrences: model.filesWithOccurrences.count,
+            resourceOmissions: emitter.resourceOmissions, indexStore: storePath
+        )
     }
 
     private func resolveInputs() throws -> (store: String, roots: [String], kind: String, path: String) {
@@ -212,7 +246,8 @@ public struct Frontend {
         progress(Progress(phase: "swift build", done: 0, total: 1))
         let process = Process()
         process.executableURL = URL(fileURLWithPath: swift)
-        process.arguments = ["build", "--package-path", package, "-c", options.configuration]
+        // SwiftPM's automatic indexing is disabled for release configurations.
+        process.arguments = ["build", "--package-path", package, "-c", options.configuration, "--enable-index-store"]
         process.standardOutput = FileHandle.standardError
         process.standardError = FileHandle.standardError
         try process.run()
@@ -221,8 +256,8 @@ public struct Frontend {
         progress(Progress(phase: "swift build", done: 1, total: 1))
     }
 
-    /// The files `swift build` compiled, from `swift package describe`: every built
-    /// target's sources, custom target paths and excludes honoured.
+    /// The files `swift build` compiled, from `swift package describe`, plus Clang
+    /// headers: every built target's sources, custom target paths and excludes honoured.
     private func packageSourceFiles(package root: String) throws -> [String] {
         guard let swift = Frontend.locateSwift(environment: options.environment) else { throw FrontendError.noSwift }
         progress(Progress(phase: "swift package describe", done: 0, total: 1))
@@ -236,7 +271,20 @@ public struct Frontend {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else { throw FrontendError.describeFailed(process.terminationStatus) }
-        let files = try SwiftPackage.sourceFiles(fromDescribe: data, root: root)
+        var manifest: Data?
+        if try SwiftPackage.hasClangTargets(fromDescribe: data) {
+            let dump = Process()
+            dump.executableURL = URL(fileURLWithPath: swift)
+            dump.arguments = ["package", "--package-path", root, "dump-package"]
+            let output = Pipe()
+            dump.standardOutput = output
+            dump.standardError = FileHandle.standardError
+            try dump.run()
+            manifest = output.fileHandleForReading.readDataToEndOfFile()
+            dump.waitUntilExit()
+            guard dump.terminationStatus == 0 else { throw FrontendError.manifestFailed(dump.terminationStatus) }
+        }
+        let files = try SwiftPackage.sourceFiles(fromDescribe: data, root: root, manifest: manifest)
         progress(Progress(phase: "swift package describe", done: 1, total: 1))
         return files
     }
@@ -262,6 +310,22 @@ public struct Frontend {
 
     public static func isSwift(_ path: String) -> Bool { path.hasSuffix(".swift") }
 
+    /// Xcode can index a framework's copied header instead of the original source
+    /// header. Read the exact paths carried by declarations already in this model,
+    /// so their coordinates join to syntax facts without guessing by basename or
+    /// discovering additional symbols from unrelated headers.
+    static func sourceFilesForSyntax(_ files: [String], model: IndexModel) -> [String] {
+        var result = Set(files)
+        let positions = model.members.flatMap { [$0.position] + ($0.declaration.map { [$0] } ?? []) }
+        for position in positions where (position.path as NSString).pathExtension == "h" {
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: position.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+                result.insert(position.path)
+            }
+        }
+        return result.sorted()
+    }
+
     /// Every `.swift` file under the roots (see `sourceFiles(under:)`).
     public static func swiftFiles(under roots: [String]) throws -> [String] {
         try sourceFiles(under: roots).filter(isSwift)
@@ -284,10 +348,17 @@ public struct Frontend {
             for case let url as URL in enumerator {
                 let name = url.lastPathComponent
                 if name.hasPrefix(".") || name == ".build" {
-                    enumerator.skipDescendants()
+                    // skipDescendants on a regular file can skip the next directory
+                    // on macOS, silently dropping unrelated source declarations.
+                    if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true {
+                        enumerator.skipDescendants()
+                    }
                     continue
                 }
-                if sourceExtensions.contains(url.pathExtension) { files.append(SourcePosition.canonical(url.path)) }
+                if sourceExtensions.contains(url.pathExtension),
+                   try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory != true {
+                    files.append(SourcePosition.canonical(url.path))
+                }
             }
         }
         return Array(Set(files)).sorted()

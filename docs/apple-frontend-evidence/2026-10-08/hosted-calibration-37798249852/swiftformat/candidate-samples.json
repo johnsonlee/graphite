@@ -1,0 +1,108 @@
+[
+  {
+    "benchmark": "apple.frontend.wall",
+    "primaryMetric": {
+      "score": 1312.278,
+      "scoreUnit": "ms/op",
+      "scoreConfidence": [
+        1309.76,
+        1322.88
+      ],
+      "rawData": [
+        [
+          1322.88,
+          1312.278,
+          1312.719,
+          1309.76,
+          1310.882
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "swiftformat"
+    },
+    "mode": "sequential-run",
+    "files": 181,
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+    },
+    "input": "package",
+    "verified": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+      "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+    },
+    "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+    "baselineRevision": null
+  },
+  {
+    "benchmark": "apple.frontend.rss",
+    "primaryMetric": {
+      "score": 78.68,
+      "scoreUnit": "MiB",
+      "scoreConfidence": [
+        78.516,
+        78.777
+      ],
+      "rawData": [
+        [
+          78.652,
+          78.777,
+          78.688,
+          78.68,
+          78.516
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "swiftformat"
+    },
+    "mode": "sequential-run",
+    "files": 181,
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+    },
+    "input": "package",
+    "verified": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+      "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+    },
+    "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+    "baselineRevision": null
+  }
+]

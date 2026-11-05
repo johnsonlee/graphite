@@ -1,0 +1,50 @@
+{
+  "query": "MATCH (n) RETURN n.graphId AS graph, count(n) AS nodes ORDER BY graph",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "columns": [
+    "graph",
+    "nodes"
+  ],
+  "rows": [
+    {
+      "graph": "signal-ios",
+      "nodes": 331236,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "nodes": 54571,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "nodes": 60956,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    }
+  ],
+  "graphs": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "mode": "cross-graph",
+  "rowCount": 3,
+  "error": null,
+  "digest": "f21cf7dabcb79f1855bca3082aed47b0fce8354510888d8c31fba1f421035b1f"
+}

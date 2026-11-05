@@ -308,7 +308,7 @@ command fetches it from the release:
 graphite frontend install apple      # ~/.graphite/frontends/apple/<version>/, checksum verified
 graphite frontend list               # jvm and apple, with version and where each was found
 
-# Index a package: runs `swift build`, reads its index store, writes the graph
+# Index a Swift package, or auto-select the Xcode workspace/project in an app directory
 graphite build ~/src/MyApp -o myapp.graphite
 graphite build ~/src/MyApp -o myapp.graphite --skip-build     # the package is already built
 
@@ -329,6 +329,9 @@ graphite serve --graph myapp:myapp.graphite
 `graphite build` finds the Apple frontend through `GRAPHITE_FRONTEND_APPLE`,
 `graphite-frontend-apple` next to the binary or in a sibling `libexec/`, on `PATH`, then
 `~/.graphite/frontends/apple/`.
+
+For toolchain setup, directory selection, existing DerivedData and correctness
+checks on an iOS app, see [Build an iOS application graph](docs/ios-app-build.md).
 
 Under the hood every non-JVM frontend writes a **Graph IR** (`ir/graphite_ir.proto`, a
 stream of protobuf chunks) and `graphite import <ir> -o <graph>` persists it with the
@@ -370,6 +373,13 @@ header's declaration before the `.m`'s definition, and a call site into Objectiv
 carries the same descriptor as the declaration. Objective-C call sites carry no literal arguments yet
 (the Swift syntax pass reads Swift only), and data flow through variables and returns
 (SIL) is the next step.
+
+Type enrichment uses a lightweight source parser and does not evaluate preprocessor
+conditionals. Conditional branches with unmatched braces in the unprocessed source,
+and C declarations wrapped in `extern "C"` blocks, can retain empty type information
+even when their indexed declarations and calls are present. Validation against Signal
+and Swift Package Manager, including these remaining limits, is recorded in
+[the Apple frontend validation report](docs/apple-frontend-validation.md).
 
 ### Upgrading a legacy installation
 
