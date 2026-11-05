@@ -395,7 +395,14 @@ fn run_apple(env: &Env, choice: &Choice, args: &[OsString]) -> i32 {
     let publication = if packed {
         Publication::inspect(&build.output).map(Some)
     } else {
-        crate::build_output::require_absent(&build.output).map(|_| None)
+        // publish_directory only creates: an existing directory is refused, not rebuilt.
+        match crate::build_output::DirectoryPublication::inspect(&build.output) {
+            Ok(crate::build_output::DirectoryPublication::CreateNew) => Ok(None),
+            Ok(crate::build_output::DirectoryPublication::Rebuild(_)) => {
+                Err(format!("output already exists: {}", build.output.display()))
+            }
+            Err(message) => Err(message),
+        }
     };
     let publication = match publication {
         Ok(p) => p,
