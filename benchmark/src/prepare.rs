@@ -150,6 +150,40 @@ fn distinct_checkouts(paths: &[&Path]) -> Result<()> {
     Ok(())
 }
 
+// Cargo fingerprints are not a safe cache boundary between source revisions. Resolve
+// checkout aliases first, and reject redirected target roots before any command or write.
+fn native_targets(base: &Path, head: &Path) -> Result<[PathBuf; 2]> {
+    let mut targets = Vec::new();
+    for source in [base, head] {
+        let target = source.canonicalize()?.join("target");
+        ensure!(
+            !target.is_symlink(),
+            "redirected Cargo target directory: {}; use a private physical target directory for each revision",
+            target.display()
+        );
+        let resolved = match fs::metadata(&target) {
+            Ok(metadata) => {
+                ensure!(
+                    metadata.is_dir(),
+                    "Cargo target is not a directory: {}",
+                    target.display()
+                );
+                target.canonicalize()?
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => target,
+            Err(error) => return Err(error).context("inspect Cargo target directory"),
+        };
+        targets.push(resolved);
+    }
+    ensure!(
+        !targets[0].starts_with(&targets[1]) && !targets[1].starts_with(&targets[0]),
+        "base and head Cargo target directories must be distinct and non-nested: {} and {}",
+        targets[0].display(),
+        targets[1].display()
+    );
+    Ok([targets.remove(0), targets.remove(0)])
+}
+
 // Reject redirected parent directories as well as redirected leaf files before any write.
 fn safe_path(root: &Path, relative: &Path) -> Result<PathBuf> {
     let mut path = root.to_owned();
@@ -303,6 +337,7 @@ pub fn run(args: &PrepareArgs) -> Result<Value> {
     let head = args.head_source.canonicalize()?;
     let trusted = args.harness_source.canonicalize()?;
     distinct_checkouts(&[&base, &head, &trusted])?;
+    let [base_target, head_target] = native_targets(&base, &head)?;
     let harness_revision = identity(&trusted, "HEAD^{commit}")?;
     let harness_tree = identity(&trusted, "HEAD^{tree}")?;
     ensure!(
@@ -333,6 +368,7 @@ pub fn run(args: &PrepareArgs) -> Result<Value> {
     }
     let report = json!({"schema":"graphite-benchmark-preparation-v1", "performanceAcceptance":false,
                        "harnessRevision":harness_revision,"harnessTree":harness_tree,
+                       "nativeTargetDirectories":{"base":base_target,"head":head_target},
                        "passed":results.iter().all(|r| r["passed"] == true),"builds":results});
     fs::write(
         output.join("preparation.json"),
@@ -370,6 +406,111 @@ mod tests {
         fs::create_dir_all(shared.parent().unwrap()).unwrap();
         fs::write(shared, contents).unwrap();
         fs::write(root.join(VALIDATION_INIT), contents).unwrap();
+    }
+
+    #[test]
+    fn private_fresh_and_existing_native_targets_are_accepted_without_writes() {
+        let root = temporary();
+        let base = root.join("base");
+        let head = root.join("head");
+        fs::create_dir(&base).unwrap();
+        fs::create_dir(&head).unwrap();
+        let expected = [
+            base.canonicalize().unwrap().join("target"),
+            head.canonicalize().unwrap().join("target"),
+        ];
+        assert_eq!(native_targets(&base, &head).unwrap(), expected);
+        assert!(!base.join("target").exists());
+        assert!(!head.join("target").exists());
+        for target in &expected {
+            fs::create_dir(target).unwrap();
+            fs::write(target.join("cached-dependency"), "retained").unwrap();
+        }
+        assert_eq!(native_targets(&base, &head).unwrap(), expected);
+        for target in &expected {
+            assert_eq!(
+                fs::read_to_string(target.join("cached-dependency")).unwrap(),
+                "retained"
+            );
+        }
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn shared_native_target_is_rejected_before_commands_or_preparation_writes() {
+        use std::os::unix::fs::symlink;
+        let root = temporary();
+        let shared = root.join("shared");
+        fs::create_dir(&shared).unwrap();
+        fs::write(shared.join("existing-binary"), "baseline").unwrap();
+        let alias = root.join("alias");
+        symlink(&root, &alias).unwrap();
+        // One alias is indirect through a redirected parent; a dangling target
+        // must also fail rather than allowing a build to create shared state.
+        for (index, destination) in [&shared, &alias.join("shared"), &root.join("missing")]
+            .into_iter()
+            .enumerate()
+        {
+            let base = root.join(format!("base-{index}"));
+            let head = root.join(format!("head-{index}"));
+            let trusted = root.join(format!("trusted-{index}"));
+            for source in [&base, &head, &trusted] {
+                fixture(source, "frontend/jvm/webgraph", "untouched source");
+                // These intentionally are not Git repositories. Reaching even
+                // the first Git command would produce a different failure.
+            }
+            symlink(&shared, base.join("target")).unwrap();
+            symlink(destination, head.join("target")).unwrap();
+            assert!(native_targets(&head, &base)
+                .unwrap_err()
+                .to_string()
+                .contains("redirected Cargo target directory"));
+            let output = root.join(format!("output-{index}"));
+            let error = run(&PrepareArgs {
+                base_source: base.clone(),
+                head_source: head.clone(),
+                harness_source: trusted,
+                output: output.clone(),
+            })
+            .unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("redirected Cargo target directory"),
+                "{error:#}"
+            );
+            assert!(!output.exists());
+            assert_eq!(
+                fs::read_to_string(base.join(SHARED_VALIDATION)).unwrap(),
+                "untouched source"
+            );
+            assert_eq!(
+                fs::read_to_string(head.join(SHARED_VALIDATION)).unwrap(),
+                "untouched source"
+            );
+            assert_eq!(fs::read_dir(&shared).unwrap().count(), 1);
+            assert_eq!(
+                fs::read_to_string(shared.join("existing-binary")).unwrap(),
+                "baseline"
+            );
+        }
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn checkout_parent_alias_cannot_hide_a_shared_native_target() {
+        let root = temporary();
+        let base = root.join("base");
+        fs::create_dir(&base).unwrap();
+        std::os::unix::fs::symlink(&root, root.join("alias")).unwrap();
+        let error = native_targets(&base, &root.join("alias/base")).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("must be distinct and non-nested"));
+        assert!(!base.join("target").exists());
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

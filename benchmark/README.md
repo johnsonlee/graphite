@@ -56,6 +56,14 @@ trusted harness revision and installed file hashes are recorded in `<output>/pre
 Build the CLI from the trusted checkout; run preparation in its parent so outputs never
 modify that trusted tree.
 
+Each product checkout must have its own physical `target` directory. Preparation sets
+`CARGO_TARGET_DIR` to that checkout's `target`, overriding an inherited value. Existing
+private target caches are allowed; shared or symlinked target roots (including aliases
+through parent directories) are rejected before any preparation commands or writes.
+Cargo fingerprint reuse across revisions can silently copy the baseline executable as
+the candidate. Share downloaded dependencies if needed, never the target directory.
+Resolved target paths are recorded as `nativeTargetDirectories` in preparation evidence.
+
 ```sh
 cd /work
 cargo build --release --locked --manifest-path trusted/Cargo.toml -p graphite-benchmark

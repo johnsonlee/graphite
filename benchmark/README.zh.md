@@ -50,6 +50,13 @@ Linux cgroup OOM 计数器及进程退出状态补充 JVM 堆检查。宿主机 
 记录在 `<output>/prepared/preparation.json` 中。
 从可信 checkout 构建 CLI，在它的父目录运行准备过程，确保输出不会修改可信源码树。
 
+每个产品 checkout 必须使用独立的实体 `target` 目录。准备阶段将 `CARGO_TARGET_DIR`
+设置为该 checkout 的 `target`，覆盖继承的环境变量。允许复用各自独立的缓存；共享或
+符号链接重定向的 target 根目录（包括通过父目录别名重定向）会在任何准备命令和写入之前被拒绝。
+跨版本共享 Cargo target 可能错误复用指纹，把基线可执行文件当成候选产物。
+可以共享下载依赖缓存，但不能共享 target 目录。准备证据的 `nativeTargetDirectories`
+字段记录解析后的目录路径。
+
 ```sh
 cd /work
 cargo build --release --locked --manifest-path trusted/Cargo.toml -p graphite-benchmark
