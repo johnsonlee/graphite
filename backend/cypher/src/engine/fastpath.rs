@@ -16,6 +16,7 @@ use graphite_storage::node::{read_call_site_strings, StrId, TAG_CALL_SITE_NODE};
 use graphite_storage::Graph;
 use indexmap::IndexMap;
 
+mod bounded_distinct;
 mod bounded_groups;
 
 pub(super) use bounded_groups::bounded_call_site_groups;
@@ -370,6 +371,9 @@ pub fn distinct_string_property(
     ex: &Executor,
     clauses: &[Clause],
 ) -> CypherResult<Option<QueryResult>> {
+    if let Some(result) = bounded_distinct::try_execute(ex, clauses)? {
+        return Ok(Some(result));
+    }
     distinct_string_property_with_ids(ex, clauses, indexed_distinct_string_ids)
 }
 
@@ -416,6 +420,13 @@ fn distinct_string_property_with_ids(
         NodeClass::Tags(t) if t.len() == 1 => t[0],
         _ => return Ok(None),
     };
+    if patterns[0].nodes[0]
+        .labels
+        .iter()
+        .any(|label| !super::props::label_tags(label).is_some_and(|tags| tags.contains(&tag)))
+    {
+        return Ok(None);
+    }
     let field = match raw_string_field(tag, &property) {
         Some(f) => f,
         None => return Ok(None),

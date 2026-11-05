@@ -23307,3 +23307,50 @@ workload time, correctness and stability separately. Source tests establish no
 performance benefit by themselves. Final measured results and the keep/revert decision
 are sealed in the immutable PR154 benchmark attachment and its experiment-history
 copy; do not interpret an intermediate positive increment as completed recovery.
+
+### Attempt314 — select bounded DISTINCT values before rows (2026-11-05)
+
+**Trigger and retained evidence.** Retain Attempt312's bounded collect and Attempt313's
+compact grouping gains. The cumulative fc428 real64 comparison passed all438 load and
+10074 query responses, but did not pass performance acceptance: query RSS rawround0
+increased7.003%; DISTINCT p95 increased269.182→305.793ms, with allthree round p50/p95
+increases. The Apple supplement also retained latency/resource failures. None is
+waived by CPU savings, other rounds or another workload. A separate full73 timeline
+comparison retained all3358 diagnostic responses and precise HTTP/RSS intervals:
+three DISTINCT requests were in flight at candidate pressure peak, with RSS and
+physical footprint growing together and no pressure-stage pageins. This supports
+investigating concurrent allocation, not a proof of a specific allocator cause;
+the diagnostic's lower candidate peak does not replace the earlier failed round.
+
+**Change.** The existing exact multi-source unsorted CallSite DISTINCT path creates
+all per-source distinct Rows, owned strings and provenance, globally merges them,
+then truncates. For finite bounds<=65536, first prove every participating source's
+complete ordered property/frame/dictionary domain. Select only the remaining
+first-encounter winners per source with a bounded heap and retain only selected
+values across sources. Once full, later sources cannot change winners; reconstruct
+all winning values' provenance from every certified graph before returning. Allocate
+Rows only for winners. Retain the original path for sorted, single-source, complex,
+unbounded or unproved inputs. Additional labels must match the complete admitted
+domain; otherwise the existing DISTINCT fastpath also defers to the generic matcher.
+No global concurrency reduction, feature removal or graph semantic change.
+
+**Correctness and stability.** Six focused tests compare direct admission and full
+Rows/provenance against retained raw and independently forced generic pipelines;
+assert only winning Rows are materialized without timing. Cover allfour fields,
+first-encounter ordering, cross-graph duplicates/late winners/provenance, empty and
+zero bounds, malformed later fields/frame/index/domain fallback, cached cancellation,
+timeout and unsupported shapes. A test-directory prefix collision found during
+independent review was corrected before the complete parallel suite. Full Cypher
+suite310/310 passed with all required native and declared-typev1–v4/inherited fixtures;
+strict all-target/all-feature workspace clippy, formatting and diff checks passed.
+The initially incorrect malformed-CSR test assertion remains in the evidence log.
+
+**Predeclared evaluation.** See the immutable attachment's PROTOCOL.distinct.md.
+Use independently built frozen binaries and unchanged real64 producer closure.
+First one diagnostic full73 parent/candidate pair on identical head data, then fresh
+three-pair full73 main/candidate load and query comparisons. Preserve all old runs;
+never replace failed rounds. Keep p50/p95, end-to-end, CPU and lifetime kernel RSS
+conclusions separate per operation/workload/pair with independent5% resource limits.
+Review core outcomes before another final Apple three-graph comparison. Source tests
+are correctness evidence only. The attachment's experiment-history copy records
+actual measurements and retention decisions; this entry claims no measured recovery.
