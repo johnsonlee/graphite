@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "queryMeasured": 4800,
+  "warmups": 120,
+  "quantilesIndependentlyRecomputed": 128,
+  "cpuBatchesMachTicksIndependentlyRecomputed": 48,
+  "tablesMatched": [
+    "8 latency rows including range and deltas",
+    "8 CPU rows",
+    "2 load rows",
+    "4 process lifetime rows"
+  ],
+  "allRequestsScope": [
+    "signal-ios",
+    "signal-server",
+    "swiftpm"
+  ],
+  "pairedOrder": "AB/BA/AB",
+  "corePerCaseRenderedRowsChecked": 140,
+  "corePublicReportIdentical": true,
+  "appleOraclePreparedBinaryIdentitiesMatch": true
+}

@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "base": "7c59d7993be51f0807495890d068effcfaff155b",
+  "head": "190eba79a4428d3100c8fba480bd858a19ac893d",
+  "requestScope": "64 graph IDs on every retained request",
+  "arms": {
+    "base": {
+      "requestRecords": 4359,
+      "pressureCases": 73,
+      "pressureRequests": 1460,
+      "quantilesChecked": 280
+    },
+    "head": {
+      "requestRecords": 4359,
+      "pressureCases": 73,
+      "pressureRequests": 1460,
+      "quantilesChecked": 280
+    }
+  }
+}

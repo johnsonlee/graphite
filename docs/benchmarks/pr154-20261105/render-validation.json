@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "base": "7c59d7993be51f0807495890d068effcfaff155b",
+  "head": "190eba79a4428d3100c8fba480bd858a19ac893d",
+  "coreChecks": 15,
+  "appleMeasuredRequests": 4800,
+  "appleWarmupRequests": 120,
+  "formalPerformanceAcceptance": false,
+  "sourceReportSha256": "441d2d224379714e3102f39e0f2e760474f1e55063fe69346ab18d329c8ea0c1",
+  "rendererSha256": "3ddb59dd8ee6ca6406a6106b20720bc57f064a630213b3f4b5f8a8b3682ef999"
+}

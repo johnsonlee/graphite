@@ -1,0 +1,15 @@
+{
+  "recordedUtc": "2026-11-05T03:51:05.209435+00:00",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "cpu": "Apple M3 Max",
+  "memoryBytes": 68719476736,
+  "logicalCpus": 16,
+  "java": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Homebrew (build 17.0.20.1+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.20.1+0, mixed mode, sharing)\n",
+  "limitations": [
+    "Interactive workstation; background activity was recorded privately, not assumed absent.",
+    "Filesystem cache uncontrolled; no disk-cold claim.",
+    "macOS has no Linux cgroup host OOM counters.",
+    "Full process lists, executable paths and private application names omitted."
+  ]
+}
