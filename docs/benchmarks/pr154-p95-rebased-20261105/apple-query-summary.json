@@ -1,0 +1,3302 @@
+{
+  "quantile_method": "nearest-rank",
+  "queries": [
+    {
+      "variant": "baseline",
+      "case": "field-type-inventory",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 18.147791270166636,
+      "p95_ms": 19.620375242084265,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 18.150458112359047,
+          "p95_ms": 19.71108326688409
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 18.189916852861643,
+          "p95_ms": 19.383208826184273
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 18.088374752551317,
+          "p95_ms": 19.430999644100666
+        }
+      ],
+      "round_p95_range_ms": [
+        19.383208826184273,
+        19.71108326688409
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "field-type-inventory",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 18.99987505748868,
+      "p95_ms": 20.037333015352488,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 18.96875025704503,
+          "p95_ms": 19.732582848519087
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 19.04833409935236,
+          "p95_ms": 20.11016709730029
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 18.991833087056875,
+          "p95_ms": 20.076833199709654
+        }
+      ],
+      "round_p95_range_ms": [
+        19.732582848519087,
+        20.11016709730029
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "literal-call-provenance",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 21.067708265036345,
+      "p95_ms": 23.975541815161705,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 20.8448339253664,
+          "p95_ms": 24.861082900315523
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 21.11808303743601,
+          "p95_ms": 23.939916864037514
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 21.14337496459484,
+          "p95_ms": 22.71570870652795
+        }
+      ],
+      "round_p95_range_ms": [
+        22.71570870652795,
+        24.861082900315523
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "literal-call-provenance",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 21.633916068822145,
+      "p95_ms": 22.963457740843296,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 21.583667024970055,
+          "p95_ms": 22.94645830988884
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 21.69437473639846,
+          "p95_ms": 23.02479138597846
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 21.510499995201826,
+          "p95_ms": 22.884415928274393
+        }
+      ],
+      "round_p95_range_ms": [
+        22.884415928274393,
+        23.02479138597846
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "network-message-call-scan",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 6.5752919763326645,
+      "p95_ms": 7.303042337298393,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 6.696708034723997,
+          "p95_ms": 7.991166785359383
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 6.566292140632868,
+          "p95_ms": 7.0923748426139355
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 6.4946250058710575,
+          "p95_ms": 6.8519581109285355
+        }
+      ],
+      "round_p95_range_ms": [
+        6.8519581109285355,
+        7.991166785359383
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "network-message-call-scan",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 6.951124873012304,
+      "p95_ms": 8.450792171061039,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 6.951124873012304,
+          "p95_ms": 8.16912529990077
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 6.905166897922754,
+          "p95_ms": 8.392875082790852
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 7.010957691818476,
+          "p95_ms": 8.49783280864358
+        }
+      ],
+      "round_p95_range_ms": [
+        8.16912529990077,
+        8.49783280864358
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 599.2703749798238,
+      "p95_ms": 617.2210830263793,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 599.753082729876,
+          "p95_ms": 612.0962924323976
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 593.8491248525679,
+          "p95_ms": 617.2210830263793
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 600.762041285634,
+          "p95_ms": 617.9700419306755
+        }
+      ],
+      "round_p95_range_ms": [
+        612.0962924323976,
+        617.9700419306755
+      ]
+    },
+    {
+      "variant": "baseline",
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 619.9519168585539,
+      "p95_ms": 657.6239997521043,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 620.7716250792146,
+          "p95_ms": 657.6239997521043
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 613.7284589931369,
+          "p95_ms": 646.9346671365201
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 625.0095418654382,
+          "p95_ms": 662.0970829389989
+        }
+      ],
+      "round_p95_range_ms": [
+        646.9346671365201,
+        662.0970829389989
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "field-type-inventory",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 18.54116702452302,
+      "p95_ms": 19.87187471240759,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 18.487167079001665,
+          "p95_ms": 19.603457767516375
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 19.06925020739436,
+          "p95_ms": 20.27900004759431
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 18.399833235889673,
+          "p95_ms": 18.913208041340113
+        }
+      ],
+      "round_p95_range_ms": [
+        18.913208041340113,
+        20.27900004759431
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "field-type-inventory",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 19.520499743521214,
+      "p95_ms": 20.51670802757144,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 19.44599999114871,
+          "p95_ms": 20.563750062137842
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 19.49149975553155,
+          "p95_ms": 20.27058321982622
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 19.611125346273184,
+          "p95_ms": 20.51670802757144
+        }
+      ],
+      "round_p95_range_ms": [
+        20.27058321982622,
+        20.563750062137842
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "literal-call-provenance",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 21.33787516504526,
+      "p95_ms": 23.450916167348623,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 21.33916737511754,
+          "p95_ms": 22.8091673925519
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 21.470374893397093,
+          "p95_ms": 23.935250006616116
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 21.08875010162592,
+          "p95_ms": 23.450916167348623
+        }
+      ],
+      "round_p95_range_ms": [
+        22.8091673925519,
+        23.935250006616116
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "literal-call-provenance",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 21.977707743644714,
+      "p95_ms": 23.443583864718676,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 22.197125013917685,
+          "p95_ms": 23.28816708177328
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 21.91383298486471,
+          "p95_ms": 23.468375205993652
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 21.79704187437892,
+          "p95_ms": 23.329999763518572
+        }
+      ],
+      "round_p95_range_ms": [
+        23.28816708177328,
+        23.468375205993652
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "network-message-call-scan",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 6.714917253702879,
+      "p95_ms": 7.56470812484622,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 6.644124630838633,
+          "p95_ms": 7.071375381201506
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 6.834208033978939,
+          "p95_ms": 8.033833000808954
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 6.6797081381082535,
+          "p95_ms": 7.024500053375959
+        }
+      ],
+      "round_p95_range_ms": [
+        7.024500053375959,
+        8.033833000808954
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "network-message-call-scan",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 7.261958904564381,
+      "p95_ms": 8.00020806491375,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 7.391042076051235,
+          "p95_ms": 8.00020806491375
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 7.183915935456753,
+          "p95_ms": 7.931457832455635
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 7.153249811381102,
+          "p95_ms": 7.996916770935059
+        }
+      ],
+      "round_p95_range_ms": [
+        7.931457832455635,
+        8.00020806491375
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 1,
+      "samples": 300,
+      "p50_ms": 605.1759580150247,
+      "p95_ms": 630.6587080471218,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 606.6252919845283,
+          "p95_ms": 624.1871248930693
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 603.8270830176771,
+          "p95_ms": 623.9226246252656
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 604.830333031714,
+          "p95_ms": 640.2815408073366
+        }
+      ],
+      "round_p95_range_ms": [
+        623.9226246252656,
+        640.2815408073366
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 4,
+      "samples": 300,
+      "p50_ms": 624.470166862011,
+      "p95_ms": 661.4670418202877,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 100,
+          "p50_ms": 621.570291928947,
+          "p95_ms": 662.0055828243494
+        },
+        {
+          "round": 1,
+          "samples": 100,
+          "p50_ms": 622.0689998008311,
+          "p95_ms": 653.7093338556588
+        },
+        {
+          "round": 2,
+          "samples": 100,
+          "p50_ms": 628.7681669928133,
+          "p95_ms": 654.0395841002464
+        }
+      ],
+      "round_p95_range_ms": [
+        653.7093338556588,
+        662.0055828243494
+      ]
+    }
+  ],
+  "parity": [
+    {
+      "case": "all-graph-node-census",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "b467fc298ee3fab04d516d79337873448981272f958997de4267ba7ebd51b030",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "b467fc298ee3fab04d516d79337873448981272f958997de4267ba7ebd51b030",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "field-type-inventory",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "d14918aef6d3a154f613080cf47defcfc06c8b7bec3d722bc2ef85497daf5cba",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "d14918aef6d3a154f613080cf47defcfc06c8b7bec3d722bc2ef85497daf5cba",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "literal-call-provenance",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "network-message-call-scan",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ],
+        "candidate": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ]
+      }
+    }
+  ],
+  "query_cpu_boundary": "live process CPU delta around each measured request batch",
+  "query_rss_boundary": "wait4 lifetime process peak includes startup/warmup; sampled RSS is supplementary lower bound",
+  "query_resources": [
+    {
+      "recorded_ns": 1793888733617699000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 733.842708170414,
+      "user_seconds": 0.6403469583333332,
+      "system_seconds": 0.018313125,
+      "cpu_seconds": 0.6586600833333333,
+      "cpu_before": {
+        "user_seconds": 3.376437625,
+        "system_seconds": 0.03403070833333333,
+        "raw_cpu_ticks": {
+          "user": 81034503,
+          "system": 816737
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 138592256,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 4.016784583333333,
+        "system_seconds": 0.05234383333333333,
+        "raw_cpu_ticks": {
+          "user": 96402830,
+          "system": 1256252
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 145997824,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 145997824,
+      "rss_samples": 63,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888735862546000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2244.6248340420425,
+      "user_seconds": 2.079199083333334,
+      "system_seconds": 0.007470625000000002,
+      "cpu_seconds": 2.086669708333334,
+      "cpu_before": {
+        "user_seconds": 4.016784583333333,
+        "system_seconds": 0.05234383333333333,
+        "raw_cpu_ticks": {
+          "user": 96402830,
+          "system": 1256252
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 145997824,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.095983666666667,
+        "system_seconds": 0.059814458333333334,
+        "raw_cpu_ticks": {
+          "user": 146303608,
+          "system": 1435547
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146325504,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 146341888,
+      "rss_samples": 184,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888737792172000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 1929.4159580022097,
+      "user_seconds": 1.7683015833333329,
+      "system_seconds": 0.008515999999999996,
+      "cpu_seconds": 1.7768175833333328,
+      "cpu_before": {
+        "user_seconds": 6.095983666666667,
+        "system_seconds": 0.059814458333333334,
+        "raw_cpu_ticks": {
+          "user": 146303608,
+          "system": 1435547
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146325504,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 7.86428525,
+        "system_seconds": 0.06833045833333333,
+        "raw_cpu_ticks": {
+          "user": 188742846,
+          "system": 1639931
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 156418048,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 156467200,
+      "rss_samples": 158,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888798041958000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 60249.45037532598,
+      "user_seconds": 59.957056333333334,
+      "system_seconds": 0.04212020833333334,
+      "cpu_seconds": 59.999176541666664,
+      "cpu_before": {
+        "user_seconds": 7.86428525,
+        "system_seconds": 0.06833045833333333,
+        "raw_cpu_ticks": {
+          "user": 188742846,
+          "system": 1639931
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 156418048,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 67.82134158333334,
+        "system_seconds": 0.11045066666666667,
+        "raw_cpu_ticks": {
+          "user": 1627712198,
+          "system": 2650816
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 149536768,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 156418048,
+      "rss_samples": 4880,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888798243945000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 201.77316712215543,
+      "user_seconds": 0.6406972500000023,
+      "system_seconds": 0.05628775,
+      "cpu_seconds": 0.6969850000000023,
+      "cpu_before": {
+        "user_seconds": 67.82134158333334,
+        "system_seconds": 0.11045066666666667,
+        "raw_cpu_ticks": {
+          "user": 1627712198,
+          "system": 2650816
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 149536768,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 68.46203883333334,
+        "system_seconds": 0.16673841666666667,
+        "raw_cpu_ticks": {
+          "user": 1643088932,
+          "system": 4001722
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 197345280,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 197345280,
+      "rss_samples": 18,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888798820842000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 576.7044168896973,
+      "user_seconds": 2.0784993749999927,
+      "system_seconds": 0.006662666666666678,
+      "cpu_seconds": 2.0851620416666594,
+      "cpu_before": {
+        "user_seconds": 68.46203883333334,
+        "system_seconds": 0.16673841666666667,
+        "raw_cpu_ticks": {
+          "user": 1643088932,
+          "system": 4001722
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 197345280,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 70.54053820833333,
+        "system_seconds": 0.17340108333333334,
+        "raw_cpu_ticks": {
+          "user": 1692972917,
+          "system": 4161626
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 199475200,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 199475200,
+      "rss_samples": 48,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888799326761000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 505.7037081569433,
+      "user_seconds": 1.820328625000002,
+      "system_seconds": 0.01189925,
+      "cpu_seconds": 1.8322278750000018,
+      "cpu_before": {
+        "user_seconds": 70.54053820833333,
+        "system_seconds": 0.17340108333333334,
+        "raw_cpu_ticks": {
+          "user": 1692972917,
+          "system": 4161626
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 199475200,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 72.36086683333333,
+        "system_seconds": 0.18530033333333334,
+        "raw_cpu_ticks": {
+          "user": 1736660804,
+          "system": 4447208
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 258408448,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 258408448,
+      "rss_samples": 42,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888815032563000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15705.551166087389,
+      "user_seconds": 62.29284879166666,
+      "system_seconds": 0.045131000000000004,
+      "cpu_seconds": 62.337979791666655,
+      "cpu_before": {
+        "user_seconds": 72.36086683333333,
+        "system_seconds": 0.18530033333333334,
+        "raw_cpu_ticks": {
+          "user": 1736660804,
+          "system": 4447208
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 258408448,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 134.653715625,
+        "system_seconds": 0.23043133333333335,
+        "raw_cpu_ticks": {
+          "user": 3231689175,
+          "system": 5530352
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 255623168,
+        "identity": "83545452664478",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 258408448,
+      "rss_samples": 1266,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888819231727000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 720.1562919653952,
+      "user_seconds": 0.6342895416666665,
+      "system_seconds": 0.01858404166666667,
+      "cpu_seconds": 0.6528735833333332,
+      "cpu_before": {
+        "user_seconds": 3.387127375,
+        "system_seconds": 0.036719916666666665,
+        "raw_cpu_ticks": {
+          "user": 81291057,
+          "system": 881278
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 139329536,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 4.0214169166666665,
+        "system_seconds": 0.05530395833333333,
+        "raw_cpu_ticks": {
+          "user": 96514006,
+          "system": 1327295
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146522112,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 146522112,
+      "rss_samples": 61,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888821485392000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2253.456458915025,
+      "user_seconds": 2.0873952916666667,
+      "system_seconds": 0.007225624999999999,
+      "cpu_seconds": 2.0946209166666665,
+      "cpu_before": {
+        "user_seconds": 4.0214169166666665,
+        "system_seconds": 0.05530395833333333,
+        "raw_cpu_ticks": {
+          "user": 96514006,
+          "system": 1327295
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146522112,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.108812208333333,
+        "system_seconds": 0.06252958333333333,
+        "raw_cpu_ticks": {
+          "user": 146611493,
+          "system": 1500710
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146980864,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 146997248,
+      "rss_samples": 185,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888823437916000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 1952.320875134319,
+      "user_seconds": 1.7946622083333335,
+      "system_seconds": 0.00828204166666667,
+      "cpu_seconds": 1.8029442500000001,
+      "cpu_before": {
+        "user_seconds": 6.108812208333333,
+        "system_seconds": 0.06252958333333333,
+        "raw_cpu_ticks": {
+          "user": 146611493,
+          "system": 1500710
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146980864,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 7.903474416666667,
+        "system_seconds": 0.070811625,
+        "raw_cpu_ticks": {
+          "user": 189683386,
+          "system": 1699479
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 157155328,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 157155328,
+      "rss_samples": 161,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888884451511000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 61013.28416727483,
+      "user_seconds": 60.715619875,
+      "system_seconds": 0.04365083333333332,
+      "cpu_seconds": 60.75927070833333,
+      "cpu_before": {
+        "user_seconds": 7.903474416666667,
+        "system_seconds": 0.070811625,
+        "raw_cpu_ticks": {
+          "user": 189683386,
+          "system": 1699479
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 157155328,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 68.61909429166667,
+        "system_seconds": 0.11446245833333332,
+        "raw_cpu_ticks": {
+          "user": 1646858263,
+          "system": 2747099
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150962176,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 157155328,
+      "rss_samples": 4939,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888884659003000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 207.28387497365475,
+      "user_seconds": 0.6736602499999975,
+      "system_seconds": 0.05057500000000001,
+      "cpu_seconds": 0.7242352499999976,
+      "cpu_before": {
+        "user_seconds": 68.61909429166667,
+        "system_seconds": 0.11446245833333332,
+        "raw_cpu_ticks": {
+          "user": 1646858263,
+          "system": 2747099
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150962176,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 69.29275454166667,
+        "system_seconds": 0.16503745833333333,
+        "raw_cpu_ticks": {
+          "user": 1663026109,
+          "system": 3960899
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 191594496,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 191594496,
+      "rss_samples": 19,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888885251534000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 592.3119173385203,
+      "user_seconds": 2.1380521250000015,
+      "system_seconds": 0.006770458333333312,
+      "cpu_seconds": 2.144822583333335,
+      "cpu_before": {
+        "user_seconds": 69.29275454166667,
+        "system_seconds": 0.16503745833333333,
+        "raw_cpu_ticks": {
+          "user": 1663026109,
+          "system": 3960899
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 191594496,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 71.43080666666667,
+        "system_seconds": 0.17180791666666664,
+        "raw_cpu_ticks": {
+          "user": 1714339360,
+          "system": 4123390
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 196132864,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 196132864,
+      "rss_samples": 50,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888885772099000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 520.3395839780569,
+      "user_seconds": 1.8728783333333325,
+      "system_seconds": 0.012060333333333367,
+      "cpu_seconds": 1.8849386666666659,
+      "cpu_before": {
+        "user_seconds": 71.43080666666667,
+        "system_seconds": 0.17180791666666664,
+        "raw_cpu_ticks": {
+          "user": 1714339360,
+          "system": 4123390
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 196132864,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 73.303685,
+        "system_seconds": 0.18386825,
+        "raw_cpu_ticks": {
+          "user": 1759288440,
+          "system": 4412838
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 261423104,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 261423104,
+      "rss_samples": 43,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888901518816000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 0,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15746.48025026545,
+      "user_seconds": 62.47524416666667,
+      "system_seconds": 0.043619083333333336,
+      "cpu_seconds": 62.51886325,
+      "cpu_before": {
+        "user_seconds": 73.303685,
+        "system_seconds": 0.18386825,
+        "raw_cpu_ticks": {
+          "user": 1759288440,
+          "system": 4412838
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 261423104,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 135.77892916666667,
+        "system_seconds": 0.22748733333333335,
+        "raw_cpu_ticks": {
+          "user": 3258694300,
+          "system": 5459696
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 260259840,
+        "identity": "83547507826195",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 261423104,
+      "rss_samples": 1269,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888905757679000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 759.1425841674209,
+      "user_seconds": 0.6756478749999997,
+      "system_seconds": 0.020445249999999998,
+      "cpu_seconds": 0.6960931249999996,
+      "cpu_before": {
+        "user_seconds": 3.3866172916666666,
+        "system_seconds": 0.03357154166666666,
+        "raw_cpu_ticks": {
+          "user": 81278815,
+          "system": 805717
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 137363456,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 4.062265166666666,
+        "system_seconds": 0.05401679166666666,
+        "raw_cpu_ticks": {
+          "user": 97494364,
+          "system": 1296403
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144474112,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 144474112,
+      "rss_samples": 64,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888908035968000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2278.0796671286225,
+      "user_seconds": 2.1090594166666667,
+      "system_seconds": 0.007567125000000001,
+      "cpu_seconds": 2.1166265416666667,
+      "cpu_before": {
+        "user_seconds": 4.062265166666666,
+        "system_seconds": 0.05401679166666666,
+        "raw_cpu_ticks": {
+          "user": 97494364,
+          "system": 1296403
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144474112,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.171324583333333,
+        "system_seconds": 0.06158391666666666,
+        "raw_cpu_ticks": {
+          "user": 148111790,
+          "system": 1478014
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144703488,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 144867328,
+      "rss_samples": 186,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888910053307000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2017.1059160493314,
+      "user_seconds": 1.8447231250000007,
+      "system_seconds": 0.009743791666666661,
+      "cpu_seconds": 1.8544669166666674,
+      "cpu_before": {
+        "user_seconds": 6.171324583333333,
+        "system_seconds": 0.06158391666666666,
+        "raw_cpu_ticks": {
+          "user": 148111790,
+          "system": 1478014
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144703488,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 8.016047708333334,
+        "system_seconds": 0.07132770833333332,
+        "raw_cpu_ticks": {
+          "user": 192385145,
+          "system": 1711865
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 155123712,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 155123712,
+      "rss_samples": 166,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888970793300000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 60739.675416145474,
+      "user_seconds": 60.43283508333333,
+      "system_seconds": 0.044078916666666676,
+      "cpu_seconds": 60.476913999999994,
+      "cpu_before": {
+        "user_seconds": 8.016047708333334,
+        "system_seconds": 0.07132770833333332,
+        "raw_cpu_ticks": {
+          "user": 192385145,
+          "system": 1711865
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 155123712,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 68.44888279166666,
+        "system_seconds": 0.115406625,
+        "raw_cpu_ticks": {
+          "user": 1642773187,
+          "system": 2769759
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 147849216,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 155123712,
+      "rss_samples": 4924,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888970994020000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 200.48199966549873,
+      "user_seconds": 0.6546899583333357,
+      "system_seconds": 0.05184754166666665,
+      "cpu_seconds": 0.7065375000000023,
+      "cpu_before": {
+        "user_seconds": 68.44888279166666,
+        "system_seconds": 0.115406625,
+        "raw_cpu_ticks": {
+          "user": 1642773187,
+          "system": 2769759
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 147849216,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 69.10357275,
+        "system_seconds": 0.16725416666666665,
+        "raw_cpu_ticks": {
+          "user": 1658485746,
+          "system": 4014100
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 187727872,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 187727872,
+      "rss_samples": 19,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888971577299000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 583.1014588475227,
+      "user_seconds": 2.116861749999998,
+      "system_seconds": 0.006684708333333345,
+      "cpu_seconds": 2.1235464583333314,
+      "cpu_before": {
+        "user_seconds": 69.10357275,
+        "system_seconds": 0.16725416666666665,
+        "raw_cpu_ticks": {
+          "user": 1658485746,
+          "system": 4014100
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 187727872,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 71.2204345,
+        "system_seconds": 0.173938875,
+        "raw_cpu_ticks": {
+          "user": 1709290428,
+          "system": 4174533
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 189235200,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 189235200,
+      "rss_samples": 49,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888972095414000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 517.8959998302162,
+      "user_seconds": 1.8666192499999994,
+      "system_seconds": 0.010856124999999994,
+      "cpu_seconds": 1.8774753749999995,
+      "cpu_before": {
+        "user_seconds": 71.2204345,
+        "system_seconds": 0.173938875,
+        "raw_cpu_ticks": {
+          "user": 1709290428,
+          "system": 4174533
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 189235200,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 73.08705375,
+        "system_seconds": 0.184795,
+        "raw_cpu_ticks": {
+          "user": 1754089290,
+          "system": 4435080
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 241270784,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 241270784,
+      "rss_samples": 43,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888987834230000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15738.567125052214,
+      "user_seconds": 62.467971500000004,
+      "system_seconds": 0.04353837500000002,
+      "cpu_seconds": 62.511509875,
+      "cpu_before": {
+        "user_seconds": 73.08705375,
+        "system_seconds": 0.184795,
+        "raw_cpu_ticks": {
+          "user": 1754089290,
+          "system": 4435080
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 241270784,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 135.55502525,
+        "system_seconds": 0.228333375,
+        "raw_cpu_ticks": {
+          "user": 3253320606,
+          "system": 5480001
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 239861760,
+        "identity": "83549583488668",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 241270784,
+      "rss_samples": 1269,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888991995700000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 717.8830411285162,
+      "user_seconds": 0.6281526666666668,
+      "system_seconds": 0.018479333333333334,
+      "cpu_seconds": 0.6466320000000001,
+      "cpu_before": {
+        "user_seconds": 3.339323875,
+        "system_seconds": 0.035290625,
+        "raw_cpu_ticks": {
+          "user": 80143773,
+          "system": 846975
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 147816448,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 3.9674765416666666,
+        "system_seconds": 0.05376995833333333,
+        "raw_cpu_ticks": {
+          "user": 95219437,
+          "system": 1290479
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 155336704,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 155336704,
+      "rss_samples": 62,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888994235643000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2239.731542300433,
+      "user_seconds": 2.0714385833333333,
+      "system_seconds": 0.00767258333333333,
+      "cpu_seconds": 2.079111166666667,
+      "cpu_before": {
+        "user_seconds": 3.9674765416666666,
+        "system_seconds": 0.05376995833333333,
+        "raw_cpu_ticks": {
+          "user": 95219437,
+          "system": 1290479
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 155336704,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.038915125,
+        "system_seconds": 0.06144254166666666,
+        "raw_cpu_ticks": {
+          "user": 144933963,
+          "system": 1474621
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144932864,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 155615232,
+      "rss_samples": 184,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793888996172628000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 1936.7895000614226,
+      "user_seconds": 1.7718280416666667,
+      "system_seconds": 0.009729541666666668,
+      "cpu_seconds": 1.7815575833333335,
+      "cpu_before": {
+        "user_seconds": 6.038915125,
+        "system_seconds": 0.06144254166666666,
+        "raw_cpu_ticks": {
+          "user": 144933963,
+          "system": 1474621
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 144932864,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 7.810743166666667,
+        "system_seconds": 0.07117208333333333,
+        "raw_cpu_ticks": {
+          "user": 187457836,
+          "system": 1708130
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 167591936,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 167591936,
+      "rss_samples": 160,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889055959485000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 59786.550417076796,
+      "user_seconds": 59.48122708333334,
+      "system_seconds": 0.045738541666666674,
+      "cpu_seconds": 59.526965625,
+      "cpu_before": {
+        "user_seconds": 7.810743166666667,
+        "system_seconds": 0.07117208333333333,
+        "raw_cpu_ticks": {
+          "user": 187457836,
+          "system": 1708130
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 167591936,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 67.29197025,
+        "system_seconds": 0.116910625,
+        "raw_cpu_ticks": {
+          "user": 1615007286,
+          "system": 2805855
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 162234368,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 167591936,
+      "rss_samples": 4588,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889056160107000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 196.11145928502083,
+      "user_seconds": 0.6388058333333362,
+      "system_seconds": 0.05099554166666666,
+      "cpu_seconds": 0.6898013750000028,
+      "cpu_before": {
+        "user_seconds": 67.29197025,
+        "system_seconds": 0.116910625,
+        "raw_cpu_ticks": {
+          "user": 1615007286,
+          "system": 2805855
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 162234368,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 67.93077608333334,
+        "system_seconds": 0.16790616666666666,
+        "raw_cpu_ticks": {
+          "user": 1630338626,
+          "system": 4029748
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 202047488,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 203440128,
+      "rss_samples": 15,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889056737748000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 577.4586657062173,
+      "user_seconds": 2.0923890833333303,
+      "system_seconds": 0.006733916666666673,
+      "cpu_seconds": 2.099122999999997,
+      "cpu_before": {
+        "user_seconds": 67.93077608333334,
+        "system_seconds": 0.16790616666666666,
+        "raw_cpu_ticks": {
+          "user": 1630338626,
+          "system": 4029748
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 202047488,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 70.02316516666667,
+        "system_seconds": 0.17464008333333333,
+        "raw_cpu_ticks": {
+          "user": 1680555964,
+          "system": 4191362
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 204111872,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 204111872,
+      "rss_samples": 42,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889057245814000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 507.87512492388487,
+      "user_seconds": 1.8436652500000008,
+      "system_seconds": 0.012804791666666676,
+      "cpu_seconds": 1.8564700416666675,
+      "cpu_before": {
+        "user_seconds": 70.02316516666667,
+        "system_seconds": 0.17464008333333333,
+        "raw_cpu_ticks": {
+          "user": 1680555964,
+          "system": 4191362
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 204111872,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 71.86683041666667,
+        "system_seconds": 0.187444875,
+        "raw_cpu_ticks": {
+          "user": 1724803930,
+          "system": 4498677
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 270483456,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 270483456,
+      "rss_samples": 38,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889072736340000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 1,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15490.291041787714,
+      "user_seconds": 61.50505162500001,
+      "system_seconds": 0.04185262499999998,
+      "cpu_seconds": 61.546904250000004,
+      "cpu_before": {
+        "user_seconds": 71.86683041666667,
+        "system_seconds": 0.187444875,
+        "raw_cpu_ticks": {
+          "user": 1724803930,
+          "system": 4498677
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 270483456,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 133.37188204166668,
+        "system_seconds": 0.2292975,
+        "raw_cpu_ticks": {
+          "user": 3200925169,
+          "system": 5503140
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 268959744,
+        "identity": "83551655057452",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 270483456,
+      "rss_samples": 1067,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889076906966000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 704.3156670406461,
+      "user_seconds": 0.6180694583333337,
+      "system_seconds": 0.017226666666666668,
+      "cpu_seconds": 0.6352961250000004,
+      "cpu_before": {
+        "user_seconds": 3.352771625,
+        "system_seconds": 0.03521825,
+        "raw_cpu_ticks": {
+          "user": 80466519,
+          "system": 845238
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 145899520,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 3.9708410833333336,
+        "system_seconds": 0.05244491666666667,
+        "raw_cpu_ticks": {
+          "user": 95300186,
+          "system": 1258678
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146440192,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 146440192,
+      "rss_samples": 53,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889079139299000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2232.1190000511706,
+      "user_seconds": 2.0623822083333336,
+      "system_seconds": 0.0070789583333333295,
+      "cpu_seconds": 2.069461166666667,
+      "cpu_before": {
+        "user_seconds": 3.9708410833333336,
+        "system_seconds": 0.05244491666666667,
+        "raw_cpu_ticks": {
+          "user": 95300186,
+          "system": 1258678
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 146440192,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.033223291666667,
+        "system_seconds": 0.059523875,
+        "raw_cpu_ticks": {
+          "user": 144797359,
+          "system": 1428573
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 145768448,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 146505728,
+      "rss_samples": 159,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889081060027000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 1920.5093747004867,
+      "user_seconds": 1.7648782083333323,
+      "system_seconds": 0.009405500000000004,
+      "cpu_seconds": 1.7742837083333323,
+      "cpu_before": {
+        "user_seconds": 6.033223291666667,
+        "system_seconds": 0.059523875,
+        "raw_cpu_ticks": {
+          "user": 144797359,
+          "system": 1428573
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 145768448,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 7.7981015,
+        "system_seconds": 0.068929375,
+        "raw_cpu_ticks": {
+          "user": 187154436,
+          "system": 1654305
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 173654016,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 173654016,
+      "rss_samples": 138,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889141505430000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 60445.07666723803,
+      "user_seconds": 60.18128312499999,
+      "system_seconds": 0.03923079166666667,
+      "cpu_seconds": 60.22051391666666,
+      "cpu_before": {
+        "user_seconds": 7.7981015,
+        "system_seconds": 0.068929375,
+        "raw_cpu_ticks": {
+          "user": 187154436,
+          "system": 1654305
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 173654016,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 67.979384625,
+        "system_seconds": 0.10816016666666667,
+        "raw_cpu_ticks": {
+          "user": 1631505231,
+          "system": 2595844
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 164872192,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 173686784,
+      "rss_samples": 4215,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889141703836000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 198.14941613003612,
+      "user_seconds": 0.6512028333333433,
+      "system_seconds": 0.05584341666666667,
+      "cpu_seconds": 0.70704625000001,
+      "cpu_before": {
+        "user_seconds": 67.979384625,
+        "system_seconds": 0.10816016666666667,
+        "raw_cpu_ticks": {
+          "user": 1631505231,
+          "system": 2595844
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 164872192,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 68.63058745833334,
+        "system_seconds": 0.16400358333333334,
+        "raw_cpu_ticks": {
+          "user": 1647134099,
+          "system": 3936086
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 192069632,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 194658304,
+      "rss_samples": 16,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889142278731000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 574.7146252542734,
+      "user_seconds": 2.0878923749999956,
+      "system_seconds": 0.006412625000000005,
+      "cpu_seconds": 2.0943049999999954,
+      "cpu_before": {
+        "user_seconds": 68.63058745833334,
+        "system_seconds": 0.16400358333333334,
+        "raw_cpu_ticks": {
+          "user": 1647134099,
+          "system": 3936086
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 192069632,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 70.71847983333333,
+        "system_seconds": 0.17041620833333335,
+        "raw_cpu_ticks": {
+          "user": 1697243516,
+          "system": 4089989
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 193052672,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 193445888,
+      "rss_samples": 42,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889142784891000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 505.97387505695224,
+      "user_seconds": 1.8293017916666656,
+      "system_seconds": 0.012312166666666652,
+      "cpu_seconds": 1.8416139583333322,
+      "cpu_before": {
+        "user_seconds": 70.71847983333333,
+        "system_seconds": 0.17041620833333335,
+        "raw_cpu_ticks": {
+          "user": 1697243516,
+          "system": 4089989
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 193052672,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 72.547781625,
+        "system_seconds": 0.182728375,
+        "raw_cpu_ticks": {
+          "user": 1741146759,
+          "system": 4385481
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 266780672,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 266780672,
+      "rss_samples": 38,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889158556439000,
+      "kind": "query_batch",
+      "variant": "baseline",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15771.333750337362,
+      "user_seconds": 62.70981283333333,
+      "system_seconds": 0.037139666666666654,
+      "cpu_seconds": 62.7469525,
+      "cpu_before": {
+        "user_seconds": 72.547781625,
+        "system_seconds": 0.182728375,
+        "raw_cpu_ticks": {
+          "user": 1741146759,
+          "system": 4385481
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 266780672,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 135.25759445833333,
+        "system_seconds": 0.21986804166666665,
+        "raw_cpu_ticks": {
+          "user": 3246182267,
+          "system": 5276833
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 263684096,
+        "identity": "83553692766914",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 266780672,
+      "rss_samples": 1081,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889162765877000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 718.9695830456913,
+      "user_seconds": 0.6316792083333329,
+      "system_seconds": 0.017058375,
+      "cpu_seconds": 0.6487375833333329,
+      "cpu_before": {
+        "user_seconds": 3.3938047916666667,
+        "system_seconds": 0.0372605,
+        "raw_cpu_ticks": {
+          "user": 81451315,
+          "system": 894252
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 143753216,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 4.025484,
+        "system_seconds": 0.054318875,
+        "raw_cpu_ticks": {
+          "user": 96611616,
+          "system": 1303653
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150978560,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 150978560,
+      "rss_samples": 56,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889165009277000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 2243.193707894534,
+      "user_seconds": 2.0868203333333337,
+      "system_seconds": 0.006376916666666663,
+      "cpu_seconds": 2.0931972500000002,
+      "cpu_before": {
+        "user_seconds": 4.025484,
+        "system_seconds": 0.054318875,
+        "raw_cpu_ticks": {
+          "user": 96611616,
+          "system": 1303653
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150978560,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 6.112304333333333,
+        "system_seconds": 0.060695791666666665,
+        "raw_cpu_ticks": {
+          "user": 146695304,
+          "system": 1456699
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150454272,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 151273472,
+      "rss_samples": 162,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889166946349000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 1936.8795841000974,
+      "user_seconds": 1.7853421249999997,
+      "system_seconds": 0.007259708333333337,
+      "cpu_seconds": 1.792601833333333,
+      "cpu_before": {
+        "user_seconds": 6.112304333333333,
+        "system_seconds": 0.060695791666666665,
+        "raw_cpu_ticks": {
+          "user": 146695304,
+          "system": 1456699
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 150454272,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 7.897646458333333,
+        "system_seconds": 0.0679555,
+        "raw_cpu_ticks": {
+          "user": 189543515,
+          "system": 1630932
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 162185216,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 162185216,
+      "rss_samples": 141,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889227978614000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 1,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 61031.93116700277,
+      "user_seconds": 60.81569425,
+      "system_seconds": 0.03084404166666667,
+      "cpu_seconds": 60.84653829166667,
+      "cpu_before": {
+        "user_seconds": 7.897646458333333,
+        "system_seconds": 0.0679555,
+        "raw_cpu_ticks": {
+          "user": 189543515,
+          "system": 1630932
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 162185216,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 68.71334070833333,
+        "system_seconds": 0.09879954166666667,
+        "raw_cpu_ticks": {
+          "user": 1649120177,
+          "system": 2371189
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 160104448,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 162185216,
+      "rss_samples": 4265,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889228178700000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "network-message-call-scan",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 199.86745808273554,
+      "user_seconds": 0.6519833750000004,
+      "system_seconds": 0.04683345833333334,
+      "cpu_seconds": 0.6988168333333337,
+      "cpu_before": {
+        "user_seconds": 68.71334070833333,
+        "system_seconds": 0.09879954166666667,
+        "raw_cpu_ticks": {
+          "user": 1649120177,
+          "system": 2371189
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 160104448,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 69.36532408333333,
+        "system_seconds": 0.145633,
+        "raw_cpu_ticks": {
+          "user": 1664767778,
+          "system": 3495192
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 200278016,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 200278016,
+      "rss_samples": 16,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889228763488000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "literal-call-provenance",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 584.5963330939412,
+      "user_seconds": 2.1161016666666654,
+      "system_seconds": 0.005610999999999977,
+      "cpu_seconds": 2.1217126666666655,
+      "cpu_before": {
+        "user_seconds": 69.36532408333333,
+        "system_seconds": 0.145633,
+        "raw_cpu_ticks": {
+          "user": 1664767778,
+          "system": 3495192
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 200278016,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 71.48142575,
+        "system_seconds": 0.151244,
+        "raw_cpu_ticks": {
+          "user": 1715554218,
+          "system": 3629856
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 202031104,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 202031104,
+      "rss_samples": 43,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889229286283000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "field-type-inventory",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 522.6082089357078,
+      "user_seconds": 1.8795432916666783,
+      "system_seconds": 0.011707458333333365,
+      "cpu_seconds": 1.8912507500000117,
+      "cpu_before": {
+        "user_seconds": 71.48142575,
+        "system_seconds": 0.151244,
+        "raw_cpu_ticks": {
+          "user": 1715554218,
+          "system": 3629856
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 202031104,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 73.36096904166668,
+        "system_seconds": 0.16295145833333335,
+        "raw_cpu_ticks": {
+          "user": 1760663257,
+          "system": 3910835
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 270876672,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 270876672,
+      "rss_samples": 39,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793889245177885000,
+      "kind": "query_batch",
+      "variant": "candidate",
+      "round": 2,
+      "cache_state": "OS cache warm after independent full-response correctness oracle and graph fingerprint reads; no cache eviction; fresh server for each load/query arm; query cases warmed before measured batches",
+      "operation": "query",
+      "case": "shared-wire-literals-prefiltered",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "concurrency": 4,
+      "samples": 100,
+      "failures": 0,
+      "ok": true,
+      "wall_ms": 15891.372499987483,
+      "user_seconds": 62.946696416666654,
+      "system_seconds": 0.027983374999999977,
+      "cpu_seconds": 62.97467979166665,
+      "cpu_before": {
+        "user_seconds": 73.36096904166668,
+        "system_seconds": 0.16295145833333335,
+        "raw_cpu_ticks": {
+          "user": 1760663257,
+          "system": 3910835
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 270876672,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 136.30766545833333,
+        "system_seconds": 0.19093483333333333,
+        "raw_cpu_ticks": {
+          "user": 3271383971,
+          "system": 4582436
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 268845056,
+        "identity": "83555752444269",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 270876672,
+      "rss_samples": 1087,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    }
+  ],
+  "ok": true
+}

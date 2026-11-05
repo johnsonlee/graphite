@@ -1,0 +1,548 @@
+{
+  "storage": {
+    "base": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target/aarch64-apple-darwin/release/deps/libgraphite_storage-dcaf6ee5d01218ad.rlib",
+      "bytes": 3181040,
+      "sha256": "41ed24bfb72da0ed3115a7b9c310234e38b5643946c848fa347ddb80d28fc16d",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 148256,
+          "sha256": "fad0426530bfe9620e0d631c33cca351989934b06aae890f27b9ba90488a6cd9"
+        },
+        "lib.rmeta": {
+          "bytes": 1797296,
+          "sha256": "6ba78bffa0884450c2ad7dea7f446f8ec6d8bc4b3f13e72e3e6d2cf589708028"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.00.rcgu.o": {
+          "bytes": 150528,
+          "sha256": "4b6ac8a276d4b71868878fae9239906567d8abacc413c69af0c635bce26ec67b"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.01.rcgu.o": {
+          "bytes": 97160,
+          "sha256": "83925e0050aed26be6e5869da612f7e06473937fc02d7996c2b7ead5f3dd5a8e"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.02.rcgu.o": {
+          "bytes": 94960,
+          "sha256": "a46ee4811d11cf50d22256e7b70e7fa1381bf423ffa790afef2ba0ea5d17bbea"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.03.rcgu.o": {
+          "bytes": 41768,
+          "sha256": "9dc5cce2b32134ab44d2b6a51779dd792fa3887e0b30719193a504187179c4f8"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.04.rcgu.o": {
+          "bytes": 89808,
+          "sha256": "8cd66f3d732526a4342c8e0bbce355b270f2168e3cdd587d4241385d2a25b6db"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.05.rcgu.o": {
+          "bytes": 64008,
+          "sha256": "e68edbc7494d3896b234fcc76970991a32d7b5b82c2e4c854dc54cbd38b84612"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.06.rcgu.o": {
+          "bytes": 88736,
+          "sha256": "3497ab2b6e3ae9749870f533d12f270dac2c470e08b486c5cf8f1de40c2ae728"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.07.rcgu.o": {
+          "bytes": 50944,
+          "sha256": "cbaa52b6ea54cab7d8dc4ec15c74faac44918120761c89e9c73aa4b0c6fe37a4"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.08.rcgu.o": {
+          "bytes": 81704,
+          "sha256": "2dabd1ac0d2c2e66c074fa0b7d4460a0bd0ea7f1ce0958bd154cae46f21dd2cc"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.09.rcgu.o": {
+          "bytes": 61512,
+          "sha256": "ab2b3e2f6f8f9f6569bdadb41545fbf582a4ccf3abf33a9d0215ef3c2ede10ae"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.10.rcgu.o": {
+          "bytes": 79512,
+          "sha256": "1684a315f48d2906e04f15fa2a893449ce597123c9e16ee8a1fcb04cb38662bd"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.11.rcgu.o": {
+          "bytes": 80488,
+          "sha256": "3c6bba9bb70d1a6b4a65796c9533aa5ac02c18484df82713d0178e5fe2e63a5a"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.12.rcgu.o": {
+          "bytes": 63832,
+          "sha256": "c026c55fd2976de48e9fd67481d2625d2563d4cab48b5b56c65d978bc8850de5"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.13.rcgu.o": {
+          "bytes": 65920,
+          "sha256": "836615ae11fd84c9b8b4431ebf7dd3a4790ca8382a97b4b462707df76f7bf767"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.14.rcgu.o": {
+          "bytes": 85200,
+          "sha256": "6c606b0f05b92fdc01dd727e2982f0b095df7b3978f8236ff02dcb98ec3d69ac"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.15.rcgu.o": {
+          "bytes": 36952,
+          "sha256": "7a4bf7acc176a11f4789f4a47c3bc8d9a74b049b49fc0905a7593ec61912cbbb"
+        }
+      }
+    },
+    "head": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/deps/libgraphite_storage-dcaf6ee5d01218ad.rlib",
+      "bytes": 3181040,
+      "sha256": "5f04a0f43c69ee6d49c5139d994f5d91e201f28d4f95486df80195a7b6e0eab6",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 148256,
+          "sha256": "fad0426530bfe9620e0d631c33cca351989934b06aae890f27b9ba90488a6cd9"
+        },
+        "lib.rmeta": {
+          "bytes": 1797296,
+          "sha256": "83dfa7ff082fd8f502e48a4bbeb597a1dde8d10f42dfd28d3e999b9febc64e76"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.00.rcgu.o": {
+          "bytes": 150528,
+          "sha256": "4b6ac8a276d4b71868878fae9239906567d8abacc413c69af0c635bce26ec67b"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.01.rcgu.o": {
+          "bytes": 97160,
+          "sha256": "83925e0050aed26be6e5869da612f7e06473937fc02d7996c2b7ead5f3dd5a8e"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.02.rcgu.o": {
+          "bytes": 94960,
+          "sha256": "a46ee4811d11cf50d22256e7b70e7fa1381bf423ffa790afef2ba0ea5d17bbea"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.03.rcgu.o": {
+          "bytes": 41768,
+          "sha256": "9dc5cce2b32134ab44d2b6a51779dd792fa3887e0b30719193a504187179c4f8"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.04.rcgu.o": {
+          "bytes": 89808,
+          "sha256": "8cd66f3d732526a4342c8e0bbce355b270f2168e3cdd587d4241385d2a25b6db"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.05.rcgu.o": {
+          "bytes": 64008,
+          "sha256": "e68edbc7494d3896b234fcc76970991a32d7b5b82c2e4c854dc54cbd38b84612"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.06.rcgu.o": {
+          "bytes": 88736,
+          "sha256": "3497ab2b6e3ae9749870f533d12f270dac2c470e08b486c5cf8f1de40c2ae728"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.07.rcgu.o": {
+          "bytes": 50944,
+          "sha256": "cbaa52b6ea54cab7d8dc4ec15c74faac44918120761c89e9c73aa4b0c6fe37a4"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.08.rcgu.o": {
+          "bytes": 81704,
+          "sha256": "2dabd1ac0d2c2e66c074fa0b7d4460a0bd0ea7f1ce0958bd154cae46f21dd2cc"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.09.rcgu.o": {
+          "bytes": 61512,
+          "sha256": "ab2b3e2f6f8f9f6569bdadb41545fbf582a4ccf3abf33a9d0215ef3c2ede10ae"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.10.rcgu.o": {
+          "bytes": 79512,
+          "sha256": "1684a315f48d2906e04f15fa2a893449ce597123c9e16ee8a1fcb04cb38662bd"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.11.rcgu.o": {
+          "bytes": 80488,
+          "sha256": "3c6bba9bb70d1a6b4a65796c9533aa5ac02c18484df82713d0178e5fe2e63a5a"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.12.rcgu.o": {
+          "bytes": 63832,
+          "sha256": "c026c55fd2976de48e9fd67481d2625d2563d4cab48b5b56c65d978bc8850de5"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.13.rcgu.o": {
+          "bytes": 65920,
+          "sha256": "836615ae11fd84c9b8b4431ebf7dd3a4790ca8382a97b4b462707df76f7bf767"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.14.rcgu.o": {
+          "bytes": 85200,
+          "sha256": "6c606b0f05b92fdc01dd727e2982f0b095df7b3978f8236ff02dcb98ec3d69ac"
+        },
+        "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.15.rcgu.o": {
+          "bytes": 36952,
+          "sha256": "7a4bf7acc176a11f4789f4a47c3bc8d9a74b049b49fc0905a7593ec61912cbbb"
+        }
+      }
+    },
+    "equalMembers": [
+      "__.SYMDEF",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.00.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.01.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.02.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.03.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.04.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.05.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.06.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.07.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.08.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.09.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.10.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.11.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.12.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.13.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.14.rcgu.o",
+      "graphite_storage-dcaf6ee5d01218ad.graphite_storage.7a7b9e2ba1d64a36-cgu.15.rcgu.o"
+    ],
+    "differentMembers": [
+      "lib.rmeta"
+    ]
+  },
+  "cypher": {
+    "base": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target/aarch64-apple-darwin/release/deps/libgraphite_cypher-4b8383e56bd58c5b.rlib",
+      "bytes": 4050008,
+      "sha256": "9ade2b9a5fc155cc2b573cb59e0d8311a784e7069315dea1682b2b25986bd662",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 285928,
+          "sha256": "626c3c4f3b9b905410046567e9c36d24a1f80944182d08fc8837f9ce50620fb4"
+        },
+        "lib.rmeta": {
+          "bytes": 1218136,
+          "sha256": "b6ab8c15ba07cdc02d321c314836cb969e3423e49d50e65b9713a37fd121d990"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.00.rcgu.o": {
+          "bytes": 289040,
+          "sha256": "070130c1e8e01ff23455e3c8577262f4cfa2ff6ebb59a97a82487cec11a20992"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.01.rcgu.o": {
+          "bytes": 209960,
+          "sha256": "7e6a023222dd8e43435ee0e5308b7aad300da38328b0a88a4a52bac4f78615d2"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.02.rcgu.o": {
+          "bytes": 184456,
+          "sha256": "995bb49e27ca5184d90ee668b94498af2fd8d823c0e3e32240670bb1cb9c8ba0"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.03.rcgu.o": {
+          "bytes": 233792,
+          "sha256": "3d481cc2ebbf8ac633c0a387c7a1cf54e3b81a59e03fc3fea934a0b59258b683"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.04.rcgu.o": {
+          "bytes": 171272,
+          "sha256": "171b5a921eb9e3bae6b30fb746e2ca63f0b514dbcbab138cde5da94c2b78f0f4"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.05.rcgu.o": {
+          "bytes": 144480,
+          "sha256": "d9bbb25c8d60680f9e9b88daf346078ea2342b31c57aba22d5e4449290809f3d"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.06.rcgu.o": {
+          "bytes": 82208,
+          "sha256": "473c0bfbc921308b37c3a63bedbf6e2c89a9cffa117812098b910449dcfe61a6"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.07.rcgu.o": {
+          "bytes": 98784,
+          "sha256": "07b2b071185becc2fc469d2fa9c8cd805f8cac3103429529c0db16a7afb9da3f"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.08.rcgu.o": {
+          "bytes": 120736,
+          "sha256": "cf1d6370f105bcb870970e8f666a56c923d31484d7a7ac3a6c45ab63db163adb"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.09.rcgu.o": {
+          "bytes": 219968,
+          "sha256": "9020fadcc78362b376a94f002e3aca1818df8b77ef5f8419d33b93bf026a4d60"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.10.rcgu.o": {
+          "bytes": 102160,
+          "sha256": "f9b3e5f78c78f7ab37682bf6bd59d20a74fdaff14d86b94f35efc0ee31040e85"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.11.rcgu.o": {
+          "bytes": 133904,
+          "sha256": "bffd5e183c89dc27ad49cef7526c3e0437529ce035f926fb9e406fac808730f6"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.12.rcgu.o": {
+          "bytes": 110400,
+          "sha256": "41d968fe982dc51403c0ad49894704c5b1b202931f7163f2e73ee9e3bdcb887c"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.13.rcgu.o": {
+          "bytes": 102704,
+          "sha256": "5e92edadaf8a1957113cddaa9e7449ab11db7173b4f7a7c782dbb0abfa920d66"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.14.rcgu.o": {
+          "bytes": 165872,
+          "sha256": "61183393e065e25ad22e259a8d11595fd21bc7052a19d5da1149c60c0e03cc28"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.15.rcgu.o": {
+          "bytes": 173752,
+          "sha256": "fd33f1a957fc9b17a45fb1bd8e877540e43e1a3c9ced7deafca74a0a33820aaa"
+        }
+      }
+    },
+    "head": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/deps/libgraphite_cypher-4b8383e56bd58c5b.rlib",
+      "bytes": 4049744,
+      "sha256": "1bafbf8c928f3040a05f4336a95efe7c89ca1c8b42a28981cc2dee0b96ee9d5c",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 285856,
+          "sha256": "694b35f7dd484171efe2dc5fbaa372839daee9989cdba150ce08278a8b126308"
+        },
+        "lib.rmeta": {
+          "bytes": 1218136,
+          "sha256": "7368400a329221abf0364e6040e277c40b849d624f1719df4919e82d08ea729c"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.00.rcgu.o": {
+          "bytes": 288920,
+          "sha256": "b5f0b62e52142c47bade3a3b5ec803b832f5951d1303c416622ddbe6522c6bec"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.01.rcgu.o": {
+          "bytes": 209904,
+          "sha256": "2927a08b1356952db1ef87a00608b67826081ac1ede53b2c65b1ae158e6bc979"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.02.rcgu.o": {
+          "bytes": 184456,
+          "sha256": "0ec749b83862ea67c78300031e724f70c7714455997e3f363bc25a40a3321366"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.03.rcgu.o": {
+          "bytes": 233776,
+          "sha256": "c2c98e397594719f689c16e272b6c1763c923ded66927612c2971e6c43029074"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.04.rcgu.o": {
+          "bytes": 171264,
+          "sha256": "aaba38911b3e915178dc3468f2ced77efc300c01ac668a173fe98fe9bca130c5"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.05.rcgu.o": {
+          "bytes": 144472,
+          "sha256": "8f48d72265d3ebe2cc24697af18ade1cc5ee71d8e3eb4f38153a870905e663fe"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.06.rcgu.o": {
+          "bytes": 82208,
+          "sha256": "473c0bfbc921308b37c3a63bedbf6e2c89a9cffa117812098b910449dcfe61a6"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.07.rcgu.o": {
+          "bytes": 98784,
+          "sha256": "e6bab59c5d7e51a3a6485d014840b59ef04fa31dc430bfb025fe9fbf3fb4a991"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.08.rcgu.o": {
+          "bytes": 120752,
+          "sha256": "317342ba612e7e2498ddceadf7ff14d50f649c4725b5775b20e2c0b4d23e4031"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.09.rcgu.o": {
+          "bytes": 219952,
+          "sha256": "b95ba131222017185493ba36c988582466d55c4ed81d77f0593c656acb4100ec"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.10.rcgu.o": {
+          "bytes": 102160,
+          "sha256": "766fd239f34385537b1346950718c923da3bb948bf145cc96c1929cb55f3d06b"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.11.rcgu.o": {
+          "bytes": 133888,
+          "sha256": "4238e920fdc7fde4dac6ea8d1af1751742b8ea8548c12769d8f2c43b4ba95178"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.12.rcgu.o": {
+          "bytes": 110464,
+          "sha256": "0420f7923bcef549e536ace0ed9289e6792e739c3b24b39eedb26a23affea313"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.13.rcgu.o": {
+          "bytes": 102696,
+          "sha256": "abdd9a1376c99fd1742f9058e0fb679ffd27def22559342f169e5c6434470778"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.14.rcgu.o": {
+          "bytes": 165856,
+          "sha256": "0983f8ed0055eb82eb9f7df33dd51f9f63430dd0f63dcbebef9b6d45e05886d3"
+        },
+        "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.15.rcgu.o": {
+          "bytes": 173744,
+          "sha256": "cfaa9a61082d37b4cd319a631d92177d1069bd00dee6619f02b9c9a8b8204f2e"
+        }
+      }
+    },
+    "equalMembers": [
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.06.rcgu.o"
+    ],
+    "differentMembers": [
+      "__.SYMDEF",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.00.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.01.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.02.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.03.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.04.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.05.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.07.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.08.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.09.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.10.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.11.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.12.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.13.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.14.rcgu.o",
+      "graphite_cypher-4b8383e56bd58c5b.graphite_cypher.5aafdcdc02cad62-cgu.15.rcgu.o",
+      "lib.rmeta"
+    ]
+  },
+  "explore": {
+    "base": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target/aarch64-apple-darwin/release/deps/libgraphite_explore-5ca2031ca995345b.rlib",
+      "bytes": 6959720,
+      "sha256": "04a7fd7971423129d9365784c6c222a76f80e5b91489923af52b69654276fba0",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 524072,
+          "sha256": "b6a720ecd0090ea37c427d306132254420979236c6e85ec083d933540d05f587"
+        },
+        "lib.rmeta": {
+          "bytes": 1778832,
+          "sha256": "3deb7f0e2cb317e55e7c5879b642d78ffe06c64944bec1373507ab249caef58d"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.00.rcgu.o": {
+          "bytes": 308736,
+          "sha256": "8e21784cb3614f189ecb6a13071ad4bfd3ea08c16d4afdcd9246b7145ec82dfc"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.01.rcgu.o": {
+          "bytes": 507216,
+          "sha256": "1f080dc649eb388be39195508956af4d9be07d531f4d6302089d73379d2da62e"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.02.rcgu.o": {
+          "bytes": 179192,
+          "sha256": "3daf1ffb7092411ded71a42456139831eeff0f26c9c22fe92107d7fca8c4d429"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.03.rcgu.o": {
+          "bytes": 138424,
+          "sha256": "ababf1f427469187647818599ff5c0b2ab23e5b66c7c14d1186e067e32fef794"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.04.rcgu.o": {
+          "bytes": 186152,
+          "sha256": "fb3e97e9424d83f82651c3575eefc7c78f3bbd057ff5b68acddea2ae570d9b13"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.05.rcgu.o": {
+          "bytes": 314976,
+          "sha256": "48a5979332a31e349f33c1839bcf1e5b1bddfa112665736951723da427fbe142"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.06.rcgu.o": {
+          "bytes": 379168,
+          "sha256": "76a0e1198ff8d2da394572d125887ed13cf2c07d3ab2de3872897c88f3fbe4ed"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.07.rcgu.o": {
+          "bytes": 251728,
+          "sha256": "9438307fc0ecdcb11d673f714900982d8120b0ff59cc68b1f227da6f3413a43a"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.08.rcgu.o": {
+          "bytes": 378096,
+          "sha256": "26637ce510c4d616357f6310444ee7715374d9115bd25536adfaa1af551fb020"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.09.rcgu.o": {
+          "bytes": 388448,
+          "sha256": "ec5abd2e5305eadecf13c235e7696880ca9727e6cc87c8fc6d709007ec3b0c68"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.10.rcgu.o": {
+          "bytes": 185312,
+          "sha256": "39ef63f3ef409f31f6f989160e81c2d305a47714272323bd8572e5cf43695559"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.11.rcgu.o": {
+          "bytes": 262096,
+          "sha256": "08e7bb3aae46353172812b03b6c6528e6b3a33a82a5dcc30b2a4ecbcf46eca6c"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.12.rcgu.o": {
+          "bytes": 236680,
+          "sha256": "6aee3279601bf1fb32e0ea69be0d543a1534d6f7d4470819b88711f005b570ed"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.13.rcgu.o": {
+          "bytes": 235008,
+          "sha256": "4045679145306190e223522ffe4c3275e1fb6277245631f24ca89674132b6657"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.14.rcgu.o": {
+          "bytes": 281576,
+          "sha256": "0a54a160f34413c1505d557379f6b10400f9a39a74dade87a924c0960f791c1f"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.15.rcgu.o": {
+          "bytes": 421552,
+          "sha256": "f9a744fbd1201520c9c539a2eaea32f9391020ae953ec4fa1119189546e924af"
+        }
+      }
+    },
+    "head": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/deps/libgraphite_explore-5ca2031ca995345b.rlib",
+      "bytes": 6959688,
+      "sha256": "194ce50655a5dded0b57642210bf9a170db31d95a947dbdefa2ea90d81d91e05",
+      "members": {
+        "__.SYMDEF": {
+          "bytes": 524048,
+          "sha256": "eb56a67c8e8bac320078842c173963cde9e538616ffbf863fb7b946f3a49232a"
+        },
+        "lib.rmeta": {
+          "bytes": 1778832,
+          "sha256": "cf2a5774263cd98212ab29fac352a1fd5617b73dd3aed9f1d9d1602ecf7420ad"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.00.rcgu.o": {
+          "bytes": 308744,
+          "sha256": "ebe72f7df696a2dc7e87ee032519527c1e9a700682dd5a67b1f03ec782e0300b"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.01.rcgu.o": {
+          "bytes": 507208,
+          "sha256": "ea83fde412a875d7af6eccef8b9d0ed5b8df0105986714323d5ec9490349a48a"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.02.rcgu.o": {
+          "bytes": 179192,
+          "sha256": "3b85619178f15fe1840b225057dac3169cb29c457e77a42ff13552f010ec8ecf"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.03.rcgu.o": {
+          "bytes": 138424,
+          "sha256": "e30a6055d63ef17f03c64ce86aa1f2617ff27357f30b414c74c968945c951f25"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.04.rcgu.o": {
+          "bytes": 186144,
+          "sha256": "f66ddad8f2b4b7b09604cfcece2db9123f2ae7972e551f8a840a98317b54ccd1"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.05.rcgu.o": {
+          "bytes": 314976,
+          "sha256": "15ffbe532ffbce6232dff0b8c8cbe732bc5b2f4d05284dc2264988887d137b46"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.06.rcgu.o": {
+          "bytes": 379168,
+          "sha256": "26a897f4b88a4c51615c1f9d5cbd039ce00ac24ae7ad1f19afb95d1949b6e1da"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.07.rcgu.o": {
+          "bytes": 251728,
+          "sha256": "28d15ea720e7b47c15fb39ed2671f03540f1cdc3a4a7897255f8a3dfb5b28de2"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.08.rcgu.o": {
+          "bytes": 378096,
+          "sha256": "0eab26f4e2639873774b5449458a5d17fd55bfc5624a652de2f3ce96d99e32e8"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.09.rcgu.o": {
+          "bytes": 388456,
+          "sha256": "182cd1cdae3c0e5d421b973bc0dfad6bb2d7ba1d56c08c4da8e7f563fc340485"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.10.rcgu.o": {
+          "bytes": 185312,
+          "sha256": "6888fddd82fd37715919d38b2ed191cb323fdd289db6b7364736aa4a190e67f0"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.11.rcgu.o": {
+          "bytes": 262136,
+          "sha256": "22e318ac7f90dd0d2042dba1c56d37073c8fcf22bf1c97379b68fd484320257f"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.12.rcgu.o": {
+          "bytes": 236680,
+          "sha256": "6aee3279601bf1fb32e0ea69be0d543a1534d6f7d4470819b88711f005b570ed"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.13.rcgu.o": {
+          "bytes": 235096,
+          "sha256": "8dea1a3f3f7abc9eb2b1145cccb5e6e4816e5dfa9409ce1ddf80a24d50c54016"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.14.rcgu.o": {
+          "bytes": 281576,
+          "sha256": "5c7f9a580253dcd3d216e88c0243e969de6b65c200cce339be554b866166ef9d"
+        },
+        "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.15.rcgu.o": {
+          "bytes": 421416,
+          "sha256": "04175eebe7f1d0100fc00b54a5f9c3402313afa4cf4f6239ab8adf1a6c4c5132"
+        }
+      }
+    },
+    "equalMembers": [
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.12.rcgu.o"
+    ],
+    "differentMembers": [
+      "__.SYMDEF",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.00.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.01.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.02.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.03.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.04.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.05.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.06.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.07.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.08.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.09.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.10.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.11.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.13.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.14.rcgu.o",
+      "graphite_explore-5ca2031ca995345b.graphite_explore.1559f37043f13fde-cgu.15.rcgu.o",
+      "lib.rmeta"
+    ]
+  }
+}

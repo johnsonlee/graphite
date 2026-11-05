@@ -1,0 +1,29 @@
+{
+  "baseRevision": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+  "committed": false,
+  "productionShape": "Single collect of direct CallSite scalar string, exclusive bounded-slice cap, no predicate/group/distinct/order/extra binding; all-source cached cancellable scalar record proof before omission",
+  "semanticBoundary": "Original source/id encounter order; preserve provenance of all nonempty matching sources; invalid proof declines before output, keeping eager first-error order; original final RETURN/limits still run",
+  "fullCypherTests": {
+    "passed": 297,
+    "failed": 0,
+    "ignored": 0,
+    "fixtureEnv": "native-core plus all declared-types/inherited REQUIRE flags"
+  },
+  "storageCertificateContract": "passed",
+  "workspaceClippy": "all-target/all-feature denied warnings passed",
+  "formatAndDiff": "passed",
+  "privateTarget": "/Users/johnsonlee/.codex/benchmarks/pr154-collect-private-target",
+  "performance": "not measured; parent owns representative multi-graph acceptance",
+  "files": {
+    "backend/cypher/src/engine/pipeline.rs": "529652aa5c4c302f98e2058a8ccdddc3d4acf615efbb6b80d61b7704c002f626",
+    "backend/cypher/src/engine/collect_prefix.rs": "f74c9444fe44b11585d4607c61f8627223414f58f6addd9ec3bc1bea5513e8ae",
+    "backend/cypher/src/engine/collect_prefix_tests.rs": "d81ceb0f7da553b665ba6e12fec523de4557c8c944dc0430863414edbf613515"
+  },
+  "logs": {
+    "collect-full-cypher-final.log": "b2791df805aaeb5b04ed1a03fe274291c556459164256a804fb7b0098bed9562",
+    "collect-storage-certificate-test.log": "7ac3488dd07a3fff9274148ae1872a1efa13084fde87d333c9a5fbe02aa703a4",
+    "collect-workspace-clippy-final.log": "442e0a218c9188009fd716e098dc866367cc0f6be68030e6653f4e17bd0c284d",
+    "collect-fmt-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "collect-diff-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

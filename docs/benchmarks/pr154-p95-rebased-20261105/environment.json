@@ -1,0 +1,11 @@
+{
+  "cpu": "Apple M3 Max",
+  "memoryBytes": 68719476736,
+  "logicalCpus": 16,
+  "machine": "arm64",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "cpus": 16,
+  "hardwareSource": "Earlier same-workstation hardware inventory; current OS/architecture from the selected cumulative primary query journal",
+  "excluded": "Process lists, local/private application names",
+  "cacheState": "Uncontrolled OS cache; no quiet-host claim"
+}

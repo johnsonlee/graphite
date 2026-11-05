@@ -1,0 +1,45 @@
+{
+  "buildIdentities": "build-identities-distinct.json",
+  "config": "config.process-final.json",
+  "collectIdentities": "build-identities-final.json",
+  "frozenPreoptIdentities": "frozen-preopt-identities.json",
+  "primary": {
+    "load": "process-full-load",
+    "query": "process-full-query"
+  },
+  "intermediate": {
+    "load": "final-full-load",
+    "query": "final-full-query"
+  },
+  "incremental": {
+    "collect": "optimization-effect",
+    "grouping": "grouping-effect",
+    "distinct": "distinct-effect"
+  },
+  "apple": {
+    "config": "apple/config.process-final.json",
+    "provenance": "apple/provenance.distinct.json",
+    "oracle": "apple/oracle-process",
+    "load": "apple/load-process",
+    "query": "apple/query-process",
+    "runner": "apple/apple_lifecycle_process_validation_v1.py"
+  },
+  "sourceEquivalences": [
+    {
+      "actualBuiltSHA": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+      "currentTipSHA": "c86fe745fc93b3847cf72b520f3e4643d67cd8cf"
+    }
+  ],
+  "schema": "pr154-report-inputs-v1",
+  "groupedIdentities": "build-identities-cumulative.json",
+  "priorCumulative": {
+    "load": "cumulative-full-load",
+    "query": "cumulative-full-query"
+  },
+  "primaryRunner": "multi64_process_validation_v1.py",
+  "controllerIntermediate": {
+    "load": "distinct-full-load",
+    "query": "distinct-full-query"
+  },
+  "controllerComparison": "process-validation-aa-v1"
+}

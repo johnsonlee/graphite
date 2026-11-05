@@ -1,0 +1,146 @@
+{
+  "schema": "external-real64-diagnostic-v1",
+  "oracleIndex": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracle-index.json",
+  "oracleIndexSha256": "02be0bcb58e8c4a5c01f8b97d14870499345ecb9e8daa1b6e94da14d3d07fb04",
+  "resourceModuleSha256": "7eba3fd9a5a2b2a4af9fb1e64945f0ef66d86874805f165c7add8723d92c0e35",
+  "datasets": {
+    "base": {
+      "manifest": "/Users/johnsonlee/.codex/benchmarks/pr154-local-190eba79-20261105/run-standalone/results/frontend/base/graphs/graphs.tsv",
+      "manifestSha256": "47e604b2b5871f3b3f4ce97a5c7bd5805bca0929f323133a4a5c571df43fac9e",
+      "provenanceSha256": "a0dc2c2444f6bd2dda7e902d3e3c4bde78491a8f5ee8c4d81dd34edc3e0a684a",
+      "producerSha": "7c59d7993be51f0807495890d068effcfaff155b",
+      "producerClosureVerified": true,
+      "scope": "Existing real64 saved output; source/producer closure must be independently approved by root, not inferred from workload fingerprint.",
+      "closureEvidence": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/producer-closure-proof.json"
+    },
+    "head": {
+      "manifest": "/Users/johnsonlee/.codex/benchmarks/pr154-local-190eba79-20261105/run-standalone/results/frontend/head/graphs/graphs.tsv",
+      "manifestSha256": "4e1e12d5506fb25d816c7148b960f844dc3c7df46efeb16d4c986d5583320b7d",
+      "provenanceSha256": "9c64cd083b9cc383119c29414e0e2e9831dfa4aa152ea730c7adc39d1439236e",
+      "producerSha": "190eba79a4428d3100c8fba480bd858a19ac893d",
+      "producerClosureVerified": true,
+      "scope": "Existing real64 saved output; source/producer closure must be independently approved by root, not inferred from workload fingerprint.",
+      "closureEvidence": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/producer-closure-proof.json"
+    }
+  },
+  "arms": {
+    "main_base": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/main-97488be2/graphite",
+      "binarySha256": "100e3333ec51b169bfd6ae55c1fef92fe49f0e72fbe006e99fe536e7c4967ac3",
+      "codeSha": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+      "dataset": "base"
+    },
+    "main_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/main-97488be2/graphite",
+      "binarySha256": "100e3333ec51b169bfd6ae55c1fef92fe49f0e72fbe006e99fe536e7c4967ac3",
+      "codeSha": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+      "dataset": "head"
+    },
+    "candidate_base": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-877363f6/graphite",
+      "binarySha256": "8f0052e2979e0b08885eed3c1d497e8bf136aa3d48159ec1a6ba486857ca7fa7",
+      "codeSha": "877363f623754b2633baba9d3c221dfc9da1e237",
+      "dataset": "base"
+    },
+    "candidate_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-877363f6/graphite",
+      "binarySha256": "8f0052e2979e0b08885eed3c1d497e8bf136aa3d48159ec1a6ba486857ca7fa7",
+      "codeSha": "877363f623754b2633baba9d3c221dfc9da1e237",
+      "dataset": "head"
+    },
+    "parent_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/parent-89f2ddd7/graphite",
+      "binarySha256": "4257f35fc3462beefffdf454d511f808d3410aef60bb5a87500c676ac09ff2dc",
+      "codeSha": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+      "dataset": "head"
+    },
+    "increment_parent_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-152abe6e/graphite",
+      "binarySha256": "69f9fd90a1ed15dbddabc3017755792624c121ad2f64c991be9afe87e01349de",
+      "codeSha": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+      "dataset": "head"
+    },
+    "distinct_parent_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-fc428df7/graphite",
+      "binarySha256": "2017c1da01fd85332b8d369f39213039bd57ae98846057e0d6858b8fa76acb3b",
+      "codeSha": "fc428df79ee01490e8534c5646b86cb4946a1f20",
+      "dataset": "head"
+    },
+    "grouped_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-fc428df7/graphite",
+      "binarySha256": "2017c1da01fd85332b8d369f39213039bd57ae98846057e0d6858b8fa76acb3b",
+      "codeSha": "fc428df79ee01490e8534c5646b86cb4946a1f20",
+      "dataset": "head"
+    },
+    "collect_head": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-152abe6e/graphite",
+      "binarySha256": "69f9fd90a1ed15dbddabc3017755792624c121ad2f64c991be9afe87e01349de",
+      "codeSha": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+      "dataset": "head"
+    }
+  },
+  "pairs": {
+    "main-data-effect": {
+      "left": "main_base",
+      "right": "main_head",
+      "invariant": "same-binary"
+    },
+    "candidate-data-effect": {
+      "left": "candidate_base",
+      "right": "candidate_head",
+      "invariant": "same-binary"
+    },
+    "code-on-base-data": {
+      "left": "main_base",
+      "right": "candidate_base",
+      "invariant": "same-data"
+    },
+    "code-on-head-data": {
+      "left": "main_head",
+      "right": "candidate_head",
+      "invariant": "same-data"
+    },
+    "product-pair": {
+      "left": "main_base",
+      "right": "candidate_head",
+      "invariant": "declared-product-pair"
+    },
+    "optimization-effect": {
+      "left": "parent_head",
+      "right": "collect_head",
+      "invariant": "same-data"
+    },
+    "grouping-effect": {
+      "left": "increment_parent_head",
+      "right": "grouped_head",
+      "invariant": "same-data"
+    },
+    "distinct-effect": {
+      "left": "distinct_parent_head",
+      "right": "candidate_head",
+      "invariant": "same-data"
+    }
+  },
+  "protocol": {
+    "rounds": 3,
+    "concurrency": 4,
+    "warmupPerCase": 2,
+    "measuredPerCase": 20,
+    "firstUsePerCase": 1,
+    "timeoutSeconds": 300,
+    "startupTimeoutSeconds": 300,
+    "focusedCases": [
+      "shape-order-by-desc",
+      "shape-order-by",
+      "shape-collect",
+      "shape-with-aggregate",
+      "shape-group-count"
+    ],
+    "focusedSelection": "Five highest historical baseline pressure p95, fixed before new measurements",
+    "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+    "schedule": "repeat-major case catalog order, shared FIFO consumed by four closed-loop workers; each request fully consumed and validated before that worker takes another",
+    "resourceScope": "CPU per whole interleaved pressure stage; cannot attribute per case. wait4 peak RSS covers whole fresh load-only or query process, including startup, first-use, warmup and shutdown."
+  },
+  "performanceAcceptance": false,
+  "sourceFixCommit": "877363f623754b2633baba9d3c221dfc9da1e237"
+}

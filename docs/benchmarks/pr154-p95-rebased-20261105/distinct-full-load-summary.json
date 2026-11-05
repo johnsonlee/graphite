@@ -1,0 +1,1289 @@
+{
+  "ok": true,
+  "performanceAcceptance": false,
+  "quantiles": "nearest-rank per case, pooled repeated requests and each round separately",
+  "expectedRequests": 438,
+  "actualRequests": 438,
+  "failures": [],
+  "parity": {
+    "zero/global-wide-class-pair": {
+      "main_base": [
+        "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7"
+      ],
+      "candidate_head": [
+        "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7"
+      ]
+    },
+    "zero/global-wide-name-pair": {
+      "main_base": [
+        "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786"
+      ],
+      "candidate_head": [
+        "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786"
+      ]
+    },
+    "zero/global-wide-four-properties": {
+      "main_base": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ],
+      "candidate_head": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ]
+    },
+    "zero/global-wide-caller-class": {
+      "main_base": [
+        "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad"
+      ],
+      "candidate_head": [
+        "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad"
+      ]
+    },
+    "zero/global-wide-callee-class": {
+      "main_base": [
+        "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf"
+      ],
+      "candidate_head": [
+        "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf"
+      ]
+    },
+    "zero/global-wide-provenance": {
+      "main_base": [
+        "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d"
+      ],
+      "candidate_head": [
+        "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d"
+      ]
+    },
+    "zero/global-wide-parameterized-as-literal": {
+      "main_base": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ],
+      "candidate_head": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ]
+    },
+    "zero/global-wide-aliased": {
+      "main_base": [
+        "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56"
+      ],
+      "candidate_head": [
+        "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56"
+      ]
+    },
+    "zero/global-wide-wrapped-case-insensitive": {
+      "main_base": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ],
+      "candidate_head": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ]
+    },
+    "zero/global-wide-wrapped-case-insensitive-distinct": {
+      "main_base": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ],
+      "candidate_head": [
+        "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+      ]
+    },
+    "targeted/global-wide-class-pair": {
+      "main_base": [
+        "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387"
+      ],
+      "candidate_head": [
+        "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387"
+      ]
+    },
+    "targeted/global-wide-four-properties": {
+      "main_base": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ],
+      "candidate_head": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ]
+    },
+    "targeted/global-wide-name-pair": {
+      "main_base": [
+        "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65"
+      ],
+      "candidate_head": [
+        "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65"
+      ]
+    },
+    "targeted/global-wide-caller-class": {
+      "main_base": [
+        "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639"
+      ],
+      "candidate_head": [
+        "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639"
+      ]
+    },
+    "targeted/global-wide-callee-class": {
+      "main_base": [
+        "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749"
+      ],
+      "candidate_head": [
+        "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749"
+      ]
+    },
+    "targeted/global-wide-provenance": {
+      "main_base": [
+        "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6"
+      ],
+      "candidate_head": [
+        "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6"
+      ]
+    },
+    "targeted/global-wide-aliased": {
+      "main_base": [
+        "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da"
+      ],
+      "candidate_head": [
+        "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da"
+      ]
+    },
+    "targeted/global-wide-parameterized-as-literal": {
+      "main_base": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ],
+      "candidate_head": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ]
+    },
+    "targeted/global-wide-wrapped-case-insensitive-distinct": {
+      "main_base": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ],
+      "candidate_head": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ]
+    },
+    "targeted/global-wide-wrapped-case-insensitive": {
+      "main_base": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ],
+      "candidate_head": [
+        "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+      ]
+    },
+    "dense/global-wide-name-pair": {
+      "main_base": [
+        "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d"
+      ],
+      "candidate_head": [
+        "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d"
+      ]
+    },
+    "dense/global-wide-class-pair": {
+      "main_base": [
+        "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e"
+      ],
+      "candidate_head": [
+        "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e"
+      ]
+    },
+    "dense/global-wide-caller-class": {
+      "main_base": [
+        "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb"
+      ],
+      "candidate_head": [
+        "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb"
+      ]
+    },
+    "dense/global-wide-four-properties": {
+      "main_base": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ],
+      "candidate_head": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ]
+    },
+    "dense/global-wide-callee-class": {
+      "main_base": [
+        "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c"
+      ],
+      "candidate_head": [
+        "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c"
+      ]
+    },
+    "dense/global-wide-provenance": {
+      "main_base": [
+        "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a"
+      ],
+      "candidate_head": [
+        "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a"
+      ]
+    },
+    "dense/global-wide-parameterized-as-literal": {
+      "main_base": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ],
+      "candidate_head": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ]
+    },
+    "dense/global-wide-aliased": {
+      "main_base": [
+        "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de"
+      ],
+      "candidate_head": [
+        "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de"
+      ]
+    },
+    "dense/global-wide-wrapped-case-insensitive": {
+      "main_base": [
+        "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d"
+      ],
+      "candidate_head": [
+        "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d"
+      ]
+    },
+    "localized-early/global-wide-four-properties": {
+      "main_base": [
+        "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed"
+      ],
+      "candidate_head": [
+        "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed"
+      ]
+    },
+    "localized-middle/global-wide-four-properties": {
+      "main_base": [
+        "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670"
+      ],
+      "candidate_head": [
+        "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670"
+      ]
+    },
+    "localized-late/global-wide-four-properties": {
+      "main_base": [
+        "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49"
+      ],
+      "candidate_head": [
+        "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49"
+      ]
+    },
+    "dense/global-wide-wrapped-case-insensitive-distinct": {
+      "main_base": [
+        "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142"
+      ],
+      "candidate_head": [
+        "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142"
+      ]
+    },
+    "broad-all-64/global-wide-four-properties": {
+      "main_base": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ],
+      "candidate_head": [
+        "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6"
+      ]
+    },
+    "schema-label-histogram": {
+      "main_base": [
+        "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394"
+      ],
+      "candidate_head": [
+        "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394"
+      ]
+    },
+    "schema-key-histogram": {
+      "main_base": [
+        "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41"
+      ],
+      "candidate_head": [
+        "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41"
+      ]
+    },
+    "shape-wide-contains": {
+      "main_base": [
+        "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4"
+      ],
+      "candidate_head": [
+        "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4"
+      ]
+    },
+    "shape-label-scan-callsite": {
+      "main_base": [
+        "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813"
+      ],
+      "candidate_head": [
+        "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813"
+      ]
+    },
+    "shape-label-scan-constant": {
+      "main_base": [
+        "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db"
+      ],
+      "candidate_head": [
+        "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db"
+      ]
+    },
+    "shape-label-scan-method": {
+      "main_base": [
+        "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241"
+      ],
+      "candidate_head": [
+        "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241"
+      ]
+    },
+    "shape-label-scan-field": {
+      "main_base": [
+        "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b"
+      ],
+      "candidate_head": [
+        "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b"
+      ]
+    },
+    "shape-all-nodes": {
+      "main_base": [
+        "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f"
+      ],
+      "candidate_head": [
+        "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f"
+      ]
+    },
+    "shape-inequality": {
+      "main_base": [
+        "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05"
+      ],
+      "candidate_head": [
+        "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05"
+      ]
+    },
+    "shape-equality": {
+      "main_base": [
+        "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521"
+      ],
+      "candidate_head": [
+        "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521"
+      ]
+    },
+    "shape-id-lookup": {
+      "main_base": [
+        "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6"
+      ],
+      "candidate_head": [
+        "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6"
+      ]
+    },
+    "shape-in-list": {
+      "main_base": [
+        "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94"
+      ],
+      "candidate_head": [
+        "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94"
+      ]
+    },
+    "shape-null-check": {
+      "main_base": [
+        "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05"
+      ],
+      "candidate_head": [
+        "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05"
+      ]
+    },
+    "schema-relationship-histogram": {
+      "main_base": [
+        "c97af2647e6766def04cd1890516efc6be852758d35aa000652587a8ac9e13dc"
+      ],
+      "candidate_head": [
+        "c97af2647e6766def04cd1890516efc6be852758d35aa000652587a8ac9e13dc"
+      ]
+    },
+    "shape-regex": {
+      "main_base": [
+        "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9"
+      ],
+      "candidate_head": [
+        "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9"
+      ]
+    },
+    "shape-one-hop": {
+      "main_base": [
+        "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8"
+      ],
+      "candidate_head": [
+        "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8"
+      ]
+    },
+    "shape-one-hop-typed": {
+      "main_base": [
+        "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053"
+      ],
+      "candidate_head": [
+        "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053"
+      ]
+    },
+    "shape-incoming": {
+      "main_base": [
+        "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1"
+      ],
+      "candidate_head": [
+        "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1"
+      ]
+    },
+    "shape-two-hop": {
+      "main_base": [
+        "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59"
+      ],
+      "candidate_head": [
+        "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59"
+      ]
+    },
+    "shape-var-length": {
+      "main_base": [
+        "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287"
+      ],
+      "candidate_head": [
+        "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287"
+      ]
+    },
+    "shape-path": {
+      "main_base": [
+        "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b"
+      ],
+      "candidate_head": [
+        "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b"
+      ]
+    },
+    "shape-count-all": {
+      "main_base": [
+        "d379a18c9a59c8afab70f4e8b889e84a1863b6e2dc74f29b552023b0cbc26969"
+      ],
+      "candidate_head": [
+        "d379a18c9a59c8afab70f4e8b889e84a1863b6e2dc74f29b552023b0cbc26969"
+      ]
+    },
+    "shape-traverse-filtered": {
+      "main_base": [
+        "db49759a02623072ab0fd4e5c980b8bd51fbd8c78d0c889c127126b33d0e4074"
+      ],
+      "candidate_head": [
+        "db49759a02623072ab0fd4e5c980b8bd51fbd8c78d0c889c127126b33d0e4074"
+      ]
+    },
+    "shape-count-label": {
+      "main_base": [
+        "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62"
+      ],
+      "candidate_head": [
+        "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62"
+      ]
+    },
+    "shape-count-traversal": {
+      "main_base": [
+        "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3"
+      ],
+      "candidate_head": [
+        "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3"
+      ]
+    },
+    "shape-order-by": {
+      "main_base": [
+        "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a"
+      ],
+      "candidate_head": [
+        "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a"
+      ]
+    },
+    "shape-group-count": {
+      "main_base": [
+        "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+      ],
+      "candidate_head": [
+        "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+      ]
+    },
+    "shape-skip": {
+      "main_base": [
+        "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b"
+      ],
+      "candidate_head": [
+        "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b"
+      ]
+    },
+    "shape-function-calls": {
+      "main_base": [
+        "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5"
+      ],
+      "candidate_head": [
+        "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5"
+      ]
+    },
+    "shape-case-expr": {
+      "main_base": [
+        "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2"
+      ],
+      "candidate_head": [
+        "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2"
+      ]
+    },
+    "shape-coalesce": {
+      "main_base": [
+        "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1"
+      ],
+      "candidate_head": [
+        "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1"
+      ]
+    },
+    "shape-labels-fn": {
+      "main_base": [
+        "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c"
+      ],
+      "candidate_head": [
+        "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c"
+      ]
+    },
+    "shape-order-by-desc": {
+      "main_base": [
+        "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+      ],
+      "candidate_head": [
+        "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+      ]
+    },
+    "shape-distinct": {
+      "main_base": [
+        "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4"
+      ],
+      "candidate_head": [
+        "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4"
+      ]
+    },
+    "shape-cartesian": {
+      "main_base": [
+        "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6"
+      ],
+      "candidate_head": [
+        "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6"
+      ]
+    },
+    "shape-union": {
+      "main_base": [
+        "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852"
+      ],
+      "candidate_head": [
+        "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852"
+      ]
+    },
+    "shape-with-filter": {
+      "main_base": [
+        "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119"
+      ],
+      "candidate_head": [
+        "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119"
+      ]
+    },
+    "shape-with-aggregate": {
+      "main_base": [
+        "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+      ],
+      "candidate_head": [
+        "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+      ]
+    },
+    "shape-collect": {
+      "main_base": [
+        "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc"
+      ],
+      "candidate_head": [
+        "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc"
+      ]
+    }
+  },
+  "queries": [],
+  "resources": [
+    {
+      "recorded_ns": 1793886799598455000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19465.884333010763,
+      "user_seconds": 17.23605058333333,
+      "system_seconds": 1.959621,
+      "raw_cpu_ticks": {
+        "user": 413665214,
+        "system": 47030904
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3830300672,
+      "identity": "83498725823709",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886801512718000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 1914.0205830335617,
+      "ok": true,
+      "user_seconds": 3.392249458333339,
+      "system_seconds": 0.1812625000000001,
+      "cpu_seconds": 3.573511958333339,
+      "cpu_before": {
+        "user_seconds": 17.23605058333333,
+        "system_seconds": 1.959621,
+        "raw_cpu_ticks": {
+          "user": 413665214,
+          "system": 47030904
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3830300672,
+        "identity": "83498725823709",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 20.62830004166667,
+        "system_seconds": 2.1408835,
+        "raw_cpu_ticks": {
+          "user": 495079201,
+          "system": 51381204
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5486264320,
+        "identity": "83498725823709",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5500780544,
+      "rss_samples": 156,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886801512820000,
+      "kind": "load_boundary",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 21380.31708309427,
+      "cpu_seconds": 22.76918354166667,
+      "user_seconds": 20.62830004166667,
+      "system_seconds": 2.1408835,
+      "raw_cpu_ticks": {
+        "user": 495079201,
+        "system": 51381204
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5486264320,
+      "identity": "83498725823709",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886801575561000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 21443.002791143954,
+      "user_seconds": 20.628299,
+      "system_seconds": 2.156079,
+      "cpu_seconds": 22.784377999999997,
+      "peak_process_rss_bytes": 5500780544
+    },
+    {
+      "recorded_ns": 1793886821109434000,
+      "kind": "registry_ready",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19501.829042099416,
+      "user_seconds": 17.27564675,
+      "system_seconds": 1.9600824166666668,
+      "raw_cpu_ticks": {
+        "user": 414615522,
+        "system": 47041978
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3841818624,
+      "identity": "83499241243058",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886821532619000,
+      "kind": "stage",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 422.9672076180577,
+      "ok": true,
+      "user_seconds": 1.1639714583333323,
+      "system_seconds": 0.15931175000000009,
+      "cpu_seconds": 1.3232832083333324,
+      "cpu_before": {
+        "user_seconds": 17.27564675,
+        "system_seconds": 1.9600824166666668,
+        "raw_cpu_ticks": {
+          "user": 414615522,
+          "system": 47041978
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3841818624,
+        "identity": "83499241243058",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 18.439618208333332,
+        "system_seconds": 2.119394166666667,
+        "raw_cpu_ticks": {
+          "user": 442550837,
+          "system": 50865460
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5183143936,
+        "identity": "83499241243058",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5183143936,
+      "rss_samples": 36,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886821532695000,
+      "kind": "load_boundary",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19925.10608304292,
+      "cpu_seconds": 20.559012375,
+      "user_seconds": 18.439618208333332,
+      "system_seconds": 2.119394166666667,
+      "raw_cpu_ticks": {
+        "user": 442550837,
+        "system": 50865460
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5183143936,
+      "identity": "83499241243058",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886821595548000,
+      "kind": "server_resources",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 0,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 19987.790999934077,
+      "user_seconds": 18.439617,
+      "system_seconds": 2.139058,
+      "cpu_seconds": 20.578674999999997,
+      "peak_process_rss_bytes": 5186813952
+    },
+    {
+      "recorded_ns": 1793886840280145000,
+      "kind": "registry_ready",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 18654.835040681064,
+      "user_seconds": 17.273990625,
+      "system_seconds": 1.7261547916666669,
+      "raw_cpu_ticks": {
+        "user": 414575775,
+        "system": 41427715
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3838492672,
+      "identity": "83499721683672",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886840694502000,
+      "kind": "stage",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 414.126249961555,
+      "ok": true,
+      "user_seconds": 1.1716061666666668,
+      "system_seconds": 0.14955033333333323,
+      "cpu_seconds": 1.3211565,
+      "cpu_before": {
+        "user_seconds": 17.273990625,
+        "system_seconds": 1.7261547916666669,
+        "raw_cpu_ticks": {
+          "user": 414575775,
+          "system": 41427715
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3838492672,
+        "identity": "83499721683672",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 18.445596791666667,
+        "system_seconds": 1.875705125,
+        "raw_cpu_ticks": {
+          "user": 442694323,
+          "system": 45016923
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5172625408,
+        "identity": "83499721683672",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5174951936,
+      "rss_samples": 35,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886840694576000,
+      "kind": "load_boundary",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19069.281124975532,
+      "cpu_seconds": 20.321301916666666,
+      "user_seconds": 18.445596791666667,
+      "system_seconds": 1.875705125,
+      "raw_cpu_ticks": {
+        "user": 442694323,
+        "system": 45016923
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5172625408,
+      "identity": "83499721683672",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886840754669000,
+      "kind": "server_resources",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 19129.332832992077,
+      "user_seconds": 18.445595,
+      "system_seconds": 1.9075149999999998,
+      "cpu_seconds": 20.35311,
+      "peak_process_rss_bytes": 5184798720
+    },
+    {
+      "recorded_ns": 1793886860380428000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19594.82558304444,
+      "user_seconds": 17.24922354166667,
+      "system_seconds": 1.9958187916666668,
+      "raw_cpu_ticks": {
+        "user": 413981365,
+        "system": 47899651
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3832676352,
+      "identity": "83500181547429",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886862250694000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 1870.072124991566,
+      "ok": true,
+      "user_seconds": 3.3506245833333317,
+      "system_seconds": 0.17544233333333326,
+      "cpu_seconds": 3.526066916666665,
+      "cpu_before": {
+        "user_seconds": 17.24922354166667,
+        "system_seconds": 1.9958187916666668,
+        "raw_cpu_ticks": {
+          "user": 413981365,
+          "system": 47899651
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3832676352,
+        "identity": "83500181547429",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 20.599848125,
+        "system_seconds": 2.171261125,
+        "raw_cpu_ticks": {
+          "user": 494396355,
+          "system": 52110267
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5479448576,
+        "identity": "83500181547429",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5501370368,
+      "rss_samples": 152,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886862250772000,
+      "kind": "load_boundary",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 21465.23562539369,
+      "cpu_seconds": 22.771109250000002,
+      "user_seconds": 20.599848125,
+      "system_seconds": 2.171261125,
+      "raw_cpu_ticks": {
+        "user": 494396355,
+        "system": 52110267
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5479448576,
+      "identity": "83500181547429",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886862313600000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 1,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 21527.92725013569,
+      "user_seconds": 20.599848,
+      "system_seconds": 2.205821,
+      "cpu_seconds": 22.805669,
+      "peak_process_rss_bytes": 5501370368
+    },
+    {
+      "recorded_ns": 1793886880668745000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 18325.381209142506,
+      "user_seconds": 17.26377,
+      "system_seconds": 1.633699875,
+      "raw_cpu_ticks": {
+        "user": 414330480,
+        "system": 39208797
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3835002880,
+      "identity": "83500698951603",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886882529200000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 1860.2607497014105,
+      "ok": true,
+      "user_seconds": 3.3478226666666657,
+      "system_seconds": 0.191978875,
+      "cpu_seconds": 3.539801541666666,
+      "cpu_before": {
+        "user_seconds": 17.26377,
+        "system_seconds": 1.633699875,
+        "raw_cpu_ticks": {
+          "user": 414330480,
+          "system": 39208797
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3835002880,
+        "identity": "83500698951603",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 20.611592666666667,
+        "system_seconds": 1.82567875,
+        "raw_cpu_ticks": {
+          "user": 494678224,
+          "system": 43816290
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5490556928,
+        "identity": "83500698951603",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5504286720,
+      "rss_samples": 153,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886882529287000,
+      "kind": "load_boundary",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 20185.989334248006,
+      "cpu_seconds": 22.43727141666667,
+      "user_seconds": 20.611592666666667,
+      "system_seconds": 1.82567875,
+      "raw_cpu_ticks": {
+        "user": 494678224,
+        "system": 43816290
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5490556928,
+      "identity": "83500698951603",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886882591078000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 20247.660791967064,
+      "user_seconds": 20.611591,
+      "system_seconds": 1.840449,
+      "cpu_seconds": 22.45204,
+      "peak_process_rss_bytes": 5504286720
+    },
+    {
+      "recorded_ns": 1793886902196510000,
+      "kind": "registry_ready",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19576.103250030428,
+      "user_seconds": 17.268619958333332,
+      "system_seconds": 1.9659867916666667,
+      "raw_cpu_ticks": {
+        "user": 414446879,
+        "system": 47183683
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3834740736,
+      "identity": "83501185619125",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886902612111000,
+      "kind": "stage",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 73,
+      "expectedRequestCount": 73,
+      "wallMs": 415.34654097631574,
+      "ok": true,
+      "user_seconds": 1.146944458333337,
+      "system_seconds": 0.15549058333333332,
+      "cpu_seconds": 1.3024350416666703,
+      "cpu_before": {
+        "user_seconds": 17.268619958333332,
+        "system_seconds": 1.9659867916666667,
+        "raw_cpu_ticks": {
+          "user": 414446879,
+          "system": 47183683
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3834740736,
+        "identity": "83501185619125",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 18.41556441666667,
+        "system_seconds": 2.121477375,
+        "raw_cpu_ticks": {
+          "user": 441973546,
+          "system": 50915457
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5170331648,
+        "identity": "83501185619125",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5170331648,
+      "rss_samples": 35,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793886902612189000,
+      "kind": "load_boundary",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19991.79720832035,
+      "cpu_seconds": 20.53704179166667,
+      "user_seconds": 18.41556441666667,
+      "system_seconds": 2.121477375,
+      "raw_cpu_ticks": {
+        "user": 441973546,
+        "system": 50915457
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 5170331648,
+      "identity": "83501185619125",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793886902673512000,
+      "kind": "server_resources",
+      "arm": "candidate_head",
+      "pair": "product-pair",
+      "round": 2,
+      "operation": "load",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh load process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 20053.032333031297,
+      "user_seconds": 18.415563,
+      "system_seconds": 2.134634,
+      "cpu_seconds": 20.550196999999997,
+      "peak_process_rss_bytes": 5177589760
+    }
+  ],
+  "resourceBoundary": "CPU belongs to whole interleaved stage, not individual cases; kernel wait4 RSS belongs to full process lifetime",
+  "readinessRetries": 1099
+}

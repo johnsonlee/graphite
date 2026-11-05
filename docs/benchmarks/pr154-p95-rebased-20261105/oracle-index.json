@@ -1,0 +1,663 @@
+{
+  "origin": "/Users/johnsonlee/.codex/benchmarks/pr154-local-190eba79-20261105/run-standalone/results/native/base/first-use-oracle",
+  "cases": [
+    {
+      "id": "zero/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/000.json",
+      "rawSha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "canonicalSha256": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-class-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "querySha256": "ef4c26381ee3ca2c22c7292db0841cfee24107e8f077b9566947de7f3685390c",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/001.json",
+      "rawSha256": "1fafe08e83bdbeb1d7c132e1988ada6ba835aa0898855ea8f61ac9931e22d129",
+      "canonicalSha256": "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-name-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "querySha256": "4a48b6deb2b4ef6c0dd39f795e2a6aa5c460decd41deaeb1ce50d0af8e435e10",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/002.json",
+      "rawSha256": "4628162dfe1d91712860c88c00d32f29aa163923375a6f3c08ee66ebc09ab692",
+      "canonicalSha256": "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-caller-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class\nLIMIT 200",
+      "querySha256": "5f32ffe3fb97dcd13a79848547ff658647011e8b030e2e5c1e6452867d48f11b",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/003.json",
+      "rawSha256": "358c93cf6eb4ac061c9437bde95c77e46e29c19dc471ddd226f068c9223a8b3d",
+      "canonicalSha256": "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-callee-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.callee_class\nLIMIT 200",
+      "querySha256": "b412eba1d5bd22e7213dd5763f16b4d2a40a8e62fda5d895b81abe306a385936",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/004.json",
+      "rawSha256": "4953c72b0735ab43e25195478d9a55b829fd0573a89c3ddafdcb7ffc562b8c6f",
+      "canonicalSha256": "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-provenance",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "3053f76c30ef6b34fce6665a2ab104bad26223f9133374648cbb041a0d146c95",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/005.json",
+      "rawSha256": "fe169cca168734d3dae5f383c56931030a787472135c63d52baed02c3456c40a",
+      "canonicalSha256": "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-aliased",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "querySha256": "527ad441f0549171fd87e2bf859b2308597c9f288c18261665c6448c6f6c7628",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/006.json",
+      "rawSha256": "37445f7c653002fbf4a1476698b8b390dddf30b6788f6b0253883b8c8bdca1c3",
+      "canonicalSha256": "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-parameterized-as-literal",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/007.json",
+      "rawSha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "canonicalSha256": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-wrapped-case-insensitive",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "2e7f93cc0c6eec576d9d944ee20c919cb84b2808b8ba325548774313454391aa",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/008.json",
+      "rawSha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "canonicalSha256": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+      "rows": 0
+    },
+    {
+      "id": "zero/global-wide-wrapped-case-insensitive-distinct",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "622509a701664d150f7b13727b708ba964e18fa724881aac7c843e82bde147d7",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/009.json",
+      "rawSha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "canonicalSha256": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+      "rows": 0
+    },
+    {
+      "id": "targeted/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/010.json",
+      "rawSha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "canonicalSha256": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-class-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "querySha256": "c33e6c0c08430e24c4ca2964a5190f8a37d4ff0b4f78f22bf00dbf5b094b7fbf",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/011.json",
+      "rawSha256": "ecf93d1a4bf30dbe9620bab7e8ab91ae3abdb8387d541be6858dc4ebf64981b2",
+      "canonicalSha256": "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-name-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "querySha256": "de8626633e1fd4dcf762378eb1253e970a0b1bff702af5b2ae7a9953399376da",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/012.json",
+      "rawSha256": "93b12198783aa0f125f07b03176657f2a8771edbf6be7e40482d1a8506c01fa8",
+      "canonicalSha256": "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-caller-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class\nLIMIT 200",
+      "querySha256": "c9c91490c15858149b5a58b5e4f43f8eca87968afa840986db99014b7944a920",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/013.json",
+      "rawSha256": "e7e39fd1fc0f73efb731db775c405cba9fa0d1eb0e0c2afabbc9e9d2bc80a84d",
+      "canonicalSha256": "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-callee-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.callee_class\nLIMIT 200",
+      "querySha256": "8f4498c2adbdaa8f5440eb9f24a26394eaab17a0b1a188989fa725df13a98992",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/014.json",
+      "rawSha256": "c5f984f3b68817ebbb75ebda8ba589991f8b6a0fe13b63279a2d099c3a5f887d",
+      "canonicalSha256": "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-provenance",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "5aa97e0c6166666786be117e31790a1e30409d75bf87399287b3fc20327297dd",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/015.json",
+      "rawSha256": "5461db5d402f9b504aa6ad72ff257410ab232a1e91d3630b30cac209bca0df75",
+      "canonicalSha256": "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-aliased",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "querySha256": "83c20a970dcd7896eaeec945b36451899075a7914eb1295e221497fe05698ba4",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/016.json",
+      "rawSha256": "ef36133256ea9efaffc8f005be67ec054ada0da978d3bca5d18d2378631a76c9",
+      "canonicalSha256": "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-parameterized-as-literal",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/017.json",
+      "rawSha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "canonicalSha256": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-wrapped-case-insensitive",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "edebb9d7124e6cada82afac83073ef8b0764f2bea86916e9837fb873e9183414",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/018.json",
+      "rawSha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "canonicalSha256": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+      "rows": 11
+    },
+    {
+      "id": "targeted/global-wide-wrapped-case-insensitive-distinct",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "bf01a2a49ca94096b77ce775ef11826c1b6e40d1360c7111204c39f01469287d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/019.json",
+      "rawSha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "canonicalSha256": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+      "rows": 11
+    },
+    {
+      "id": "dense/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/020.json",
+      "rawSha256": "3366a432269a6cd07f441a9fea6411fb16d412ec7eb6ab5d2620f24e8290d3cc",
+      "canonicalSha256": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-class-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/021.json",
+      "rawSha256": "f02507bce01ede315941c9c10c6d87a3a07c6f4c26ff496e3c0c629fa71a9624",
+      "canonicalSha256": "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-name-pair",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/022.json",
+      "rawSha256": "83f413599ba1e5d1b7cd79736ef4577c98d3ba327f53be0776b87b75b65c8a04",
+      "canonicalSha256": "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-caller-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class\nLIMIT 200",
+      "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/023.json",
+      "rawSha256": "77c4a46c996a658b1b7832409d4aaa227916133ffee781c35488658e911b9e1c",
+      "canonicalSha256": "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-callee-class",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.callee_class\nLIMIT 200",
+      "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/024.json",
+      "rawSha256": "7b0449cfb88bd7af2553f0ecd6ec6a4adc4c595aa4977b6fcba548115e406f78",
+      "canonicalSha256": "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-provenance",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/025.json",
+      "rawSha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710",
+      "canonicalSha256": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-aliased",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/026.json",
+      "rawSha256": "a78ca065f7c5ff9387b1284031d1fb89804163eace1355d8bd0bc660940a65dd",
+      "canonicalSha256": "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-parameterized-as-literal",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/027.json",
+      "rawSha256": "3366a432269a6cd07f441a9fea6411fb16d412ec7eb6ab5d2620f24e8290d3cc",
+      "canonicalSha256": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-wrapped-case-insensitive",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "c694284650250788593ed94a73dd8330c1ceef5c2bb1f782fad6e368db527c00",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/028.json",
+      "rawSha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+      "canonicalSha256": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+      "rows": 200
+    },
+    {
+      "id": "dense/global-wide-wrapped-case-insensitive-distinct",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "f12c63bd0251fe4ade8df81bd787fdf0eace1ca13c9a36483086c0d9689a1e26",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/029.json",
+      "rawSha256": "497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd",
+      "canonicalSha256": "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+      "rows": 200
+    },
+    {
+      "id": "localized-early/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'com.android.internal.app.IAppOpsService$Stub$Proxy' OR n.caller_name CONTAINS 'com.android.internal.app.IAppOpsService$Stub$Proxy' OR n.callee_class CONTAINS 'com.android.internal.app.IAppOpsService$Stub$Proxy' OR n.callee_name CONTAINS 'com.android.internal.app.IAppOpsService$Stub$Proxy'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "607aa55d80fa9ccb9f13e5b9107f14f6cba16e7f863c862cd5d53f1c23059f8e",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/030.json",
+      "rawSha256": "208d5b672ac6e3bf3876e2a81296701abf2214b929db8b856fc5af17006154f2",
+      "canonicalSha256": "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed",
+      "rows": 200
+    },
+    {
+      "id": "localized-middle/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTPivotTableDefinitionImpl' OR n.caller_name CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTPivotTableDefinitionImpl' OR n.callee_class CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTPivotTableDefinitionImpl' OR n.callee_name CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTPivotTableDefinitionImpl'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "4302637c07bc770cb08aadcff9c2d05b3312f014291a4ecac2ef15301220944a",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/031.json",
+      "rawSha256": "b166380cd57f90c4f18a668d2a1bfb0d4fe7d7fdc81366f58dff608c499bc1dc",
+      "canonicalSha256": "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670",
+      "rows": 200
+    },
+    {
+      "id": "localized-late/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.JvmMultiFieldValueClassLoweringKt$extractVariablesSettersToOuterPossibleBlock$1' OR n.caller_name CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.JvmMultiFieldValueClassLoweringKt$extractVariablesSettersToOuterPossibleBlock$1' OR n.callee_class CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.JvmMultiFieldValueClassLoweringKt$extractVariablesSettersToOuterPossibleBlock$1' OR n.callee_name CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.JvmMultiFieldValueClassLoweringKt$extractVariablesSettersToOuterPossibleBlock$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "3f2bfcd26d97a468911e9a5e37cf43b027c3baf23e58b93140db62bc18ee70b8",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/032.json",
+      "rawSha256": "f64daa3d4f60f7b11b339e47ebc216ad856257bd0a1afde5c13b8f989b57f1ab",
+      "canonicalSha256": "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49",
+      "rows": 200
+    },
+    {
+      "id": "broad-all-64/global-wide-four-properties",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/033.json",
+      "rawSha256": "3366a432269a6cd07f441a9fea6411fb16d412ec7eb6ab5d2620f24e8290d3cc",
+      "canonicalSha256": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+      "rows": 200
+    },
+    {
+      "id": "schema-label-histogram",
+      "query": "MATCH (n) RETURN labels(n) AS labels, count(*) AS c ORDER BY c DESC LIMIT 40",
+      "querySha256": "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/034.json",
+      "rawSha256": "db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e",
+      "canonicalSha256": "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394",
+      "rows": 12
+    },
+    {
+      "id": "schema-key-histogram",
+      "query": "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c ORDER BY c DESC LIMIT 50",
+      "querySha256": "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/035.json",
+      "rawSha256": "a10868a37e5f4255dbf2cfb7656936654097da4b7e84b492bba51922d0267b72",
+      "canonicalSha256": "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
+      "rows": 28
+    },
+    {
+      "id": "schema-relationship-histogram",
+      "query": "MATCH (a)-[r]->(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC LIMIT 40",
+      "querySha256": "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/036.json",
+      "rawSha256": "ed38a990941532b5100e2de99e1c2638981d01c108eeaa7197e517a004b1e51a",
+      "canonicalSha256": "c97af2647e6766def04cd1890516efc6be852758d35aa000652587a8ac9e13dc",
+      "rows": 40
+    },
+    {
+      "id": "shape-wide-contains",
+      "query": "MATCH (n) WHERE n.caller_class CONTAINS 'Activity' RETURN n.caller_class LIMIT 200",
+      "querySha256": "93876fd68d6103ec49088d957d5b2ed4e16967ff5d6a31754ea673d0034c6bb3",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/037.json",
+      "rawSha256": "97997bdf22dfd46c6c76bff72bc412068e76d07f10c91fd5a187b5b10640e150",
+      "canonicalSha256": "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4",
+      "rows": 200
+    },
+    {
+      "id": "shape-label-scan-callsite",
+      "query": "MATCH (n:CallSite) RETURN n.caller_class, n.callee_name LIMIT 200",
+      "querySha256": "ef3fc90c8f8245ade483b1319504b7e05761870e686ec771fc8ca4a32ee8b22b",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/038.json",
+      "rawSha256": "f775d8f4a102fd73dfad9f4b84d6887f6483e526a86fa8597ebc38cf1f0d5b58",
+      "canonicalSha256": "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813",
+      "rows": 200
+    },
+    {
+      "id": "shape-label-scan-method",
+      "query": "MATCH (n:Method) RETURN n.signature LIMIT 200",
+      "querySha256": "a4ab145c29a44c9c73521f428689997a587818dcf860d28614d2483aeb853895",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/039.json",
+      "rawSha256": "f2994489ccf96800c25a389ae727208280539c5f84b0bf71fbf1d98db5baac21",
+      "canonicalSha256": "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241",
+      "rows": 200
+    },
+    {
+      "id": "shape-label-scan-constant",
+      "query": "MATCH (n:Constant) RETURN n.value LIMIT 200",
+      "querySha256": "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/040.json",
+      "rawSha256": "ab191686223aa22c9c18870966e8c101c7a2aafe52ae0f5ed92154b6fd33f044",
+      "canonicalSha256": "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db",
+      "rows": 200
+    },
+    {
+      "id": "shape-label-scan-field",
+      "query": "MATCH (n:FieldNode) RETURN n.name LIMIT 200",
+      "querySha256": "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/041.json",
+      "rawSha256": "38b9ad76ebafe6c1c12d9e642d6cbb7e5becb63a6ce5a09cb1ff941d51175759",
+      "canonicalSha256": "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b",
+      "rows": 200
+    },
+    {
+      "id": "shape-all-nodes",
+      "query": "MATCH (n) RETURN n LIMIT 200",
+      "querySha256": "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/042.json",
+      "rawSha256": "4e9a5149ba6b1d0d8ec2189e4f0b9c5dc2117bdd168a695c5c761394e30f4d99",
+      "canonicalSha256": "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+      "rows": 200
+    },
+    {
+      "id": "shape-equality",
+      "query": "MATCH (n:CallSite) WHERE n.callee_name = 'valueOf' RETURN n.caller_class LIMIT 200",
+      "querySha256": "c43182394f50246b2e9c89319e8f166065491b976966d716f9b2b7c879bff260",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/043.json",
+      "rawSha256": "4063e67d9a3adadc0190c5c654eeb5a87901f47baca6b4d5149fbca65afce7df",
+      "canonicalSha256": "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521",
+      "rows": 200
+    },
+    {
+      "id": "shape-inequality",
+      "query": "MATCH (n:CallSite) WHERE n.callee_name <> 'valueOf' RETURN n.caller_class LIMIT 200",
+      "querySha256": "220a040b7e8b1d70fb8f38185f0fd7bfa838ae906f8d945af4ba3398630c684d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/044.json",
+      "rawSha256": "e1e24619ab467c40dbe31cdf6b9947ecf85d263a714eaecdcbad730ae856cf88",
+      "canonicalSha256": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+      "rows": 200
+    },
+    {
+      "id": "shape-id-lookup",
+      "query": "MATCH (n) WHERE id(n) = 4101 RETURN n",
+      "querySha256": "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/045.json",
+      "rawSha256": "5a1d866d59dafbc2e961040a04300bab7e29b1baa1cba7bd0989bf9d1e42d7b4",
+      "canonicalSha256": "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6",
+      "rows": 1
+    },
+    {
+      "id": "shape-in-list",
+      "query": "MATCH (n:CallSite) WHERE n.callee_name IN ['valueOf', 'toString'] RETURN n.caller_class LIMIT 200",
+      "querySha256": "ee43ec33151492de0a432600d1b22750f534e6a2940f235a15840b5887a57e80",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/046.json",
+      "rawSha256": "e58316675aac143dc702598b226baeef8909c064d13d8c338e0d58fdbc4491df",
+      "canonicalSha256": "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94",
+      "rows": 200
+    },
+    {
+      "id": "shape-null-check",
+      "query": "MATCH (n:CallSite) WHERE n.line IS NULL RETURN n.caller_class LIMIT 200",
+      "querySha256": "7600ed77337a5ce0060e5030848b905cdd6a0d7970b25942cca4592fc0c66300",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/047.json",
+      "rawSha256": "e1e24619ab467c40dbe31cdf6b9947ecf85d263a714eaecdcbad730ae856cf88",
+      "canonicalSha256": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+      "rows": 200
+    },
+    {
+      "id": "shape-regex",
+      "query": "MATCH (n:CallSite) WHERE n.callee_name =~ '.*alue.*' RETURN n.callee_name LIMIT 200",
+      "querySha256": "dbb2006f6ec42c960f06b6bf16cad9d7a4f2f93c0b21153799485e12e35fea95",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/048.json",
+      "rawSha256": "b2e42a8a6c52be2ad7252970cdd73baf38f30fc3032fe212049920e537a4ff33",
+      "canonicalSha256": "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9",
+      "rows": 200
+    },
+    {
+      "id": "shape-one-hop",
+      "query": "MATCH (a:CallSite)-[r]->(b) RETURN a.caller_class, b.id LIMIT 200",
+      "querySha256": "fe48eaa25cafe412b60316026609aa73a6035358ba4fa88cb578f55c86ceda5b",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/049.json",
+      "rawSha256": "369160ba228e3c838466f02cca36b46f5fd3808415d512f43cf19939d6887716",
+      "canonicalSha256": "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8",
+      "rows": 200
+    },
+    {
+      "id": "shape-one-hop-typed",
+      "query": "MATCH (a)-[r:DATAFLOW]->(b) RETURN a.id, b.id LIMIT 200",
+      "querySha256": "bf6f5042d8cf8a082930407b2eb4ec09b8d5008ddbb9a0ed6df5444317fb4a1f",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/050.json",
+      "rawSha256": "de7590892da517872a5514529bf6dc46bd0030d3150a806951f7f252ef814ead",
+      "canonicalSha256": "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053",
+      "rows": 200
+    },
+    {
+      "id": "shape-two-hop",
+      "query": "MATCH (a)-[]->(b)-[]->(c) RETURN a.id, c.id LIMIT 200",
+      "querySha256": "2fc55556115e8aa917aa4638706649cb645453c06d0c17f0ac39350b60202d23",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/051.json",
+      "rawSha256": "f893872750a493c6bc43792d9454fc8db580562b47ad82d0a6f7a77443fa1ca6",
+      "canonicalSha256": "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59",
+      "rows": 200
+    },
+    {
+      "id": "shape-incoming",
+      "query": "MATCH (a)<-[r]-(b) RETURN a.id, b.id LIMIT 200",
+      "querySha256": "7fa551be7b95270423109861b0cb77b358417bc9cd734eaaf13006d64604a40d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/052.json",
+      "rawSha256": "2451029c5d8549d9d4306ee2fc0586a95488ecfb3d43a62642499a9ecdfd1779",
+      "canonicalSha256": "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1",
+      "rows": 200
+    },
+    {
+      "id": "shape-var-length",
+      "query": "MATCH (a)-[*1..2]->(b) RETURN a.id, b.id LIMIT 200",
+      "querySha256": "bbca77bd13a3c89dd634a3c4818730ffc1d4a1203bcfce37bfcbec4764dae24c",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/053.json",
+      "rawSha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e",
+      "canonicalSha256": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+      "rows": 200
+    },
+    {
+      "id": "shape-path",
+      "query": "MATCH p = (a)-[r]->(b) RETURN p LIMIT 50",
+      "querySha256": "3f07a6904220fc88bcaad6d93152d16f3c10a6f6bf7ad7f1f718f3ca03e93ddb",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/054.json",
+      "rawSha256": "ec5018777c168ef894a44ebbabf35402e1bec41b542c96b83a6faed6e586de4d",
+      "canonicalSha256": "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b",
+      "rows": 50
+    },
+    {
+      "id": "shape-traverse-filtered",
+      "query": "MATCH (a:CallSite)-[r]->(b) WHERE a.callee_name = 'valueOf' RETURN b.id LIMIT 200",
+      "querySha256": "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/055.json",
+      "rawSha256": "dcf6fd15b12a52266773ed3952562f1029df299a3be2d054a74bfe3809dce420",
+      "canonicalSha256": "db49759a02623072ab0fd4e5c980b8bd51fbd8c78d0c889c127126b33d0e4074",
+      "rows": 200
+    },
+    {
+      "id": "shape-count-all",
+      "query": "MATCH (n) RETURN count(*)",
+      "querySha256": "586fa3f5cb7871402ce88be4dc31639cdd552857589b6a998c8be6002b7d0db5",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/056.json",
+      "rawSha256": "f824110deac2e8adbd781351937552ac16b7b85daa897a9c79ed31995236c12d",
+      "canonicalSha256": "d379a18c9a59c8afab70f4e8b889e84a1863b6e2dc74f29b552023b0cbc26969",
+      "rows": 1
+    },
+    {
+      "id": "shape-count-label",
+      "query": "MATCH (n:CallSite) RETURN count(*)",
+      "querySha256": "c610b36404891c86d63224dcdc151687ef70f50828493c03013ffe046c487ddc",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/057.json",
+      "rawSha256": "9f2dd5d93e448c11554000edd19e2269750fe9e0e542f953429d3ce179fd1a9a",
+      "canonicalSha256": "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62",
+      "rows": 1
+    },
+    {
+      "id": "shape-group-count",
+      "query": "MATCH (n:CallSite) RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 20",
+      "querySha256": "7f71983908cab00265b8280df5a69a87e94aa2a7fa926d2798c99bcb25fea9a8",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/058.json",
+      "rawSha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f",
+      "canonicalSha256": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+      "rows": 20
+    },
+    {
+      "id": "shape-distinct",
+      "query": "MATCH (n:CallSite) RETURN DISTINCT n.callee_class LIMIT 200",
+      "querySha256": "d61e543f7fc136a73d16b035c114634cea576eb2e81cb676de247132f16562ea",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/059.json",
+      "rawSha256": "326a7ff02d15e34bc4e15ce97c232031936bcf36d658d120db9e9fc506f44e92",
+      "canonicalSha256": "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4",
+      "rows": 200
+    },
+    {
+      "id": "shape-collect",
+      "query": "MATCH (n:CallSite) WITH collect(n.callee_name) AS names RETURN names[0..10] AS names",
+      "querySha256": "920a011a3f0fd70b86c8e96978ec8828fd67b07c4b21f46b1ae0dce3adac6261",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/060.json",
+      "rawSha256": "d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0",
+      "canonicalSha256": "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+      "rows": 1
+    },
+    {
+      "id": "shape-count-traversal",
+      "query": "MATCH (a)-[r]->(b) RETURN count(*)",
+      "querySha256": "0c0eb528ce456f3b8a996edfec5f51ada004216adf66e0261d67696a81ec6801",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/061.json",
+      "rawSha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea",
+      "canonicalSha256": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3",
+      "rows": 1
+    },
+    {
+      "id": "shape-order-by",
+      "query": "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200",
+      "querySha256": "88cb04da13ed7fcb5a8eb263eda499cad1bedb7808f5cf3eef0d6826e0e29744",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/062.json",
+      "rawSha256": "142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7",
+      "canonicalSha256": "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+      "rows": 200
+    },
+    {
+      "id": "shape-order-by-desc",
+      "query": "MATCH (n:CallSite) RETURN n.callee_name ORDER BY n.callee_name DESC LIMIT 200",
+      "querySha256": "5027d879d533d800096e2d9fbaeecb7a409f5a8744a27401dc97f82cb2f17ad0",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/063.json",
+      "rawSha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74",
+      "canonicalSha256": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+      "rows": 200
+    },
+    {
+      "id": "shape-skip",
+      "query": "MATCH (n:CallSite) RETURN n.caller_class SKIP 1000 LIMIT 200",
+      "querySha256": "2a7f57057d9f6182cd0b65fc3ced3f7a4bb1952cffcc074bae52f551c4abc680",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/064.json",
+      "rawSha256": "7f0c5f05bc825a03e76d6bafc309bec492bdfa6ee3103a88a2704447a9061cc2",
+      "canonicalSha256": "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b",
+      "rows": 200
+    },
+    {
+      "id": "shape-function-calls",
+      "query": "MATCH (n:CallSite) RETURN toUpper(n.callee_name), size(n.caller_class) LIMIT 200",
+      "querySha256": "7cc12fdd157088ab19b33a3d6b3c735b0e990668e9eb535388edf239f0885fcc",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/065.json",
+      "rawSha256": "3b1e7589f809f65c84af329080a8f7d43f7b4e2537638b6559eb7812f17ee0ad",
+      "canonicalSha256": "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5",
+      "rows": 200
+    },
+    {
+      "id": "shape-case-expr",
+      "query": "MATCH (n:CallSite) RETURN CASE WHEN n.callee_name = 'valueOf' THEN 1 ELSE 0 END AS f LIMIT 200",
+      "querySha256": "a239e4bd5ce026f72684b26c46cb4c9e101cc800ef31fe48a5fab4b1cb73509a",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/066.json",
+      "rawSha256": "82292fb1ec02a026e7563543a549dfbf7e7db239c36f48d1496678a5fbabaf9a",
+      "canonicalSha256": "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2",
+      "rows": 200
+    },
+    {
+      "id": "shape-coalesce",
+      "query": "MATCH (n:CallSite) RETURN coalesce(n.line, -1) AS l LIMIT 200",
+      "querySha256": "059f17f974f39b2c1bc00f1fe3782592e0b67f83a2b38f29a25b366ef431022e",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/067.json",
+      "rawSha256": "61dff5e9bca2218f3c4edc2441fb85ae992d6194de45a98c15745a77d467293d",
+      "canonicalSha256": "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1",
+      "rows": 200
+    },
+    {
+      "id": "shape-labels-fn",
+      "query": "MATCH (n) RETURN labels(n) LIMIT 200",
+      "querySha256": "958b0c85ff86238ef3cbba0891181b49bc9b6782936597d4e746d02d87d11917",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/068.json",
+      "rawSha256": "c9f2140e4386e9f6dc21c37741df2f50939391283181a176e6f9aa186cb8fa34",
+      "canonicalSha256": "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c",
+      "rows": 200
+    },
+    {
+      "id": "shape-with-filter",
+      "query": "MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 200",
+      "querySha256": "1100d048a0d279d87643fd15810de59ad71187854262f28e9a14571dbe7ac26d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/069.json",
+      "rawSha256": "b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893",
+      "canonicalSha256": "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+      "rows": 200
+    },
+    {
+      "id": "shape-with-aggregate",
+      "query": "MATCH (n:CallSite) WITH n.callee_class AS c, count(*) AS k WHERE k > 5 RETURN c, k LIMIT 50",
+      "querySha256": "be7b22e552251ee59d665d048dc80bab6a3beb13634f31a375dffc0ba04b1d32",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/070.json",
+      "rawSha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417",
+      "canonicalSha256": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+      "rows": 50
+    },
+    {
+      "id": "shape-cartesian",
+      "query": "MATCH (a:Method), (b:Method) RETURN a.id, b.id LIMIT 50",
+      "querySha256": "c4e256ff0ca5177f28608ede80ddceb5090cd36052a228756ee7b3e3c124009d",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/071.json",
+      "rawSha256": "16225f995c2551e6b162bc1500cc9fde30c8250716d2d4792cbc0cab1107afd6",
+      "canonicalSha256": "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6",
+      "rows": 50
+    },
+    {
+      "id": "shape-union",
+      "query": "MATCH (n:CallSite) RETURN n.id LIMIT 100 UNION MATCH (n:Method) RETURN n.id LIMIT 100",
+      "querySha256": "a61e7b84e438e36530b5357b395bb8144e49a95aa0dc50e1f0e1b66844d441f8",
+      "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/oracles/072.json",
+      "rawSha256": "aa8dbf3e75dc1f048ffa999b50b2ad5632e8a7942a6d9bd4faf2a1849e25ff36",
+      "canonicalSha256": "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852",
+      "rows": 101
+    }
+  ],
+  "canonicalPolicy": "Full typed JSON; recursively sorted object keys, unchanged arrays/order/null omissions/metadata/total fields"
+}

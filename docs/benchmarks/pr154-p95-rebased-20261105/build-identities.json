@@ -1,0 +1,20 @@
+{
+  "base": {
+    "source": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target/aarch64-apple-darwin/release/graphite",
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target",
+    "sha256": "100e3333ec51b169bfd6ae55c1fef92fe49f0e72fbe006e99fe536e7c4967ac3",
+    "bytes": 9922560,
+    "importHelpExitCode": 2,
+    "importRoute": "unrecognized subcommand"
+  },
+  "head": {
+    "source": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/graphite",
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target",
+    "sha256": "4257f35fc3462beefffdf454d511f808d3410aef60bb5a87500c676ac09ff2dc",
+    "bytes": 9975072,
+    "importHelpExitCode": 2,
+    "importRoute": "JVM Graph IR importer usage"
+  }
+}

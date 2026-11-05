@@ -1,0 +1,54 @@
+{
+  "capturedUtc": "2026-11-05T13:29:17.537016+00:00",
+  "runs": [
+    {
+      "conclusion": "skipped",
+      "databaseId": 42034576977,
+      "name": "Apple index correctness diagnosis",
+      "status": "completed",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576977"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576957,
+      "name": "Run unit tests",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576957"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576993,
+      "name": "Rust",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576993"
+    },
+    {
+      "conclusion": "skipped",
+      "databaseId": 42034577007,
+      "name": "Apple shared-source index correctness",
+      "status": "completed",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577007"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576969,
+      "name": "Benchmark correctness and OOM",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576969"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 42034577057,
+      "name": "JavaScript artifact frontend",
+      "status": "completed",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577057"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 42034577023,
+      "name": "Apple frontend",
+      "status": "completed",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577023"
+    }
+  ]
+}

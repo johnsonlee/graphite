@@ -1,0 +1,31 @@
+{
+  "buildIdentities": "build-identities-cumulative.json",
+  "config": "config.cumulative.json",
+  "collectIdentities": "build-identities-final.json",
+  "frozenPreoptIdentities": "frozen-preopt-identities.json",
+  "primary": {
+    "load": "cumulative-full-load",
+    "query": "cumulative-full-query"
+  },
+  "intermediate": {
+    "load": "final-full-load",
+    "query": "final-full-query"
+  },
+  "incremental": {
+    "collect": "optimization-effect",
+    "grouping": "grouping-effect"
+  },
+  "apple": {
+    "config": "apple/config.cumulative.json",
+    "oracle": "apple/oracle-final",
+    "load": "apple/load-final",
+    "query": "apple/query-final"
+  },
+  "sourceEquivalences": [
+    {
+      "actualBuiltSHA": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+      "currentTipSHA": "c86fe745fc93b3847cf72b520f3e4643d67cd8cf"
+    }
+  ],
+  "schema": "pr154-report-inputs-v1"
+}

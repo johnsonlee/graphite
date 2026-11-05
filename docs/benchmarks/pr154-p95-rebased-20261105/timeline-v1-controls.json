@@ -1,0 +1,19 @@
+{
+  "createdUtc": "2026-11-05T13:36:08.778459+00:00",
+  "originals": {
+    "multi64.py": "64fd359039b7e1227dd0d4abbaca46edc1b6c10ea43cffea52a0832bb5d92cf4",
+    "lifecycle_resources.py": "7eba3fd9a5a2b2a4af9fb1e64945f0ef66d86874805f165c7add8723d92c0e35",
+    "config.cumulative.json": "bfd178512eda2205c5d1262254640020718ed5793c92f832f23578f6bf6aa921"
+  },
+  "diagnostic": {
+    "multi64_timeline_v1.py": "2724fe213a9e0188b2799176066da72b53ddc17e738d14386bd95be7cf5144a2",
+    "lifecycle_resources_timeline_v1.py": "78d23a42f9bcabd84285412ac74988ad17806008edca18b1f14fcfe6b3bb6910",
+    "config.timeline-v1.json": "acefac963a65c9cb9d44770fbc49e7b08ca57acdd848fe252b4c34fbedffdf22",
+    "test_timeline_v1.py": "f93b4c59d41f9265ae80295e855a87dbdf2ae731f27a09dc8a4b76d75ef81f65"
+  },
+  "expectedRequests": 3358,
+  "operation": "query",
+  "performanceAcceptance": false,
+  "command": "python3 /Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/multi64_timeline_v1.py run /Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/config.timeline-v1.json --pair product-pair --cases all --operation query --out /Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/pressure-timeline-v1",
+  "memoryCounterBoundary": "macOS resident_bytes, physical_footprint_bytes and cumulative pageins use the same proc_pid_rusage V2 call. Footprint is not heap and RSS minus footprint is not an exact file/private split."
+}

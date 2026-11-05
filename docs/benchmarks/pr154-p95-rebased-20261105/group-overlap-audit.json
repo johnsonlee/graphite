@@ -1,0 +1,2464 @@
+{
+  "method": "No new measurements. HTTP duration is exact retained client latency; recorded_ns follows file writes and semantic validation. Same-worker previous record <= next start; the last warmup record bounds the first pressure start; timestamps bound true start/end. Intersections of guaranteed cores are lower bounds; envelope intersections are upper bounds. No requests excluded; wall-clock timestamps and monotonic durations are combined assuming no clock step during each request. No inference of simultaneous server CPU execution.",
+  "runs": {
+    "full-query": [
+      {
+        "arm": "candidate_head",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 180.91791728511453,
+            "p95Ms": 198.11187498271465,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5833128411322832,
+              "max": 0.6313092820346355
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 257.207275390625,
+                "overlapMsUpper": 260.530029296875,
+                "overlapMsApproximate": 259.001953125,
+                "durationWeightedMeanOtherInFlightLower": 0.07094531065720762,
+                "durationWeightedMeanOtherInFlightUpper": 0.07186182364370204,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07144033541574697,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 257.207275390625,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9340.861572265625,
+                "overlapMsUpper": 9401.67138671875,
+                "overlapMsApproximate": 9370.64599609375,
+                "durationWeightedMeanOtherInFlightLower": 2.5764835969119404,
+                "durationWeightedMeanOtherInFlightUpper": 2.5932567273408216,
+                "durationWeightedMeanOtherInFlightApproximate": 2.5846990146057953,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9340.861572265625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10807.3388671875,
+                "overlapMsUpper": 10911.029296875,
+                "overlapMsApproximate": 10850.919189453125,
+                "durationWeightedMeanOtherInFlightLower": 2.9809810478567753,
+                "durationWeightedMeanOtherInFlightUpper": 3.0095819096916,
+                "durationWeightedMeanOtherInFlightApproximate": 2.99300177898493,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9340.861572265625,
+                  "shape-distinct": 1194.55419921875,
+                  "shape-with-aggregate": 257.207275390625,
+                  "shape-count-traversal": 13.959716796875,
+                  "shape-count-label": 0.335205078125,
+                  "shape-skip": 0.27490234375,
+                  "shape-order-by": 0.14599609375,
+                  "zero/global-wide-class-pair": 0.0
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 152.1893749013543,
+            "p95Ms": 170.9703328087926,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8688878957182169,
+              "max": 4.082967724651098
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 257.207275390625,
+                "overlapMsUpper": 260.530029296875,
+                "overlapMsApproximate": 259.001953125,
+                "durationWeightedMeanOtherInFlightLower": 0.08345581847036412,
+                "durationWeightedMeanOtherInFlightUpper": 0.08453394950845607,
+                "durationWeightedMeanOtherInFlightApproximate": 0.08403813597668403,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 257.207275390625,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8660.922119140625,
+                "overlapMsUpper": 8777.921630859375,
+                "overlapMsApproximate": 8719.421875,
+                "durationWeightedMeanOtherInFlightLower": 2.8102017840017406,
+                "durationWeightedMeanOtherInFlightUpper": 2.8481645126854147,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8291831483435774,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8660.922119140625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9126.666748046875,
+                "overlapMsUpper": 9307.07666015625,
+                "overlapMsApproximate": 9215.1279296875,
+                "durationWeightedMeanOtherInFlightLower": 2.961321534189662,
+                "durationWeightedMeanOtherInFlightUpper": 3.019858979728044,
+                "durationWeightedMeanOtherInFlightApproximate": 2.990024456008113,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8660.922119140625,
+                  "shape-group-count": 257.207275390625,
+                  "shape-distinct": 181.0390625,
+                  "schema-relationship-histogram": 15.268798828125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.70068359375,
+                  "dense/global-wide-four-properties": 0.675537109375,
+                  "dense/global-wide-name-pair": 0.654541015625,
+                  "dense/global-wide-class-pair": 0.630615234375
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 48056.93672550842
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 180.05958292633295,
+            "p95Ms": 195.65983396023512,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5779336094856262,
+              "max": 0.7166025005280972
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 235.848388671875,
+                "overlapMsUpper": 239.07275390625,
+                "overlapMsApproximate": 237.57470703125,
+                "durationWeightedMeanOtherInFlightLower": 0.06479101914988912,
+                "durationWeightedMeanOtherInFlightUpper": 0.06567679967534895,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0652652641787016,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 235.848388671875,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9245.9736328125,
+                "overlapMsUpper": 9308.9619140625,
+                "overlapMsApproximate": 9276.561279296875,
+                "durationWeightedMeanOtherInFlightLower": 2.540004865313554,
+                "durationWeightedMeanOtherInFlightUpper": 2.5573086720500293,
+                "durationWeightedMeanOtherInFlightApproximate": 2.548407741416627,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9245.9736328125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10841.716552734375,
+                "overlapMsUpper": 10955.4814453125,
+                "overlapMsApproximate": 10891.177490234375,
+                "durationWeightedMeanOtherInFlightLower": 2.978378901554266,
+                "durationWeightedMeanOtherInFlightUpper": 3.009631789797947,
+                "durationWeightedMeanOtherInFlightApproximate": 2.991966548121538,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9245.9736328125,
+                  "shape-distinct": 1337.995849609375,
+                  "shape-with-aggregate": 235.848388671875,
+                  "shape-count-traversal": 14.07177734375,
+                  "targeted/global-wide-caller-class": 0.580322265625,
+                  "shape-cartesian": 0.560791015625,
+                  "targeted/global-wide-callee-class": 0.5458984375,
+                  "targeted/global-wide-four-properties": 0.54541015625
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 149.1782497614622,
+            "p95Ms": 166.916792280972,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8493588641285896,
+              "max": 0.9178185909986496
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 235.848388671875,
+                "overlapMsUpper": 239.07275390625,
+                "overlapMsApproximate": 237.57470703125,
+                "durationWeightedMeanOtherInFlightLower": 0.07758945303890079,
+                "durationWeightedMeanOtherInFlightUpper": 0.07865020539909971,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0781573776197266,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 235.848388671875,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8555.75537109375,
+                "overlapMsUpper": 8652.208984375,
+                "overlapMsApproximate": 8603.982177734375,
+                "durationWeightedMeanOtherInFlightLower": 2.8146742206552307,
+                "durationWeightedMeanOtherInFlightUpper": 2.846405550855369,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8305398857553,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8555.75537109375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9001.798095703125,
+                "overlapMsUpper": 9169.919677734375,
+                "overlapMsApproximate": 9082.30029296875,
+                "durationWeightedMeanOtherInFlightLower": 2.9614134510112677,
+                "durationWeightedMeanOtherInFlightUpper": 3.0167221248050393,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9878970809798386,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8555.75537109375,
+                  "shape-group-count": 235.848388671875,
+                  "shape-distinct": 181.924560546875,
+                  "schema-relationship-histogram": 14.819580078125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.33251953125,
+                  "dense/global-wide-callee-class": 0.621337890625,
+                  "targeted/global-wide-four-properties": 0.565185546875,
+                  "targeted/global-wide-class-pair": 0.524169921875
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 47670.46782746911
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 180.81004219129682,
+            "p95Ms": 199.1062080487609,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5867074616253376,
+              "max": 0.9968112148344517
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 220.647216796875,
+                "overlapMsUpper": 223.935302734375,
+                "overlapMsApproximate": 222.39599609375,
+                "durationWeightedMeanOtherInFlightLower": 0.060562489425414374,
+                "durationWeightedMeanOtherInFlightUpper": 0.06146499194826749,
+                "durationWeightedMeanOtherInFlightApproximate": 0.06104248835407467,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 220.647216796875,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9167.806884765625,
+                "overlapMsUpper": 9234.281005859375,
+                "overlapMsApproximate": 9200.670166015625,
+                "durationWeightedMeanOtherInFlightLower": 2.5163481124894154,
+                "durationWeightedMeanOtherInFlightUpper": 2.5345937006923704,
+                "durationWeightedMeanOtherInFlightApproximate": 2.5253683129346345,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9167.806884765625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10842.400146484375,
+                "overlapMsUpper": 10966.779052734375,
+                "overlapMsApproximate": 10896.090087890625,
+                "durationWeightedMeanOtherInFlightLower": 2.975984713290393,
+                "durationWeightedMeanOtherInFlightUpper": 3.0101238078317247,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9907213438079694,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9167.806884765625,
+                  "shape-distinct": 1434.03271484375,
+                  "shape-with-aggregate": 220.647216796875,
+                  "shape-count-traversal": 14.326904296875,
+                  "targeted/global-wide-four-properties": 0.55517578125,
+                  "shape-cartesian": 0.42724609375,
+                  "targeted/global-wide-name-pair": 0.40771484375,
+                  "targeted/global-wide-caller-class": 0.36328125
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 154.5624160207808,
+            "p95Ms": 160.48212489113212,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8509357422590256,
+              "max": 1.090279933065176
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 220.647216796875,
+                "overlapMsUpper": 223.935302734375,
+                "overlapMsApproximate": 222.39599609375,
+                "durationWeightedMeanOtherInFlightLower": 0.07126401728643493,
+                "durationWeightedMeanOtherInFlightUpper": 0.07232599403144413,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07182883310351994,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 220.647216796875,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8723.938720703125,
+                "overlapMsUpper": 8823.762939453125,
+                "overlapMsApproximate": 8773.850830078125,
+                "durationWeightedMeanOtherInFlightLower": 2.8176331830657912,
+                "durationWeightedMeanOtherInFlightUpper": 2.8498741283805638,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8337536557231773,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8723.938720703125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9179.087158203125,
+                "overlapMsUpper": 9341.18115234375,
+                "overlapMsApproximate": 9259.1162109375,
+                "durationWeightedMeanOtherInFlightLower": 2.964635744841831,
+                "durationWeightedMeanOtherInFlightUpper": 3.0169884070152175,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9904833031309064,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8723.938720703125,
+                  "shape-group-count": 220.647216796875,
+                  "shape-distinct": 206.0478515625,
+                  "schema-relationship-histogram": 14.170654296875,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.31494140625,
+                  "dense/global-wide-aliased": 0.9619140625,
+                  "targeted/global-wide-four-properties": 0.647705078125,
+                  "dense/global-wide-parameterized-as-literal": 0.635986328125
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 47395.28767904267
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 178.86366741731763,
+            "p95Ms": 193.42008419334888,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6005993466824293,
+              "max": 0.6974679082632065
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 234.772216796875,
+                "overlapMsUpper": 237.89892578125,
+                "overlapMsApproximate": 236.435302734375,
+                "durationWeightedMeanOtherInFlightLower": 0.06482449827759637,
+                "durationWeightedMeanOtherInFlightUpper": 0.06568783442502274,
+                "durationWeightedMeanOtherInFlightApproximate": 0.06528370385550442,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 234.772216796875,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9042.306640625,
+                "overlapMsUpper": 9103.99267578125,
+                "overlapMsApproximate": 9072.54443359375,
+                "durationWeightedMeanOtherInFlightLower": 2.496730657690394,
+                "durationWeightedMeanOtherInFlightUpper": 2.5137631938835407,
+                "durationWeightedMeanOtherInFlightApproximate": 2.505079813246211,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9042.306640625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10788.53125,
+                "overlapMsUpper": 10900.64208984375,
+                "overlapMsApproximate": 10836.56396484375,
+                "durationWeightedMeanOtherInFlightLower": 2.978892200172506,
+                "durationWeightedMeanOtherInFlightUpper": 3.0098478602736285,
+                "durationWeightedMeanOtherInFlightApproximate": 2.992154828447431,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9042.306640625,
+                  "shape-distinct": 1492.230224609375,
+                  "shape-with-aggregate": 234.772216796875,
+                  "shape-count-traversal": 13.919921875,
+                  "targeted/global-wide-four-properties": 0.516357421875,
+                  "targeted/global-wide-caller-class": 0.491455078125,
+                  "targeted/global-wide-class-pair": 0.486328125,
+                  "targeted/global-wide-name-pair": 0.453125
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 150.77049983665347,
+            "p95Ms": 165.27562495321035,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8349332623183727,
+              "max": 1.0090969316661358
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 234.772216796875,
+                "overlapMsUpper": 237.89892578125,
+                "overlapMsApproximate": 236.435302734375,
+                "durationWeightedMeanOtherInFlightLower": 0.0774791150172078,
+                "durationWeightedMeanOtherInFlightUpper": 0.07851098602959139,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07802796371997636,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 234.772216796875,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8549.0712890625,
+                "overlapMsUpper": 8645.88134765625,
+                "overlapMsApproximate": 8597.476318359375,
+                "durationWeightedMeanOtherInFlightLower": 2.821349505204311,
+                "durationWeightedMeanOtherInFlightUpper": 2.853298590862506,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8373240480334085,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8549.0712890625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8982.6484375,
+                "overlapMsUpper": 9141.346435546875,
+                "overlapMsApproximate": 9060.7705078125,
+                "durationWeightedMeanOtherInFlightLower": 2.9644378749055984,
+                "durationWeightedMeanOtherInFlightUpper": 3.016811109743317,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9902195834642455,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8549.0712890625,
+                  "shape-group-count": 234.772216796875,
+                  "shape-distinct": 172.414306640625,
+                  "schema-relationship-histogram": 13.423583984375,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.2744140625,
+                  "dense/global-wide-aliased": 0.862060546875,
+                  "targeted/global-wide-four-properties": 0.526123046875,
+                  "dense/global-wide-callee-class": 0.498779296875
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 46918.41535642743
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 182.82054085284472,
+            "p95Ms": 193.23249999433756,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6324279941618443,
+              "max": 0.884020671248436
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 235.241943359375,
+                "overlapMsUpper": 238.579345703125,
+                "overlapMsApproximate": 237.1005859375,
+                "durationWeightedMeanOtherInFlightLower": 0.06454826438957179,
+                "durationWeightedMeanOtherInFlightUpper": 0.0654640174469662,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0650582591244616,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 235.241943359375,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9068.615478515625,
+                "overlapMsUpper": 9134.894775390625,
+                "overlapMsApproximate": 9101.251220703125,
+                "durationWeightedMeanOtherInFlightLower": 2.4883461732856893,
+                "durationWeightedMeanOtherInFlightUpper": 2.5065326136676522,
+                "durationWeightedMeanOtherInFlightApproximate": 2.4973011261533014,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9068.615478515625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10845.509521484375,
+                "overlapMsUpper": 10971.399169921875,
+                "overlapMsApproximate": 10899.8232421875,
+                "durationWeightedMeanOtherInFlightLower": 2.975909848538039,
+                "durationWeightedMeanOtherInFlightUpper": 3.010452830946751,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9908130428998154,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9068.615478515625,
+                  "shape-distinct": 1521.581298828125,
+                  "shape-with-aggregate": 235.241943359375,
+                  "shape-count-traversal": 13.916015625,
+                  "targeted/global-wide-four-properties": 0.546142578125,
+                  "targeted/global-wide-name-pair": 0.509033203125,
+                  "targeted/global-wide-callee-class": 0.494140625,
+                  "targeted/global-wide-class-pair": 0.480224609375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 154.6391248703003,
+            "p95Ms": 162.13329089805484,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8902286570519209,
+              "max": 4.581342592835426
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 235.241943359375,
+                "overlapMsUpper": 238.579345703125,
+                "overlapMsApproximate": 237.1005859375,
+                "durationWeightedMeanOtherInFlightLower": 0.07625205230357733,
+                "durationWeightedMeanOtherInFlightUpper": 0.07733384823860298,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07685451846695335,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 235.241943359375,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8707.589599609375,
+                "overlapMsUpper": 8840.034423828125,
+                "overlapMsApproximate": 8773.81201171875,
+                "durationWeightedMeanOtherInFlightLower": 2.8225050690605893,
+                "durationWeightedMeanOtherInFlightUpper": 2.8654361446989074,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8439706068797483,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8707.589599609375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9129.9248046875,
+                "overlapMsUpper": 9324.140625,
+                "overlapMsApproximate": 9225.529541015625,
+                "durationWeightedMeanOtherInFlightLower": 2.959402110835414,
+                "durationWeightedMeanOtherInFlightUpper": 3.0223558285150327,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9903917262537196,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8707.589599609375,
+                  "shape-group-count": 235.241943359375,
+                  "shape-distinct": 161.24658203125,
+                  "schema-relationship-histogram": 13.427001953125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.507080078125,
+                  "targeted/global-wide-four-properties": 0.61376953125,
+                  "dense/global-wide-class-pair": 0.586669921875,
+                  "dense/global-wide-callee-class": 0.513916015625
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 47085.25224076584
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 178.5045419819653,
+            "p95Ms": 198.7881250679493,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6209297310560942,
+              "max": 0.7691317684948444
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 255.0615234375,
+                "overlapMsUpper": 258.459716796875,
+                "overlapMsApproximate": 256.916748046875,
+                "durationWeightedMeanOtherInFlightLower": 0.07083946929951825,
+                "durationWeightedMeanOtherInFlightUpper": 0.07178326596046096,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07135472979427387,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 255.0615234375,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9167.452880859375,
+                "overlapMsUpper": 9234.093505859375,
+                "overlapMsApproximate": 9200.08154296875,
+                "durationWeightedMeanOtherInFlightLower": 2.546120983502831,
+                "durationWeightedMeanOtherInFlightUpper": 2.5646294062753663,
+                "durationWeightedMeanOtherInFlightApproximate": 2.555183099484224,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9167.452880859375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10726.438232421875,
+                "overlapMsUpper": 10838.8330078125,
+                "overlapMsApproximate": 10774.407958984375,
+                "durationWeightedMeanOtherInFlightLower": 2.9791055178301806,
+                "durationWeightedMeanOtherInFlightUpper": 3.0103214618636267,
+                "durationWeightedMeanOtherInFlightApproximate": 2.992428381766431,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9167.452880859375,
+                  "shape-distinct": 1288.117919921875,
+                  "shape-with-aggregate": 255.0615234375,
+                  "shape-count-traversal": 14.7177734375,
+                  "shape-cartesian": 0.48388671875,
+                  "shape-skip": 0.21240234375,
+                  "shape-union": 0.1669921875,
+                  "shape-order-by": 0.14306640625
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 149.16591718792915,
+            "p95Ms": 168.17383281886578,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8574258517473936,
+              "max": 0.9431105405092239
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 255.0615234375,
+                "overlapMsUpper": 258.459716796875,
+                "overlapMsApproximate": 256.916748046875,
+                "durationWeightedMeanOtherInFlightLower": 0.08446020004577592,
+                "durationWeightedMeanOtherInFlightUpper": 0.08558546616611795,
+                "durationWeightedMeanOtherInFlightApproximate": 0.08507453277431096,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 255.0615234375,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8477.51953125,
+                "overlapMsUpper": 8575.41162109375,
+                "overlapMsApproximate": 8526.465576171875,
+                "durationWeightedMeanOtherInFlightLower": 2.807216807347262,
+                "durationWeightedMeanOtherInFlightUpper": 2.8396324589895534,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8234246331684076,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8477.51953125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8945.216796875,
+                "overlapMsUpper": 9111.418212890625,
+                "overlapMsApproximate": 9026.626708984375,
+                "durationWeightedMeanOtherInFlightLower": 2.962088479417508,
+                "durationWeightedMeanOtherInFlightUpper": 3.017123847572559,
+                "durationWeightedMeanOtherInFlightApproximate": 2.98904627912716,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8477.51953125,
+                  "shape-group-count": 255.0615234375,
+                  "shape-distinct": 181.62060546875,
+                  "schema-relationship-histogram": 15.88671875,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.580078125,
+                  "dense/global-wide-aliased": 0.951904296875,
+                  "dense/global-wide-caller-class": 0.830810546875,
+                  "dense/global-wide-name-pair": 0.634033203125
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 47194.34833526611
+        }
+      }
+    ],
+    "final-full-query": [
+      {
+        "arm": "candidate_head",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 213.88983260840178,
+            "p95Ms": 222.75058273226023,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.643836447969079,
+              "max": 0.8781132511794567
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 5023.3447265625,
+                "overlapMsUpper": 5139.137939453125,
+                "overlapMsApproximate": 5081.37451171875,
+                "durationWeightedMeanOtherInFlightLower": 1.1759449905390815,
+                "durationWeightedMeanOtherInFlightUpper": 1.203051720427065,
+                "durationWeightedMeanOtherInFlightApproximate": 1.1895295320888009,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 4048.8232421875,
+                  "shape-group-count": 974.521484375
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 19,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9.02587890625,
+                "overlapMsUpper": 27.3837890625,
+                "overlapMsApproximate": 16.3310546875,
+                "durationWeightedMeanOtherInFlightLower": 0.0021129222983428857,
+                "durationWeightedMeanOtherInFlightUpper": 0.006410435939175857,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0038230348493576496,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9.02587890625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11060.392333984375,
+                "overlapMsUpper": 12750.6552734375,
+                "overlapMsApproximate": 11856.408447265625,
+                "durationWeightedMeanOtherInFlightLower": 2.5891937875118,
+                "durationWeightedMeanOtherInFlightUpper": 2.9848776086585778,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7755379887870397,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 5084.8193359375,
+                  "shape-with-aggregate": 4048.8232421875,
+                  "shape-group-count": 974.521484375,
+                  "shape-count-traversal": 321.2587890625,
+                  "schema-relationship-histogram": 303.026123046875,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 50.52978515625,
+                  "targeted/global-wide-name-pair": 14.152587890625,
+                  "shape-skip": 12.880859375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 182.75779159739614,
+            "p95Ms": 200.90749999508262,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8868177924305201,
+              "max": 5.021751053631306
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 4086.16015625,
+                "overlapMsUpper": 4171.570556640625,
+                "overlapMsApproximate": 4128.92529296875,
+                "durationWeightedMeanOtherInFlightLower": 1.1040428243600922,
+                "durationWeightedMeanOtherInFlightUpper": 1.127119927574649,
+                "durationWeightedMeanOtherInFlightApproximate": 1.1155975702637486,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 4048.8232421875,
+                  "shape-with-aggregate": 37.3369140625
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 14,
+                "requestsWithPossibleOverlap": 15,
+                "requestsWithEstimatedOverlap": 15,
+                "overlapMsLower": 5.9501953125,
+                "overlapMsUpper": 20.959716796875,
+                "overlapMsApproximate": 11.5126953125,
+                "durationWeightedMeanOtherInFlightLower": 0.0016076879483685022,
+                "durationWeightedMeanOtherInFlightUpper": 0.005663122355792889,
+                "durationWeightedMeanOtherInFlightApproximate": 0.003110624195522119,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 5.9501953125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9292.390625,
+                "overlapMsUpper": 10868.614990234375,
+                "overlapMsApproximate": 10028.010009765625,
+                "durationWeightedMeanOtherInFlightLower": 2.5107183268355873,
+                "durationWeightedMeanOtherInFlightUpper": 2.936599626998723,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7094759066060323,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 4398.48095703125,
+                  "shape-group-count": 4048.8232421875,
+                  "schema-relationship-histogram": 308.832763671875,
+                  "shape-count-traversal": 204.365966796875,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 50.52978515625,
+                  "shape-with-aggregate": 37.3369140625,
+                  "targeted/global-wide-name-pair": 14.152587890625,
+                  "dense/global-wide-class-pair": 11.107421875
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 14468.666265718639
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 216.51125000789762,
+            "p95Ms": 231.3871248625219,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6108533311635256,
+              "max": 1.7389562539756298
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 5099.057373046875,
+                "overlapMsUpper": 5202.8095703125,
+                "overlapMsApproximate": 5152.39990234375,
+                "durationWeightedMeanOtherInFlightLower": 1.1731807144478497,
+                "durationWeightedMeanOtherInFlightUpper": 1.1970518082615849,
+                "durationWeightedMeanOtherInFlightApproximate": 1.1854536547292744,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 4089.975830078125,
+                  "shape-group-count": 1009.08154296875
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 19,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 13.380615234375,
+                "overlapMsUpper": 27.9794921875,
+                "overlapMsApproximate": 20.469970703125,
+                "durationWeightedMeanOtherInFlightLower": 0.003078584646525713,
+                "durationWeightedMeanOtherInFlightUpper": 0.006437464463123922,
+                "durationWeightedMeanOtherInFlightApproximate": 0.004709689085115923,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 13.380615234375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11264.6357421875,
+                "overlapMsUpper": 12954.212158203125,
+                "overlapMsApproximate": 12071.181640625,
+                "durationWeightedMeanOtherInFlightLower": 2.5917444031655585,
+                "durationWeightedMeanOtherInFlightUpper": 2.980478696945631,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7773128375129614,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 5173.403076171875,
+                  "shape-with-aggregate": 4089.975830078125,
+                  "shape-group-count": 1009.08154296875,
+                  "shape-count-traversal": 339.010498046875,
+                  "schema-relationship-histogram": 293.4111328125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 48.894287109375,
+                  "shape-order-by": 22.78857421875,
+                  "shape-skip": 17.75634765625
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 184.75258396938443,
+            "p95Ms": 191.94262474775314,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9481432102620602,
+              "max": 2.1079286709427834
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 4258.143798828125,
+                "overlapMsUpper": 4340.3349609375,
+                "overlapMsApproximate": 4298.3759765625,
+                "durationWeightedMeanOtherInFlightLower": 1.1539460318746837,
+                "durationWeightedMeanOtherInFlightUpper": 1.1762196256874111,
+                "durationWeightedMeanOtherInFlightApproximate": 1.164848848699009,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 4089.975830078125,
+                  "shape-with-aggregate": 168.16796875
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 12,
+                "requestsWithPossibleOverlap": 12,
+                "requestsWithEstimatedOverlap": 12,
+                "overlapMsLower": 5.265625,
+                "overlapMsUpper": 14.296875,
+                "overlapMsApproximate": 9.78125,
+                "durationWeightedMeanOtherInFlightLower": 0.0014269708495430245,
+                "durationWeightedMeanOtherInFlightUpper": 0.003874416401578242,
+                "durationWeightedMeanOtherInFlightApproximate": 0.002650693625560633,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 5.265625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9396.425048828125,
+                "overlapMsUpper": 10903.492919921875,
+                "overlapMsApproximate": 10110.387451171875,
+                "durationWeightedMeanOtherInFlightLower": 2.5464070522670386,
+                "durationWeightedMeanOtherInFlightUpper": 2.9548185742295114,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7398890293949654,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 4409.875244140625,
+                  "shape-group-count": 4089.975830078125,
+                  "schema-relationship-histogram": 293.4111328125,
+                  "shape-with-aggregate": 168.16796875,
+                  "shape-count-traversal": 146.274658203125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 48.894287109375,
+                  "dense/global-wide-class-pair": 11.6162109375,
+                  "dense/global-wide-caller-class": 11.56103515625
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 14596.356868278235
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 218.985749874264,
+            "p95Ms": 223.65779196843505,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6553376223891973,
+              "max": 1.333320278674364
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 5271.0556640625,
+                "overlapMsUpper": 5384.14208984375,
+                "overlapMsApproximate": 5327.04736328125,
+                "durationWeightedMeanOtherInFlightLower": 1.210103781558905,
+                "durationWeightedMeanOtherInFlightUpper": 1.2360656230195965,
+                "durationWeightedMeanOtherInFlightApproximate": 1.2229580884148294,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 4156.0390625,
+                  "shape-group-count": 1115.0166015625
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 7.99072265625,
+                "overlapMsUpper": 21.2890625,
+                "overlapMsApproximate": 14.639892578125,
+                "durationWeightedMeanOtherInFlightLower": 0.0018344719388267664,
+                "durationWeightedMeanOtherInFlightUpper": 0.004887441279122946,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0033609566089748562,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 7.99072265625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11380.2763671875,
+                "overlapMsUpper": 12981.47216796875,
+                "overlapMsApproximate": 12134.169921875,
+                "durationWeightedMeanOtherInFlightLower": 2.6126294891951916,
+                "durationWeightedMeanOtherInFlightUpper": 2.9802243728447935,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7857047704220856,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 5270.299560546875,
+                  "shape-with-aggregate": 4156.0390625,
+                  "shape-group-count": 1115.0166015625,
+                  "shape-count-traversal": 287.171142578125,
+                  "schema-relationship-histogram": 257.167724609375,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 48.3212890625,
+                  "shape-skip": 14.75732421875,
+                  "shape-id-lookup": 13.3427734375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 186.75875011831522,
+            "p95Ms": 195.1082907617092,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8939773067831993,
+              "max": 2.077907856553793
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 4287.32080078125,
+                "overlapMsUpper": 4377.373046875,
+                "overlapMsApproximate": 4331.2978515625,
+                "durationWeightedMeanOtherInFlightLower": 1.1533543429023794,
+                "durationWeightedMeanOtherInFlightUpper": 1.1775797633797587,
+                "durationWeightedMeanOtherInFlightApproximate": 1.1651848367850275,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 4156.0390625,
+                  "shape-with-aggregate": 131.28173828125
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 15,
+                "requestsWithPossibleOverlap": 15,
+                "requestsWithEstimatedOverlap": 15,
+                "overlapMsLower": 5.974853515625,
+                "overlapMsUpper": 16.539794921875,
+                "overlapMsApproximate": 11.25732421875,
+                "durationWeightedMeanOtherInFlightLower": 0.0016073262465444431,
+                "durationWeightedMeanOtherInFlightUpper": 0.0044494557767599556,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0030283910116521992,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 5.974853515625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9477.632568359375,
+                "overlapMsUpper": 10957.963134765625,
+                "overlapMsApproximate": 10173.282958984375,
+                "durationWeightedMeanOtherInFlightLower": 2.549626956107045,
+                "durationWeightedMeanOtherInFlightUpper": 2.9478583381358097,
+                "durationWeightedMeanOtherInFlightApproximate": 2.736767465635251,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-distinct": 4467.587646484375,
+                  "shape-group-count": 4156.0390625,
+                  "schema-relationship-histogram": 267.6640625,
+                  "shape-count-traversal": 183.647216796875,
+                  "shape-with-aggregate": 131.28173828125,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 48.3212890625,
+                  "shape-id-lookup": 13.938720703125,
+                  "dense/global-wide-four-properties": 12.05322265625
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 14443.10135859996
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 177.2764171473682,
+            "p95Ms": 201.55308302491903,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5839904174208641,
+              "max": 0.6950896047055721
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 245.001708984375,
+                "overlapMsUpper": 247.888916015625,
+                "overlapMsApproximate": 246.4873046875,
+                "durationWeightedMeanOtherInFlightLower": 0.06831764497788752,
+                "durationWeightedMeanOtherInFlightUpper": 0.06912272991283047,
+                "durationWeightedMeanOtherInFlightApproximate": 0.06873189678146674,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 245.001708984375,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8994.453125,
+                "overlapMsUpper": 9055.44189453125,
+                "overlapMsApproximate": 9023.905517578125,
+                "durationWeightedMeanOtherInFlightLower": 2.50806354743913,
+                "durationWeightedMeanOtherInFlightUpper": 2.525069996584919,
+                "durationWeightedMeanOtherInFlightApproximate": 2.516276217090467,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8994.453125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10686.57177734375,
+                "overlapMsUpper": 10793.5634765625,
+                "overlapMsApproximate": 10731.228515625,
+                "durationWeightedMeanOtherInFlightLower": 2.9799033637020207,
+                "durationWeightedMeanOtherInFlightUpper": 3.009737526708915,
+                "durationWeightedMeanOtherInFlightApproximate": 2.992355698032323,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8994.453125,
+                  "shape-distinct": 1431.318359375,
+                  "shape-with-aggregate": 245.001708984375,
+                  "shape-count-traversal": 14.79736328125,
+                  "shape-labels-fn": 0.470458984375,
+                  "shape-skip": 0.36962890625,
+                  "shape-order-by": 0.154296875,
+                  "shape-order-by-desc": 0.0068359375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 151.78437484428287,
+            "p95Ms": 167.4908329732716,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8188989423215389,
+              "max": 1.0225130282342434
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 245.001708984375,
+                "overlapMsUpper": 247.888916015625,
+                "overlapMsApproximate": 246.4873046875,
+                "durationWeightedMeanOtherInFlightLower": 0.07918393788911712,
+                "durationWeightedMeanOtherInFlightUpper": 0.08011707596061565,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07966407869455164,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 245.001708984375,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8694.595703125,
+                "overlapMsUpper": 8791.9208984375,
+                "overlapMsApproximate": 8743.25830078125,
+                "durationWeightedMeanOtherInFlightLower": 2.8100715255465505,
+                "durationWeightedMeanOtherInFlightUpper": 2.8415267845837953,
+                "durationWeightedMeanOtherInFlightApproximate": 2.825799155065173,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8694.595703125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9167.2841796875,
+                "overlapMsUpper": 9333.154541015625,
+                "overlapMsApproximate": 9249.110107421875,
+                "durationWeightedMeanOtherInFlightLower": 2.9628432556874755,
+                "durationWeightedMeanOtherInFlightUpper": 3.0164521404723947,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9892891903150227,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8694.595703125,
+                  "shape-group-count": 245.001708984375,
+                  "shape-distinct": 199.28466796875,
+                  "schema-relationship-histogram": 13.509521484375,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.2275390625,
+                  "shape-cartesian": 0.635498046875,
+                  "targeted/global-wide-four-properties": 0.594482421875,
+                  "dense/global-wide-callee-class": 0.48583984375
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 47107.391997240484
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 181.42712488770485,
+            "p95Ms": 194.25633316859603,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5995726399123669,
+              "max": 0.698455698788166
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 250.75439453125,
+                "overlapMsUpper": 254.01318359375,
+                "overlapMsApproximate": 252.505859375,
+                "durationWeightedMeanOtherInFlightLower": 0.06853431747835015,
+                "durationWeightedMeanOtherInFlightUpper": 0.06942498535526552,
+                "durationWeightedMeanOtherInFlightApproximate": 0.06901301476251188,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 250.75439453125,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9317.537109375,
+                "overlapMsUpper": 9379.621826171875,
+                "overlapMsApproximate": 9347.81005859375,
+                "durationWeightedMeanOtherInFlightLower": 2.5465996221678733,
+                "durationWeightedMeanOtherInFlightUpper": 2.563568153066263,
+                "durationWeightedMeanOtherInFlightApproximate": 2.554873598449096,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9317.537109375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10898.627197265625,
+                "overlapMsUpper": 11012.594970703125,
+                "overlapMsApproximate": 10947.640869140625,
+                "durationWeightedMeanOtherInFlightLower": 2.978731351097013,
+                "durationWeightedMeanOtherInFlightUpper": 3.0098801713666132,
+                "durationWeightedMeanOtherInFlightApproximate": 2.992127401664104,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9317.537109375,
+                  "shape-distinct": 1313.53662109375,
+                  "shape-with-aggregate": 250.75439453125,
+                  "shape-count-traversal": 14.00634765625,
+                  "shape-cartesian": 0.384765625,
+                  "zero/global-wide-caller-class": 0.28173828125,
+                  "shape-skip": 0.28076171875,
+                  "zero/global-wide-parameterized-as-literal": 0.249755859375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 151.32308332249522,
+            "p95Ms": 171.32779210805893,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8398683574050665,
+              "max": 0.9300203919410706
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 250.75439453125,
+                "overlapMsUpper": 254.01318359375,
+                "overlapMsApproximate": 252.505859375,
+                "durationWeightedMeanOtherInFlightLower": 0.08177632275338614,
+                "durationWeightedMeanOtherInFlightUpper": 0.08283908293614735,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0823475125609325,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 250.75439453125,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8637.982666015625,
+                "overlapMsUpper": 8734.629638671875,
+                "overlapMsApproximate": 8686.30615234375,
+                "durationWeightedMeanOtherInFlightLower": 2.8170292279612132,
+                "durationWeightedMeanOtherInFlightUpper": 2.848547854160565,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8327885410608893,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8637.982666015625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9087.009521484375,
+                "overlapMsUpper": 9249.98291015625,
+                "overlapMsApproximate": 9166.283935546875,
+                "durationWeightedMeanOtherInFlightLower": 2.963466402577407,
+                "durationWeightedMeanOtherInFlightUpper": 3.016615478816561,
+                "durationWeightedMeanOtherInFlightApproximate": 2.989319469210912,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8637.982666015625,
+                  "shape-group-count": 250.75439453125,
+                  "shape-distinct": 172.734130859375,
+                  "schema-relationship-histogram": 16.705810546875,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 2.257080078125,
+                  "targeted/global-wide-four-properties": 0.436279296875,
+                  "dense/global-wide-callee-class": 0.431884765625,
+                  "dense/global-wide-caller-class": 0.3828125
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 46920.649802312255
+        }
+      },
+      {
+        "arm": "main_base",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 183.8354580104351,
+            "p95Ms": 210.0805421359837,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6477874424308538,
+              "max": 0.9994815103709698
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 239.906005859375,
+                "overlapMsUpper": 243.205810546875,
+                "overlapMsApproximate": 241.681640625,
+                "durationWeightedMeanOtherInFlightLower": 0.06395859988105,
+                "durationWeightedMeanOtherInFlightUpper": 0.06483832311656222,
+                "durationWeightedMeanOtherInFlightApproximate": 0.06443198158361588,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 239.906005859375,
+                  "shape-group-count": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9302.2958984375,
+                "overlapMsUpper": 9372.28076171875,
+                "overlapMsApproximate": 9336.652099609375,
+                "durationWeightedMeanOtherInFlightLower": 2.4799788534349725,
+                "durationWeightedMeanOtherInFlightUpper": 2.498636718427978,
+                "durationWeightedMeanOtherInFlightApproximate": 2.4891381677935835,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9302.2958984375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11168.226318359375,
+                "overlapMsUpper": 11291.9619140625,
+                "overlapMsApproximate": 11222.10107421875,
+                "durationWeightedMeanOtherInFlightLower": 2.977433248985275,
+                "durationWeightedMeanOtherInFlightUpper": 3.0104209827782276,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9917961822572283,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9302.2958984375,
+                  "shape-distinct": 1608.032470703125,
+                  "shape-with-aggregate": 239.906005859375,
+                  "shape-count-traversal": 14.87158203125,
+                  "shape-cartesian": 0.34912109375,
+                  "shape-count-label": 0.34521484375,
+                  "zero/global-wide-aliased": 0.28662109375,
+                  "shape-skip": 0.28515625
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 153.70179107412696,
+            "p95Ms": 176.92204099148512,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9094893932342529,
+              "max": 1.1377597823739052
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 2,
+                "requestsWithPossibleOverlap": 2,
+                "requestsWithEstimatedOverlap": 2,
+                "overlapMsLower": 239.906005859375,
+                "overlapMsUpper": 243.205810546875,
+                "overlapMsApproximate": 241.681640625,
+                "durationWeightedMeanOtherInFlightLower": 0.07550298983753054,
+                "durationWeightedMeanOtherInFlightUpper": 0.07654150122824656,
+                "durationWeightedMeanOtherInFlightApproximate": 0.07606181592103732,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 239.906005859375,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8959.48486328125,
+                "overlapMsUpper": 9064.32958984375,
+                "overlapMsApproximate": 9011.9072265625,
+                "durationWeightedMeanOtherInFlightLower": 2.8197205491318797,
+                "durationWeightedMeanOtherInFlightUpper": 2.852717181691413,
+                "durationWeightedMeanOtherInFlightApproximate": 2.8362188654116465,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8959.48486328125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9409.3583984375,
+                "overlapMsUpper": 9587.413330078125,
+                "overlapMsApproximate": 9497.16796875,
+                "durationWeightedMeanOtherInFlightLower": 2.9613043199566356,
+                "durationWeightedMeanOtherInFlightUpper": 3.0173415985817673,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9889396643540946,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8959.48486328125,
+                  "shape-group-count": 239.906005859375,
+                  "shape-distinct": 181.21728515625,
+                  "schema-relationship-histogram": 14.820068359375,
+                  "dense/global-wide-wrapped-case-insensitive-distinct": 3.00634765625,
+                  "targeted/global-wide-four-properties": 0.83154296875,
+                  "dense/global-wide-callee-class": 0.526611328125,
+                  "targeted/global-wide-callee-class": 0.51123046875
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 1460,
+          "durationMs": 48239.937995094806
+        }
+      }
+    ],
+    "optimization-effect": [
+      {
+        "arm": "candidate_head",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 220.57162504643202,
+            "p95Ms": 226.3757917098701,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.62443664111197,
+              "max": 1.6940089501440525
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12760.241943359375,
+                "overlapMsUpper": 12957.385986328125,
+                "overlapMsApproximate": 12857.636474609375,
+                "durationWeightedMeanOtherInFlightLower": 2.9045653427339273,
+                "durationWeightedMeanOtherInFlightUpper": 2.9494404914399817,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9267348894632343,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7629.345458984375,
+                  "shape-group-count": 5130.896484375
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 13.577392578125,
+                "overlapMsUpper": 42.3974609375,
+                "overlapMsApproximate": 27.7509765625,
+                "durationWeightedMeanOtherInFlightLower": 0.003090570233869119,
+                "durationWeightedMeanOtherInFlightUpper": 0.009650772783588571,
+                "durationWeightedMeanOtherInFlightApproximate": 0.006316849250057271,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 13.577392578125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12777.490478515625,
+                "overlapMsUpper": 13113.2529296875,
+                "overlapMsApproximate": 12940.840087890625,
+                "durationWeightedMeanOtherInFlightLower": 2.9084915611904547,
+                "durationWeightedMeanOtherInFlightUpper": 2.984919890950515,
+                "durationWeightedMeanOtherInFlightApproximate": 2.945674211507416,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7629.345458984375,
+                  "shape-group-count": 5130.896484375,
+                  "shape-collect": 13.577392578125,
+                  "shape-order-by-desc": 2.852783203125,
+                  "shape-order-by": 0.818359375
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 184.80091588571668,
+            "p95Ms": 193.79745796322823,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9148023277521133,
+              "max": 1.334922932088375
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10954.659912109375,
+                "overlapMsUpper": 11112.511474609375,
+                "overlapMsApproximate": 11033.392822265625,
+                "durationWeightedMeanOtherInFlightLower": 2.952907126590953,
+                "durationWeightedMeanOtherInFlightUpper": 2.995457147092686,
+                "durationWeightedMeanOtherInFlightApproximate": 2.974130147055572,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7629.345458984375,
+                  "shape-with-aggregate": 3325.314453125
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 16,
+                "requestsWithPossibleOverlap": 17,
+                "requestsWithEstimatedOverlap": 17,
+                "overlapMsLower": 5.623046875,
+                "overlapMsUpper": 17.324462890625,
+                "overlapMsApproximate": 11.563720703125,
+                "durationWeightedMeanOtherInFlightLower": 0.0015157326036190238,
+                "durationWeightedMeanOtherInFlightUpper": 0.004669933192315455,
+                "durationWeightedMeanOtherInFlightApproximate": 0.003117083829906871,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 5.623046875
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10961.287353515625,
+                "overlapMsUpper": 11177.025390625,
+                "overlapMsApproximate": 11066.120361328125,
+                "durationWeightedMeanOtherInFlightLower": 2.9546936009421967,
+                "durationWeightedMeanOtherInFlightUpper": 3.0128473357334347,
+                "durationWeightedMeanOtherInFlightApproximate": 2.982952089873405,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7629.345458984375,
+                  "shape-with-aggregate": 3325.314453125,
+                  "shape-collect": 5.623046875,
+                  "shape-order-by-desc": 0.583984375,
+                  "shape-order-by": 0.42041015625
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 8146.4076596312225
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 220.49783309921622,
+            "p95Ms": 234.8357909359038,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6798623707145452,
+              "max": 2.8885742984712124
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12823.458251953125,
+                "overlapMsUpper": 13053.015380859375,
+                "overlapMsApproximate": 12942.4755859375,
+                "durationWeightedMeanOtherInFlightLower": 2.89940170084904,
+                "durationWeightedMeanOtherInFlightUpper": 2.9513048861611164,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9263116851765716,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7687.016845703125,
+                  "shape-group-count": 5136.44140625
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 14.40185546875,
+                "overlapMsUpper": 44.01416015625,
+                "overlapMsApproximate": 28.055908203125,
+                "durationWeightedMeanOtherInFlightLower": 0.0032562795012894335,
+                "durationWeightedMeanOtherInFlightUpper": 0.00995166267251164,
+                "durationWeightedMeanOtherInFlightApproximate": 0.006343479766904185,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 14.40185546875
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12838.874755859375,
+                "overlapMsUpper": 13211.0458984375,
+                "overlapMsApproximate": 13023.531982421875,
+                "durationWeightedMeanOtherInFlightLower": 2.9028873937696775,
+                "durationWeightedMeanOtherInFlightUpper": 2.9870358054224853,
+                "durationWeightedMeanOtherInFlightApproximate": 2.944638648871852,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7687.016845703125,
+                  "shape-group-count": 5136.44140625,
+                  "shape-collect": 14.40185546875,
+                  "shape-order-by-desc": 0.73291015625,
+                  "shape-order-by": 0.28173828125
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 185.9997920691967,
+            "p95Ms": 205.39095904678106,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9041143003851175,
+              "max": 1.0197383239865303
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11041.862548828125,
+                "overlapMsUpper": 11206.226318359375,
+                "overlapMsApproximate": 11124.98583984375,
+                "durationWeightedMeanOtherInFlightLower": 2.947617288979546,
+                "durationWeightedMeanOtherInFlightUpper": 2.9914940793860323,
+                "durationWeightedMeanOtherInFlightApproximate": 2.969806991906118,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7687.016845703125,
+                  "shape-with-aggregate": 3354.845703125
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 16,
+                "requestsWithPossibleOverlap": 16,
+                "requestsWithEstimatedOverlap": 16,
+                "overlapMsLower": 6.014892578125,
+                "overlapMsUpper": 16.572509765625,
+                "overlapMsApproximate": 11.293701171875,
+                "durationWeightedMeanOtherInFlightLower": 0.001605671260281867,
+                "durationWeightedMeanOtherInFlightUpper": 0.0044240195973208355,
+                "durationWeightedMeanOtherInFlightApproximate": 0.003014845428801351,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 6.014892578125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11048.351318359375,
+                "overlapMsUpper": 11270.614990234375,
+                "overlapMsApproximate": 11158.05419921875,
+                "durationWeightedMeanOtherInFlightLower": 2.949349461352634,
+                "durationWeightedMeanOtherInFlightUpper": 3.0086825891681364,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9786345667270235,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7687.016845703125,
+                  "shape-with-aggregate": 3354.845703125,
+                  "shape-collect": 6.014892578125,
+                  "shape-order-by-desc": 0.3330078125,
+                  "shape-order-by": 0.140869140625
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 8210.253830533475
+        }
+      },
+      {
+        "arm": "candidate_head",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 217.4005419947207,
+            "p95Ms": 223.91187492758036,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.697306739166379,
+              "max": 1.1347484402358532
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12555.8095703125,
+                "overlapMsUpper": 12775.35107421875,
+                "overlapMsApproximate": 12665.787109375,
+                "durationWeightedMeanOtherInFlightLower": 2.8917978943073774,
+                "durationWeightedMeanOtherInFlightUpper": 2.942361711411635,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9171274291415163,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7574.794921875,
+                  "shape-group-count": 4981.0146484375
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 14.060791015625,
+                "overlapMsUpper": 44.052978515625,
+                "overlapMsApproximate": 28.762451171875,
+                "durationWeightedMeanOtherInFlightLower": 0.0032384184885553705,
+                "durationWeightedMeanOtherInFlightUpper": 0.010146084949445586,
+                "durationWeightedMeanOtherInFlightApproximate": 0.006624439090778337,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 14.060791015625
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 12572.1748046875,
+                "overlapMsUpper": 12940.919677734375,
+                "overlapMsApproximate": 12753.583740234375,
+                "durationWeightedMeanOtherInFlightLower": 2.895567061881993,
+                "durationWeightedMeanOtherInFlightUpper": 2.9804947315350026,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9373483564202103,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 7574.794921875,
+                  "shape-group-count": 4981.0146484375,
+                  "shape-collect": 14.060791015625,
+                  "shape-order-by": 1.2197265625,
+                  "shape-order-by-desc": 1.084716796875
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 185.60429057106376,
+            "p95Ms": 195.15829114243388,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9291361849755049,
+              "max": 3.841985985636711
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10890.7275390625,
+                "overlapMsUpper": 11078.78857421875,
+                "overlapMsApproximate": 10984.97021484375,
+                "durationWeightedMeanOtherInFlightLower": 2.932301653125349,
+                "durationWeightedMeanOtherInFlightUpper": 2.982936625150791,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9576762622134125,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7574.794921875,
+                  "shape-with-aggregate": 3315.9326171875
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 16,
+                "requestsWithPossibleOverlap": 16,
+                "requestsWithEstimatedOverlap": 16,
+                "overlapMsLower": 5.5029296875,
+                "overlapMsUpper": 16.48095703125,
+                "overlapMsApproximate": 10.991943359375,
+                "durationWeightedMeanOtherInFlightLower": 0.0014816503086512675,
+                "durationWeightedMeanOtherInFlightUpper": 0.004437457219867456,
+                "durationWeightedMeanOtherInFlightApproximate": 0.0029595537642593617,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 5.5029296875
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10897.287109375,
+                "overlapMsUpper": 11142.822021484375,
+                "overlapMsApproximate": 11018.720947265625,
+                "durationWeightedMeanOtherInFlightLower": 2.934067801328226,
+                "durationWeightedMeanOtherInFlightUpper": 3.0001774736247646,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9667635640598577,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 7574.794921875,
+                  "shape-with-aggregate": 3315.9326171875,
+                  "shape-collect": 5.5029296875,
+                  "shape-order-by": 0.60986328125,
+                  "shape-order-by-desc": 0.44677734375
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 8098.342998884618
+        }
+      },
+      {
+        "arm": "parent_head",
+        "round": 0,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 185.62304228544235,
+            "p95Ms": 200.32279193401337,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.5945052970200777,
+              "max": 1.0172959566116333
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 5,
+                "requestsWithPossibleOverlap": 5,
+                "requestsWithEstimatedOverlap": 5,
+                "overlapMsLower": 1074.2451171875,
+                "overlapMsUpper": 1086.257568359375,
+                "overlapMsApproximate": 1080.87353515625,
+                "durationWeightedMeanOtherInFlightLower": 0.28787702714821867,
+                "durationWeightedMeanOtherInFlightUpper": 0.2910961329898875,
+                "durationWeightedMeanOtherInFlightApproximate": 0.28965331565910846,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 680.68701171875,
+                  "shape-group-count": 393.55810546875
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10062.783203125,
+                "overlapMsUpper": 10137.209716796875,
+                "overlapMsApproximate": 10100.5048828125,
+                "durationWeightedMeanOtherInFlightLower": 2.6966323300001895,
+                "durationWeightedMeanOtherInFlightUpper": 2.7165772039903646,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7067410145394364,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 10062.783203125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11137.216552734375,
+                "overlapMsUpper": 11232.3076171875,
+                "overlapMsApproximate": 11185.15185546875,
+                "durationWeightedMeanOtherInFlightLower": 2.984559799816618,
+                "durationWeightedMeanOtherInFlightUpper": 3.0100423759113504,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9974055388624237,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 10062.783203125,
+                  "shape-with-aggregate": 680.68701171875,
+                  "shape-group-count": 393.55810546875,
+                  "shape-order-by": 0.162353515625,
+                  "shape-order-by-desc": 0.02587890625
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 155.30450036749244,
+            "p95Ms": 169.59958337247372,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8303957283496857,
+              "max": 0.9627286195755005
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 4,
+                "requestsWithPossibleOverlap": 4,
+                "requestsWithEstimatedOverlap": 4,
+                "overlapMsLower": 680.68701171875,
+                "overlapMsUpper": 689.589599609375,
+                "overlapMsApproximate": 685.28076171875,
+                "durationWeightedMeanOtherInFlightLower": 0.21591046691132235,
+                "durationWeightedMeanOtherInFlightUpper": 0.21873432262634535,
+                "durationWeightedMeanOtherInFlightApproximate": 0.21736758110668428,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 680.68701171875,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8724.199951171875,
+                "overlapMsUpper": 8818.464111328125,
+                "overlapMsApproximate": 8770.85205078125,
+                "durationWeightedMeanOtherInFlightLower": 2.7672719656116347,
+                "durationWeightedMeanOtherInFlightUpper": 2.7971720789999432,
+                "durationWeightedMeanOtherInFlightApproximate": 2.782069774936099,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8724.199951171875
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9404.886962890625,
+                "overlapMsUpper": 9508.087646484375,
+                "overlapMsApproximate": 9456.1328125,
+                "durationWeightedMeanOtherInFlightLower": 2.983182432522957,
+                "durationWeightedMeanOtherInFlightUpper": 3.0159171658095985,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9994373560427836,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8724.199951171875,
+                  "shape-group-count": 680.68701171875,
+                  "shape-order-by": 0.0,
+                  "shape-order-by-desc": 0.0,
+                  "shape-with-aggregate": 0.0
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 42371.9107513316
+        }
+      },
+      {
+        "arm": "parent_head",
+        "round": 1,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 183.66604205220938,
+            "p95Ms": 203.16362520679832,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6683211736381054,
+              "max": 1.113474402576685
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 4,
+                "requestsWithPossibleOverlap": 4,
+                "requestsWithEstimatedOverlap": 4,
+                "overlapMsLower": 1067.288818359375,
+                "overlapMsUpper": 1078.98779296875,
+                "overlapMsApproximate": 1073.913330078125,
+                "durationWeightedMeanOtherInFlightLower": 0.287163081118755,
+                "durationWeightedMeanOtherInFlightUpper": 0.2903107891589483,
+                "durationWeightedMeanOtherInFlightApproximate": 0.2889454620107312,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 668.472412109375,
+                  "shape-group-count": 398.81640625
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10020.880859375,
+                "overlapMsUpper": 10103.9013671875,
+                "overlapMsApproximate": 10063.047607421875,
+                "durationWeightedMeanOtherInFlightLower": 2.696202727510572,
+                "durationWeightedMeanOtherInFlightUpper": 2.7185400971235403,
+                "durationWeightedMeanOtherInFlightApproximate": 2.707548047616626,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 10020.880859375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 11088.42431640625,
+                "overlapMsUpper": 11191.5673828125,
+                "overlapMsApproximate": 11141.056640625,
+                "durationWeightedMeanOtherInFlightLower": 2.983434321317111,
+                "durationWeightedMeanOtherInFlightUpper": 3.011185835467503,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9975954931846576,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 10020.880859375,
+                  "shape-with-aggregate": 668.472412109375,
+                  "shape-group-count": 398.81640625,
+                  "shape-order-by": 0.254638671875,
+                  "shape-order-by-desc": 0.0
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 156.24991711229086,
+            "p95Ms": 174.5978337712586,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.9099693298339844,
+              "max": 1.1835302785038948
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 3,
+                "requestsWithPossibleOverlap": 3,
+                "requestsWithEstimatedOverlap": 3,
+                "overlapMsLower": 668.472412109375,
+                "overlapMsUpper": 676.59765625,
+                "overlapMsApproximate": 672.869873046875,
+                "durationWeightedMeanOtherInFlightLower": 0.21169167206864486,
+                "durationWeightedMeanOtherInFlightUpper": 0.2142647722997632,
+                "durationWeightedMeanOtherInFlightApproximate": 0.2130842588708114,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 668.472412109375,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8747.638671875,
+                "overlapMsUpper": 8850.78564453125,
+                "overlapMsApproximate": 8798.937255859375,
+                "durationWeightedMeanOtherInFlightLower": 2.7701999716909307,
+                "durationWeightedMeanOtherInFlightUpper": 2.8028645285445464,
+                "durationWeightedMeanOtherInFlightApproximate": 2.7864451941140054,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8747.638671875
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9416.111083984375,
+                "overlapMsUpper": 9527.901123046875,
+                "overlapMsApproximate": 9471.80712890625,
+                "durationWeightedMeanOtherInFlightLower": 2.9818916437595755,
+                "durationWeightedMeanOtherInFlightUpper": 3.0172932846666165,
+                "durationWeightedMeanOtherInFlightApproximate": 2.9995294529848167,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8747.638671875,
+                  "shape-group-count": 668.472412109375,
+                  "shape-order-by": 0.0,
+                  "shape-order-by-desc": 0.0,
+                  "shape-with-aggregate": 0.0
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 42852.62066591531
+        }
+      },
+      {
+        "arm": "parent_head",
+        "round": 2,
+        "cases": {
+          "shape-group-count": {
+            "requests": 20,
+            "p50Ms": 182.97645775601268,
+            "p95Ms": 201.96999981999397,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.6966819725930691,
+              "max": 1.1371081620454788
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 6,
+                "requestsWithPossibleOverlap": 6,
+                "requestsWithEstimatedOverlap": 6,
+                "overlapMsLower": 1073.1865234375,
+                "overlapMsUpper": 1087.884765625,
+                "overlapMsApproximate": 1081.483642578125,
+                "durationWeightedMeanOtherInFlightLower": 0.291576274878895,
+                "durationWeightedMeanOtherInFlightUpper": 0.29556967081772184,
+                "durationWeightedMeanOtherInFlightApproximate": 0.29383053640605317,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-with-aggregate": 689.48388671875,
+                  "shape-group-count": 383.70263671875
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9903.755615234375,
+                "overlapMsUpper": 9989.35498046875,
+                "overlapMsApproximate": 9947.68310546875,
+                "durationWeightedMeanOtherInFlightLower": 2.690771926907402,
+                "durationWeightedMeanOtherInFlightUpper": 2.7140285961833936,
+                "durationWeightedMeanOtherInFlightApproximate": 2.702706677938651,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9903.755615234375
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 10977.16015625,
+                "overlapMsUpper": 11085.78662109375,
+                "overlapMsApproximate": 11033.025146484375,
+                "durationWeightedMeanOtherInFlightLower": 2.982407435434782,
+                "durationWeightedMeanOtherInFlightUpper": 3.0119203852162912,
+                "durationWeightedMeanOtherInFlightApproximate": 2.997585510627629,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 9903.755615234375,
+                  "shape-with-aggregate": 689.48388671875,
+                  "shape-group-count": 383.70263671875,
+                  "shape-order-by": 0.218017578125,
+                  "shape-order-by-desc": 0.0
+                }
+              }
+            }
+          },
+          "shape-with-aggregate": {
+            "requests": 20,
+            "p50Ms": 155.10633401572704,
+            "p95Ms": 171.3545829989016,
+            "postprocessPlusIdleBoundMs": {
+              "median": 0.8887371849268675,
+              "max": 1.8441474698483944
+            },
+            "overlap": {
+              "group": {
+                "requestsWithGuaranteedOverlap": 5,
+                "requestsWithPossibleOverlap": 5,
+                "requestsWithEstimatedOverlap": 5,
+                "overlapMsLower": 689.48388671875,
+                "overlapMsUpper": 700.67236328125,
+                "overlapMsApproximate": 695.506591796875,
+                "durationWeightedMeanOtherInFlightLower": 0.2184768458483496,
+                "durationWeightedMeanOtherInFlightUpper": 0.22202213982302996,
+                "durationWeightedMeanOtherInFlightApproximate": 0.22038526116347115,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-group-count": 689.48388671875,
+                  "shape-with-aggregate": 0.0
+                }
+              },
+              "collect": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 8717.0205078125,
+                "overlapMsUpper": 8822.7841796875,
+                "overlapMsApproximate": 8769.188720703125,
+                "durationWeightedMeanOtherInFlightLower": 2.7621633839850883,
+                "durationWeightedMeanOtherInFlightUpper": 2.7956767319859464,
+                "durationWeightedMeanOtherInFlightApproximate": 2.778693932160956,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8717.0205078125
+                }
+              },
+              "any": {
+                "requestsWithGuaranteedOverlap": 20,
+                "requestsWithPossibleOverlap": 20,
+                "requestsWithEstimatedOverlap": 20,
+                "overlapMsLower": 9406.50439453125,
+                "overlapMsUpper": 9523.9423828125,
+                "overlapMsApproximate": 9464.6953125,
+                "durationWeightedMeanOtherInFlightLower": 2.980640229833438,
+                "durationWeightedMeanOtherInFlightUpper": 3.0178528199413326,
+                "durationWeightedMeanOtherInFlightApproximate": 2.999079193324427,
+                "unknownFirstRequestPairs": 0,
+                "guaranteedOverlapByCaseMs": {
+                  "shape-collect": 8717.0205078125,
+                  "shape-group-count": 689.48388671875,
+                  "shape-order-by-desc": 0.0,
+                  "shape-order-by": 0.0,
+                  "shape-with-aggregate": 0.0
+                }
+              }
+            }
+          }
+        },
+        "overall": {
+          "requests": 100,
+          "durationMs": 41710.25108359754
+        }
+      }
+    ]
+  },
+  "sourcePair": {
+    "before": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+    "after": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+    "sameMainControl": "97488be2987cbcc172714e9cd8cab5d8bf74ce60"
+  }
+}

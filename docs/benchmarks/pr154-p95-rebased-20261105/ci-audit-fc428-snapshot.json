@@ -1,0 +1,861 @@
+{
+  "capturedUtc": "2026-11-05T13:26:18.781834+00:00",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 42034577023,
+      "jobs": [
+        {
+          "completedAt": "2026-11-05T13:24:27Z",
+          "conclusion": "success",
+          "databaseId": 127269263460,
+          "name": "apple-frontend",
+          "startedAt": "2026-11-05T13:18:18Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Initialize containers",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install curl, python3 and a C toolchain",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Java",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Gradle",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Rust",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Cache cargo",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Cache SwiftPM",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build the frontend",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test the frontend",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build graphite.jar and the CLI",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test the mixed-language correctness assertions",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Index the fixture, import it and query the graph",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install the frontend from a release directory and build through the CLI",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Upload the CLI and graphite.jar",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build the JVM endpoint matching the Swift client",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Serve both languages and verify the cross-graph route join",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Upload mixed-language correctness evidence",
+              "number": 19,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Cache SwiftPM",
+              "number": 33,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Cache cargo",
+              "number": 34,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Setup Gradle",
+              "number": 35,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Setup Java",
+              "number": 36,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Checkout",
+              "number": 37,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Stop containers",
+              "number": 38,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 39,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577023/job/127269263460"
+        },
+        {
+          "completedAt": "2026-11-05T13:22:55Z",
+          "conclusion": "success",
+          "databaseId": 127269264098,
+          "name": "apple-frontend-macos",
+          "startedAt": "2026-11-05T13:18:19Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Cache SwiftPM",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build and test with the system Bash",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Index the AcmeApp Xcode workspace",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Upload the AcmeApp IR",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Cache SwiftPM",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Checkout",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577023/job/127269264098"
+        },
+        {
+          "completedAt": "2026-11-05T13:24:40Z",
+          "conclusion": "success",
+          "databaseId": 127272383316,
+          "name": "apple-xcode-graph",
+          "startedAt": "2026-11-05T13:24:30Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Java",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Download the CLI, the jar and the IR",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Import and query the AcmeApp graph",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Setup Java",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 9,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577023/job/127272383316"
+        }
+      ],
+      "name": "Apple frontend",
+      "status": "completed",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034577023"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576993,
+      "jobs": [
+        {
+          "completedAt": "2026-11-05T13:19:37Z",
+          "conclusion": "success",
+          "databaseId": 127269263115,
+          "name": "rust-check-windows",
+          "startedAt": "2026-11-05T13:18:18Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Rust",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Cache cargo",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Check",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test no-clobber output publication on Windows",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Cache cargo",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Checkout",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576993/job/127269263115"
+        },
+        {
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "databaseId": 127269263481,
+          "name": "rust-build-test",
+          "startedAt": "2026-11-05T13:18:18Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Bun",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Rust",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Cache cargo",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Format",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Clippy",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Unit tests",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build the static Linux binary and run the graphite-explore image",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Java",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Gradle",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build the JVM frontend, the Kotlin explorer and a persisted fixture graph",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "",
+              "name": "Declared types JVM-to-native interoperability",
+              "number": 14,
+              "status": "in_progress"
+            },
+            {
+              "conclusion": "",
+              "name": "Persisted-index equivalence and relaxed scan plans against the real fixture",
+              "number": 15,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Benchmark harness tests (fail-closed sampling and warmup)",
+              "number": 16,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Kotlin-vs-Rust differential over the fixture",
+              "number": 17,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Gradle",
+              "number": 30,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Java",
+              "number": 31,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Cache cargo",
+              "number": 32,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Bun",
+              "number": 33,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Checkout",
+              "number": 34,
+              "status": "pending"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576993/job/127269263481"
+        }
+      ],
+      "name": "Rust",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576993"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576969,
+      "jobs": [
+        {
+          "completedAt": "2026-11-05T13:20:34Z",
+          "conclusion": "success",
+          "databaseId": 127269263530,
+          "name": "benchmark-harness-tests",
+          "startedAt": "2026-11-05T13:18:19Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v7",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Resolve product ancestry and trusted controller source",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout trusted controller and frontend harness",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup trusted CI script runtime",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Check and test the trusted comment publisher",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run dtolnay/rust-toolchain@stable",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-java@v5",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run Swatinem/rust-cache@v2",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify the trusted benchmark controller",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/upload-artifact@v7",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run Swatinem/rust-cache@v2",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-java@v5",
+              "number": 19,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Setup trusted CI script runtime",
+              "number": 20,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Checkout trusted controller and frontend harness",
+              "number": 21,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v7",
+              "number": 22,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 23,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576969/job/127269263530"
+        },
+        {
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "databaseId": 127270425908,
+          "name": "benchmark-base-head",
+          "startedAt": "2026-11-05T13:20:37Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "",
+              "name": "Free disk for matched graph construction",
+              "number": 2,
+              "status": "in_progress"
+            },
+            {
+              "conclusion": "",
+              "name": "Checkout exact base",
+              "number": 3,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Checkout exact product head",
+              "number": 4,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Checkout the matching trusted frontend harness",
+              "number": 5,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run actions/setup-java@v5",
+              "number": 6,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run dtolnay/rust-toolchain@stable",
+              "number": 7,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run gradle/actions/setup-gradle@v6",
+              "number": 8,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run Swatinem/rust-cache@v2",
+              "number": 9,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run actions/download-artifact@v8",
+              "number": 10,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Run matched base/head correctness, OOM and timing report",
+              "number": 11,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Finalize retained evidence even after an interrupted controller",
+              "number": 12,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Publish Markdown summary",
+              "number": 13,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Retain report for the PR comment",
+              "number": 14,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Retain raw evidence and failures",
+              "number": 15,
+              "status": "pending"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576969/job/127270425908"
+        }
+      ],
+      "name": "Benchmark correctness and OOM",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576969"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 42034576957,
+      "jobs": [
+        {
+          "completedAt": "0001-01-01T00:00:00Z",
+          "conclusion": "",
+          "databaseId": 127269263407,
+          "name": "run-unit-test",
+          "startedAt": "2026-11-05T13:18:18Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Java",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Bun",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Check and test CI scripts",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Setup Gradle",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test Explorer web state",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "",
+              "name": "Build",
+              "number": 8,
+              "status": "in_progress"
+            },
+            {
+              "conclusion": "",
+              "name": "Preserve failed test diagnostics",
+              "number": 9,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Generate coverage report",
+              "number": 10,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Comment coverage on PR",
+              "number": 11,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Enforce coverage threshold",
+              "number": 12,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Preserve coverage diagnostics",
+              "number": 13,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Update build status comment on PR",
+              "number": 14,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Gradle",
+              "number": 25,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Bun",
+              "number": 26,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Setup Java",
+              "number": 27,
+              "status": "pending"
+            },
+            {
+              "conclusion": "",
+              "name": "Post Checkout",
+              "number": 28,
+              "status": "pending"
+            }
+          ],
+          "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576957/job/127269263407"
+        }
+      ],
+      "name": "Run unit tests",
+      "status": "in_progress",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/42034576957"
+    }
+  ]
+}

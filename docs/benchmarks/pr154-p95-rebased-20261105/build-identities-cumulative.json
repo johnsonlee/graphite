@@ -1,0 +1,40 @@
+{
+  "base": {
+    "source": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/main-97488be2/graphite",
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target",
+    "sha256": "100e3333ec51b169bfd6ae55c1fef92fe49f0e72fbe006e99fe536e7c4967ac3",
+    "bytes": 9922560,
+    "importHelpExitCode": 2,
+    "importRoute": "unrecognized subcommand",
+    "originalPath": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/base-target/aarch64-apple-darwin/release/graphite"
+  },
+  "head": {
+    "source": "fc428df79ee01490e8534c5646b86cb4946a1f20",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-fc428df7/graphite",
+    "originalPath": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/graphite",
+    "sha256": "2017c1da01fd85332b8d369f39213039bd57ae98846057e0d6858b8fa76acb3b",
+    "bytes": 9995872,
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target",
+    "importHelpExitCode": 2,
+    "importRoute": "JVM Graph IR importer usage"
+  },
+  "parent": {
+    "source": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-152abe6e/graphite",
+    "originalPath": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/graphite",
+    "sha256": "69f9fd90a1ed15dbddabc3017755792624c121ad2f64c991be9afe87e01349de",
+    "bytes": 9974864,
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target"
+  },
+  "parentBeforeCollect": {
+    "source": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+    "path": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/parent-89f2ddd7/graphite",
+    "target": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target",
+    "sha256": "4257f35fc3462beefffdf454d511f808d3410aef60bb5a87500c676ac09ff2dc",
+    "bytes": 9975072,
+    "importHelpExitCode": 2,
+    "importRoute": "JVM Graph IR importer usage",
+    "originalPath": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/head-target/aarch64-apple-darwin/release/graphite"
+  }
+}

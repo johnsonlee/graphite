@@ -1,0 +1,98 @@
+{
+  "createdUtc": "2026-11-05T11:00:48.027800+00:00",
+  "base": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+  "head": "da7276e6a4cbd92a1ddff55f2f81358bce64f86f",
+  "observedFailure": "Old head reused baseline executable from shared Cargo target; old native version comparison invalid. Persisted graph metadata differs and remains a separate hypothesis.",
+  "correctiveBuild": "Distinct physical target directories; only thirdparty dependency cache cloned. Force clean all local workspace crates in each target before build; source-specific import help and binary SHA smoke before sampling.",
+  "feedbackEstimateMinutes": {
+    "buildAndSmokes": [
+      2,
+      5
+    ],
+    "focusedMulti64Diagnostics": [
+      5,
+      12
+    ],
+    "fullMulti64BalancedConfirmation": [
+      8,
+      16
+    ]
+  },
+  "reuse": "Prior64graphsets only after current/old JVM producer dependency closure proof; no graph reconstruction needed for Rust-only receiver diagnosis.",
+  "protocol": "Predeclare targeted five slow global64 graph queries c4 two warmups20measured/case, nearest rank percase; balancedorders preserveallpairs. Full73counterbalancedconfirmation followsdiagnosis. Allresponsebytes/ failures/CPU/RSSboundariesretained.",
+  "constraints": "Correctness/availabilityfirst; no synthetic performance orsinglegraphperformance; no CPU/RSS tradeoff orheapincrease; candidateacceptance limitsunchanged.",
+  "sourceFixCommit": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+  "executionDeclaredUtc": "2026-11-05T11:15:16.478101+00:00",
+  "diagnostics": [
+    {
+      "pair": "main-data-effect",
+      "cases": "focused",
+      "operation": "query",
+      "rounds": 3
+    },
+    {
+      "pair": "code-on-head-data",
+      "cases": "focused",
+      "operation": "query",
+      "rounds": 3
+    }
+  ],
+  "finalConfirmation": [
+    {
+      "pair": "product-pair",
+      "cases": "all",
+      "operation": "load",
+      "rounds": 3
+    },
+    {
+      "pair": "product-pair",
+      "cases": "all",
+      "operation": "query",
+      "rounds": 3
+    }
+  ],
+  "resourceBounds": "Independent5% CPU andkernelpeakRSSlimits fordeclaredload andquery workloads; allmeasurements/failuresretained; noautoperformancepass.",
+  "appleAffectedClosure": {
+    "declaredUtc": "2026-11-05T11:33:23.189383+00:00",
+    "reason": "The old candidate artifact also invalidated the originalApple3comparison; rerun this affected category rather than retaining unverified historicalheadnumbers.",
+    "order": "Afterfull64load/query: independentApplefull-responseoracle, then3pairedloadrounds, then3pairedqueryrounds; nooverlap",
+    "fixedProtocol": "Sameprevious3realgraphs/4queries/AB BA AB/c1&4/5warmups/100measuredpercase/arm/round; 4800measured+120warmup; actualdatatypeparity, fullbodyread, CPUandkernelRSSboundariesretained",
+    "estimatedMinutes": [
+      8,
+      11
+    ]
+  },
+  "optimizationAttempt": {
+    "number": 312,
+    "parent": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+    "candidate": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+    "declaredUtc": "2026-11-05T12:06:27.875855+00:00",
+    "hypothesis": "Certified bounded direct scalarcollect prefix avoids5Mperrequest row/provenance loop preservingall late errors/allsource provenance.",
+    "correctness": "297completeCyphertests, certificatecancelcontract,strictworkspaceClippyfmtpassed; directfastpathentry/hotcancel/sourceaccesscounterverified.",
+    "profile": "global64focusedCPUprofilediagnosticexcludedfromtimingacceptance",
+    "measurements": [
+      {
+        "run": "optimization-effect",
+        "pair": "optimization-effect",
+        "cases": "focused",
+        "operation": "query",
+        "rounds": 3
+      },
+      {
+        "run": "final-full-load",
+        "pair": "product-pair",
+        "cases": "all",
+        "operation": "load",
+        "rounds": 3
+      },
+      {
+        "run": "final-full-query",
+        "pair": "product-pair",
+        "cases": "all",
+        "operation": "query",
+        "rounds": 3
+      }
+    ],
+    "acceptance": "Eachworkloadloading/queryCPUandkernelpeakRSSindependent<=5%; allresponsesexact; allp50/p95andpairedrangesretained; keepverifiedpositiveincrementwithoutclaimingunmetrecovery. NoJVMheap/data/coveragechanges."
+  }
+}

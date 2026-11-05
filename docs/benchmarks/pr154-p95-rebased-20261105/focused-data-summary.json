@@ -1,0 +1,1524 @@
+{
+  "ok": true,
+  "performanceAcceptance": false,
+  "quantiles": "nearest-rank per case, pooled repeated requests and each round separately",
+  "expectedRequests": 690,
+  "actualRequests": 690,
+  "failures": [],
+  "parity": {
+    "shape-order-by": {
+      "main_base": [
+        "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a"
+      ],
+      "main_head": [
+        "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a"
+      ]
+    },
+    "shape-order-by-desc": {
+      "main_base": [
+        "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+      ],
+      "main_head": [
+        "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+      ]
+    },
+    "shape-group-count": {
+      "main_base": [
+        "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+      ],
+      "main_head": [
+        "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+      ]
+    },
+    "shape-with-aggregate": {
+      "main_base": [
+        "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+      ],
+      "main_head": [
+        "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+      ]
+    },
+    "shape-collect": {
+      "main_base": [
+        "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc"
+      ],
+      "main_head": [
+        "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc"
+      ]
+    }
+  },
+  "queries": [
+    {
+      "arm": "main_base",
+      "case": "shape-collect",
+      "samples": 60,
+      "p50Ms": 1949.072957970202,
+      "p95Ms": 2456.933124922216,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 1779.7326250001788,
+          "p95Ms": 1810.1205830462277
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 1949.5437503792346,
+          "p95Ms": 2052.072082646191
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 2184.639375191182,
+          "p95Ms": 2563.01241600886
+        }
+      ],
+      "roundP95RangeMs": [
+        1810.1205830462277,
+        2563.01241600886
+      ]
+    },
+    {
+      "arm": "main_base",
+      "case": "shape-group-count",
+      "samples": 60,
+      "p50Ms": 199.08191682770848,
+      "p95Ms": 243.841958232224,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 180.80966733396053,
+          "p95Ms": 211.8487497791648
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 200.1040419563651,
+          "p95Ms": 243.841958232224
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 209.7850413993001,
+          "p95Ms": 256.9921249523759
+        }
+      ],
+      "roundP95RangeMs": [
+        211.8487497791648,
+        256.9921249523759
+      ]
+    },
+    {
+      "arm": "main_base",
+      "case": "shape-order-by",
+      "samples": 60,
+      "p50Ms": 0.9678327478468418,
+      "p95Ms": 1.165166962891817,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 0.9642499499022961,
+          "p95Ms": 1.0909577831625938
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 0.951915979385376,
+          "p95Ms": 1.1284579522907734
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 0.9729587472975254,
+          "p95Ms": 1.165166962891817
+        }
+      ],
+      "roundP95RangeMs": [
+        1.0909577831625938,
+        1.165166962891817
+      ]
+    },
+    {
+      "arm": "main_base",
+      "case": "shape-order-by-desc",
+      "samples": 60,
+      "p50Ms": 0.673375092446804,
+      "p95Ms": 1.0444163344800472,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 0.6695832125842571,
+          "p95Ms": 1.0444163344800472
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 0.6385422311723232,
+          "p95Ms": 0.8898330852389336
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 0.6954590789973736,
+          "p95Ms": 1.0550841689109802
+        }
+      ],
+      "roundP95RangeMs": [
+        0.8898330852389336,
+        1.0550841689109802
+      ]
+    },
+    {
+      "arm": "main_base",
+      "case": "shape-with-aggregate",
+      "samples": 60,
+      "p50Ms": 166.13454185426235,
+      "p95Ms": 200.0399581156671,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 153.75162474811077,
+          "p95Ms": 172.29166673496366
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 166.97291610762477,
+          "p95Ms": 191.5272083133459
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 186.87949981540442,
+          "p95Ms": 213.41762505471706
+        }
+      ],
+      "roundP95RangeMs": [
+        172.29166673496366,
+        213.41762505471706
+      ]
+    },
+    {
+      "arm": "main_head",
+      "case": "shape-collect",
+      "samples": 60,
+      "p50Ms": 1796.3102497160435,
+      "p95Ms": 2236.0474998131394,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 1785.1751670241356,
+          "p95Ms": 1848.340333905071
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 1757.988624740392,
+          "p95Ms": 1842.7206249907613
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 2148.737625218928,
+          "p95Ms": 2266.1354998126626
+        }
+      ],
+      "roundP95RangeMs": [
+        1842.7206249907613,
+        2266.1354998126626
+      ]
+    },
+    {
+      "arm": "main_head",
+      "case": "shape-group-count",
+      "samples": 60,
+      "p50Ms": 187.70254217088223,
+      "p95Ms": 218.05166685953736,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 184.88687509670854,
+          "p95Ms": 209.67875001952052
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 184.45666693150997,
+          "p95Ms": 215.038999915123
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 200.1268332824111,
+          "p95Ms": 222.5244170986116
+        }
+      ],
+      "roundP95RangeMs": [
+        209.67875001952052,
+        222.5244170986116
+      ]
+    },
+    {
+      "arm": "main_head",
+      "case": "shape-order-by",
+      "samples": 60,
+      "p50Ms": 0.9668329730629921,
+      "p95Ms": 1.2044589966535568,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 0.8877082727849483,
+          "p95Ms": 1.0570837184786797
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 0.9427918121218681,
+          "p95Ms": 1.2044589966535568
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 1.012415625154972,
+          "p95Ms": 1.147374976426363
+        }
+      ],
+      "roundP95RangeMs": [
+        1.0570837184786797,
+        1.2044589966535568
+      ]
+    },
+    {
+      "arm": "main_head",
+      "case": "shape-order-by-desc",
+      "samples": 60,
+      "p50Ms": 0.6697080098092556,
+      "p95Ms": 0.8569173514842987,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 0.6605833768844604,
+          "p95Ms": 0.8812909945845604
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 0.6284168921411037,
+          "p95Ms": 0.7701669819653034
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 0.7142499089241028,
+          "p95Ms": 0.8382080122828484
+        }
+      ],
+      "roundP95RangeMs": [
+        0.7701669819653034,
+        0.8812909945845604
+      ]
+    },
+    {
+      "arm": "main_head",
+      "case": "shape-with-aggregate",
+      "samples": 60,
+      "p50Ms": 163.68083283305168,
+      "p95Ms": 187.19374993816018,
+      "rounds": [
+        {
+          "round": 0,
+          "samples": 20,
+          "p50Ms": 159.2997908592224,
+          "p95Ms": 170.25825008749962
+        },
+        {
+          "round": 1,
+          "samples": 20,
+          "p50Ms": 159.27304234355688,
+          "p95Ms": 167.55654197186232
+        },
+        {
+          "round": 2,
+          "samples": 20,
+          "p50Ms": 171.9603748060763,
+          "p95Ms": 191.19683280587196
+        }
+      ],
+      "roundP95RangeMs": [
+        167.55654197186232,
+        191.19683280587196
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "recorded_ns": 1793877336944818000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 20185.21041702479,
+      "user_seconds": 17.223810166666667,
+      "system_seconds": 2.251731125,
+      "raw_cpu_ticks": {
+        "user": 413371444,
+        "system": 54041547
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 2559803392,
+      "identity": "83271599289815",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877338733965000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1788.848957978189,
+      "ok": true,
+      "user_seconds": 2.5988892500000027,
+      "system_seconds": 0.07847162500000016,
+      "cpu_seconds": 2.677360875000003,
+      "cpu_before": {
+        "user_seconds": 17.223810166666667,
+        "system_seconds": 2.251731125,
+        "raw_cpu_ticks": {
+          "user": 413371444,
+          "system": 54041547
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 2559803392,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.82269941666667,
+        "system_seconds": 2.33020275,
+        "raw_cpu_ticks": {
+          "user": 475744786,
+          "system": 55924866
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3689201664,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 3742171136,
+      "rss_samples": 148,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877340707846000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1973.6455832608044,
+      "ok": true,
+      "user_seconds": 4.263770791666662,
+      "system_seconds": 0.052108583333333236,
+      "cpu_seconds": 4.315879374999995,
+      "cpu_before": {
+        "user_seconds": 19.82269941666667,
+        "system_seconds": 2.33020275,
+        "raw_cpu_ticks": {
+          "user": 475744786,
+          "system": 55924866
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3689201664,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 24.08647020833333,
+        "system_seconds": 2.3823113333333334,
+        "raw_cpu_ticks": {
+          "user": 578075285,
+          "system": 57175472
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3835117568,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 3892084736,
+      "rss_samples": 163,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877351887204000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 11179.08408306539,
+      "ok": true,
+      "user_seconds": 42.239607125,
+      "system_seconds": 0.183299125,
+      "cpu_seconds": 42.42290625,
+      "cpu_before": {
+        "user_seconds": 24.08647020833333,
+        "system_seconds": 2.3823113333333334,
+        "raw_cpu_ticks": {
+          "user": 578075285,
+          "system": 57175472
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3835117568,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 66.32607733333333,
+        "system_seconds": 2.5656104583333335,
+        "raw_cpu_ticks": {
+          "user": 1591825856,
+          "system": 61574651
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 4180393984,
+        "identity": "83271599289815",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 4206772224,
+      "rss_samples": 907,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877351975081000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 35215.38416668773,
+      "user_seconds": 66.326076,
+      "system_seconds": 2.613489,
+      "cpu_seconds": 68.939565,
+      "peak_process_rss_bytes": 4207001600
+    },
+    {
+      "recorded_ns": 1793877371762713000,
+      "kind": "registry_ready",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19756.760582793504,
+      "user_seconds": 17.242652666666668,
+      "system_seconds": 2.106269333333333,
+      "raw_cpu_ticks": {
+        "user": 413823664,
+        "system": 50550464
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3838017536,
+      "identity": "83272445202378",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877373507130000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1744.1142089664936,
+      "ok": true,
+      "user_seconds": 2.557520166666663,
+      "system_seconds": 0.07177595833333328,
+      "cpu_seconds": 2.629296124999996,
+      "cpu_before": {
+        "user_seconds": 17.242652666666668,
+        "system_seconds": 2.106269333333333,
+        "raw_cpu_ticks": {
+          "user": 413823664,
+          "system": 50550464
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3838017536,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.80017283333333,
+        "system_seconds": 2.1780452916666664,
+        "raw_cpu_ticks": {
+          "user": 475204148,
+          "system": 52273087
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5015322624,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5034868736,
+      "rss_samples": 143,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877375445416000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1938.022291753441,
+      "ok": true,
+      "user_seconds": 4.184283666666669,
+      "system_seconds": 0.04964291666666698,
+      "cpu_seconds": 4.233926583333336,
+      "cpu_before": {
+        "user_seconds": 19.80017283333333,
+        "system_seconds": 2.1780452916666664,
+        "raw_cpu_ticks": {
+          "user": 475204148,
+          "system": 52273087
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5015322624,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 23.9844565,
+        "system_seconds": 2.2276882083333334,
+        "raw_cpu_ticks": {
+          "user": 575626956,
+          "system": 53464517
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5251727360,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5269323776,
+      "rss_samples": 159,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877386729558000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 11283.880707807839,
+      "ok": true,
+      "user_seconds": 42.56783216666667,
+      "system_seconds": 0.19881875000000004,
+      "cpu_seconds": 42.76665091666667,
+      "cpu_before": {
+        "user_seconds": 23.9844565,
+        "system_seconds": 2.2276882083333334,
+        "raw_cpu_ticks": {
+          "user": 575626956,
+          "system": 53464517
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5251727360,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 66.55228866666667,
+        "system_seconds": 2.4265069583333334,
+        "raw_cpu_ticks": {
+          "user": 1597254928,
+          "system": 58236167
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5758271488,
+        "identity": "83272445202378",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5777473536,
+      "rss_samples": 912,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877386840791000,
+      "kind": "server_resources",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 0,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 34834.783957805485,
+      "user_seconds": 66.552288,
+      "system_seconds": 2.445952,
+      "cpu_seconds": 68.99824000000001,
+      "peak_process_rss_bytes": 5781815296
+    },
+    {
+      "recorded_ns": 1793877405919262000,
+      "kind": "registry_ready",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19047.449875157326,
+      "user_seconds": 17.2925465,
+      "system_seconds": 1.747675,
+      "raw_cpu_ticks": {
+        "user": 415021116,
+        "system": 41944200
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3840245760,
+      "identity": "83273281981940",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877407636893000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1717.3963328823447,
+      "ok": true,
+      "user_seconds": 2.5651728749999982,
+      "system_seconds": 0.06977349999999993,
+      "cpu_seconds": 2.6349463749999984,
+      "cpu_before": {
+        "user_seconds": 17.2925465,
+        "system_seconds": 1.747675,
+        "raw_cpu_ticks": {
+          "user": 415021116,
+          "system": 41944200
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3840245760,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.857719375,
+        "system_seconds": 1.8174485,
+        "raw_cpu_ticks": {
+          "user": 476585265,
+          "system": 43618764
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5017534464,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5034934272,
+      "rss_samples": 141,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877409549346000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1912.217291072011,
+      "ok": true,
+      "user_seconds": 4.155565083333332,
+      "system_seconds": 0.05063045833333324,
+      "cpu_seconds": 4.206195541666665,
+      "cpu_before": {
+        "user_seconds": 19.857719375,
+        "system_seconds": 1.8174485,
+        "raw_cpu_ticks": {
+          "user": 476585265,
+          "system": 43618764
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5017534464,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 24.01328445833333,
+        "system_seconds": 1.8680789583333333,
+        "raw_cpu_ticks": {
+          "user": 576318827,
+          "system": 44833895
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5267701760,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5311184896,
+      "rss_samples": 157,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877420750520000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 11200.897249858826,
+      "ok": true,
+      "user_seconds": 42.150641750000005,
+      "system_seconds": 0.17581241666666658,
+      "cpu_seconds": 42.32645416666667,
+      "cpu_before": {
+        "user_seconds": 24.01328445833333,
+        "system_seconds": 1.8680789583333333,
+        "raw_cpu_ticks": {
+          "user": 576318827,
+          "system": 44833895
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5267701760,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 66.16392620833334,
+        "system_seconds": 2.043891375,
+        "raw_cpu_ticks": {
+          "user": 1587934229,
+          "system": 49053393
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5697798144,
+        "identity": "83273281981940",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5701976064,
+      "rss_samples": 910,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877420835785000,
+      "kind": "server_resources",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 33963.9364592731,
+      "user_seconds": 66.163925,
+      "system_seconds": 2.064675,
+      "cpu_seconds": 68.2286,
+      "peak_process_rss_bytes": 5702189056
+    },
+    {
+      "recorded_ns": 1793877440451248000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19584.70541704446,
+      "user_seconds": 17.26631420833333,
+      "system_seconds": 2.010363041666667,
+      "raw_cpu_ticks": {
+        "user": 414391541,
+        "system": 48248713
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3832725504,
+      "identity": "83274097857309",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877442165010000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1714.171166997403,
+      "ok": true,
+      "user_seconds": 2.549983000000001,
+      "system_seconds": 0.06307995833333324,
+      "cpu_seconds": 2.6130629583333342,
+      "cpu_before": {
+        "user_seconds": 17.26631420833333,
+        "system_seconds": 2.010363041666667,
+        "raw_cpu_ticks": {
+          "user": 414391541,
+          "system": 48248713
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3832725504,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.81629720833333,
+        "system_seconds": 2.073443,
+        "raw_cpu_ticks": {
+          "user": 475591133,
+          "system": 49762632
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5009473536,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5029937152,
+      "rss_samples": 140,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877444047230000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1882.5881658121943,
+      "ok": true,
+      "user_seconds": 4.097525749999999,
+      "system_seconds": 0.028648333333332943,
+      "cpu_seconds": 4.126174083333332,
+      "cpu_before": {
+        "user_seconds": 19.81629720833333,
+        "system_seconds": 2.073443,
+        "raw_cpu_ticks": {
+          "user": 475591133,
+          "system": 49762632
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5009473536,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 23.91382295833333,
+        "system_seconds": 2.102091333333333,
+        "raw_cpu_ticks": {
+          "user": 573931751,
+          "system": 50450192
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5183537152,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5222514688,
+      "rss_samples": 154,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877456075752000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 12030.90741718188,
+      "ok": true,
+      "user_seconds": 45.65553220833334,
+      "system_seconds": 0.19016362500000028,
+      "cpu_seconds": 45.84569583333334,
+      "cpu_before": {
+        "user_seconds": 23.91382295833333,
+        "system_seconds": 2.102091333333333,
+        "raw_cpu_ticks": {
+          "user": 573931751,
+          "system": 50450192
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5183537152,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 69.56935516666667,
+        "system_seconds": 2.2922549583333334,
+        "raw_cpu_ticks": {
+          "user": 1669664524,
+          "system": 55014119
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5537284096,
+        "identity": "83274097857309",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5562073088,
+      "rss_samples": 978,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877456162439000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 1,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 35299.78100024164,
+      "user_seconds": 69.569354,
+      "system_seconds": 2.314699,
+      "cpu_seconds": 71.88405300000001,
+      "peak_process_rss_bytes": 5562073088
+    },
+    {
+      "recorded_ns": 1793877475572582000,
+      "kind": "registry_ready",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19364.81950012967,
+      "user_seconds": 17.255546083333332,
+      "system_seconds": 1.8419271666666668,
+      "raw_cpu_ticks": {
+        "user": 414133106,
+        "system": 44206252
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3833741312,
+      "identity": "83274946179958",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877477350200000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1777.4504581466317,
+      "ok": true,
+      "user_seconds": 2.619976416666667,
+      "system_seconds": 0.06982733333333324,
+      "cpu_seconds": 2.6898037500000003,
+      "cpu_before": {
+        "user_seconds": 17.255546083333332,
+        "system_seconds": 1.8419271666666668,
+        "raw_cpu_ticks": {
+          "user": 414133106,
+          "system": 44206252
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3833741312,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.8755225,
+        "system_seconds": 1.9117545,
+        "raw_cpu_ticks": {
+          "user": 477012540,
+          "system": 45882108
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5013438464,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5031067648,
+      "rss_samples": 145,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877479328431000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1978.054165840149,
+      "ok": true,
+      "user_seconds": 4.287243708333332,
+      "system_seconds": 0.03515866666666678,
+      "cpu_seconds": 4.3224023749999985,
+      "cpu_before": {
+        "user_seconds": 19.8755225,
+        "system_seconds": 1.9117545,
+        "raw_cpu_ticks": {
+          "user": 477012540,
+          "system": 45882108
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5013438464,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 24.16276620833333,
+        "system_seconds": 1.9469131666666668,
+        "raw_cpu_ticks": {
+          "user": 579906389,
+          "system": 46725916
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5172117504,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5227249664,
+      "rss_samples": 161,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877493211833000,
+      "kind": "stage",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 13883.493499830365,
+      "ok": true,
+      "user_seconds": 52.30438645833335,
+      "system_seconds": 0.24413566666666653,
+      "cpu_seconds": 52.54852212500001,
+      "cpu_before": {
+        "user_seconds": 24.16276620833333,
+        "system_seconds": 1.9469131666666668,
+        "raw_cpu_ticks": {
+          "user": 579906389,
+          "system": 46725916
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5172117504,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 76.46715266666668,
+        "system_seconds": 2.1910488333333333,
+        "raw_cpu_ticks": {
+          "user": 1835211664,
+          "system": 52585172
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5676941312,
+        "identity": "83274946179958",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5697372160,
+      "rss_samples": 1125,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877493299278000,
+      "kind": "server_resources",
+      "arm": "main_base",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 37091.95241704583,
+      "user_seconds": 76.467151,
+      "system_seconds": 2.221848,
+      "cpu_seconds": 78.688999,
+      "peak_process_rss_bytes": 5697372160
+    },
+    {
+      "recorded_ns": 1793877512801440000,
+      "kind": "registry_ready",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "wallMs": 19470.763749908656,
+      "user_seconds": 17.115446416666668,
+      "system_seconds": 1.9935458333333334,
+      "raw_cpu_ticks": {
+        "user": 410770714,
+        "system": 47845100
+      },
+      "mach_timebase": {
+        "numer": 125,
+        "denom": 3
+      },
+      "resident_bytes": 3838132224,
+      "identity": "83275837146639",
+      "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+    },
+    {
+      "recorded_ns": 1793877514646133000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "first-use",
+      "requestCount": 5,
+      "expectedRequestCount": 5,
+      "wallMs": 1844.467124901712,
+      "ok": true,
+      "user_seconds": 2.7354962916666636,
+      "system_seconds": 0.07334333333333354,
+      "cpu_seconds": 2.8088396249999974,
+      "cpu_before": {
+        "user_seconds": 17.115446416666668,
+        "system_seconds": 1.9935458333333334,
+        "raw_cpu_ticks": {
+          "user": 410770714,
+          "system": 47845100
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 3838132224,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 19.85094270833333,
+        "system_seconds": 2.066889166666667,
+        "raw_cpu_ticks": {
+          "user": 476422625,
+          "system": 49605340
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5015273472,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5035016192,
+      "rss_samples": 150,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877516585920000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "warmup",
+      "requestCount": 10,
+      "expectedRequestCount": 10,
+      "wallMs": 1939.5885420963168,
+      "ok": true,
+      "user_seconds": 4.178420250000002,
+      "system_seconds": 0.04537112499999996,
+      "cpu_seconds": 4.223791375000002,
+      "cpu_before": {
+        "user_seconds": 19.85094270833333,
+        "system_seconds": 2.066889166666667,
+        "raw_cpu_ticks": {
+          "user": 476422625,
+          "system": 49605340
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5015273472,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 24.029362958333333,
+        "system_seconds": 2.112260291666667,
+        "raw_cpu_ticks": {
+          "user": 576704711,
+          "system": 50694247
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5191139328,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5237342208,
+      "rss_samples": 159,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877529841939000,
+      "kind": "stage",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "stage": "pressure",
+      "requestCount": 100,
+      "expectedRequestCount": 100,
+      "wallMs": 13255.811290815473,
+      "ok": true,
+      "user_seconds": 50.21330087499999,
+      "system_seconds": 0.21812758333333315,
+      "cpu_seconds": 50.43142845833332,
+      "cpu_before": {
+        "user_seconds": 24.029362958333333,
+        "system_seconds": 2.112260291666667,
+        "raw_cpu_ticks": {
+          "user": 576704711,
+          "system": 50694247
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5191139328,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "cpu_after": {
+        "user_seconds": 74.24266383333332,
+        "system_seconds": 2.330387875,
+        "raw_cpu_ticks": {
+          "user": 1781823932,
+          "system": 55929309
+        },
+        "mach_timebase": {
+          "numer": 125,
+          "denom": 3
+        },
+        "resident_bytes": 5640978432,
+        "identity": "83275837146639",
+        "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"
+      },
+      "sampled_rss_lower_bound_bytes": 5674631168,
+      "rss_samples": 1072,
+      "rss_sample_errors": [],
+      "rss_sample_period_ms": 10
+    },
+    {
+      "recorded_ns": 1793877529915540000,
+      "kind": "server_resources",
+      "arm": "main_head",
+      "pair": "main-data-effect",
+      "round": 2,
+      "operation": "query",
+      "cacheState": "No eviction; fresh process, uncontrolled OS cache; graph path/data crossovers explicit; no quiet-host claim",
+      "ok": true,
+      "resourceBoundary": "whole fresh query process: startup, first-use, warmup/pressure if query, shutdown; peak RSS not query-exclusive",
+      "exit_code": -15,
+      "wall_ms": 36584.90820787847,
+      "user_seconds": 74.242663,
+      "system_seconds": 2.350311,
+      "cpu_seconds": 76.592974,
+      "peak_process_rss_bytes": 5674631168
+    }
+  ],
+  "resourceBoundary": "CPU belongs to whole interleaved stage, not individual cases; kernel wait4 RSS belongs to full process lifetime",
+  "readinessRetries": 1122
+}

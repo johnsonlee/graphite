@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/usr/bin/sample",
+    "77154",
+    "1",
+    "1",
+    "-file",
+    "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cpu-sample-grouping-152.txt"
+  ],
+  "source": "152abe6e",
+  "scope": 64,
+  "excludedFromAcceptance": true,
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Sampling process 77154 for 1 second with 1 millisecond of run time between samples\nSampling completed, processing symbols...\nSample analysis of process 77154 written to file /Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cpu-sample-grouping-152.txt\n"
+}

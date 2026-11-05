@@ -1,0 +1,38 @@
+{
+  "verified": true,
+  "comparisons": [
+    {
+      "oldProducer": "7c59d799",
+      "currentEquivalent": "97488be2",
+      "productionAndBuildPaths": [
+        "frontend/jvm",
+        "gradle",
+        "build.gradle.kts",
+        "settings.gradle.kts",
+        "gradle.properties"
+      ],
+      "changedFiles": []
+    },
+    {
+      "oldProducer": "190eba79",
+      "currentEquivalent": "3ad6ff4b",
+      "productionAndBuildPaths": [
+        "frontend/jvm",
+        "gradle",
+        "build.gradle.kts",
+        "settings.gradle.kts",
+        "gradle.properties"
+      ],
+      "changedFiles": []
+    }
+  ],
+  "graphConstructionHarnessAndFixtureIdentityUnchanged": true,
+  "changedValidationOnly": "Shared LargeCorpusValidation directed count approvals; no production writer or construction algorithm changes",
+  "semantics": "Existing source/shard/count/semantic fingerprints match; intended enum metadata/SID layout difference retained",
+  "headCurrentEquivalent": "89f2ddd7bfe9d562bd222955fa11bf196678a05d",
+  "optimizedHeadEquivalent": "152abe6e87ca8d8f668783b7b1cfd8dea2f481c7",
+  "cumulativeHeadEquivalent": "fc428df79ee01490e8534c5646b86cb4946a1f20",
+  "cumulativeClosureChangedFiles": [],
+  "distinctHeadEquivalent": "877363f623754b2633baba9d3c221dfc9da1e237",
+  "distinctClosureChangedFiles": []
+}

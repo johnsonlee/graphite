@@ -1,0 +1,19 @@
+{
+  "pid": 26331,
+  "arm": "candidate_head",
+  "codeSha": "89f2ddd7",
+  "requestScope": 64,
+  "cases": "fivefocused",
+  "excludedFromPerformanceAcceptance": true,
+  "command": [
+    "sample",
+    "26331",
+    "2",
+    "1",
+    "-file",
+    "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cpu-sample-candidate_head.txt"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Sampling process 26331 for 2 seconds with 1 millisecond of run time between samples\nSampling completed, processing symbols...\nSample analysis of process 26331 written to file /Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cpu-sample-candidate_head.txt\n"
+}

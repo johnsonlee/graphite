@@ -1,0 +1,199 @@
+{
+  "correctnessOnly": true,
+  "passed": true,
+  "variants": {
+    "baseline": {
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/main-97488be2/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "49584",
+        "--graph",
+        "signal-ios:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/full-check/unpacked",
+        "--graph",
+        "swiftpm:/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph",
+        "--graph",
+        "signal-server:/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+      ],
+      "revision": "97488be2987cbcc172714e9cd8cab5d8bf74ce60",
+      "binarySha256": "100e3333ec51b169bfd6ae55c1fef92fe49f0e72fbe006e99fe536e7c4967ac3",
+      "cases": {
+        "all-graph-node-census": {
+          "digest": "b467fc298ee3fab04d516d79337873448981272f958997de4267ba7ebd51b030",
+          "rows": 3,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "network-message-call-scan": {
+          "digest": "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+          "rows": 3,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "literal-call-provenance": {
+          "digest": "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+          "rows": 100,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "field-type-inventory": {
+          "digest": "d14918aef6d3a154f613080cf47defcfc06c8b7bec3d722bc2ef85497daf5cba",
+          "rows": 100,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "shared-wire-literals-prefiltered": {
+          "digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+          "rows": 12,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        }
+      },
+      "stopped": true,
+      "exitCode": -15
+    },
+    "candidate": {
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/bin/candidate-fc428df7/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "49598",
+        "--graph",
+        "signal-ios:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/full-check/unpacked",
+        "--graph",
+        "swiftpm:/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph",
+        "--graph",
+        "signal-server:/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+      ],
+      "revision": "fc428df79ee01490e8534c5646b86cb4946a1f20",
+      "binarySha256": "2017c1da01fd85332b8d369f39213039bd57ae98846057e0d6858b8fa76acb3b",
+      "cases": {
+        "all-graph-node-census": {
+          "digest": "b467fc298ee3fab04d516d79337873448981272f958997de4267ba7ebd51b030",
+          "rows": 3,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "network-message-call-scan": {
+          "digest": "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+          "rows": 3,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "literal-call-provenance": {
+          "digest": "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+          "rows": 100,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "field-type-inventory": {
+          "digest": "d14918aef6d3a154f613080cf47defcfc06c8b7bec3d722bc2ef85497daf5cba",
+          "rows": 100,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        },
+        "shared-wire-literals-prefiltered": {
+          "digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+          "rows": 12,
+          "representedGraphs": [
+            "signal-ios",
+            "signal-server",
+            "swiftpm"
+          ],
+          "scope": [
+            "signal-ios",
+            "swiftpm",
+            "signal-server"
+          ]
+        }
+      },
+      "stopped": true,
+      "exitCode": -15
+    }
+  },
+  "failures": []
+}

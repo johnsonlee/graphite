@@ -1,0 +1,374 @@
+{
+  "scope": "Small final summaries independently cross-checked against renderer and separate complete-raw-response audit; no rerun and no cherry-picked round removal.",
+  "cases": {
+    "shape-order-by-desc": {
+      "p50Ms": {
+        "base": 0.643209,
+        "candidate": 1.681834,
+        "delta": 1.0386250000000001
+      },
+      "p95Ms": {
+        "base": 0.836291,
+        "candidate": 3.309834,
+        "delta": 2.473543
+      }
+    },
+    "shape-order-by": {
+      "p50Ms": {
+        "base": 0.918833,
+        "candidate": 2.183208,
+        "delta": 1.264375
+      },
+      "p95Ms": {
+        "base": 1.020125,
+        "candidate": 6.922709,
+        "delta": 5.902584
+      }
+    },
+    "shape-collect": {
+      "p50Ms": {
+        "base": 1889.722791,
+        "candidate": 0.35375,
+        "delta": -1889.369041
+      },
+      "p95Ms": {
+        "base": 2086.864166,
+        "candidate": 0.487459,
+        "delta": -2086.376707
+      }
+    },
+    "shape-with-aggregate": {
+      "p50Ms": {
+        "base": 157.734708,
+        "candidate": 49.73325,
+        "delta": -108.00145800000001
+      },
+      "p95Ms": {
+        "base": 179.448375,
+        "candidate": 54.221875,
+        "delta": -125.2265
+      }
+    },
+    "shape-group-count": {
+      "p50Ms": {
+        "base": 185.7015,
+        "candidate": 47.7395,
+        "delta": -137.96200000000002
+      },
+      "p95Ms": {
+        "base": 205.92375,
+        "candidate": 52.781584,
+        "delta": -153.142166
+      }
+    },
+    "shape-distinct": {
+      "p50Ms": {
+        "base": 208.44925,
+        "candidate": 6.60375,
+        "delta": -201.84550000000002
+      },
+      "p95Ms": {
+        "base": 241.288417,
+        "candidate": 11.286417,
+        "delta": -230.002
+      }
+    }
+  },
+  "nativeResourceFailures": {
+    "load": {
+      "failures": [],
+      "pairs": [
+        {
+          "round": 0,
+          "cpuBoundary": "readiness plus complete all-case consumption",
+          "cpu_seconds": {
+            "base": 23.221457875,
+            "candidate": 20.554645375,
+            "delta": -2.666812499999999,
+            "deltaPct": -11.484259577307004,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 5504942080,
+            "candidate": 5182259200,
+            "delta": -322682880,
+            "deltaPct": -5.861694370451941,
+            "within5Pct": true
+          }
+        },
+        {
+          "round": 1,
+          "cpuBoundary": "readiness plus complete all-case consumption",
+          "cpu_seconds": {
+            "base": 22.81592725,
+            "candidate": 20.241277500000002,
+            "delta": -2.574649749999999,
+            "deltaPct": -11.28444056552643,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 5505662976,
+            "candidate": 5186519040,
+            "delta": -319143936,
+            "deltaPct": -5.796648603287118,
+            "within5Pct": true
+          }
+        },
+        {
+          "round": 2,
+          "cpuBoundary": "readiness plus complete all-case consumption",
+          "cpu_seconds": {
+            "base": 22.420257041666666,
+            "candidate": 20.542057041666663,
+            "delta": -1.8782000000000032,
+            "deltaPct": -8.377245615469459,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 5504204800,
+            "candidate": 5187354624,
+            "delta": -316850176,
+            "deltaPct": -5.7565113856228605,
+            "within5Pct": true
+          }
+        }
+      ]
+    },
+    "query": {
+      "failures": [],
+      "pairs": [
+        {
+          "round": 0,
+          "cpuBoundary": "pressure stage",
+          "cpu_seconds": {
+            "base": 59.844976416666675,
+            "candidate": 11.139190125,
+            "delta": -48.705786291666676,
+            "deltaPct": -81.38659116941726,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 6332514304,
+            "candidate": 5276549120,
+            "delta": -1055965184,
+            "deltaPct": -16.675290939856044,
+            "within5Pct": true
+          }
+        },
+        {
+          "round": 1,
+          "cpuBoundary": "pressure stage",
+          "cpu_seconds": {
+            "base": 57.488447458333326,
+            "candidate": 11.158294083333335,
+            "delta": -46.330153374999995,
+            "deltaPct": -80.59037149782019,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 6613172224,
+            "candidate": 5268176896,
+            "delta": -1344995328,
+            "deltaPct": -20.338126430744534,
+            "within5Pct": true
+          }
+        },
+        {
+          "round": 2,
+          "cpuBoundary": "pressure stage",
+          "cpu_seconds": {
+            "base": 56.494521083333325,
+            "candidate": 10.736231791666665,
+            "delta": -45.75828929166666,
+            "deltaPct": -80.9959769800863,
+            "within5Pct": true
+          },
+          "peak_process_rss_bytes": {
+            "base": 6486622208,
+            "candidate": 5277908992,
+            "delta": -1208713216,
+            "deltaPct": -18.633938855099114,
+            "within5Pct": true
+          }
+        }
+      ]
+    }
+  },
+  "appleResourceFailurePaths": {
+    "load": [
+      "/loadCpuSeconds/0"
+    ],
+    "query": [
+      "/perCaseBatchCpuSeconds/12"
+    ]
+  },
+  "publicLinks": {
+    "DOWNLOAD.md": "generated and verified by package-evidence.py",
+    "analysis.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/public/analysis.json",
+    "environment.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/public/environment.json",
+    "build-identities-distinct.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/build-identities-distinct.json",
+    "build-identities-final.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/build-identities-final.json",
+    "frozen-preopt-identities.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/frozen-preopt-identities.json",
+    "focused-data-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/focused-data/summary.json",
+    "focused-code-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/focused-code/summary.json",
+    "process-full-load-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/process-full-load/summary.json",
+    "process-full-query-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/process-full-query/summary.json",
+    "grouping-effect-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/grouping-effect/summary.json",
+    "cumulative-full-load-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cumulative-full-load/summary.json",
+    "cumulative-full-query-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/cumulative-full-query/summary.json",
+    "distinct-effect-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/distinct-effect/summary.json",
+    "final-full-load-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/final-full-load/summary.json",
+    "final-full-query-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/final-full-query/summary.json",
+    "optimization-effect-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/optimization-effect/summary.json",
+    "full-load-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/full-load/summary.json",
+    "full-query-summary.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/full-query/summary.json",
+    "PROTOCOL.process-validation.md": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/PROTOCOL.process-validation.md",
+    "experiment-history.md": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/public/experiment-history.md",
+    "experiment-outcomes.json": "/Users/johnsonlee/.codex/benchmarks/pr154-p95-rebased-20261105/public/experiment-outcomes.json"
+  },
+  "appleSharedWire": [
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 1,
+      "base": {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "samples": 300,
+        "p50_ms": 599.2703749798238,
+        "p95_ms": 617.2210830263793,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 599.753082729876,
+            "p95_ms": 612.0962924323976
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 593.8491248525679,
+            "p95_ms": 617.2210830263793
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 600.762041285634,
+            "p95_ms": 617.9700419306755
+          }
+        ],
+        "round_p95_range_ms": [
+          612.0962924323976,
+          617.9700419306755
+        ]
+      },
+      "head": {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "samples": 300,
+        "p50_ms": 605.1759580150247,
+        "p95_ms": 630.6587080471218,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 606.6252919845283,
+            "p95_ms": 624.1871248930693
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 603.8270830176771,
+            "p95_ms": 623.9226246252656
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 604.830333031714,
+            "p95_ms": 640.2815408073366
+          }
+        ],
+        "round_p95_range_ms": [
+          623.9226246252656,
+          640.2815408073366
+        ]
+      },
+      "baseTotalCpuSeconds": 179.74665608333333,
+      "headTotalCpuSeconds": 182.082723,
+      "cpuWithin5Pct": true
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 4,
+      "base": {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "samples": 300,
+        "p50_ms": 619.9519168585539,
+        "p95_ms": 657.6239997521043,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 620.7716250792146,
+            "p95_ms": 657.6239997521043
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 613.7284589931369,
+            "p95_ms": 646.9346671365201
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 625.0095418654382,
+            "p95_ms": 662.0970829389989
+          }
+        ],
+        "round_p95_range_ms": [
+          646.9346671365201,
+          662.0970829389989
+        ]
+      },
+      "head": {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "samples": 300,
+        "p50_ms": 624.470166862011,
+        "p95_ms": 661.4670418202877,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 621.570291928947,
+            "p95_ms": 662.0055828243494
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 622.0689998008311,
+            "p95_ms": 653.7093338556588
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 628.7681669928133,
+            "p95_ms": 654.0395841002464
+          }
+        ],
+        "round_p95_range_ms": [
+          653.7093338556588,
+          662.0055828243494
+        ]
+      },
+      "baseTotalCpuSeconds": 186.63183654166664,
+      "headTotalCpuSeconds": 188.00505291666667,
+      "cpuWithin5Pct": true
+    }
+  ],
+  "ok": true
+}

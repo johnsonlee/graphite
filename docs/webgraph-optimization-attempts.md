@@ -23354,3 +23354,43 @@ conclusions separate per operation/workload/pair with independent5% resource lim
 Review core outcomes before another final Apple three-graph comparison. Source tests
 are correctness evidence only. The attachment's experiment-history copy records
 actual measurements and retention decisions; this entry claims no measured recovery.
+
+### Sealed PR154 results for Attempts312–314 (2026-11-05)
+
+Actual measured source and binary hashes remain unchanged. Main97488 is production-source-equivalent to current basec86fe745 (CI-only change). No graph construction measurement is claimed; writer/build closure permits reuse of pinned real64 saved graphs. Original shared-target benchmark is historical only: core used one baseline consumer on two genuine datasets; Apple used one consumer on identical inputs. Withdraw native PR-specific attribution.
+
+Attempt312 retained the verified boundedcollect improvement; its full73 aggregate-count p95 remained higher. Attempt313 retained group latency gains but full73 DISTINCT worsened and query RSS rawround0 exceeded5%; Apple also retained multiple failures. Attempt314 selects bounded DISTINCT values before rows, retaining full certificates, encounter ordering and all graph provenance. The same-head one-pair incremental diagnostic reduced DISTINCTp95 from259.358 to9.016ms and peakRSS from6,583,795,712 to5,277,433,856bytes. It is not final acceptance.
+
+Earlier threaded-controller and one-pair profiled/controller A/A results are preserved separately. Controller offload reduced parentCPU, increased total observerCPU, and produced mixed latency changes; it is not a product-code improvement and cannot explain every residual difference. Final primary arms use identical process-validation clients; no cross-controller pooling or speedup attribution.
+
+Correctness/stability:310 currentsource Cypher tests, strict lint/format, exact438 load and10074 query responses, Apple4800 measured+120warmups plus independent complete-response oracle passed. Every final Apple response was independently re-decoded. Healthy server lifetimes and expected owned shutdowns were verified; macOS evidence is not a Linux cgroupOOM proof.
+
+| Case | Base p50 ms | Candidate p50 ms | Base p95 ms | Candidate p95 ms | Δp95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+|shape-order-by-desc|0.643|1.682|0.836|3.310|+2.474|
+|shape-order-by|0.919|2.183|1.020|6.923|+5.903|
+|shape-collect|1889.723|0.354|2086.864|0.487|-2086.377|
+|shape-with-aggregate|157.735|49.733|179.448|54.222|-125.227|
+|shape-group-count|185.702|47.739|205.924|52.782|-153.142|
+|shape-distinct|208.449|6.604|241.288|11.286|-230.002|
+
+Loading and pressure are separate fresh-process operations. Loading includes registry+all73 first-use responses; pressureCPU is the complete mixed query stage and peakRSS is kernel lifetime highwater including startup/firstuse/warmups/shutdown. CPU and RSS independently pass every final core pair. Every pair and E2E wall boundary stays in experiment-outcomes.json; neither operation offsets another.
+
+- process-full-load,rawround0: CPU23.221458→20.554645s; RSS5504942080→5182259200bytes; boundarywall21672.481→20031.160ms. CPU≤5%=True; RSS≤5%=True.
+- process-full-load,rawround1: CPU22.815927→20.241278s; RSS5505662976→5186519040bytes; boundarywall21432.723→18938.525ms. CPU≤5%=True; RSS≤5%=True.
+- process-full-load,rawround2: CPU22.420257→20.542057s; RSS5504204800→5187354624bytes; boundarywall20094.010→19927.897ms. CPU≤5%=True; RSS≤5%=True.
+- process-full-query,rawround0: CPU59.844976→11.139190s; RSS6332514304→5276549120bytes; boundarywall14440.492→1621.974ms. CPU≤5%=True; RSS≤5%=True.
+- process-full-query,rawround1: CPU57.488447→11.158294s; RSS6613172224→5268176896bytes; boundarywall13804.476→1663.108ms. CPU≤5%=True; RSS≤5%=True.
+- process-full-query,rawround2: CPU56.494521→10.736232s; RSS6486622208→5277908992bytes; boundarywall13578.676→1491.110ms. CPU≤5%=True; RSS≤5%=True.
+
+Apple3 has separate matched persisted inputs and a different request protocol; distributions are never pooled with real64. All final Apple load/query RSS pairs satisfy5%, but these nativeCPU pairs fail the5% constraint:
+- Appleload,rawround0,readiness+completefirstuse,concurrencyn/a: CPU0.815375→0.867991s; Δ+0.052616s(+6.453%). Unresolved, no approvedexception invoked.
+- Applequery,rawround1,network-message-call-scan,concurrency1: CPU0.646632→0.696093s; Δ+0.049461s(+7.649%). Unresolved, no approvedexception invoked.
+
+Final latency conclusion: the four practical native slow paths improve strongly; the original two fastsort p50/p95 values remain higher and all73 individual increases remain visible. Apple sharedwire p95 remains higher atc1 andc4. A lower mean, totalCPU, E2E wall or another workload does not establish recovery.
+
+Keepdecision: retain the three verified positive source increments for further composition. Fullperformanceacceptance is NOTMET. No resource limit or heap ceiling is expanded. Remaining concrete options:
+
+- Profile native queue/execution spans for short requests using an independent load generator; preserve all existing observations rather than repeatedly stabilizing tiny timings.
+- Diagnose Apple3 load CPU and network-case CPU under the exact declared workload; keep independent per-round5% constraints and existingheap ceiling.
+- Investigate shared-wire c1/c4 query execution on the three real graphs before claiming recovery; no resource or workload offsets.
