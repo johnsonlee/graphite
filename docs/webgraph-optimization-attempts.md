@@ -23178,3 +23178,73 @@ measurements of the newly integrated PR head against main. Hosted benchmark-regr
 correctness/completion/OOM proof and any matched post-integration real64 performance acceptance
 remain pending. Existing single-graph diagnostic timings and hosted report-only timings cannot
 substitute. PR: https://github.com/johnsonlee/graphite/pull/199.
+
+### Attempt312 — certify bounded scalar collect prefixes (2026-11-05)
+
+**Hypothesis and boundary.** On the existing real64 corpus, the bounded query
+`MATCH (n:CallSite) WITH collect(n.callee_name) AS names RETURN names[0..10] AS names`
+still constructs a row and merges provenance for every matching CallSite after
+its retained list is full. A two-second CPU sample of the five-query, four-worker,
+64-graph workload shows the `fused_rows` / `stream_match` / provenance path.
+The profiled run is diagnostic only; its perturbed timings are excluded.
+
+Admit only one unfiltered, non-optional CallSite node pattern, an empty seed,
+one non-DISTINCT aggregate of a direct scalar CallSite property, and an existing
+exclusive literal-prefix proof within the existing bounded-row ceiling. Before
+skipping any argument, certify every source's complete selected CallSite frames
+and all four scalar string IDs using the cancellable immutable-graph certificate.
+A failed certificate restores the unchanged ordinary evaluator and error order.
+Evaluate retained values through that evaluator in original source/type-index
+order; preserve every nonempty contributor's sorted, unique provenance even after
+the prefix is full or zero. Other expressions, filters, domains, DISTINCT and
+unbounded consumers remain on the existing path.
+
+**Correctness gates.** Compare complete results and provenance with the disabled
+specialization and a CASE-wrapped eager reference. Cover empty domains, zero and
+cross-source slices, duplicates, malformed later records and queried/unqueried
+SIDs, source first-error order, direct successful entry, and cached/cold proof
+cancellation. A warm-proof access counter verifies omission of the discarded
+suffix; it is a correctness assertion, not a performance measurement. Run the
+complete Cypher suite with the existing native-core and declared-type fixtures,
+certificate cancellation tests, strict workspace Clippy and formatting.
+
+**Source validation result.** All 297 Cypher library tests passed with every
+required persisted fixture, as did the storage certificate interruption/retry
+contract, strict all-target/all-feature workspace Clippy, formatting and diff
+checks. Initial test-helper and lint failures are retained in the validation
+archive. These are correctness results only.
+
+**Predeclared real workload.** Reuse the two sealed real64 graph sets only after
+proving their JVM production/build and construction-harness dependency closures
+unchanged through the rebase. Preserve all enum metadata and string-ID changes.
+The accepted current main consumer is `97488be2`; the immediate pre-optimization
+consumer is `89f2ddd7`. Build each consumer in its own physical Cargo target and
+check source-specific CLI behavior and executable SHA before measurement.
+Use the same 73 global multi-graph query texts, complete typed response oracles,
+four closed-loop workers, two warmups and twenty pressure requests per case.
+Three paired rounds run AB, BA, AB; retain every sample and failure. A separate
+focused parent/candidate comparison uses the same saved head graphs to attribute
+the increment. Report focused and full mixed workloads separately. No single-graph
+performance measurement or synthetic performance substitute is permitted.
+
+**Separate acceptance conclusions.** Require correctness and process stability;
+report per-case p50/p95, all paired-round differences, complete workload time,
+query-stage server CPU and kernel process peak RSS. Loading ends after registry
+readiness and complete first-use consumption; query CPU covers its pressure
+stage, while its kernel RSS includes the declared server lifetime. CPU and RSS
+have independent 5% limits for each paired operation. No construction or loading
+gain offsets a query regression. JVM producer code is unchanged, so its matching
+correctness evidence is reused rather than rebuilding graphs for every query
+experiment. Source/correctness evidence alone does not establish performance
+acceptance. Final measured values, per-metric conclusions and the keep/revert
+decision are sealed in PR #154's local benchmark attachment; initial source
+validation is not a performance-recovery claim.
+
+**Prior evidence correction.** The earlier local run's supposed head native
+program was the baseline program reused from a shared Cargo target. Its JVM
+producers and their enum layout differences are genuine, but its native version
+attribution is invalid. Preserve that run and the original report rather than
+relabeling its observations. New same-code/data and same-data/code controls use
+independently built executables and explicit dataset provenance. This attempt
+retains the cache-isolation guard and the concurrent rebase integration fix;
+it does not remove metadata or weaken late-error detection to obtain speed.
