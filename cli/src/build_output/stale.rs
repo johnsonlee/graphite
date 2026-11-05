@@ -61,6 +61,10 @@ pub(super) fn process_scope() -> Option<String> {
     None
 }
 
+pub(super) fn prevent_sweep(dir: &Path) -> io::Result<()> {
+    fs::remove_file(dir.join(MARKER))
+}
+
 pub(super) fn create(parent: &Path) -> io::Result<tempfile::TempDir> {
     sweep(parent);
     let mut builder = tempfile::Builder::new();
