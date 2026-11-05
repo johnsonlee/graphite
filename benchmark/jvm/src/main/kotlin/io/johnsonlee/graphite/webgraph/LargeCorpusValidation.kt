@@ -187,6 +187,22 @@ internal object LargeCorpusBaselines {
             ApprovedCorpusCounts(
                 nodes = 3_291_664, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
                 methods = 264_628, callSites = 922_876
+            ),
+        // PR #193 after dependency completeness fixes (4e078e1a): run 41963895331 confirms the same whole-JAR counts.
+        ("91c9cf4b5151841b7f502f0e808e1e3fd75f5760cbadf177536a8f131db70d7b" to "tika") to
+            ApprovedCorpusCounts(
+                nodes = 3_900_545, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
+                methods = 317_985, callSites = 1_006_172
+            ),
+        ("91c9cf4b5151841b7f502f0e808e1e3fd75f5760cbadf177536a8f131db70d7b" to "hive") to
+            ApprovedCorpusCounts(
+                nodes = 5_992_153, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
+                methods = 452_507, callSites = 1_443_886
+            ),
+        ("91c9cf4b5151841b7f502f0e808e1e3fd75f5760cbadf177536a8f131db70d7b" to "kotlin-compiler") to
+            ApprovedCorpusCounts(
+                nodes = 3_291_664, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
+                methods = 264_628, callSites = 922_876
             )
     )
 
