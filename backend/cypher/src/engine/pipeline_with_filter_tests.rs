@@ -378,3 +378,177 @@ fn persisted_jvm_scalar_filters_match_generic_rows_and_probe() {
         assert_eq!(QueryResult::graph_ids(&actual.rows[0]), ["first"]);
     }
 }
+
+#[test]
+fn late_bad_callsite_sids_decline_filtered_early_stop_and_keep_eager_first_error() {
+    use graphite_storage::node::{NODE_HEADER_BYTES, TAG_CALL_SITE_NODE};
+    let Some(path) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+        assert!(std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none());
+        return;
+    };
+    let graph = Arc::new(Graph::load(std::path::Path::new(&path)).unwrap());
+    assert!(graph.dir.join("graph.callsite-string-index").is_file());
+    static NEXT: AtomicU64 = AtomicU64::new(0);
+    let root = std::env::temp_dir().join(format!(
+        "graphite-filter-bad-sid-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    ));
+    std::fs::create_dir(&root).unwrap();
+    let fixture = Fixture {
+        root,
+        graphs: vec![graph.clone(), graph],
+    };
+    let damaged = |source: usize, sid: u32| {
+        let original = &fixture.graphs[source];
+        let path = fixture.root.join(format!("invalid-sid-{sid}"));
+        std::fs::create_dir(&path).unwrap();
+        for entry in std::fs::read_dir(&original.dir).unwrap() {
+            let entry = entry.unwrap();
+            if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+                std::fs::hard_link(entry.path(), path.join(entry.file_name())).unwrap();
+            }
+        }
+        let id = *original.ids_by_tag(TAG_CALL_SITE_NODE).last().unwrap();
+        let offset = original.node_offset(id).unwrap();
+        let mut bytes = original.nodedata().to_vec();
+        bytes[offset + NODE_HEADER_BYTES..offset + NODE_HEADER_BYTES + 4]
+            .copy_from_slice(&sid.to_be_bytes());
+        std::fs::write(path.join("graph.nodedata"), bytes).unwrap();
+        Arc::new(Graph::load(&path).unwrap())
+    };
+    let bad_first = damaged(0, u32::MAX - 1);
+    let bad_late = damaged(1, u32::MAX);
+    let payload = |result: std::thread::Result<crate::CypherResult<QueryResult>>| {
+        let panic = result.expect_err("the original complete projection must expose the bad SID");
+        panic
+            .downcast_ref::<String>()
+            .cloned()
+            .unwrap_or_else(|| panic.downcast_ref::<&str>().unwrap().to_string())
+    };
+    for first_bad in [false, true] {
+        let input = vec![
+            Source {
+                id: Arc::from("first"),
+                graph: if first_bad {
+                    bad_first.clone()
+                } else {
+                    fixture.graphs[0].clone()
+                },
+            },
+            Source {
+                id: Arc::from("later"),
+                graph: bad_late.clone(),
+            },
+        ];
+        let ex = Executor::new(input, true);
+        for limit in [0, 1] {
+            // The ordered comparison cannot use WithStreamPlan. It exercises
+            // main's projected-filter path and its own source certificate.
+            // IS NOT NULL additionally covers the shared admission/fallback path.
+            for predicate in ["c > ''", "c IS NOT NULL"] {
+                let query = format!("MATCH (n:CallSite) WITH n.caller_class AS c WHERE {predicate} RETURN c LIMIT {limit}");
+                let clauses = parse(&query).unwrap();
+                assert_eq!(projected_filter_limit(&clauses, &[Row::new()]), Some(limit));
+                assert_eq!(
+                    validated_projected_filter_limit(&ex, &clauses, &[Row::new()]).unwrap(),
+                    None
+                );
+                let run = |query: &str| {
+                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        ex.execute(query, None)
+                    }))
+                };
+                let actual = payload(run(&query));
+                let expected = payload(run(&generic(&query)));
+                assert_eq!(actual, expected, "first_bad={first_bad}: {query}");
+                assert!(
+                    actual.contains(if first_bad {
+                        "4294967294"
+                    } else {
+                        "4294967295"
+                    }),
+                    "{actual}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn uncertified_field_string_getters_keep_late_bad_sids_on_eager_path() {
+    use graphite_storage::node::{NODE_HEADER_BYTES, TAG_FIELD_NODE};
+    let method = json!({"declaringClass":"C","name":"f","parameterTypes":[],"returnType":"void"});
+    let fixture = Fixture::from_inputs(["first", "later"].map(|name| json!({
+        "version":1,"methods":[method],"edges":[],"nodes":[
+            {"id":0,"kind":"Field","declaringClass":"C","name":name,"fieldType":"string","isStatic":false},
+            {"id":1,"kind":"Field","declaringClass":"C","name":"bad-tail","fieldType":"string","isStatic":false}
+        ]
+    })).to_vec());
+    let original = &fixture.graphs[1];
+    let path = fixture.root.join("bad-field-sid");
+    std::fs::create_dir(&path).unwrap();
+    for entry in std::fs::read_dir(&original.dir).unwrap() {
+        let entry = entry.unwrap();
+        if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+            std::fs::hard_link(entry.path(), path.join(entry.file_name())).unwrap();
+        }
+    }
+    let offset = original
+        .node_offset(*original.ids_by_tag(TAG_FIELD_NODE).last().unwrap())
+        .unwrap();
+    let mut bytes = original.nodedata().to_vec();
+    bytes[offset + NODE_HEADER_BYTES + 4..offset + NODE_HEADER_BYTES + 8]
+        .copy_from_slice(&u32::MAX.to_be_bytes());
+    std::fs::write(path.join("graph.nodedata"), bytes).unwrap();
+    let bad = Arc::new(Graph::load(&path).unwrap());
+    let ex = Executor::new(
+        vec![
+            Source {
+                id: Arc::from("first"),
+                graph: fixture.graphs[0].clone(),
+            },
+            Source {
+                id: Arc::from("later"),
+                graph: bad,
+            },
+        ],
+        true,
+    );
+    for limit in [0, 1] {
+        let query =
+            format!("MATCH (n:Field) WITH n.name AS c WHERE c IS NOT NULL RETURN c LIMIT {limit}");
+        let clauses = parse(&query).unwrap();
+        assert_eq!(projected_filter_limit(&clauses, &[Row::new()]), Some(limit));
+        assert_eq!(
+            validated_projected_filter_limit(&ex, &clauses, &[Row::new()]).unwrap(),
+            None
+        );
+        let payload = |query: &str| {
+            let panic =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| ex.execute(query, None)))
+                    .expect_err("a later Field.name SID is not total");
+            panic
+                .downcast_ref::<String>()
+                .cloned()
+                .unwrap_or_else(|| panic.downcast_ref::<&str>().unwrap().to_string())
+        };
+        assert_eq!(payload(&query), payload(&generic(&query)));
+        let literal =
+            format!("MATCH(n:Field) WITH 'fixed' AS c WHERE c IS NOT NULL RETURN c LIMIT {limit}");
+        assert_eq!(
+            validated_projected_filter_limit(&ex, &parse(&literal).unwrap(), &[Row::new()])
+                .unwrap(),
+            Some(limit)
+        );
+        let id = format!("MATCH(n:Field) WITH n.id AS c WHERE c >= 0 RETURN c LIMIT {limit}");
+        assert_eq!(
+            validated_projected_filter_limit(&ex, &parse(&id).unwrap(), &[Row::new()]).unwrap(),
+            Some(limit)
+        );
+        assert_eq!(
+            format!("{:?}", ex.execute(&id, None).unwrap()),
+            format!("{:?}", ex.execute(&generic(&id), None).unwrap())
+        );
+    }
+}
