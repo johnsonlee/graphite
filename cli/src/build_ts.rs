@@ -1,6 +1,6 @@
 //! Explicit JavaScript artifact dispatch and conversion from the frontend JSON interchange.
 
-use crate::build_output::{require_absent, Publication, Stage};
+use crate::build_output::{DirectoryPublication, Publication, Stage};
 use crate::frontend::{self, Env, Lang, Launch};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -88,6 +88,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
             .map_err(|e| e.to_string());
     }
     let (output, args) = output_args(args)?;
+    let output = output.components().collect::<PathBuf>();
     validate_artifact_input(&args)?;
     let packed = output
         .extension()
@@ -95,10 +96,26 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let publication = if packed {
         Some(Publication::inspect(&output)?)
     } else {
-        require_absent(&output)?;
         None
     };
-    let stage =
+    let directory_publication = if packed {
+        None
+    } else {
+        Some(DirectoryPublication::inspect(&output)?)
+    };
+    // Existing aliases need a stage beside the actual directory and an
+    // exchange destination with a real final component.
+    let output = if directory_publication
+        .as_ref()
+        .is_some_and(|p| matches!(p, DirectoryPublication::Rebuild(_)))
+    {
+        output
+            .canonicalize()
+            .map_err(|e| format!("could not resolve output directory: {e}"))?
+    } else {
+        output
+    };
+    let mut stage =
         Stage::new(&output).map_err(|e| format!("could not stage {}: {e}", output.display()))?;
     let json = stage.0.join("graph.json");
     // Place our output before `--`, so a positional source beginning with '-' works.
@@ -116,7 +133,10 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     if let Some(publication) = publication {
         stage.pack(&output, publication)?;
     } else {
-        stage.publish_directory(&output)?;
+        stage.rebuild_directory(
+            &output,
+            directory_publication.expect("directory publication was inspected"),
+        )?;
     }
     println!("Saved JavaScript artifact graph to {}", output.display());
     Ok(0)
@@ -327,15 +347,25 @@ GRAPH"#
             ];
             assert_eq!(execute(&frontend("hello"), &args).unwrap(), 0);
             assert_value(&output, "hello");
+            let mut rebuild_args = args.clone();
             if output.is_dir() {
-                assert!(execute(&frontend("ignored"), &args)
+                *rebuild_args.last_mut().unwrap() = output.join(".").into_os_string();
+            }
+            assert_eq!(execute(&frontend("updated"), &rebuild_args).unwrap(), 0);
+            assert_value(&output, "updated");
+            if output.is_dir() {
+                assert_eq!(
+                    execute(&fake_frontend(&root, "exit 37"), &args).unwrap(),
+                    37
+                );
+                assert_value(&output, "updated");
+                let bad = fake_frontend(&root, r#"echo '{}' > "$3""#);
+                assert!(execute(&bad, &args)
                     .unwrap_err()
-                    .contains("output already exists"));
-                assert_value(&output, "hello");
+                    .contains("invalid frontend graph"));
+                assert_value(&output, "updated");
                 continue;
             }
-            assert_eq!(execute(&frontend("updated"), &args).unwrap(), 0);
-            assert_value(&output, "updated");
             let digest = graphite_storage::container::digest_path(&output);
             let bytes = || {
                 (

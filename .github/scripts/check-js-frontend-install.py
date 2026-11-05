@@ -105,6 +105,8 @@ def check(root, cli, assets, version, target, source_frontend):
         run(reader, "build", "--lang", "js", "app.mjs", "-o", "reference.graphite",
             extra_env={"GRAPHITE_FRONTEND_JS": str(source_frontend.resolve()), "GRAPHITE_NODE": node})
 
+    saved = work / "saved"
+    saved.mkdir()
     for selector in SELECTORS:
         home = root / selector
         graph = f"{selector}.graphite"
@@ -123,7 +125,21 @@ def check(root, cli, assets, version, target, source_frontend):
         rows = json.loads(run(reader, "query", graph, flow, "--format", "json").stdout)["rows"]
         assert rows == [{"value": "installed", "target": "log"}], rows
         assert not (work / "preload-ran").exists(), "Frontend executed a preload from the analyzed project"
-        print(f"Verified clean install {selector}, offline build with empty PATH, and saved Array.map / Console.log calls")
+        # Exercise native publication into an empty directory, then replace it
+        # with different graphs through both aliases, without a runtime on PATH.
+        (work / "rebuild.mjs").write_text(f'console.log("{selector}");\n')
+        run(home, "build", "--lang", selector, "rebuild.mjs", "-o", "saved")
+        rows = json.loads(run(reader, "query", "saved", flow, "--format", "json").stdout)["rows"]
+        assert rows == [{"value": selector, "target": "log"}], rows
+        before = {p.name: p.read_bytes() for p in saved.iterdir()}
+        (work / "rebuild.mjs").write_text('function broken( {')
+        failed = run(home, "build", "--lang", selector, "rebuild.mjs", "-o", "saved", success=False)
+        assert failed.returncode == 1 and "No parseable JavaScript artifacts remain" in failed.stderr, failed
+        assert {p.name: p.read_bytes() for p in saved.iterdir()} == before
+        rows = json.loads(run(reader, "query", "saved", flow, "--format", "json").stdout)["rows"]
+        assert rows == [{"value": selector, "target": "log"}], rows
+        print(f"Verified clean install {selector}, offline build/rebuild with empty PATH, "
+              "failed rebuild preservation, and saved Array.map / Console.log calls")
 
 
 if __name__ == "__main__":

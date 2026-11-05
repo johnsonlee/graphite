@@ -63,13 +63,33 @@ the absolute path of `frontend/web/dist/cli.js`.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
-graphs. JS builds require a new destination for directory output. Analysis and import use a private
-sibling directory when the output parent exists. For a missing parent, Graphite
+graphs. JS, TS and ES builds can reuse an empty directory or rebuild an existing
+saved graph directory on Linux and macOS filesystems that support atomic directory
+exchange. Rebuilding replaces the whole graph; it does not append or merge it.
+Stop services, other readers and other writers of that directory before rebuilding.
+Directory readers can open some files lazily, so replacing the directory is not an online
+snapshot update. Restart readers after the build succeeds.
+
+The publisher rejects symlinks, unrelated files and unrecognized subdirectories
+in the destination. The current working directory and its ancestors cannot be
+rebuild destinations; use a separate output directory. A rebuild checks that the
+directory and its saved files have not changed since the build started.
+Analysis, import or publication failure
+leaves the previous graph available. If atomic directory exchange is unsupported,
+the rebuild fails without moving the old graph; choose a new output path instead.
+The replacement retains the old directory's Unix mode bits. If a concurrent change
+makes rollback or cleanup uncertain, the diagnostic identifies retained files in
+the staging directory. Confirm writers have stopped and inspect those files before
+manual recovery or removal; later builds do not automatically sweep them.
+
+Analysis and import use a private sibling directory when the output parent exists.
+For a missing parent, Graphite
 uses system temp only if an empty directory can be renamed from there into the
 nearest existing output ancestor; otherwise it stages in that ancestor. Graphite
-creates the final parent only after the graph is ready. It publishes a directory
-with an atomic rename that refuses an existing destination. If the filesystem
-does not support that operation, Graphite claims the destination with an exclusive
+creates the final parent only after the graph is ready. For a new destination, it
+publishes a directory with an atomic rename that refuses a competing destination.
+If the filesystem does not support that operation, Graphite claims the destination
+with an exclusive
 directory creation, then links or copies the completed graph files into it. The
 directory can be visible during this fallback. Readers can load the graph only
 after its node-data header is published last. An interrupted fallback can leave
