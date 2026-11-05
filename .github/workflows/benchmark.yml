@@ -93,17 +93,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
-    - name: Free space for both builds and their saved graphs
+    - name: Free disk for matched graph construction
+      shell: bash
       run: |
-        df -h .
-        # The APK fixtures use a pinned android-all JAR. Neither product build uses the NDK.
-        for sdk in /usr/local/lib/android/sdk/ndk /usr/share/dotnet /usr/local/.ghcup /opt/hostedtoolcache/CodeQL; do
-          if [[ -d "$sdk" ]]; then
-            sudo du -sh -- "$sdk"
-            sudo rm -rf -- "$sdk"
+        df -h /
+        df -i /
+        # This job builds JVM/Rust code. Its Android input is the pinned
+        # Maven android-all JAR, not a platform SDK (prepareBenchmarkFixtures).
+        # Remove only these unused preinstalled toolchains, never workspace,
+        # compiler caches, graph outputs, logs, or other retained evidence.
+        for toolchain in /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL; do
+          if [ -d "$toolchain" ]; then
+            sudo du -sh -- "$toolchain"
+            sudo rm -rf -- "$toolchain"
           fi
         done
-        df -h .
+        df -h /
+        df -i /
     - name: Checkout exact base
       uses: actions/checkout@v7
       with:
