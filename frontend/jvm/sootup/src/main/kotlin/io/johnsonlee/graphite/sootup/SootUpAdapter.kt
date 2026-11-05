@@ -595,13 +595,6 @@ class SootUpAdapter(
         }
         reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
 
-        syntheticIdentities.resolve().forEach { (member, fingerprint) ->
-            graphBuilder.addSyntheticIdentity(member, fingerprint)
-        }
-        if (syntheticIdentities.skipped > 0) {
-            log { "Skipped ${syntheticIdentities.skipped} synthetic member(s) whose identity could not be rendered" }
-        }
-
         // Pass 2B: Resolve cross-method functional interface dispatch
         if (trackCrossMethodFunctionalDispatch) {
             resolveFunctionalDispatch()
@@ -609,6 +602,15 @@ class SootUpAdapter(
         // A library body reached only through a resolved function value is read now; what it
         // passes on as a function value is not resolved further, and reads as a gap.
         reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
+        // Finalize only after the last class expansion: callback-only dependencies can
+        // contribute synthetic methods and classes after functional dispatch resolves.
+        syntheticIdentities.resolve().forEach { (member, fingerprint) ->
+            graphBuilder.addSyntheticIdentity(member, fingerprint)
+        }
+        if (syntheticIdentities.skipped > 0) {
+            log { "Skipped ${syntheticIdentities.skipped} synthetic member(s) whose identity could not be rendered" }
+        }
+
         collectDispatchGaps()
 
         interprocedural?.let { calls ->
