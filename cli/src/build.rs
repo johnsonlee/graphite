@@ -1533,6 +1533,22 @@ mod tests {
         assert!(!Path::new(ir.trim()).exists());
 
         std::fs::remove_file(root.join("apple.log")).unwrap();
+        assert_eq!(run(&env, &args(&output)), 1);
+        assert!(!root.join("apple.log").exists());
+        assert_eq!(
+            std::fs::read_to_string(output.join("result")).unwrap(),
+            "IR payload\n"
+        );
+        let alias = root.join("alias");
+        std::os::unix::fs::symlink(&output, &alias).unwrap();
+        assert_eq!(run(&env, &args(&alias)), 1);
+        assert!(!root.join("apple.log").exists());
+        let dangling = root.join("dangling");
+        let missing = root.join("missing-target");
+        std::os::unix::fs::symlink(&missing, &dangling).unwrap();
+        assert_eq!(run(&env, &args(&dangling)), 1);
+        assert!(!missing.exists());
+        assert!(!root.join("apple.log").exists());
         let blocked = root.join("blocked");
         std::fs::write(&blocked, "file").unwrap();
         assert_eq!(run(&env, &args(&blocked.join("graph.graphite"))), 1);
