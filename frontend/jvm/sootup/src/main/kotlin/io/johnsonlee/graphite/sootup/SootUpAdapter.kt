@@ -601,6 +601,7 @@ class SootUpAdapter(
         }
         // A library body reached only through a resolved function value is read now; what it
         // passes on as a function value is not resolved further, and reads as a gap.
+        val classesBeforeDispatchExpansion = reachableRead
         reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
         // Finalize only after the last class expansion: callback-only dependencies can
         // contribute synthetic methods and classes after functional dispatch resolves.
@@ -611,7 +612,9 @@ class SootUpAdapter(
             log { "Skipped ${syntheticIdentities.skipped} synthetic member(s) whose identity could not be rendered" }
         }
 
-        collectDispatchGaps()
+        val lateClassesRead = reachableRead > classesBeforeDispatchExpansion
+        finalizeDispatchEvidence(lateClassesRead)
+        collectDispatchGaps(lateClassesRead)
 
         interprocedural?.let { calls ->
             val edges = calls.link(::overridesOf) { graphBuilder.addEdge(it) }
@@ -908,11 +911,12 @@ class SootUpAdapter(
      * After the dispatch fixpoint, every call on a function value that resolved to no body, with
      * the reason: the receiver's holder saturated, or nothing is known to reach it.
      */
-    private fun collectDispatchGaps() {
+    private fun collectDispatchGaps(lateClassesRead: Boolean) {
         for (entry in slotCalls.int2ObjectEntrySet()) {
             val lost = slotTargets[entry.intKey] === SATURATED_TARGETS || lostSlots?.get(entry.intKey) == true
             for (pending in entry.value) {
-                val gap = dispatchGap(pending, lost, open = openSlots?.get(entry.intKey) == true) ?: continue
+                val unexpanded = lateClassesRead && slotTargets[entry.intKey]?.any { it !in pending.resolved } == true
+                val gap = dispatchGap(pending, lost, open = openSlots?.get(entry.intKey) == true || unexpanded) ?: continue
                 callSiteGaps[pending.callSite.id.value] = gap
             }
         }
@@ -2445,6 +2449,22 @@ class SootUpAdapter(
         do {
             propagateSlotTargets(propagation)
         } while (emitPendingDispatches())
+    }
+
+    /**
+     * Include flows and targets added by the post-dispatch dependency expansion in the
+     * completeness evidence. Propagate them without emitting further calls: newly discovered
+     * alternatives remain gaps, as the bounded expansion contract requires. Retain the
+     * existing flow graph so late writes can invalidate an earlier call's completeness too.
+     */
+    private fun finalizeDispatchEvidence(lateClassesRead: Boolean) {
+        val propagation = propagation ?: return
+        if (lateClassesRead) {
+            for (id in slotTargets.indices) {
+                if (slotTargets[id] != null) propagation.pending.set(id)
+            }
+            propagateSlotTargets(propagation)
+        }
         computeOpenSlots(propagation)
         this.propagation = null
     }
