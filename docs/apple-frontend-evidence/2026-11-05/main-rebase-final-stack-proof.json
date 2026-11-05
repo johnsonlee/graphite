@@ -1,0 +1,36 @@
+{
+  "basePrior": "d2a21a1b24fefc631e4bff15bc1d6abc95f0aa23",
+  "base": "114f1a101f470d43e2d148b1aa76cbc6f7c51311",
+  "baseTree": "c04474cb7347c70f2c1dd963315035ad72fee9dd",
+  "originalFeature": "14ceef9c59db0f112de8890db7b539610e9e9d6b",
+  "originalFeatureTree": "3d00a0630f09d461d539cf58ad26f1e7b3e1fa7a",
+  "feature": "464ac53b5202d325454b1648b4c4113a3f9f07c3",
+  "featureTree": "3d00a0630f09d461d539cf58ad26f1e7b3e1fa7a",
+  "featureCommitsAboveBase": 36,
+  "unchangedTestedBuildInputsOnBase": {
+    "frontend/jvm": "c8f542da845b27efada300647c80e2afe6d1f84b",
+    "ir": "f581404b407e9babfb192163208b03eaf7bf92e7",
+    "gradle": "95c65ccd37a3d81b3ab85693ea1d683e8cb6ff14",
+    "build.gradle.kts": "d3a33b64c7419f327bb12de5e794564b63786b88",
+    "settings.gradle.kts": "93e35d278f61c1cbc7ec1fb4281849aac466ff7f",
+    "gradle.properties": "afe85e0afaabcb4f983e6984b4f89ca1eaf5cc74",
+    "gradlew": "2fe81a7d95e4f9ad2c9b2a046707d36ceb3980b3",
+    "gradlew.bat": "24467a141f791695fc1009c78d913b2c849d1412",
+    "config/detekt": "cf2d7d8bd28334e77b94d6f30090e673196ba358"
+  },
+  "baseChangedFiles": [
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/DefaultGraph.kt",
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/EnumValueIndexSource.kt",
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/MmapGraph.kt",
+    "frontend/jvm/core/src/test/kotlin/io/johnsonlee/graphite/graph/MmapGraphTest.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt",
+    "frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/GraphStoreTest.kt"
+  ],
+  "graphClassSHA256Unchanged": "6fcb82ab429ff47436abbdef3fa1e756366a2e960443d5e88a42ef992b0b5344",
+  "testedJarSHA256": "fc88002aee7c012e523ab91cb347eb3ad46552b4ca4989eb06679ec18fa2720a",
+  "originalTests": 263,
+  "rebaseLog": "final-stack-rebase.log",
+  "coordinatorRemoteWrites": false
+}

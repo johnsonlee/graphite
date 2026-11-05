@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "checks": {
+    "header_equal_except_declared_source_dataflow": true,
+    "all_old_node_facts_and_all_old_edge_facts_preserved": true,
+    "metadata_unchanged": true,
+    "string_multiset_unchanged": true,
+    "only_new_parameter_and_return_nodes": true,
+    "only_new_assign_and_return_value_edges": true,
+    "all_new_edges_source_owner_and_slot_verified": true
+  },
+  "diff": {
+    "node_facts": {
+      "missing": 0,
+      "added": 344,
+      "missing_examples": [],
+      "added_examples": [
+        "('parameter', (('index', 0), ('type', (('name', 'A?'), ('type_arguments', ()))), ('method', (('declaring_class', (('name', 'Swift.Array<A where A: Swift.Equatable>'), ('type_arguments', ()))), ('name', 'formattedList(default:)'), ('parameter_types', ((('name', 'A?'), ('type_arguments', ())),)), ('return_type', (('name', 'Swift.String'), ('type_arguments', ())))))))",
+        "('parameter', (('index', 0), ('type', (('name', '[Swift.String]'), ('type_arguments', ()))), ('method', (('declaring_class', (('name', 'Swift.String'), ('type_arguments', ()))), ('name', 'bestMatches(in:)'), ('parameter_types', ((('name', '[Swift.String]'), ('type_arguments', ())),)), ('return_type', (('name', '[Swift.String]'), ('type_arguments', ())))))))",
+        "('parameter', (('index', 0), ('type', (('name', 'SwiftFormat.Options'), ('type_arguments', ()))), ('method', (('declaring_class', (('name', 'SwiftFormat'), ('type_arguments', ()))), ('name', 'serialize(options:swiftVersion:excludingDefaults:separator:)'), ('parameter_types', ((('name', 'SwiftFormat.Options'), ('type_arguments', ())), (('name', 'SwiftFormat.Version'), ('type_arguments', ())), (('name', 'Swift.Bool'), ('type_arguments', ())), (('name', 'Swift.String'), ('type_arguments', ())))), ('return_type', (('name', 'Swift.String'), ('type_arguments', ())))))))"
+      ]
+    },
+    "edge_facts": {
+      "missing": 0,
+      "added": 202,
+      "missing_examples": [],
+      "added_examples": [
+        "(('call_site', (('caller', (('declaring_class', (('name', 'Swift.Array<A where A: Swift.Equatable>'), ('type_arguments', ()))), ('name', 'formattedList(default:)'), ('parameter_types', ((('name', 'A?'), ('type_arguments', ())),)), ('return_type', (('name', 'Swift.String'), ('type_arguments', ()))))), ('callee', (('declaring_class', (('name', 'Swift.Array<A where A: Swift.StringProtocol>'), ('type_arguments', ()))), ('name', 'formattedList(lastSeparator:)'), ('parameter_types', ((('name', 'Swift.String'), ('type_arguments', ())),)), ('return_type', (('name', 'Swift.String'), ('type_arguments', ",
+        "(('call_site', (('caller', (('declaring_class', (('name', 'SwiftFormat'), ('type_arguments', ()))), ('name', 'serialize(options:swiftVersion:excludingDefaults:separator:)'), ('parameter_types', ((('name', 'SwiftFormat.Options'), ('type_arguments', ())), (('name', 'SwiftFormat.Version'), ('type_arguments', ())), (('name', 'Swift.Bool'), ('type_arguments', ())), (('name', 'Swift.String'), ('type_arguments', ())))), ('return_type', (('name', 'Swift.String'), ('type_arguments', ()))))), ('callee', (('declaring_class', (('name', 'Swift.BidirectionalCollection< where A.Element == Swift.String>'), ('",
+        "(('parameter', (('index', 1), ('type', (('name', 'Swift.String'), ('type_arguments', ()))), ('method', (('declaring_class', (('name', 'SwiftFormat'), ('type_arguments', ()))), ('name', 'serialize(arguments:separator:)'), ('parameter_types', ((('name', '[Swift.String : Swift.String]'), ('type_arguments', ())), (('name', 'Swift.String'), ('type_arguments', ())))), ('return_type', (('name', 'Swift.String'), ('type_arguments', ()))))))), ('local_variable', (('name', 'separator'), ('type', (('name', ''), ('type_arguments', ()))), ('method', (('declaring_class', (('name', 'SwiftFormat'), ('type_argu"
+      ]
+    },
+    "metadata": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    },
+    "strings": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    }
+  },
+  "added_nodes": {
+    "parameter": 277,
+    "return": 67
+  },
+  "added_edges": {
+    "RETURN_VALUE": 67,
+    "ASSIGN": 135
+  },
+  "owned_new_edges": {
+    "returned_calls": 67,
+    "assigned_slots": 135
+  },
+  "counts": {
+    "base": {
+      "nodes": 32543,
+      "edges": 14661,
+      "strings": 7161,
+      "metadata_kinds": {
+        "methods": 677,
+        "type_relations": 183,
+        "class_origins": 147,
+        "enum_values": 272
+      },
+      "ir_sha256": "8fd33b4047d055fae5564244352559a90f2350dc33996ba071b40805d334fa89"
+    },
+    "candidate": {
+      "nodes": 32887,
+      "edges": 14863,
+      "strings": 7161,
+      "metadata_kinds": {
+        "methods": 677,
+        "type_relations": 183,
+        "class_origins": 147,
+        "enum_values": 272
+      },
+      "ir_sha256": "0ef968877350dc8b8adaa037b282a24525c14ee64b4ec2c3e05300513610d2cd"
+    }
+  },
+  "boundary": "Compares full semantic node/edge/metadata multisets (including recursive type/method/field descriptors and decoded arguments in slot order), independent of interning/node IDs. Actual node IDs additionally verify all argument-to-site edges and ownership of each new edge. It does not reconstruct SIL or infer source-level lexical bindings independently."
+}

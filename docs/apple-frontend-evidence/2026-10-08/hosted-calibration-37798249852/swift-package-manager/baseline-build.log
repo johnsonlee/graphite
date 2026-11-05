@@ -1,0 +1,138 @@
+Fetching https://github.com/apple/swift-argument-parser.git from cache
+Fetching https://github.com/swiftlang/indexstore-db.git
+Fetching https://github.com/apple/swift-protobuf.git
+[1/6125] Fetching indexstore-db
+Fetched https://github.com/swiftlang/indexstore-db.git from cache (1.30s)
+Fetching https://github.com/swiftlang/swift-syntax.git from cache
+Fetched https://github.com/apple/swift-argument-parser.git from cache (1.30s)
+Fetched https://github.com/swiftlang/swift-syntax.git from cache (0.05s)
+[1/54847] Fetching swift-protobuf
+Fetched https://github.com/apple/swift-protobuf.git from cache (7.26s)
+Creating working copy for https://github.com/swiftlang/indexstore-db.git
+Working copy of https://github.com/swiftlang/indexstore-db.git resolved at release/6.1 (54212fc)
+Creating working copy for https://github.com/apple/swift-argument-parser.git
+Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+Creating working copy for https://github.com/apple/swift-protobuf.git
+Working copy of https://github.com/apple/swift-protobuf.git resolved at 1.38.1
+Creating working copy for https://github.com/swiftlang/swift-syntax.git
+Working copy of https://github.com/swiftlang/swift-syntax.git resolved at 601.0.1
+[1/1] Compiling plugin GenerateManual
+[2/2] Compiling plugin GenerateDoccReference
+[3/3] Compiling plugin SwiftProtobufPlugin
+Building for production...
+[3/105] Write sources
+[7/105] Compiling Watchdog.cpp
+[8/105] Compiling Valgrind.cpp
+[9/105] Write sources
+[13/105] Compiling _SwiftSyntaxCShims dummy.c
+[14/105] Write swift-version-24593BA9C3E375BF.txt
+[16/106] Compiling SwiftSyntax601 Empty.swift
+[16/106] Compiling VersionTuple.cpp
+[18/107] Compiling SwiftSyntax600 Empty.swift
+[19/109] Compiling SwiftSyntax510 Empty.swift
+[19/109] Compiling IndexStoreDB_Support PatternMatching.cpp
+[21/109] Compiling SwiftSyntax509 Empty.swift
+[21/109] Compiling IndexStoreDB_Support Logging-NonMac.cpp
+[22/111] Compiling IndexStoreDB_Support Path.cpp
+[23/111] Compiling IndexStoreDB_Support Logging-Mac.mm
+[24/111] Compiling IndexStoreDB_Support Logging.cpp
+[25/111] Compiling IndexStoreDB_Support FilePathWatcher.cpp
+[26/111] Compiling IndexStoreDB_Support Concurrency-Mac.cpp
+[27/111] Compiling circular_raw_ostream.cpp
+[28/111] Compiling raw_ostream.cpp
+[29/111] Compiling YAMLTraits.cpp
+[30/111] Compiling YAMLParser.cpp
+[31/111] Compiling UnicodeCaseFold.cpp
+[32/111] Compiling WithColor.cpp
+[33/111] Compiling Unicode.cpp
+[34/111] Compiling Twine.cpp
+[35/111] Compiling ToolOutputFile.cpp
+[36/111] Compiling Triple.cpp
+[37/111] Compiling Threading.cpp
+[38/111] Compiling TargetParser.cpp
+[39/111] Compiling Timer.cpp
+[40/111] Compiling StringSaver.cpp
+[41/111] Compiling StringRef.cpp
+[42/111] Compiling StringMap.cpp
+[43/111] Compiling StringExtras.cpp
+[44/111] Compiling Statistic.cpp
+[45/111] Compiling SmallVector.cpp
+[46/111] Compiling SourceMgr.cpp
+[47/111] Compiling Signposts.cpp
+[48/111] Compiling SmallPtrSet.cpp
+[49/111] Compiling Program.cpp
+[50/111] Compiling Signals.cpp
+[51/111] Compiling PrettyStackTrace.cpp
+[52/111] Compiling Process.cpp
+[53/111] Compiling Options.cpp
+[54/111] Compiling Optional.cpp
+[55/111] Compiling Path.cpp
+[56/111] Compiling NativeFormatting.cpp
+[57/111] Compiling Mutex.cpp
+[58/111] Compiling Memory.cpp
+[59/111] Compiling MathExtras.cpp
+[60/111] Compiling MemoryBuffer.cpp
+[61/111] Compiling ManagedStatic.cpp
+[62/111] Compiling MD5.cpp
+[63/111] Compiling Locale.cpp
+[64/111] Compiling LineIterator.cpp
+[65/111] Compiling JSON.cpp
+[66/111] Compiling Hashing.cpp
+[67/111] Compiling Host.cpp
+[68/111] Compiling FormatVariadic.cpp
+[69/111] Compiling FoldingSet.cpp
+[70/111] Compiling FileUtilities.cpp
+[71/111] Compiling ErrorHandling.cpp
+[72/111] Compiling Errno.cpp
+[73/111] Compiling Error.cpp
+[74/111] Compiling DJB.cpp
+[75/111] Compiling Debug.cpp
+[76/111] Compiling ConvertUTF.cpp
+[77/111] Compiling ConvertUTFWrapper.cpp
+[78/111] Compiling Chrono.cpp
+[79/111] Compiling Atomic.cpp
+[80/111] Compiling Allocator.cpp
+[81/111] Compiling ARMTargetParser.cpp
+[82/111] Compiling APSInt.cpp
+[83/111] Compiling CommandLine.cpp
+[84/111] Compiling APFloat.cpp
+[85/111] Compiling APInt.cpp
+[86/111] Compiling AArch64TargetParser.cpp
+[87/111] Compiling IndexStoreDB_Index StoreSymbolRecord.cpp
+[88/111] Compiling IndexStoreDB_Index SymbolIndex.cpp
+[89/111] Compiling IndexStoreDB_Index IndexStoreLibraryProvider.cpp
+[91/111] Compiling SwiftProtobuf AnyMessageStorage.swift
+[91/111] Compiling IndexStoreDB_Index IndexSystem.cpp
+[92/111] Compiling IndexStoreDB_Index FileVisibilityChecker.cpp
+[93/111] Compiling midl.c
+[94/111] Compiling mdb.c
+[95/111] Compiling IndexStoreDB_Index FilePathIndex.cpp
+[96/111] Compiling IndexStoreDB_Index IndexDatastore.cpp
+[97/111] Compiling IndexStoreDB_Database ReadTransaction.cpp
+[98/111] Compiling IndexStoreDB_Database ImportTransaction.cpp
+[99/111] Compiling IndexStoreDB_Database DatabaseError.cpp
+[100/111] Compiling IndexStoreDB_Core Symbol.cpp
+[101/111] Write sources
+[104/112] Compiling IndexStoreDB_Database Database.cpp
+[105/112] Write sources
+[107/113] Compiling IndexStoreDB_CIndexStoreDB CIndexStoreDB.cpp
+[109/114] Compiling ArgumentParserToolInfo ToolInfo.swift
+[110/115] Compiling IndexStoreDB IndexDelegate.swift
+<module-includes>:1:10: note: in file included from <module-includes>:1:
+1 | #include "CIndexStoreDB.h"
+  |          `- note: in file included from <module-includes>:1:
+2 | 
+[111/115] Compiling GraphiteIR IRWriter.swift
+[112/115] Compiling ArgumentParser BashCompletionsGenerator.swift
+[113/115] Compiling SwiftSyntax AbsolutePosition.swift
+[114/116] Compiling SwiftParser Attributes.swift
+[115/117] Compiling GraphiteFrontend ClangUSR.swift
+[116/118] Compiling graphite_frontend_apple main.swift
+[116/118] Write Objects.LinkFileList
+/usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x250b): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+/usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x25a8): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+/usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x25ef): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+/usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x268e): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+/usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x26df): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+[117/118] Linking graphite-frontend-apple
+Build complete! (374.74s)

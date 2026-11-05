@@ -1,0 +1,136 @@
+{
+  "input": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/AcmeApp sources",
+  "graph": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite",
+  "bin": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/bin",
+  "commands": [
+    {
+      "name": "frontends",
+      "argv": [
+        "graphite",
+        "frontend",
+        "list"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "argv": [
+        "graphite",
+        "build",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/AcmeApp sources",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "verify",
+      "argv": [
+        "graphite",
+        "verify",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "checkout",
+      "argv": [
+        "graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite",
+        "MATCH (m:Method) WHERE m.class = 'AcmeApp.CheckoutService' RETURN m.name ORDER BY m.name",
+        "-f",
+        "csv"
+      ],
+      "exitCode": 0,
+      "rows": [
+        [
+          "init(client:)"
+        ],
+        [
+          "pay(amount:)"
+        ]
+      ]
+    },
+    {
+      "name": "swift_calls_objc",
+      "argv": [
+        "graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite",
+        "MATCH (c:CallSite) WHERE c.caller_name = 'application(_:didFinishLaunchingWithOptions:)' AND c.callee_class ENDS WITH 'LegacyStore' RETURN c.callee_name ORDER BY c.callee_name",
+        "-f",
+        "csv"
+      ],
+      "exitCode": 0,
+      "rows": [
+        [
+          "shared"
+        ],
+        [
+          "storeValue:forKey:"
+        ]
+      ]
+    },
+    {
+      "name": "objc_calls_swift",
+      "argv": [
+        "graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite",
+        "MATCH (c:CallSite) WHERE c.caller_name = 'storeValue:forKey:' RETURN c.callee_class, c.callee_name ORDER BY c.callee_class, c.callee_name",
+        "-f",
+        "csv"
+      ],
+      "exitCode": 0,
+      "rows": [
+        [
+          "AcmeApp.SwiftAuditLog",
+          "record(_:)"
+        ],
+        [
+          "LegacyStore",
+          "normalizeKey:"
+        ],
+        [
+          "NSUserDefaults",
+          "setObject:forKey:"
+        ],
+        [
+          "NSUserDefaults",
+          "standardUserDefaults"
+        ]
+      ]
+    },
+    {
+      "name": "objc_call_literals",
+      "argv": [
+        "graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-cli-013cd57c/acme-app-command-xb4mn3ws/out/AcmeApp.graphite",
+        "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'storeValue:forKey:' RETURN s.value ORDER BY s.value",
+        "-f",
+        "csv"
+      ],
+      "exitCode": 0,
+      "rows": [
+        [
+          "legacy.mode"
+        ],
+        [
+          "on"
+        ]
+      ]
+    }
+  ],
+  "binarySha256": {
+    "graphite-frontend-apple": "69de30e0d2f2ddf72f53d69743fe240166a7eacc4ba1acee755d4bd0b85618a2",
+    "graphite.jar": "facf7faadd56b2928cac5cd85e7a182ba0332fc1b70d048aa8ed99e0dd2c2bd5",
+    "graphite": "086da51ad9a577ecbba07db76087c0c70288d0016ed7f0cb9869f6eb591fbbd7"
+  },
+  "purpose": "one-command user build and semantic correctness only; no performance measurement",
+  "sourceHead": "8f96c98bcff165ddb03b6ea7c49c1e1eabaa5c09",
+  "jarSourceHead": "013cd57c9b8b8e84fe348378d9b1556d91529930",
+  "xcode": "Xcode 15.4\nBuild version 15F31d",
+  "graphSha256": "5249a52e2b99293bdafdc385f75f7b317a337b68dfad89efeba2cb9cd79b5493"
+}

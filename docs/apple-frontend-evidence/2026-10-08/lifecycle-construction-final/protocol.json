@@ -1,0 +1,325 @@
+{
+  "sources": [
+    {
+      "id": "signal-ios",
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-iOS.git",
+      "commit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+      "submodules": {
+        "Pods": "77c21193e6b5e4f8cbd86abaf46631fd242322f4"
+      }
+    },
+    {
+      "id": "swiftpm",
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+    },
+    {
+      "id": "signal-server",
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-Server.git",
+      "commit": "9c62622733de2d4f067d9f8094e7542e8bf0c700"
+    }
+  ],
+  "variants": {
+    "baseline": {
+      "revision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "source": "signal-ios",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-fixed-graph"
+        },
+        {
+          "id": "swiftpm",
+          "source": "swiftpm",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph"
+        },
+        {
+          "id": "signal-server",
+          "source": "signal-server",
+          "language": "jvm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+        }
+      ],
+      "server_command": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/base/target/aarch64-apple-darwin/release/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "{port}"
+      ],
+      "construction": [
+        {
+          "name": "signal-ios",
+          "source": "signal-ios",
+          "commands": [
+            [
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/base/frontend/apple/.build/release/graphite-frontend-apple",
+              "build",
+              "--project",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Signal.xcworkspace",
+              "--derived-data",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+              "--skip-build",
+              "--out",
+              "{work}/corpus.graphite-ir"
+            ],
+            [
+              "/opt/homebrew/opt/openjdk@17/bin/java",
+              "-Xmx8g",
+              "-jar",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+              "import",
+              "{work}/corpus.graphite-ir",
+              "-o",
+              "{work}/graph"
+            ]
+          ],
+          "output": "{work}/graph",
+          "verify_command": [
+            "/opt/homebrew/bin/python3",
+            "-c",
+            "import json,subprocess,sys; p=subprocess.run([sys.argv[1],'query',sys.argv[2],'MATCH (n) RETURN count(n) AS nodes','--format','json'],check=True,capture_output=True,text=True); r=json.loads(p.stdout); assert r['columns']==['nodes'] and r['rows']==[{'nodes':int(sys.argv[3])}],r; print(p.stdout)",
+            "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+            "{work}/graph",
+            "331236"
+          ],
+          "frontend_binary_sha256": "d3c760ed4e38bcf6111ab62faedaac7fb0a3a2d7030023204c25794496537082"
+        },
+        {
+          "name": "swiftpm",
+          "source": "swiftpm",
+          "commands": [
+            [
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/base/frontend/apple/.build/release/graphite-frontend-apple",
+              "build",
+              "--package",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm",
+              "--skip-build",
+              "--out",
+              "{work}/corpus.graphite-ir"
+            ],
+            [
+              "/opt/homebrew/opt/openjdk@17/bin/java",
+              "-Xmx8g",
+              "-jar",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+              "import",
+              "{work}/corpus.graphite-ir",
+              "-o",
+              "{work}/graph"
+            ]
+          ],
+          "output": "{work}/graph",
+          "verify_command": [
+            "/opt/homebrew/bin/python3",
+            "-c",
+            "import json,subprocess,sys; p=subprocess.run([sys.argv[1],'query',sys.argv[2],'MATCH (n) RETURN count(n) AS nodes','--format','json'],check=True,capture_output=True,text=True); r=json.loads(p.stdout); assert r['columns']==['nodes'] and r['rows']==[{'nodes':int(sys.argv[3])}],r; print(p.stdout)",
+            "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+            "{work}/graph",
+            "60956"
+          ],
+          "frontend_binary_sha256": "d3c760ed4e38bcf6111ab62faedaac7fb0a3a2d7030023204c25794496537082"
+        }
+      ],
+      "server_binary_sha256": "41a491a178afb3d97e78d6bcd4f0e9880f1f2f804885d1d4185cdcbf0a5ef6aa"
+    },
+    "candidate": {
+      "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "source": "signal-ios",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-fixed-graph"
+        },
+        {
+          "id": "swiftpm",
+          "source": "swiftpm",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph"
+        },
+        {
+          "id": "signal-server",
+          "source": "signal-server",
+          "language": "jvm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+        }
+      ],
+      "server_command": [
+        "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "{port}"
+      ],
+      "construction": [
+        {
+          "name": "signal-ios",
+          "source": "signal-ios",
+          "commands": [
+            [
+              "/Users/johnsonlee/.codex/worktrees/19db/graphite/frontend/apple/.build/release/graphite-frontend-apple",
+              "build",
+              "--project",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Signal.xcworkspace",
+              "--derived-data",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+              "--skip-build",
+              "--out",
+              "{work}/corpus.graphite-ir"
+            ],
+            [
+              "/opt/homebrew/opt/openjdk@17/bin/java",
+              "-Xmx8g",
+              "-jar",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+              "import",
+              "{work}/corpus.graphite-ir",
+              "-o",
+              "{work}/graph"
+            ]
+          ],
+          "output": "{work}/graph",
+          "verify_command": [
+            "/opt/homebrew/bin/python3",
+            "-c",
+            "import json,subprocess,sys; p=subprocess.run([sys.argv[1],'query',sys.argv[2],'MATCH (n) RETURN count(n) AS nodes','--format','json'],check=True,capture_output=True,text=True); r=json.loads(p.stdout); assert r['columns']==['nodes'] and r['rows']==[{'nodes':int(sys.argv[3])}],r; print(p.stdout)",
+            "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+            "{work}/graph",
+            "421262"
+          ],
+          "frontend_binary_sha256": "d52da6ae807a32b676b57bb50a9c093f0ec7ddcb7effde62efb019997c8be0ed"
+        },
+        {
+          "name": "swiftpm",
+          "source": "swiftpm",
+          "commands": [
+            [
+              "/Users/johnsonlee/.codex/worktrees/19db/graphite/frontend/apple/.build/release/graphite-frontend-apple",
+              "build",
+              "--package",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm",
+              "--skip-build",
+              "--out",
+              "{work}/corpus.graphite-ir"
+            ],
+            [
+              "/opt/homebrew/opt/openjdk@17/bin/java",
+              "-Xmx8g",
+              "-jar",
+              "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+              "import",
+              "{work}/corpus.graphite-ir",
+              "-o",
+              "{work}/graph"
+            ]
+          ],
+          "output": "{work}/graph",
+          "verify_command": [
+            "/opt/homebrew/bin/python3",
+            "-c",
+            "import json,subprocess,sys; p=subprocess.run([sys.argv[1],'query',sys.argv[2],'MATCH (n) RETURN count(n) AS nodes','--format','json'],check=True,capture_output=True,text=True); r=json.loads(p.stdout); assert r['columns']==['nodes'] and r['rows']==[{'nodes':int(sys.argv[3])}],r; print(p.stdout)",
+            "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+            "{work}/graph",
+            "60956"
+          ],
+          "frontend_binary_sha256": "d52da6ae807a32b676b57bb50a9c093f0ec7ddcb7effde62efb019997c8be0ed"
+        }
+      ],
+      "server_binary_sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6"
+    }
+  },
+  "protocol": {
+    "rounds": 3,
+    "requests_per_case": 100,
+    "concurrency": [
+      1,
+      4
+    ],
+    "warmup_requests": 5,
+    "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+    "timeout_seconds": 90,
+    "startup_timeout_seconds": 300,
+    "readiness": {
+      "name": "all-graph-node-census",
+      "query": "MATCH (n) RETURN n.graphId AS graph, count(n) AS nodes ORDER BY graph",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    },
+    "cases": [
+      {
+        "name": "network-message-call-scan",
+        "query": "MATCH (c:CallSite) WHERE toLower(coalesce(c.caller_class, '')) CONTAINS 'message' OR toLower(coalesce(c.callee_class, '')) CONTAINS 'request' RETURN c.graphId AS graph, count(c) AS calls ORDER BY graph",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "literal-call-provenance",
+        "query": "MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite) RETURN c.graphId AS graph, c.callee_class AS callee, c.callee_name AS method, count(s) AS literalArguments ORDER BY literalArguments DESC, graph, callee, method LIMIT 100",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "field-type-inventory",
+        "query": "MATCH (f:Field) RETURN f.graphId AS graph, f.type AS fieldType, count(f) AS fields ORDER BY fields DESC, graph, fieldType LIMIT 100",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "shared-wire-literals-prefiltered",
+        "query": "MATCH (a:StringConstant) WHERE a.value IN ['application/json', 'Content-Type', 'GET', 'POST'] WITH a MATCH (b:StringConstant) WHERE a.graphId <> b.graphId AND a.value = b.value RETURN a.graphId AS leftGraph, b.graphId AS rightGraph, a.value AS wireLiteral, count(*) AS pairs ORDER BY leftGraph, rightGraph, wireLiteral",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      }
+    ]
+  },
+  "environment": {
+    "swiftPathPrefix": "/Users/johnsonlee/Library/Developer/Toolchains/swift-6.1.3-RELEASE.xctoolchain/usr/bin",
+    "GRAPHITE_SWIFT_TOOLCHAIN": null,
+    "DEVELOPER_DIR": null,
+    "heap": "-Xmx8g for every importer",
+    "compilerIndex": "Xcode 15.4 for Signal; Swift 6.1.3 for SwiftPM",
+    "measurementBoundary": "existing index through saved graph; compilation is preparation"
+  }
+}

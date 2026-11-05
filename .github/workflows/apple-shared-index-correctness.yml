@@ -1,0 +1,87 @@
+name: Apple shared-source index correctness
+
+# Manual real-corpus verification. A same-repository PR can opt in with
+# apple-index-union and remove the label once the requested run starts.
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source-contexts:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       ((github.event.action == 'labeled' && github.event.label.name == 'apple-index-union') ||
+        (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'apple-index-union'))))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container:
+      image: swift:6.1.3@sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        path: candidate
+        persist-credentials: false
+    - name: Install compiler and corpus prerequisites
+      run: |
+        mkdir evidence
+        apt-get update -q
+        apt-get install -y -q --no-install-recommends ca-certificates curl git build-essential python3 libsqlite3-dev pkg-config
+        python3 -m unittest discover -s candidate/backend/bench -p test_apple_index_oracle.py
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Build the candidate frontend and production importer
+      run: |
+        {
+          echo 'swift:6.1.3@sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db'
+          git -C candidate rev-parse HEAD 'HEAD^{tree}' HEAD:frontend/apple
+          sha256sum candidate/frontend/apple/Package.resolved candidate/backend/bench/{apple-index-oracle.py,apple-index-model.swift,verify-apple-index-contexts.py}
+          swift --version
+          java -version
+          clang --version
+          dpkg-query -W
+        } > evidence/toolchain.txt 2>&1
+        candidate/frontend/apple/swift.sh build --product graphite-frontend-apple -c release --jobs 4 --force-resolved-versions --static-swift-stdlib 2>&1 | tee evidence/frontend-build.log
+        (cd candidate && ./gradlew :query:shadowJar --no-daemon) 2>&1 | tee evidence/importer-build.log
+        git -C candidate diff --exit-code
+    - name: Build the model exporter from the same Git tree
+      run: |
+        probe="$RUNNER_TEMP/index-model"
+        mkdir "$probe"
+        git -C candidate archive HEAD:frontend/apple | tar -x -C "$probe"
+        mkdir "$probe/Sources/apple-index-model"
+        cp candidate/backend/bench/apple-index-model.swift "$probe/Sources/apple-index-model/main.swift"
+        cat >> "$probe/Package.swift" <<'SWIFT'
+        package.products.append(.executable(name: "apple-index-model", targets: ["apple-index-model"]))
+        package.targets.append(.executableTarget(name: "apple-index-model", dependencies: ["GraphiteFrontend"]))
+        SWIFT
+        "$probe/swift.sh" build --product apple-index-model -c release --jobs 4 --force-resolved-versions --static-swift-stdlib 2>&1 | tee evidence/model-build.log
+        cmp candidate/frontend/apple/Package.resolved "$probe/Package.resolved"
+    - name: Check both independent record unions and saved graph owners
+      run: |
+        test "$RUNNER_TEMP/corpus" = /__w/_temp/corpus
+        test "$GITHUB_WORKSPACE/corpus" = /__w/graphite/graphite/corpus
+        python3 candidate/backend/bench/verify-apple-index-contexts.py \
+          --manifest candidate/backend/bench/apple-frontend-corpus-large.json \
+          --frontend candidate/frontend/apple/.build/release/graphite-frontend-apple \
+          --model "$RUNNER_TEMP/index-model/.build/release/apple-index-model" \
+          --jar candidate/frontend/jvm/query/build/libs/graphite.jar --out evidence \
+          --temp-root "$RUNNER_TEMP/corpus" --workspace-root "$GITHUB_WORKSPACE/corpus"
+    - name: Preserve compiler facts, candidate IR, saved graphs and failures
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: apple-index-union-${{ github.run_id }}-${{ github.run_attempt }}
+        path: evidence/
+        if-no-files-found: error
+        retention-days: 14

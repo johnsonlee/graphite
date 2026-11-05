@@ -1,0 +1,825 @@
+TAP version 13
+# Subtest: graph-routing aggregation retains every state and fails on a red state
+ok 1 - graph-routing aggregation retains every state and fails on a red state
+  ---
+  duration_ms: 3.864541
+  ...
+# Subtest: canonical correctness comparison is order-insensitive and rejects incomplete or ambiguous records
+ok 2 - canonical correctness comparison is order-insensitive and rejects incomplete or ambiguous records
+  ---
+  duration_ms: 0.249709
+  ...
+# Subtest: fixture64 global wide-query pressure requires 10x in both paired run orders
+ok 3 - fixture64 global wide-query pressure requires 10x in both paired run orders
+  ---
+  duration_ms: 12.889625
+  ...
+# Subtest: fixture64 global wide-query pressure verifies NCPU split and correctness
+ok 4 - fixture64 global wide-query pressure verifies NCPU split and correctness
+  ---
+  duration_ms: 15.077292
+  ...
+# Subtest: fixture64 global wide-query pressure requires the wrapped case-insensitive shape and its 10x P95
+ok 5 - fixture64 global wide-query pressure requires the wrapped case-insensitive shape and its 10x P95
+  ---
+  duration_ms: 8.196125
+  ...
+# Subtest: fixture64 global wide-query pressure rejects detached JSON latency summaries
+ok 6 - fixture64 global wide-query pressure rejects detached JSON latency summaries
+  ---
+  duration_ms: 3.487667
+  ...
+# Subtest: fixture64 global wide-query pressure gates every fork and paired resources
+ok 7 - fixture64 global wide-query pressure gates every fork and paired resources
+  ---
+  duration_ms: 4.2635
+  ...
+# Subtest: fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks
+ok 8 - fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks
+  ---
+  duration_ms: 0.272416
+  ...
+# Subtest: fixture64 startup-prepared graphId pressure preserves index checks and reports startup ratios
+ok 9 - fixture64 startup-prepared graphId pressure preserves index checks and reports startup ratios
+  ---
+  duration_ms: 113.133334
+  ...
+# Subtest: fixture64 cold graphId pressure reports numerical regressions without gating startup
+ok 10 - fixture64 cold graphId pressure reports numerical regressions without gating startup
+  ---
+  duration_ms: 71.48925
+  ...
+# Subtest: fixture64 scorer rejects detached and correlated-rotation latency rows
+ok 11 - fixture64 scorer rejects detached and correlated-rotation latency rows
+  ---
+  duration_ms: 55.947041
+  ...
+# Subtest: fixture64 warm pressure proves the trigram path instead of requiring a raw scan
+ok 12 - fixture64 warm pressure proves the trigram path instead of requiring a raw scan
+  ---
+  duration_ms: 166.911625
+  ...
+# Subtest: fixture64 startup-prepared pressure measures load-time readiness without query warmup
+ok 13 - fixture64 startup-prepared pressure measures load-time readiness without query warmup
+  ---
+  duration_ms: 42.04575
+  ...
+# Subtest: graphId pressure rejects repeated graph paths and failed candidate queries
+ok 14 - graphId pressure rejects repeated graph paths and failed candidate queries
+  ---
+  duration_ms: 22.304
+  ...
+# Subtest: graphId pressure hard-gates request-selected source parity and latency
+ok 15 - graphId pressure hard-gates request-selected source parity and latency
+  ---
+  duration_ms: 133.476209
+  ...
+# Subtest: graphId pressure requires every target graph and all three graphId spellings
+ok 16 - graphId pressure requires every target graph and all three graphId spellings
+  ---
+  duration_ms: 23.166167
+  ...
+# Subtest: graphId set routing proves K-source access and 64-K pruning against its reference
+ok 17 - graphId set routing proves K-source access and 64-K pruning against its reference
+  ---
+  duration_ms: 47.996125
+  ...
+# Subtest: K64 graph-set tolerates sub-0.25ms P50 and sub-1ms P95 single-shot jitter
+ok 18 - K64 graph-set tolerates sub-0.25ms P50 and sub-1ms P95 single-shot jitter
+  ---
+  duration_ms: 25.596166
+  ...
+# Subtest: graph-routing oracle is derived only from complete successful base single-source references
+ok 19 - graph-routing oracle is derived only from complete successful base single-source references
+  ---
+  duration_ms: 5.564208
+  ...
+# Subtest: comparator CLI runs when invoked through a symlinked path
+ok 20 - comparator CLI runs when invoked through a symlinked path
+  ---
+  duration_ms: 26.768208
+  ...
+# Subtest: immutable Gist materialization fetches complete truncated evidence
+ok 21 - immutable Gist materialization fetches complete truncated evidence
+  ---
+  duration_ms: 1.362541
+  ...
+# Subtest: immutable Gist materialization rejects an unbound truncated URL
+ok 22 - immutable Gist materialization rejects an unbound truncated URL
+  ---
+  duration_ms: 0.7375
+  ...
+# Subtest: fixture workload verifier binds every result to all 64 regenerated JAR shards
+ok 23 - fixture workload verifier binds every result to all 64 regenerated JAR shards
+  ---
+  duration_ms: 406.718958
+  ...
+# Subtest: fixture workload verifier rejects unpruned graph-set fanout on base and candidate
+ok 24 - fixture workload verifier rejects unpruned graph-set fanout on base and candidate
+  ---
+  duration_ms: 513.772208
+  ...
+# Subtest: canonical JAR hash accepts overlapping duplicate fat-JAR entries
+ok 25 - canonical JAR hash accepts overlapping duplicate fat-JAR entries
+  ---
+  duration_ms: 48.635917
+  ...
+# Subtest: fixture64 driver builds commit-bound JARs and records fixture provenance
+ok 26 - fixture64 driver builds commit-bound JARs and records fixture provenance
+  ---
+  duration_ms: 0.617625
+  ...
+# Subtest: fixture64 preparation partitions pinned real JARs into 64 verified graph shards
+ok 27 - fixture64 preparation partitions pinned real JARs into 64 verified graph shards
+  ---
+  duration_ms: 0.2935
+  ...
+# Subtest: JMH comparison blocks a separated latency regression
+ok 28 - JMH comparison blocks a separated latency regression
+  ---
+  duration_ms: 0.311917
+  ...
+# Subtest: JMH comparison does not block overlapping confidence intervals
+ok 29 - JMH comparison does not block overlapping confidence intervals
+  ---
+  duration_ms: 0.071958
+  ...
+# Subtest: threshold-only JMH comparison confirms a regression despite overlapping intervals
+ok 30 - threshold-only JMH comparison confirms a regression despite overlapping intervals
+  ---
+  duration_ms: 0.04925
+  ...
+# Subtest: threshold-only JMH confirmation blocks a repeated score regression
+ok 31 - threshold-only JMH confirmation blocks a repeated score regression
+  ---
+  duration_ms: 0.127125
+  ...
+# Subtest: JMH report accepts a gate-specific title
+ok 32 - JMH report accepts a gate-specific title
+  ---
+  duration_ms: 0.1805
+  ...
+# Subtest: JMH throughput regression uses higher-is-better semantics
+ok 33 - JMH throughput regression uses higher-is-better semantics
+  ---
+  duration_ms: 0.135125
+  ...
+# Subtest: JMH comparison fails when a benchmark is missing
+ok 34 - JMH comparison fails when a benchmark is missing
+  ---
+  duration_ms: 0.04475
+  ...
+# Subtest: JMH comparison gates a selected secondary metric
+ok 35 - JMH comparison gates a selected secondary metric
+  ---
+  duration_ms: 0.099375
+  ...
+# Subtest: JMH comparison fails closed when a selected secondary metric is missing
+ok 36 - JMH comparison fails closed when a selected secondary metric is missing
+  ---
+  duration_ms: 0.049041
+  ...
+# Subtest: JMH secondary metric comparison accepts a stable zero baseline
+ok 37 - JMH secondary metric comparison accepts a stable zero baseline
+  ---
+  duration_ms: 0.044125
+  ...
+# Subtest: JMH advisory metric reports a regression without blocking
+ok 38 - JMH advisory metric reports a regression without blocking
+  ---
+  duration_ms: 0.1555
+  ...
+# Subtest: JMH reverse-order confirmation rejects a one-round false positive
+ok 39 - JMH reverse-order confirmation rejects a one-round false positive
+  ---
+  duration_ms: 0.059834
+  ...
+# Subtest: JMH reverse-order confirmation blocks a repeated regression
+ok 40 - JMH reverse-order confirmation blocks a repeated regression
+  ---
+  duration_ms: 0.04475
+  ...
+# Subtest: latency baseline requires both fixed-baseline speedup and no base regression
+ok 41 - latency baseline requires both fixed-baseline speedup and no base regression
+  ---
+  duration_ms: 0.199625
+  ...
+# Subtest: latency baseline blocks loss of the fixed-baseline optimization
+ok 42 - latency baseline blocks loss of the fixed-baseline optimization
+  ---
+  duration_ms: 0.060583
+  ...
+# Subtest: latency baseline fails closed without fixed speedup confidence bounds
+ok 43 - latency baseline fails closed without fixed speedup confidence bounds
+  ---
+  duration_ms: 0.043541
+  ...
+# Subtest: latency confirmation blocks only failures repeated by the same benchmark
+ok 44 - latency confirmation blocks only failures repeated by the same benchmark
+  ---
+  duration_ms: 0.148583
+  ...
+# Subtest: latency baseline fails closed when one graph-count parameter is missing
+ok 45 - latency baseline fails closed when one graph-count parameter is missing
+  ---
+  duration_ms: 0.093791
+  ...
+# Subtest: latency expected keys contain only real persisted graph coverage
+ok 46 - latency expected keys contain only real persisted graph coverage
+  ---
+  duration_ms: 0.038042
+  ...
+# Subtest: multi-graph latency requires a ten-times fixed-baseline factor
+ok 47 - multi-graph latency requires a ten-times fixed-baseline factor
+  ---
+  duration_ms: 0.049584
+  ...
+# Subtest: latency anchor requires both the known-good and current-base guardrails
+ok 48 - latency anchor requires both the known-good and current-base guardrails
+  ---
+  duration_ms: 0.153917
+  ...
+# Subtest: latency anchor blocks drift against either comparator
+ok 49 - latency anchor blocks drift against either comparator
+  ---
+  duration_ms: 0.05075
+  ...
+# Subtest: latency anchor confirms point regressions despite overlapping confidence intervals
+ok 50 - latency anchor confirms point regressions despite overlapping confidence intervals
+  ---
+  duration_ms: 0.039416
+  ...
+# Subtest: latency anchor confirmation evaluates only initially blocked keys
+ok 51 - latency anchor confirmation evaluates only initially blocked keys
+  ---
+  duration_ms: 0.145292
+  ...
+# Subtest: latency anchor fails closed for a missing expected key
+ok 52 - latency anchor fails closed for a missing expected key
+  ---
+  duration_ms: 0.135333
+  ...
+# Subtest: latency anchor fails closed on duplicate keys in every revision
+ok 53 - latency anchor fails closed on duplicate keys in every revision
+  ---
+  duration_ms: 0.224958
+  ...
+# Subtest: latency anchor rejects zero scores in every revision
+ok 54 - latency anchor rejects zero scores in every revision
+  ---
+  duration_ms: 0.064167
+  ...
+# Subtest: resource gate accepts the 8 GiB real persisted graph profile
+ok 55 - resource gate accepts the 8 GiB real persisted graph profile
+  ---
+  duration_ms: 0.353292
+  ...
+# Subtest: resource gate reads per-invocation gauges instead of summed AuxCounters scores
+ok 56 - resource gate reads per-invocation gauges instead of summed AuxCounters scores
+  ---
+  duration_ms: 0.14225
+  ...
+# Subtest: resource gate fails closed on the wrong real-graph max heap
+ok 57 - resource gate fails closed on the wrong real-graph max heap
+  ---
+  duration_ms: 0.076833
+  ...
+# Subtest: resource gate requires GC, retained, and peak metrics
+ok 58 - resource gate requires GC, retained, and peak metrics
+  ---
+  duration_ms: 0.321833
+  ...
+# Subtest: resource confirmation aligns the same metric before blocking
+ok 59 - resource confirmation aligns the same metric before blocking
+  ---
+  duration_ms: 0.126
+  ...
+# Subtest: latency baseline fails when an expected benchmark disappears from all revisions
+ok 60 - latency baseline fails when an expected benchmark disappears from all revisions
+  ---
+  duration_ms: 0.062417
+  ...
+# Subtest: latency shard aggregation requires every shard and the complete benchmark key set
+ok 61 - latency shard aggregation requires every shard and the complete benchmark key set
+  ---
+  duration_ms: 7.22625
+  ...
+# Subtest: latency shard aggregation rejects mixed anchor and historical policies
+ok 62 - latency shard aggregation rejects mixed anchor and historical policies
+  ---
+  duration_ms: 1.102916
+  ...
+# Subtest: large-corpus parser accepts Gradle-prefixed output
+ok 63 - large-corpus parser accepts Gradle-prefixed output
+  ---
+  duration_ms: 0.171042
+  ...
+# Subtest: large-corpus comparison blocks a material pipeline regression
+ok 64 - large-corpus comparison blocks a material pipeline regression
+  ---
+  duration_ms: 3.87275
+  ...
+# Subtest: large-corpus comparison ignores mapped-load changes at the absolute noise floor
+ok 65 - large-corpus comparison ignores mapped-load changes at the absolute noise floor
+  ---
+  duration_ms: 0.290959
+  ...
+# Subtest: large-corpus comparison blocks a robust mapped-load median above the noise floor
+ok 66 - large-corpus comparison blocks a robust mapped-load median above the noise floor
+  ---
+  duration_ms: 0.178916
+  ...
+# Subtest: large-corpus comparison requires the five-sample mapped-load protocol
+ok 67 - large-corpus comparison requires the five-sample mapped-load protocol
+  ---
+  duration_ms: 0.183
+  ...
+# Subtest: large-corpus comparison reports sampled heap without blocking on GC noise
+ok 68 - large-corpus comparison reports sampled heap without blocking on GC noise
+  ---
+  duration_ms: 0.13
+  ...
+# Subtest: large-corpus reverse-order confirmation rejects a one-round false positive
+ok 69 - large-corpus reverse-order confirmation rejects a one-round false positive
+  ---
+  duration_ms: 0.217416
+  ...
+# Subtest: large-corpus reverse-order confirmation blocks a repeated regression
+ok 70 - large-corpus reverse-order confirmation blocks a repeated regression
+  ---
+  duration_ms: 0.139292
+  ...
+# Subtest: large-corpus comparison requires the exact corpus set
+ok 71 - large-corpus comparison requires the exact corpus set
+  ---
+  duration_ms: 0.170375
+  ...
+# Subtest: large-corpus comparison rejects duplicate corpus markers without overwriting
+ok 72 - large-corpus comparison rejects duplicate corpus markers without overwriting
+  ---
+  duration_ms: 0.073125
+  ...
+# Subtest: large-corpus comparison rejects graph-shape drift even when the candidate is faster
+ok 73 - large-corpus comparison rejects graph-shape drift even when the candidate is faster
+  ---
+  duration_ms: 0.255125
+  ...
+# Subtest: large-corpus confirmation cannot clear a graph-shape failure
+ok 74 - large-corpus confirmation cannot clear a graph-shape failure
+  ---
+  duration_ms: 0.103167
+  ...
+# Subtest: large-corpus shape transition accepts exactly the pinned shape change
+ok 75 - large-corpus shape transition accepts exactly the pinned shape change
+  ---
+  duration_ms: 0.093125
+  ...
+# Subtest: large-corpus shape change still fails without the transition
+ok 76 - large-corpus shape change still fails without the transition
+  ---
+  duration_ms: 0.065125
+  ...
+# Subtest: large-corpus shape transition rejects a wrong edge delta in the pinned direction
+ok 77 - large-corpus shape transition rejects a wrong edge delta in the pinned direction
+  ---
+  duration_ms: 0.087584
+  ...
+# Subtest: large-corpus shape transition keeps nodes, methods and call sites exact
+ok 78 - large-corpus shape transition keeps nodes, methods and call sites exact
+  ---
+  duration_ms: 0.181875
+  ...
+# Subtest: large-corpus shape transition applies the persisted-size tolerance around the pinned delta
+ok 79 - large-corpus shape transition applies the persisted-size tolerance around the pinned delta
+  ---
+  duration_ms: 0.30225
+  ...
+# Subtest: large-corpus shape transition fails once the base no longer has the pinned base shape
+ok 80 - large-corpus shape transition fails once the base no longer has the pinned base shape
+  ---
+  duration_ms: 0.108375
+  ...
+# Subtest: large-corpus shape transition requires every corpus in the manifest
+ok 81 - large-corpus shape transition requires every corpus in the manifest
+  ---
+  duration_ms: 0.060125
+  ...
+# Subtest: large-corpus shape transition confirmation keeps the transition and its shape errors
+ok 82 - large-corpus shape transition confirmation keeps the transition and its shape errors
+  ---
+  duration_ms: 0.113875
+  ...
+# Subtest: workflow selects the pinned shape transition fail-closed and only before the base-owned branch
+ok 83 - workflow selects the pinned shape transition fail-closed and only before the base-owned branch
+  ---
+  duration_ms: 0.548625
+  ...
+# Subtest: wrapped-query shape transition selects the pinned candidate harnesses fail-closed
+ok 84 - wrapped-query shape transition selects the pinned candidate harnesses fail-closed
+  ---
+  duration_ms: 0.413583
+  ...
+# Subtest: pinned large-corpus shape transition matches the harness baselines
+ok 85 - pinned large-corpus shape transition matches the harness baselines
+  ---
+  duration_ms: 0.238625
+  ...
+# Subtest: large-corpus branch-definition access is gated relatively, or by the transition budget without a base
+ok 86 - large-corpus branch-definition access is gated relatively, or by the transition budget without a base
+  ---
+  duration_ms: 0.269208
+  ...
+# Subtest: large-corpus comparison validates required measurements
+ok 87 - large-corpus comparison validates required measurements
+  ---
+  duration_ms: 0.196834
+  ...
+# Subtest: large-corpus comparison tolerates only small persisted-size noise
+ok 88 - large-corpus comparison tolerates only small persisted-size noise
+  ---
+  duration_ms: 0.10825
+  ...
+# Subtest: large-corpus comparison requires a self-consistent production index lifecycle
+ok 89 - large-corpus comparison requires a self-consistent production index lifecycle
+  ---
+  duration_ms: 0.141542
+  ...
+# Subtest: coverage taxonomy assigns every blocking component exactly once
+ok 90 - coverage taxonomy assigns every blocking component exactly once
+  ---
+  duration_ms: 0.055084
+  ...
+# Subtest: aggregate report fails closed when an artifact is missing
+ok 91 - aggregate report fails closed when an artifact is missing
+  ---
+  duration_ms: 1.079958
+  ...
+# Subtest: aggregate report includes every independent benchmark gate
+ok 92 - aggregate report includes every independent benchmark gate
+  ---
+  duration_ms: 4.733
+  ...
+# Subtest: taxonomy rollout publishes an exact Pages-compatible report and status pair
+ok 93 - taxonomy rollout publishes an exact Pages-compatible report and status pair
+  ---
+  duration_ms: 3.125041
+  ...
+# Subtest: artifact staging keeps successful jobs and selects only the latest producer attempt
+ok 94 - artifact staging keeps successful jobs and selects only the latest producer attempt
+  ---
+  duration_ms: 2.101792
+  ...
+# Subtest: artifact staging does not mix stale files into a partial retry
+ok 95 - artifact staging does not mix stale files into a partial retry
+  ---
+  duration_ms: 0.944458
+  ...
+# Subtest: Rust latency comparison blocks only above the relative limit and the millisecond floor
+ok 96 - Rust latency comparison blocks only above the relative limit and the millisecond floor
+  ---
+  duration_ms: 9.201625
+  ...
+# Subtest: Rust latency comparison rejects foreign, partial, or mis-united snapshots
+ok 97 - Rust latency comparison rejects foreign, partial, or mis-united snapshots
+  ---
+  duration_ms: 4.508041
+  ...
+# Subtest: Rust multigraph coverage rejects a broad case omitted by both revisions
+ok 98 - Rust multigraph coverage rejects a broad case omitted by both revisions
+  ---
+  duration_ms: 3.464583
+  ...
+# Subtest: Rust multigraph comparison binds queries, typed values, metadata and graph scope
+ok 99 - Rust multigraph comparison binds queries, typed values, metadata and graph scope
+  ---
+  duration_ms: 9.603333
+  ...
+# Subtest: Rust coverage distinguishes an empty known label scan from a valid zero-selectivity result
+ok 100 - Rust coverage distinguishes an empty known label scan from a valid zero-selectivity result
+  ---
+  duration_ms: 5.951416
+  ...
+# Subtest: Rust latency rejects missing or shortened samples and derived-score drift
+ok 101 - Rust latency rejects missing or shortened samples and derived-score drift
+  ---
+  duration_ms: 32.596417
+  ...
+# Subtest: Rust reverse confirmation cannot confirm a different query or response population
+ok 102 - Rust reverse confirmation cannot confirm a different query or response population
+  ---
+  duration_ms: 4.451042
+  ...
+# Subtest: Rust latency reports the absolute millisecond delta before the percentage
+ok 103 - Rust latency reports the absolute millisecond delta before the percentage
+  ---
+  duration_ms: 1.863333
+  ...
+# Subtest: Apple frontend comparison pairs base and candidate with floors and corpus ceilings
+ok 104 - Apple frontend comparison pairs base and candidate with floors and corpus ceilings
+  ---
+  duration_ms: 2.071334
+  ...
+# Subtest: Apple frontend commands write the report and status the aggregate consumes
+ok 105 - Apple frontend commands write the report and status the aggregate consumes
+  ---
+  duration_ms: 98.411875
+  ...
+# Subtest: Apple confirmation retains the reviewed coverage transition for both outcomes
+ok 106 - Apple confirmation retains the reviewed coverage transition for both outcomes
+  ---
+  duration_ms: 51.329792
+  ...
+# Subtest: pull-request workflow runs the Apple frontend gate on the pinned corpus and enforces it
+ok 107 - pull-request workflow runs the Apple frontend gate on the pinned corpus and enforces it
+  ---
+  duration_ms: 2.016917
+  ...
+# Subtest: Xcode corpus cache restores copied and generated header paths used by the index
+ok 108 - Xcode corpus cache restores copied and generated header paths used by the index
+  ---
+  duration_ms: 6.982459
+  ...
+# Subtest: Apple performance evidence rejects generated sources, unpinned work and foreign revisions
+ok 109 - Apple performance evidence rejects generated sources, unpinned work and foreign revisions
+  ---
+  duration_ms: 0.277958
+  ...
+# Subtest: Rust latency commands write the report and status the aggregate consumes
+ok 110 - Rust latency commands write the report and status the aggregate consumes
+  ---
+  duration_ms: 55.875125
+  ...
+# Subtest: pull-request workflow runs the paired Rust engine gate and demotes the JVM engine gates
+ok 111 - pull-request workflow runs the paired Rust engine gate and demotes the JVM engine gates
+  ---
+  duration_ms: 0.624416
+  ...
+# Subtest: workflow component artifacts include the run attempt required by staging
+ok 112 - workflow component artifacts include the run attempt required by staging
+  ---
+  duration_ms: 0.31225
+  ...
+# Subtest: pull-request workflow uses shared JMH artifacts, method shards, and the known-good anchor
+ok 113 - pull-request workflow uses shared JMH artifacts, method shards, and the known-good anchor
+  ---
+  duration_ms: 3.434708
+  ...
+# Subtest: latency workflow transitions when base has the anchor command but lacks point-estimate enforcement
+ok 114 - latency workflow transitions when base has the anchor command but lacks point-estimate enforcement
+  ---
+  duration_ms: 0.3755
+  ...
+# Subtest: historical known-bad latency proof runs only in the scheduled workflow
+ok 115 - historical known-bad latency proof runs only in the scheduled workflow
+  ---
+  duration_ms: 0.163208
+  ...
+# Subtest: Explorer overlay selects only the pinned repair and retains strict base CPU accounting
+ok 116 - Explorer overlay selects only the pinned repair and retains strict base CPU accounting
+  ---
+  duration_ms: 65.491541
+  ...
+# Subtest: method-compatibility shards run the CPU accounting contract in its own JVM before any fork
+ok 117 - method-compatibility shards run the CPU accounting contract in its own JVM before any fork
+  ---
+  duration_ms: 0.263875
+  ...
+# Subtest: a candidate-owned smoke exercises the new CPU accounting harness in a real fork
+ok 118 - a candidate-owned smoke exercises the new CPU accounting harness in a real fork
+  ---
+  duration_ms: 0.360833
+  ...
+# Subtest: the authoritative aggregate depends on and enforces the CPU-accounting smoke
+ok 119 - the authoritative aggregate depends on and enforces the CPU-accounting smoke
+  ---
+  duration_ms: 0.169584
+  ...
+# Subtest: explicit cold diagnostics preserve numerical failures while rejecting integrity failures
+ok 120 - explicit cold diagnostics preserve numerical failures while rejecting integrity failures
+  ---
+  duration_ms: 16.623833
+  ...
+# Subtest: diagnostic driver refuses strict status publication before Git or benchmark work
+ok 121 - diagnostic driver refuses strict status publication before Git or benchmark work
+  ---
+  duration_ms: 4.3325
+  ...
+# Subtest: wrapped heap growth is advisory while allocation, GC and heap integrity remain blocking
+ok 122 - wrapped heap growth is advisory while allocation, GC and heap integrity remain blocking
+  ---
+  duration_ms: 0.351084
+  ...
+# Subtest: workflow applies withdrawn resource growth constraints in both initial and final method paths
+ok 123 - workflow applies withdrawn resource growth constraints in both initial and final method paths
+  ---
+  duration_ms: 0.343542
+  ...
+# Subtest: startup-prepared numeric regression is diagnostic but warm regression still blocks
+ok 124 - startup-prepared numeric regression is diagnostic but warm regression still blocks
+  ---
+  duration_ms: 40.865917
+  ...
+# Subtest: startup-prepared diagnostics still reject incorrect results and missing prepared indexes
+ok 125 - startup-prepared diagnostics still reject incorrect results and missing prepared indexes
+  ---
+  duration_ms: 54.410916
+  ...
+# Subtest: zero-valid-run comparator failure still seals every evidence hash and exits unsuccessfully
+ok 126 - zero-valid-run comparator failure still seals every evidence hash and exits unsuccessfully
+  ---
+  duration_ms: 288.073041
+  ...
+# Subtest: confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate
+ok 127 - confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate
+  ---
+  duration_ms: 0.626292
+  ...
+# Subtest: markdown rendering supports gate tables without allowing raw HTML
+ok 128 - markdown rendering supports gate tables without allowing raw HTML
+  ---
+  duration_ms: 1.075083
+  ...
+# Subtest: snapshot series keys canonicalize parameter order
+ok 129 - snapshot series keys canonicalize parameter order
+  ---
+  duration_ms: 5.88875
+  ...
+# Subtest: snapshot history separates changed query populations and query definitions
+ok 130 - snapshot history separates changed query populations and query definitions
+  ---
+  duration_ms: 0.166958
+  ...
+# Subtest: history replaces a rerun of the same SHA and rejects incompatible data
+ok 131 - history replaces a rerun of the same SHA and rejects incompatible data
+  ---
+  duration_ms: 0.28425
+  ...
+# Subtest: paired evidence accepts an exact squash integration and persists both compared SHAs
+ok 132 - paired evidence accepts an exact squash integration and persists both compared SHAs
+  ---
+  duration_ms: 0.831875
+  ...
+# Subtest: paired evidence is unavailable for a behind-base squash or mismatched artifact status
+ok 133 - paired evidence is unavailable for a behind-base squash or mismatched artifact status
+  ---
+  duration_ms: 0.290375
+  ...
+# Subtest: benchmark page is self-contained, classified, interactive, and injection-safe
+ok 134 - benchmark page is self-contained, classified, interactive, and injection-safe
+  ---
+  duration_ms: 0.307916
+  ...
+# Subtest: CLI creates a bounded Pages artifact and can recover its history
+ok 135 - CLI creates a bounded Pages artifact and can recover its history
+  ---
+  duration_ms: 58.347375
+  ...
+# Subtest: main history recovery treats a validated tag-first release bootstrap as empty main history
+ok 136 - main history recovery treats a validated tag-first release bootstrap as empty main history
+  ---
+  duration_ms: 29.296916
+  ...
+# Subtest: main history recovery rejects a malformed release bootstrap
+ok 137 - main history recovery rejects a malformed release bootstrap
+  ---
+  duration_ms: 28.623
+  ...
+# Subtest: Pages workflow is main-only and uses least-privilege official deployment actions
+ok 138 - Pages workflow is main-only and uses least-privilege official deployment actions
+  ---
+  duration_ms: 0.605583
+  ...
+# Subtest: Pages deployment refuses stale main reruns immediately before publishing
+ok 139 - Pages deployment refuses stale main reruns immediately before publishing
+  ---
+  duration_ms: 0.171583
+  ...
+# Subtest: all five families require 24 cold/warm keys, with nonempty hit oracles
+ok 140 - all five families require 24 cold/warm keys, with nonempty hit oracles
+  ---
+  duration_ms: 3.49175
+  ...
+# Subtest: JMH mode, scope, effective heap, raw samples and exact keys fail closed
+ok 141 - JMH mode, scope, effective heap, raw samples and exact keys fail closed
+  ---
+  duration_ms: 0.549583
+  ...
+# Subtest: ordered digests, fork counts and private fixture cleanup are mandatory
+ok 142 - ordered digests, fork counts and private fixture cleanup are mandatory
+  ---
+  duration_ms: 1.81425
+  ...
+# Subtest: only dynamic rows may use the explicitly named semantic reference
+ok 143 - only dynamic rows may use the explicitly named semantic reference
+  ---
+  duration_ms: 0.918375
+  ...
+# Subtest: a row blocks only when 15 percent slower with separated confidence intervals
+ok 144 - a row blocks only when 15 percent slower with separated confidence intervals
+  ---
+  duration_ms: 2.706875
+  ...
+# Subtest: 15 percent suspect must repeat in reverse order; integrity cannot be cleared
+ok 145 - 15 percent suspect must repeat in reverse order; integrity cannot be cleared
+  ---
+  duration_ms: 4.367666
+  ...
+# Subtest: additive reporting retains every existing component and coverage domain
+ok 146 - additive reporting retains every existing component and coverage domain
+  ---
+  duration_ms: 0.21475
+  ...
+# Subtest: CLI aggregation adds the required report without allowing an existing failure to pass
+ok 147 - CLI aggregation adds the required report without allowing an existing failure to pass
+  ---
+  duration_ms: 94.194334
+  ...
+# Subtest: CLI fingerprints detect changed immutable fixture files
+ok 148 - CLI fingerprints detect changed immutable fixture files
+  ---
+  duration_ms: 68.590416
+  ...
+# Subtest: SemVer parsing and ordering follow release precedence
+ok 149 - SemVer parsing and ordering follow release precedence
+  ---
+  duration_ms: 0.806666
+  ...
+# Subtest: previous tag resolution is semantic, deterministic, and ignores malformed tags
+ok 150 - previous tag resolution is semantic, deterministic, and ignores malformed tags
+  ---
+  duration_ms: 0.32075
+  ...
+# Subtest: harness fingerprint source ignores unrelated benchmarks but includes selected method bodies
+ok 151 - harness fingerprint source ignores unrelated benchmarks but includes selected method bodies
+  ---
+  duration_ms: 0.944916
+  ...
+# Subtest: JMH configuration fingerprint includes runtime version, plugin, dependencies, and module options
+ok 152 - JMH configuration fingerprint includes runtime version, plugin, dependencies, and module options
+  ---
+  duration_ms: 0.67175
+  ...
+# Subtest: JMH validation fails closed on drift, duplication, and invalid metrics
+ok 153 - JMH validation fails closed on drift, duplication, and invalid metrics
+  ---
+  duration_ms: 6.430291
+  ...
+# Subtest: HTML report is self-contained, 7+2 classified, provenance-rich, and injection-safe
+ok 154 - HTML report is self-contained, 7+2 classified, provenance-rich, and injection-safe
+  ---
+  duration_ms: 3.237375
+  ...
+# Subtest: release summary separates product shifts from evidence confidence and method drill-down
+ok 155 - release summary separates product shifts from evidence confidence and method drill-down
+  ---
+  duration_ms: 1.223166
+  ...
+# Subtest: 7+2 metrics keep operational stability separate from measurement confidence
+ok 156 - 7+2 metrics keep operational stability separate from measurement confidence
+  ---
+  duration_ms: 0.224333
+  ...
+# Subtest: release history replaces reruns, stays semantic, and rejects incomplete 7+2 entries
+ok 157 - release history replaces reruns, stays semantic, and rejects incomplete 7+2 entries
+  ---
+  duration_ms: 1.190125
+  ...
+# Subtest: trend version labels show every short-history release and thin long histories
+ok 158 - trend version labels show every short-history release and thin long histories
+  ---
+  duration_ms: 0.139583
+  ...
+# Subtest: first semantic tag renders an explicit unavailable baseline without a verdict
+ok 159 - first semantic tag renders an explicit unavailable baseline without a verdict
+  ---
+  duration_ms: 1.2055
+  ...
+# Subtest: absolute evidence observations start a new segment at a protocol break
+ok 160 - absolute evidence observations start a new segment at a protocol break
+  ---
+  duration_ms: 0.981209
+  ...
+# Subtest: resolve CLI peels annotated tags and disables deltas when a method body changed
+ok 161 - resolve CLI peels annotated tags and disables deltas when a method body changed
+  ---
+  duration_ms: 182.033417
+  ...
+# Subtest: render CLI writes a bounded HTML report, summary, and audit manifest
+ok 162 - render CLI writes a bounded HTML report, summary, and audit manifest
+  ---
+  duration_ms: 59.255917
+  ...
+# Subtest: tag diff workflow is tag-only, publishes only Pages, and stays isolated from release publishing
+ok 163 - tag diff workflow is tag-only, publishes only Pages, and stays isolated from release publishing
+  ---
+  duration_ms: 0.63525
+  ...
+1..163
+# tests 163
+# suites 0
+# pass 163
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2621.702292

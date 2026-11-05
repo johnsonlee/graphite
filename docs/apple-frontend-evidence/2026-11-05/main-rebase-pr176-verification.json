@@ -1,0 +1,47 @@
+{
+  "original": "e69f200e30eee778aed784ec7e2a6cb467d53ba8",
+  "base": "d2a21a1b24fefc631e4bff15bc1d6abc95f0aa23",
+  "head": "efe1dfa7b2322fde05f2223cdd56434fd29b3d09",
+  "main": "7c59d7993be51f0807495890d068effcfaff155b",
+  "replayedCommits": 36,
+  "originalCommits": 39,
+  "branch": "codex/pr176-apple-validation-onto-rebased154",
+  "identicalToE69": {
+    "frontend/apple": "b6d1bab403dabdf1633df76e5fcd361fe9caa591",
+    "docs/apple-frontend-evidence": "ea4201f2906a663e10f14a219244a776ec665420",
+    ".github/workflows/apple.yml": "a74ee068c27d7715158e6a81bac4f17553ffaa28",
+    ".github/workflows/apple-index-diagnosis.yml": "fa31fea5c1b4746e83a9ad39f46cd5b24984569f",
+    ".github/workflows/apple-shared-index-correctness.yml": "3e33c1f148434194366bd97416f6f67bb11142db"
+  },
+  "identicalToMain": {
+    "frontend/web": "d0b938c9a970036eedd23073a181ccf85aacb992",
+    "benchmark": "fcfb99cf4a6ab3fd6f880d3f4908e8f1ea5d2985",
+    "CONVENTIONS.md": "826f5aa2d9face93a7a1ac8b3ad3d7be4c1e604a",
+    ".github/workflows/benchmark.yml": "34ca5af36a4fa85e1da47c9e5773bac82be97f74",
+    ".github/workflows/benchmark-comment.yml": "fb34e4ec29504f04e6a2cc33ee5fa299a2296651",
+    ".github/workflows/typescript.yml": "6e36e80f2435c808b4fecc24b3eff8236532a3c5",
+    "cli/src/build_output.rs": "65f61cd4817a3bfa4b34a7bf2ef31d378e94a545",
+    "cli/src/install/js.rs": "fbc925dfadaff327be6bc61009498295970422db"
+  },
+  "identicalToRebasedPR154": {
+    "frontend/jvm": "e12675722db79885554639da545255f958bca19f",
+    "gradle": "95c65ccd37a3d81b3ab85693ea1d683e8cb6ff14",
+    "settings.gradle.kts": "93e35d278f61c1cbc7ec1fb4281849aac466ff7f",
+    "ir": "f581404b407e9babfb192163208b03eaf7bf92e7",
+    "docs/benchmark-regression-gate.md": "70484f6bd78aa380a8adf1a4958be4217207ee2f"
+  },
+  "deletedLegacyFiles": [
+    ".github/scripts/benchmark-gate.mjs",
+    ".github/scripts/benchmark-gate.test.mjs",
+    ".github/scripts/benchmark-slow-query-shapes.test.mjs"
+  ],
+  "benchmarkCorpusAndHelperDiffSHA256": "bf570287af187c67d83bd54ac0dc4b1ec405c3bb2ca785a33040fe11ae736d5f",
+  "cli": {
+    "passed": 113,
+    "log": "cli-final-tests.log",
+    "clippy": "cli-final-clippy.log"
+  },
+  "jvmValidation": "../../pr154-main-rebase-7c59/evidence/rebased-jvm-correctness.json",
+  "rawLogWhitespace": "Unchanged archived bytes; tracked source and docs outside docs/apple-frontend-evidence pass git diff --check.",
+  "remoteChangesByCoordinator": false
+}

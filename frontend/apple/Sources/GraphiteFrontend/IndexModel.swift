@@ -89,6 +89,9 @@ public struct CallOccurrence: Equatable {
 
 /// What the frontend takes from the index store for one build.
 public struct IndexModel {
+    /// Requested source files for which the compiler index returned at least one
+    /// occurrence, even if none of those occurrences become IR nodes.
+    public fileprivate(set) var filesWithOccurrences = Set<String>()
     public var types: [TypeDecl] = []
     public var members: [MemberDecl] = []
     public var supertypes: [SupertypeRelation] = []
@@ -222,6 +225,8 @@ public final class IndexReader {
             if occurrences.isEmpty, let records, let raw {
                 occurrences = try raw.occurrences(file: file, records: records)
             }
+            guard !occurrences.isEmpty else { continue }
+            model.filesWithOccurrences.insert(file)
             for occurrence in occurrences {
                 let rawPath = occurrence.location.path
                 let path = canonical[rawPath] ?? {

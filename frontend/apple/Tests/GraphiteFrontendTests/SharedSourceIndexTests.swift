@@ -84,7 +84,7 @@ final class SharedSourceIndexTests: XCTestCase {
         @available(macOS 10.15, *)
         public struct Shared {
             public let field: String
-            public func go() -> String { common("ok") }
+            public func go(_ value: String) -> String { return common(value) }
         }
         """.write(to: shared, atomically: true, encoding: .utf8)
         let alias = root.appendingPathComponent("Sources/Right/Shared.swift")
@@ -100,6 +100,7 @@ final class SharedSourceIndexTests: XCTestCase {
         let store = root.appendingPathComponent(".build/debug/index/store").path
         let reader = try IndexReader(storePath: store, libraryPath: library)
         let model = try reader.read(files: [shared.path, alias.path, shared.path, common.path])
+        XCTAssertEqual(model.filesWithOccurrences.count, 2)
         let types = model.types.filter { $0.symbol.name == "Shared" }
         let fields = model.members.filter { $0.symbol.name == "field" }
         let calls = model.calls.filter { $0.callee.name == "common(_:)" }
@@ -132,6 +133,7 @@ final class SharedSourceIndexTests: XCTestCase {
         let emitted = graph.callSites.filter { graph.str($0.callee.name) == "common(_:)" }
         XCTAssertEqual(emitted.map { graph.type($0.caller.declaringClass) }.sorted(), ["Left.Shared", "Right.Shared"])
         XCTAssertEqual(emitted.map { graph.type($0.callee.declaringClass) }, ["Core", "Core"])
+        try checkFlow(in: graph)
         let annotations = graph.nodes.values.compactMap { node -> String? in
             guard case .annotation(let attribute) = node.kind, attribute.name == "available" else { return nil }
             return "\(attribute.className)#\(attribute.memberName)"
@@ -144,5 +146,33 @@ final class SharedSourceIndexTests: XCTestCase {
         XCTAssertEqual(fieldOwners.sorted(), ["Left.Shared", "Right.Shared"])
         return Set(types.map(\.symbol.usr) + fields.map(\.symbol.usr) +
                    calls.map { "\($0.caller?.usr ?? "") -> \($0.callee.usr)" })
+    }
+
+    private func checkFlow(in graph: DecodedIR) throws {
+        for node in graph.nodes.values {
+            guard case .callSite(let site)? = node.kind, graph.str(site.callee.name) == "common(_:)" else { continue }
+            XCTAssertEqual(site.arguments.count, 1)
+            let reference = try XCTUnwrap(site.arguments.first)
+            guard case .localVariable(let local)? = graph.nodes[reference]?.kind else {
+                return XCTFail("the source argument must preserve its original local reference")
+            }
+            XCTAssertEqual(local.method, site.caller)
+            let definitions = graph.edges.filter { $0.to == reference && $0.dataFlow.kind == .assign }
+            XCTAssertEqual(definitions.count, 1)
+            let parameterID = try XCTUnwrap(definitions.first?.from)
+            guard case .parameter(let parameter)? = graph.nodes[parameterID]?.kind else {
+                return XCTFail("the shared source argument must bind to a formal parameter")
+            }
+            XCTAssertEqual(parameter.index, 0)
+            XCTAssertEqual(parameter.method, site.caller)
+            XCTAssertEqual(graph.edges.filter { $0.from == reference && $0.dataFlow.kind == .parameterPass }.map(\.to), [node.id])
+            let returns = graph.edges.filter { $0.from == node.id && $0.dataFlow.kind == .returnValue }
+            XCTAssertEqual(returns.count, 1)
+            let returnID = try XCTUnwrap(returns.first?.to)
+            guard case .return(let returned)? = graph.nodes[returnID]?.kind else {
+                return XCTFail("each module must return its own call's result")
+            }
+            XCTAssertEqual(returned.method, site.caller)
+        }
     }
 }

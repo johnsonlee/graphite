@@ -1,0 +1,113 @@
+{
+  "scope": "Real SwiftPM index correctness only; original AcmeShop source and prior compilation directory reused in place. New IR, staged import, packing, digest verification and saved graph query.",
+  "rebasedHead": "d2a21a1b24fefc631e4bff15bc1d6abc95f0aa23",
+  "sha256": {
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphite": "361015e8fcda4fd646d439090cc2320bad82d3caa31825182dbdea4dc2204e47",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/baseline-0818-index-context-repair/swift-build/release/graphite-frontend-apple": "05817667fd07cba30445eaa8305e922b9af444db08423d7d69539c2886550e87",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar": "2881d1dd80abb7da309d24edd0d1ea80a5d60b69702ec0e58d2233395e2df3e6",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/evidence/rebased-jvm-correctness.json": "80469d9131746b2747e4575113a177040e2c7f174fb6dbb633158bce4562ce9a"
+  },
+  "frontendSourceDiff": "",
+  "source": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-smoke/AcmeShop",
+  "environment": {
+    "GRAPHITE_SWIFT_TOOLCHAIN": "/Users/johnsonlee/Library/Developer/Toolchains/swift-6.1.3-RELEASE.xctoolchain",
+    "GRAPHITE_FRONTEND_APPLE": "/Users/johnsonlee/.codex/benchmarks/apple-validation/baseline-0818-index-context-repair/swift-build/release/graphite-frontend-apple",
+    "GRAPHITE_FRONTEND_JVM": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+    "GRAPHITE_JAVA": "/opt/homebrew/opt/openjdk@17/bin/java",
+    "JAVA_TOOL_OPTIONS": "-Xmx8g"
+  },
+  "steps": [
+    {
+      "step": "build",
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphite",
+        "build",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-smoke/AcmeShop/Package.swift",
+        "--skip-build",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite"
+      ],
+      "exitCode": 0,
+      "stdout": "Packed 19 entries (83663 bytes) into /Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite\nfingerprint: 16a7a37c0dfebf3eeee475d6f774af873bfba9d4063b5ff24f12c3b205e05e38\nsha256: 01d89124a67d5eeea17f60ea4264ef57f460685373061c898bad1d82858d6aa8 (written to /Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite.sha256)\n",
+      "stderr": "Running /Users/johnsonlee/.codex/benchmarks/apple-validation/baseline-0818-index-context-repair/swift-build/release/graphite-frontend-apple build\n{\"phase\": \"swift package describe\", \"done\": 0, \"total\": 1}\n{\"phase\": \"swift package describe\", \"done\": 1, \"total\": 1}\n{\"phase\": \"index\", \"done\": 0, \"total\": 4}\n{\"phase\": \"index\", \"done\": 4, \"total\": 4}\n{\"phase\": \"syntax\", \"done\": 1, \"total\": 4}\n{\"phase\": \"syntax\", \"done\": 2, \"total\": 4}\n{\"phase\": \"syntax\", \"done\": 3, \"total\": 4}\n{\"phase\": \"syntax\", \"done\": 4, \"total\": 4}\n{\"phase\": \"demangle\", \"done\": 0, \"total\": 115}\n{\"phase\": \"demangle\", \"done\": 115, \"total\": 115}\n{\"phase\": \"emit\", \"done\": 0, \"total\": 1}\n{\"phase\": \"emit\", \"done\": 1, \"total\": 1}\ngraphite-frontend-apple 0.1.0: 4 files, 11 types, 15 methods, 13 fields, 24 call sites, 15 constants, 3 annotations; 68 nodes, 28 edges, 84 strings -> /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/.graphite-build-94462-aBrMq8/frontend.graphite-ir\nPicked up JAVA_TOOL_OPTIONS: -Xmx8g\nReading IR from: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/.graphite-build-94462-aBrMq8/frontend.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 68 nodes, 28 edges, 84 strings\nSaving to: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/.graphite-build-94462-aBrMq8/saved\nDone.\n"
+    },
+    {
+      "step": "verify",
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphite",
+        "verify",
+        "--verbose",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite"
+      ],
+      "exitCode": 0,
+      "stdout": "crc ok    manifest                 1623  META-INF/graphite.manifest\ncrc ok    sha256 ok                  32  forward.graph\ncrc ok    sha256 ok                  37  forward.offsets\ncrc ok    sha256 ok                 756  forward.properties\ncrc ok    sha256 ok                  48  graph.branchdefs\ncrc ok    sha256 ok                  32  graph.callsite-string-content.identity\ncrc ok    sha256 ok                5308  graph.callsite-string-index\ncrc ok    sha256 ok                 348  graph.classoverview\ncrc ok    sha256 ok                   8  graph.comparisons\ncrc ok    sha256 ok                 280  graph.labelprefix\ncrc ok    sha256 ok                  28  graph.labels\ncrc ok    sha256 ok                 613  graph.metadata\ncrc ok    sha256 ok                2485  graph.nodedata\ncrc ok    sha256 ok                 892  graph.nodeindex\ncrc ok    sha256 ok                 560  graph.nodeoffsets\ncrc ok    sha256 ok                   8  graph.resources\ncrc ok    sha256 ok                2791  graph.strings\ncrc ok    sha256 ok                  32  graph.strings.identity\ncrc ok    sha256 ok                 488  graph.typeindex\nfile sha256 ok (01d89124a67d5eeea17f60ea4264ef57f460685373061c898bad1d82858d6aa8)\nOK: 19 entries verified in /Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite\nfingerprint: 16a7a37c0dfebf3eeee475d6f774af873bfba9d4063b5ff24f12c3b205e05e38\n",
+      "stderr": ""
+    },
+    {
+      "step": "query",
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/cli-apple-matched-rebuild/graphs/shop.graphite",
+        "MATCH (m:Method) WHERE m.class = 'AcmeShop.CartService' AND m.name IN ['checkout(order:)', 'checkout(order:method:)', 'find(id:)', 'init(client:)'] RETURN m.class AS owner, m.name AS name ORDER BY name",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"owner\",\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"owner\": \"AcmeShop.CartService\",\n      \"name\": \"checkout(order:)\"\n    },\n    {\n      \"owner\": \"AcmeShop.CartService\",\n      \"name\": \"checkout(order:method:)\"\n    },\n    {\n      \"owner\": \"AcmeShop.CartService\",\n      \"name\": \"find(id:)\"\n    },\n    {\n      \"owner\": \"AcmeShop.CartService\",\n      \"name\": \"init(client:)\"\n    }\n  ],\n  \"rowCount\": 4\n}\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "graphSha256": "01d89124a67d5eeea17f60ea4264ef57f460685373061c898bad1d82858d6aa8",
+  "queryResult": {
+    "columns": [
+      "owner",
+      "name"
+    ],
+    "rows": [
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "checkout(order:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "checkout(order:method:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "find(id:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "init(client:)"
+      }
+    ],
+    "rowCount": 4
+  },
+  "expected": {
+    "columns": [
+      "owner",
+      "name"
+    ],
+    "rows": [
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "checkout(order:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "checkout(order:method:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "find(id:)"
+      },
+      {
+        "owner": "AcmeShop.CartService",
+        "name": "init(client:)"
+      }
+    ],
+    "rowCount": 4
+  }
+}

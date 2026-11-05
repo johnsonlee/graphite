@@ -59,6 +59,9 @@ struct Build: ParsableCommand {
     @Option(name: .customLong("sources"), parsing: .upToNextOption, help: "Source roots to walk for .swift files (default: <package>/Sources, or the project's directory).")
     var sources: [String] = []
 
+    @Option(name: .customLong("resource-bundle"), help: "A built .app or .appex whose Info.plist and localized .strings to inventory; repeat for distinct bundle identifiers.")
+    var resourceBundles: [String] = []
+
     @Option(name: .customLong("configuration"), help: "The build configuration whose index store to read (debug or release; Debug/Release for Xcode).")
     var configuration = "debug"
 
@@ -74,6 +77,7 @@ struct Build: ParsableCommand {
         options.derivedData = derivedData
         options.indexStore = indexStore
         options.sources = sources
+        options.resourceBundles = resourceBundles
         options.skipBuild = skipBuild
         options.configuration = configuration
         let stderr = FileHandle.standardError
@@ -88,6 +92,20 @@ struct Build: ParsableCommand {
                  "\(s.fields) fields, \(s.callSites) call sites, \(s.constants) constants, \(s.annotations) annotations; " +
                  "\(s.nodes) nodes, \(s.edges) edges, \(s.strings) strings -> \(out)\n").data(using: .utf8)!
             )
+            if s.resourceFiles > 0 {
+                stderr.write(("resource inventory: \(s.resourceFiles) files, \(s.resourceValues) values\n").data(using: .utf8)!)
+            }
+            if s.parameters > 0 || s.returns > 0 {
+                stderr.write(("source dataflow: \(s.parameters) parameters, \(s.returns) direct-call returns\n").data(using: .utf8)!)
+            }
+            for omission in result.resourceOmissions {
+                stderr.write(("warning: resource \(omission.path) key \(omission.key) omitted: \(omission.reason)\n").data(using: .utf8)!)
+            }
+            if !result.resourceOmissions.isEmpty {
+                // The IR is valid, but selecting a bundle with values this schema
+                // cannot preserve requires the CLI's explicit --allow-partial.
+                throw ExitCode(3)
+            }
         } catch let error as FrontendError {
             stderr.write("error: \(error)\n".data(using: .utf8)!)
             if case .noInput = error { throw ExitCode(2) }

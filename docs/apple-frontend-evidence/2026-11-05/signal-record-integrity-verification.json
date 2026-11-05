@@ -1,0 +1,217 @@
+{
+  "purpose": "Correctness only. This run performed the byte comparison, independent SHA-256 checks, and native archive verification. The referenced 11 query results, mapped FlowProbe and two HTTP responses were previously executed on the byte-identical artifact with the same CLI.",
+  "commit": "39643c11173b56fb7ddd54e93ece8510d8dff85d",
+  "build": {
+    "invocation": {
+      "purpose": "correctness only, no performance measurement",
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/bin/graphite",
+        "build",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios",
+        "--scheme",
+        "Signal",
+        "--destination",
+        "generic/platform=iOS Simulator",
+        "--derived-data",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+        "--resource-bundle",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Signal.app",
+        "--allow-partial",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/graphs/signal.graphite"
+      ],
+      "binarySha256": {
+        "graphite-frontend-apple": "4d1ec27b902fab6b5c59360ebc8c6dd742245a1ec7361c8a1c4920fcd885fa0a",
+        "graphite": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5"
+      },
+      "jar": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-013cd57c-ci-jar/graphite.jar"
+    },
+    "result": {
+      "exitCode": 0
+    },
+    "logSha256": "d83998ec33f3b66b2ed3c0693b741750b11bf778d8adc6cc077b12c6e1bf8204",
+    "omittedResources": [
+      "warning: resource org.whispersystems.signal/Info.plist key BuildDetails omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+      "warning: resource org.whispersystems.signal/Info.plist key CFBundleIcons omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+      "warning: resource org.whispersystems.signal/Info.plist key CFBundleIcons~ipad omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+      "warning: resource org.whispersystems.signal/Info.plist key CFBundleURLTypes omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+      "warning: resource org.whispersystems.signal/Info.plist key NSAppTransportSecurity omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists"
+    ]
+  },
+  "graph": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/graphs/signal.graphite",
+  "previousGraph": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+  "bytes": 78283195,
+  "previousBytes": 78283195,
+  "sha256": "6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d",
+  "previousSha256": "6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d",
+  "identityCommand": {
+    "argv": [
+      "/usr/bin/cmp",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/graphs/signal.graphite"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "verifyCommand": {
+    "argv": [
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/bin/graphite",
+      "verify",
+      "--verbose",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/graphs/signal.graphite"
+    ],
+    "exitCode": 0,
+    "stdout": "crc ok    manifest                 1670  META-INF/graphite.manifest\ncrc ok    sha256 ok              265392  forward.graph\ncrc ok    sha256 ok              296866  forward.offsets\ncrc ok    sha256 ok                 841  forward.properties\ncrc ok    sha256 ok                  48  graph.branchdefs\ncrc ok    sha256 ok                  32  graph.callsite-string-content.identity\ncrc ok    sha256 ok            15106828  graph.callsite-string-index\ncrc ok    sha256 ok              221580  graph.classoverview\ncrc ok    sha256 ok                   8  graph.comparisons\ncrc ok    sha256 ok             2243588  graph.labelprefix\ncrc ok    sha256 ok              199849  graph.labels\ncrc ok    sha256 ok             1229307  graph.metadata\ncrc ok    sha256 ok            23078315  graph.nodedata\ncrc ok    sha256 ok             7291643  graph.nodeindex\ncrc ok    sha256 ok             4487176  graph.nodeoffsets\ncrc ok    sha256 ok                   8  graph.resources\ncrc ok    sha256 ok            21557829  graph.strings\ncrc ok    sha256 ok                  32  graph.strings.identity\ncrc ok    sha256 ok             2243796  graph.typeindex\nfile sha256 ok (6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d)\nOK: 19 entries verified in /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-record-integrity-e2e/graphs/signal.graphite\nfingerprint: 48f712c44d6c4bd9af99ca28f5296fb7549709d46ec992b3e8b94c623784448e\n",
+    "stderr": ""
+  },
+  "currentBinarySha256": {
+    "graphite": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5",
+    "graphite-frontend-apple": "4d1ec27b902fab6b5c59360ebc8c6dd742245a1ec7361c8a1c4920fcd885fa0a"
+  },
+  "previousCliSha256": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5",
+  "previousFrontendSha256": "87d497b9b6c9e0450f49db3aa6d64e0c4ca1178f3d16ea1f4b9627f5811baa29",
+  "queryEvidence": {
+    "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/full-verification.json",
+    "sha256": "20eae2021074512f2b1ebcb49c9bb186f7ab69822d2ed109224613626fcfb528",
+    "mappedFlow": {
+      "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+      "formalTypes": [
+        "Swift.String",
+        "Swift.String?",
+        "Swift.String",
+        "Swift.String"
+      ],
+      "formalIds": [
+        45208,
+        45209,
+        45210,
+        45211
+      ],
+      "callee": "Foundation.NSLocalizedString(_:tableName:bundle:value:comment:)(Swift.String,Swift.String?,__C.NSBundle,Swift.String,Swift.String)",
+      "line": 26,
+      "callId": 384021,
+      "orderedArgumentIds": [
+        384016,
+        384017,
+        384018,
+        384019,
+        384020
+      ],
+      "argumentBindings": [
+        {
+          "localId": 384016,
+          "assignSourceIds": [
+            45208
+          ],
+          "slot": 0,
+          "type": "",
+          "name": "key"
+        },
+        {
+          "localId": 384017,
+          "assignSourceIds": [
+            45209
+          ],
+          "slot": 1,
+          "type": "",
+          "name": "tableName"
+        },
+        {
+          "localId": 384018,
+          "assignSourceIds": [],
+          "slot": 2,
+          "type": "",
+          "name": ".main.app"
+        },
+        {
+          "localId": 384019,
+          "assignSourceIds": [
+            45210
+          ],
+          "slot": 3,
+          "type": "",
+          "name": "value"
+        },
+        {
+          "localId": 384020,
+          "assignSourceIds": [
+            45211
+          ],
+          "slot": 4,
+          "type": "",
+          "name": "comment"
+        }
+      ],
+      "parameterPassSourceIds": [
+        384016,
+        384017,
+        384018,
+        384019,
+        384020
+      ],
+      "returnNodeId": 384022,
+      "returnOwner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+      "lookupEdgesFromCall": 0
+    },
+    "exactQueryMatches": {
+      "app_delegate": 1,
+      "sha": 1,
+      "c_types": 3,
+      "webp_fields": 2,
+      "localized": 1,
+      "typedInfo": 49,
+      "flow-formals": 4,
+      "flow-result": 1,
+      "flow-lookup": 0,
+      "flow-resource": 1,
+      "flow-preservedLocals": 5
+    }
+  },
+  "httpEvidence": {
+    "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/http-verification.json",
+    "sha256": "e380c9b4fdc153c269d69c91cdb2b300ff1a6f8164bfbc3fdb7dadde86574a1e",
+    "requestsMatched": {
+      "localized": {
+        "columns": [
+          "r.path",
+          "r.key",
+          "r.value",
+          "r.profile"
+        ],
+        "rows": [
+          {
+            "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+            "r.value": "Optimizing Database",
+            "r.profile": "en"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      },
+      "flow-result": {
+        "columns": [
+          "sourceCall",
+          "owner"
+        ],
+        "rows": [
+          {
+            "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 1,
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    },
+    "serverStopped": true
+  },
+  "passed": true
+}

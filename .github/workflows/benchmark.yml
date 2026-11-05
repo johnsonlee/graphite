@@ -93,6 +93,17 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
+    - name: Free space for both builds and their saved graphs
+      run: |
+        df -h .
+        # The APK fixtures use a pinned android-all JAR. Neither product build uses the NDK.
+        for sdk in /usr/local/lib/android/sdk/ndk /usr/share/dotnet /usr/local/.ghcup /opt/hostedtoolcache/CodeQL; do
+          if [[ -d "$sdk" ]]; then
+            sudo du -sh -- "$sdk"
+            sudo rm -rf -- "$sdk"
+          fi
+        done
+        df -h .
     - name: Checkout exact base
       uses: actions/checkout@v7
       with:
@@ -131,6 +142,7 @@ jobs:
     - name: Run matched base/head correctness, OOM and timing report
       id: benchmark
       run: |
+        df -h .
         chmod +x controller/graphite-benchmark
         controller/graphite-benchmark run \
           --base-source base --head-source head --harness-source trusted \

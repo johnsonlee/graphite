@@ -1,0 +1,115 @@
+[0/1] Planning build
+[1/1] Compiling plugin GenerateManual
+[2/2] Compiling plugin GenerateDoccReference
+[3/3] Compiling plugin SwiftProtobufPlugin
+Building for debugging...
+[3/8] Write sources
+[4/8] Write swift-version-6D90EC345980CB45.txt
+[6/13] Compiling GraphiteFrontendTests SourceDiscoveryTests.swift
+[7/13] Compiling GraphiteFrontendTests SharedSourceIndexTests.swift
+[8/14] Emitting module GraphiteFrontendTests
+[9/14] Compiling GraphiteFrontendTests ObjectiveCTests.swift
+[10/14] Compiling GraphiteFrontendTests SwiftPackageTests.swift
+[10/14] Write Objects.LinkFileList
+[11/14] Linking graphite-frontend-apple
+[12/14] Applying graphite-frontend-apple
+[13/14] Linking graphite-frontend-applePackageTests
+Build complete! (16.53s)
+Test Suite 'Selected tests' started at 2026-11-05 03:47:37.722.
+Test Suite 'graphite-frontend-applePackageTests.xctest' started at 2026-11-05 03:47:37.723.
+Test Suite 'EmitterObjcExtensionTests' started at 2026-11-05 03:47:37.723.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExplicitOwnerModuleWinsOverSameNamedLocalType]' started.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExplicitOwnerModuleWinsOverSameNamedLocalType]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExternalObjectiveCClassExtensionThroughTheCompilerIndex]' started.
+Building for debugging...
+[0/2] Write sources
+[1/2] Write swift-version-6D90EC345980CB45.txt
+[3/4] Compiling ExtensionProbe Extension.swift
+[4/4] Emitting module ExtensionProbe
+Build complete! (9.70s)
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExternalObjectiveCClassExtensionThroughTheCompilerIndex]' passed (11.695 seconds).
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testSwiftAnchorWinsRegardlessOfMemberOrder]' started.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testSwiftAnchorWinsRegardlessOfMemberOrder]' passed (0.002 seconds).
+Test Suite 'EmitterObjcExtensionTests' passed at 2026-11-05 03:47:49.423.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 11.700 (11.701) seconds
+Test Suite 'ObjectiveCTests' started at 2026-11-05 03:47:49.423.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testContainerUSRs]' started.
+LegacyStore.m:8:17: warning: method 'audit:' in protocol 'Auditing' not implemented [-Wprotocol]
+    8 | @implementation LegacyStore
+      |                 ^
+    9 | static char *const kTag = "tag";
+   10 | @synthesize contentType = _contentType;
+   11 | @synthesize badge = _badge;
+   12 | @dynamic level;
+   13 | + (instancetype)shared { return 0; }
+   14 | + (int)total { return 1; }
+   15 | + (void)setTotal:(int)total {}
+   16 | - (int)normalizeKey:(int)key { return key + 1; }
+   17 | - (int)storeValue:(int)value forKey:(int)key { _hits += 1; return [self normalizeKey:key] + value + helper(sCalls); }
+   18 | - (LegacyStore *)childNamed:(const char *)name { return 0; }
+   19 | @end
+./LegacyStore.h:7:1: note: method 'audit:' declared here
+    7 | - (void)audit:(int)code;
+      | ^
+1 warning generated.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testContainerUSRs]' passed (0.079 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testObjectiveCFilesAreSourceFiles]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testObjectiveCFilesAreSourceFiles]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheGraphOfAnObjectiveCClass]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheGraphOfAnObjectiveCClass]' passed (0.147 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheStoreYieldsTheClassItsMembersAndItsCalls]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheStoreYieldsTheClassItsMembersAndItsCalls]' passed (0.071 seconds).
+Test Suite 'ObjectiveCTests' passed at 2026-11-05 03:47:49.720.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.297 (0.297) seconds
+Test Suite 'SharedSourceIndexTests' started at 2026-11-05 03:47:49.720.
+Test Case '-[GraphiteFrontendTests.SharedSourceIndexTests testBothModulesOfASharedSwiftSourceSurviveAcrossCheckoutRoots]' started.
+Building for debugging...
+[0/4] Write sources
+[3/4] Write swift-version-6D90EC345980CB45.txt
+[5/6] Compiling Core Core.swift
+[6/6] Emitting module Core
+[7/10] Emitting module Left
+[8/10] Emitting module Right
+[9/10] Compiling Right Shared.swift
+[10/10] Compiling Left Shared.swift
+Build complete! (1.30s)
+Building for debugging...
+[0/4] Write sources
+[3/4] Write swift-version-6D90EC345980CB45.txt
+[5/6] Emitting module Core
+[6/6] Compiling Core Core.swift
+[7/10] Emitting module Right
+[8/10] Emitting module Left
+[9/10] Compiling Right Shared.swift
+[10/10] Compiling Left Shared.swift
+Build complete! (1.26s)
+Test Case '-[GraphiteFrontendTests.SharedSourceIndexTests testBothModulesOfASharedSwiftSourceSurviveAcrossCheckoutRoots]' passed (5.263 seconds).
+Test Suite 'SharedSourceIndexTests' passed at 2026-11-05 03:47:54.983.
+	 Executed 1 test, with 0 failures (0 unexpected) in 5.263 (5.263) seconds
+Test Suite 'graphite-frontend-applePackageTests.xctest' passed at 2026-11-05 03:47:54.983.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 17.260 (17.261) seconds
+Test Suite 'Selected tests' passed at 2026-11-05 03:47:54.983.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 17.260 (17.262) seconds
+objc[61540]: Class DTXDecompressionException is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20911d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f630). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXService is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091200) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f658). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXBlockCompressorFactory is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912a0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f6f8). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXBlockCompressorLibCompression is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091250) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f6a8). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXRemoteInvocationReceipt is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912f0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f748). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXProxyChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091340) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f798). One of the two will be used. Which one is undefined.
+objc[61540]: Class _DTXProxy is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091368) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f7c0). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXMachTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20913e0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f838). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091430) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f888). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXResourceTracker is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091480) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f8d8). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXProxyRequestHandler is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20914d0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f928). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXConnection is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091520) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f978). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091548) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152f9a0). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXSocketTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20915c0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fa18). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXSharedMemoryTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091610) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fa68). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXMessageParser is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091660) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fab8). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXMessageTransmitter is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20916d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fb30). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXMessage is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091700) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fb58). One of the two will be used. Which one is undefined.
+objc[61540]: Class DTXFileDescriptorTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091750) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x10152fba8). One of the two will be used. Which one is undefined.
+◇ Test run started.
+↳ Testing Library Version: 6.1.3 (1d1f7e489c9c606)
+↳ Target Platform: arm64-apple-macosx
+✔ Test run with 0 tests passed after 0.001 seconds.

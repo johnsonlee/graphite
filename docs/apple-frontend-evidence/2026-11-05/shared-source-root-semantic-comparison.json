@@ -1,0 +1,275 @@
+{
+  "run": 41891850641,
+  "artifact": 13354988727,
+  "archiveSha256": "ea0b4c4f659d4e1f96461221bed664d652a188675fad5fa30fd1ce2fc072b270",
+  "archiveFilesVerified": 138,
+  "head": "eae182125e42cc14c024da9a320e8f98397fdd09",
+  "candidateInputs": {
+    "frontend": "91861f11214e2c383466d3c874395de8a6fbe6674689e7f80f70c3a35426078a",
+    "jar": "a2b85b853106f1bdba212c3856b1d1ad7c7a253e8ccbc6727a45c8ad3110d066",
+    "manifest": "b1cebc33015899591f979898cc1821bf506acb0187dc1ad98adbb1543213a378",
+    "model": "dfeb62461d311564b191d473e4bfd5ea1089f8a32b6eaf2fd51c70a0774a596b"
+  },
+  "purpose": "Same-candidate cross-root correctness, with independent protobuf decoding. Historical pre-flow delta validation is unchanged.",
+  "normalizerSha256": "3627fb3ae7324e4cb485d119e4ac4d5d0254e64510890dc05d592a2d06e27a84",
+  "schemaBindingSha256": "83768076e13126e9e3939baa8e8b8a604fa1bcf9655d1739fc744ef97dfb2ba2",
+  "roots": {
+    "temp": {
+      "checkout": "/__w/_temp/corpus",
+      "source": {
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyRevisions": {
+          "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+          "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+          "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+          "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+          "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+          "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+          "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+          "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+          "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+          "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+          "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+          "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+        },
+        "lockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+        "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+      },
+      "rawOccurrenceRows": 174884,
+      "rawRelationRows": 178811,
+      "distinctRecords": 485,
+      "selectedFiles": 482,
+      "distinctUSRs": 39467,
+      "relationOnlyUSRs": 329,
+      "contextHashesRecomputedFromRaw": true,
+      "shared": {
+        "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+          "modules": [
+            "PackageDescription",
+            "PackageLoading"
+          ],
+          "usrs": 775,
+          "types": 76,
+          "members": 308,
+          "calls": 0
+        },
+        "Sources/PackageLoading/ContextModel.swift": {
+          "modules": [
+            "PackageDescription",
+            "PackageLoading"
+          ],
+          "usrs": 92,
+          "types": 8,
+          "members": 18,
+          "calls": 26
+        },
+        "Sources/PackagePlugin/PluginMessages.swift": {
+          "modules": [
+            "PackagePlugin",
+            "SPMBuildCore"
+          ],
+          "usrs": 797,
+          "types": 78,
+          "members": 266,
+          "calls": 0
+        }
+      },
+      "savedOwnerQueries": {
+        "context-PackageDescription": {
+          "result": 1,
+          "query": "MATCH (c:CallSite) WHERE c.caller_class = 'PackageDescription.ContextModel' AND c.caller_name = 'encode()' AND c.callee_class = 'FoundationEssentials.JSONEncoder' AND c.callee_name = 'init()' RETURN count(c) AS facts"
+        },
+        "context-PackageLoading": {
+          "result": 1,
+          "query": "MATCH (c:CallSite) WHERE c.caller_class = 'PackageLoading.ContextModel' AND c.caller_name = 'encode()' AND c.callee_class = 'FoundationEssentials.JSONEncoder' AND c.callee_name = 'init()' RETURN count(c) AS facts"
+        },
+        "plugin-PackagePlugin": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackagePlugin.HostToPluginMessage.InputContext.URL' AND f.name = 'subpath' RETURN count(f) AS facts"
+        },
+        "plugin-SPMBuildCore": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'SPMBuildCore.HostToPluginMessage.InputContext.URL' AND f.name = 'subpath' RETURN count(f) AS facts"
+        },
+        "serialization-PackageDescription": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackageDescription.Serialization.BuildConfiguration' AND f.name = 'config' RETURN count(f) AS facts"
+        },
+        "serialization-PackageLoading": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackageLoading.Serialization.BuildConfiguration' AND f.name = 'config' RETURN count(f) AS facts"
+        }
+      },
+      "savedGraphMethods": 4558,
+      "irSha256": "bf6b798a8636239b110555dc8ae89fb623a2b65cfeec94b357da06ca21233b76",
+      "nonHeaderWireSha256": "3ecc64aba5107f7618e5256797a999812a9778b1d34b8c7e858ff6e938150ba8",
+      "irCounts": {
+        "nodes": 62716,
+        "edges": 30439,
+        "strings": 21450,
+        "metadata": {
+          "methods": 4604,
+          "type_relations": 1733,
+          "class_origins": 1832,
+          "enum_values": 2217
+        }
+      },
+      "flowEdgeCounts": {
+        "RETURN_VALUE": 376,
+        "ASSIGN": 1055
+      },
+      "actualOwnerAndSlotChecks": {
+        "returned_calls": 376,
+        "assigned_slots": 1055
+      }
+    },
+    "workspace": {
+      "checkout": "/__w/graphite/graphite/corpus",
+      "source": {
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyRevisions": {
+          "swift-argument-parser": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
+          "swift-asn1": "3b6410f7dee09eb33cdd26260c5fd47fda19b0e2",
+          "swift-certificates": "2f797305c1b5b982acaa6005d8a9f970cc4e97ff",
+          "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+          "swift-crypto": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+          "swift-driver": "20cd624311cb835f7a61c0103404fc191d392a38",
+          "swift-llbuild": "4fc005bfb0849f17e6a79ad02ba27f4f539ca6b9",
+          "swift-syntax": "cbd0366a54a9f8fdaa33834652fb2e80f2948573",
+          "swift-system": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+          "swift-toolchain-sqlite": "d9b11cb79071d5ab992ff47dfd2e8d6e19418d97",
+          "swift-tools-support-core": "5cd61a77866b110bb222c38073627d2703c750e6",
+          "yams": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3"
+        },
+        "lockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+        "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2"
+      },
+      "rawOccurrenceRows": 174884,
+      "rawRelationRows": 178811,
+      "distinctRecords": 485,
+      "selectedFiles": 482,
+      "distinctUSRs": 39467,
+      "relationOnlyUSRs": 329,
+      "contextHashesRecomputedFromRaw": true,
+      "shared": {
+        "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+          "modules": [
+            "PackageDescription",
+            "PackageLoading"
+          ],
+          "usrs": 775,
+          "types": 76,
+          "members": 308,
+          "calls": 0
+        },
+        "Sources/PackageLoading/ContextModel.swift": {
+          "modules": [
+            "PackageDescription",
+            "PackageLoading"
+          ],
+          "usrs": 92,
+          "types": 8,
+          "members": 18,
+          "calls": 26
+        },
+        "Sources/PackagePlugin/PluginMessages.swift": {
+          "modules": [
+            "PackagePlugin",
+            "SPMBuildCore"
+          ],
+          "usrs": 797,
+          "types": 78,
+          "members": 266,
+          "calls": 0
+        }
+      },
+      "savedOwnerQueries": {
+        "context-PackageDescription": {
+          "result": 1,
+          "query": "MATCH (c:CallSite) WHERE c.caller_class = 'PackageDescription.ContextModel' AND c.caller_name = 'encode()' AND c.callee_class = 'FoundationEssentials.JSONEncoder' AND c.callee_name = 'init()' RETURN count(c) AS facts"
+        },
+        "context-PackageLoading": {
+          "result": 1,
+          "query": "MATCH (c:CallSite) WHERE c.caller_class = 'PackageLoading.ContextModel' AND c.caller_name = 'encode()' AND c.callee_class = 'FoundationEssentials.JSONEncoder' AND c.callee_name = 'init()' RETURN count(c) AS facts"
+        },
+        "plugin-PackagePlugin": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackagePlugin.HostToPluginMessage.InputContext.URL' AND f.name = 'subpath' RETURN count(f) AS facts"
+        },
+        "plugin-SPMBuildCore": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'SPMBuildCore.HostToPluginMessage.InputContext.URL' AND f.name = 'subpath' RETURN count(f) AS facts"
+        },
+        "serialization-PackageDescription": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackageDescription.Serialization.BuildConfiguration' AND f.name = 'config' RETURN count(f) AS facts"
+        },
+        "serialization-PackageLoading": {
+          "result": 1,
+          "query": "MATCH (f:Field) WHERE f.class = 'PackageLoading.Serialization.BuildConfiguration' AND f.name = 'config' RETURN count(f) AS facts"
+        }
+      },
+      "savedGraphMethods": 4558,
+      "irSha256": "c3bcce496693edaae81681c905e9e0abddbe231c9b7a263c4aa8ff324f99ec29",
+      "nonHeaderWireSha256": "3ecc64aba5107f7618e5256797a999812a9778b1d34b8c7e858ff6e938150ba8",
+      "irCounts": {
+        "nodes": 62716,
+        "edges": 30439,
+        "strings": 21450,
+        "metadata": {
+          "methods": 4604,
+          "type_relations": 1733,
+          "class_origins": 1832,
+          "enum_values": 2217
+        }
+      },
+      "flowEdgeCounts": {
+        "RETURN_VALUE": 376,
+        "ASSIGN": 1055
+      },
+      "actualOwnerAndSlotChecks": {
+        "returned_calls": 376,
+        "assigned_slots": 1055
+      }
+    }
+  },
+  "comparisons": {
+    "nodes": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    },
+    "edges": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    },
+    "metadata": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    },
+    "strings": {
+      "missing": 0,
+      "added": 0,
+      "missing_examples": [],
+      "added_examples": []
+    }
+  },
+  "rawWireIdenticalAfterHeader": true,
+  "headerIdenticalAfterReplacingOnlyVerifiedSourcePathAndIndexStoreRoot": true,
+  "sourceAndLockIdentical": true,
+  "completeModelRowsIdentical": true,
+  "completeOracleContentIdentical": true,
+  "passed": true,
+  "sourceVerifiedAgainstIndependentCheckout": {
+    "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+    "tree": "ec91dbfb3107641e6d5ad5fc7993c1304540d5f2",
+    "matchingSelectedFileHashes": 482,
+    "lockedDependencyRevisionsMatched": 12,
+    "lockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+  }
+}

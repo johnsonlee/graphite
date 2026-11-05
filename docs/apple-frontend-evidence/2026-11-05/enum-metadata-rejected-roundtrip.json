@@ -1,0 +1,305 @@
+{
+  "scope": "Re-emitted complete Signal IR versus actual MAPPED graph from the directory-driven app build. Per-ID Kotlin data-class payload equality; duplicate-inclusive edge multiset equality including edge subtype, endpoints, kinds and flags on every outgoing and incoming adjacency. IR and MAPPED public metadata plus physical GraphMetadata enum key set and methods/hierarchy. MethodDescriptor declarationHandle, declaredShape and declaredShapeOwner are graph-local caches excluded by model equality; DeclaredTypeTable is compared independently. Cache sidecar digests are artifact integrity, not model fields. No performance samples.",
+  "build": {
+    "purpose": "Correctness only, no performance measurement. New main-based release CLI and JVM JAR; reused Swift binary from byte-identical frontend source tree. Xcode reuses the declared DerivedData.",
+    "source": "efe1dfa7b2322fde05f2223cdd56434fd29b3d09",
+    "frontendTree": "b6d1bab403dabdf1633df76e5fcd361fe9caa591",
+    "command": [
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/bin/graphite",
+      "build",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios",
+      "--scheme",
+      "Signal",
+      "--destination",
+      "generic/platform=iOS Simulator",
+      "--derived-data",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+      "--resource-bundle",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Signal.app",
+      "--allow-partial",
+      "-o",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/graphs/signal.graphite"
+    ],
+    "binarySha256": {
+      "graphite": "0f9e2181d5aa2e2efde2e200fbc48c871d180f04452f30ed00a64104640432c9",
+      "graphite-frontend-apple": "4d1ec27b902fab6b5c59360ebc8c6dd742245a1ec7361c8a1c4920fcd885fa0a"
+    },
+    "jar": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+    "jarSha256": "2881d1dd80abb7da309d24edd0d1ea80a5d60b69702ec0e58d2233395e2df3e6"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/bin/graphite-frontend-apple",
+        "build",
+        "--project",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Signal.xcworkspace",
+        "--scheme",
+        "Signal",
+        "--destination",
+        "generic/platform=iOS Simulator",
+        "--skip-build",
+        "--derived-data",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+        "--resource-bundle",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Signal.app",
+        "--out",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir"
+      ],
+      "exit": 3
+    },
+    {
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/javac",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+        "RoundTrip.java"
+      ],
+      "exit": 0
+    },
+    {
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Xmx8g",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+        "RoundTrip",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/full-check/unpacked",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/result.json"
+      ],
+      "exit": 1
+    },
+    {
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/javac",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+        "EnumInventory.java"
+      ],
+      "exit": 0
+    },
+    {
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Xmx8g",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip",
+        "EnumInventory",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir"
+      ],
+      "exit": 0
+    }
+  ],
+  "sha256": {
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/EnumInventory.class": "bbcca9c333077a9f9f9f555cfa5ca1fbe770b52164290577034f2d6b35784546",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/EnumInventory.java": "932c8278d16127c1e736f034c30e6882ff674e2067da82065ebd9eb21e9673fc",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/RoundTrip.class": "ae235b6d993ecb8b7ea7a4e2d2c4f6c8ea499c996a8a2f57022fa0e02462af8a",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/RoundTrip.java": "82db0938496335062e0b40af7375002863cdba2c15d7ebec7991384d466f9fff",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/compare.stderr": "72538095cb35ec20f665ce55ca1cf3f8289c58645d6db106681790d68727f879",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/compare.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/compile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/compile.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/emit-result.json": "845d426c0b153fed457c8d6451dc34d6b8d74ad46199d84ece738c9c76745d49",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/emit.command.json": "52bd4afa88848125cc306eae3e21357bfcad1aa097ddeb321f38ce025b7dbe53",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/emit.py": "67ace1e0cf2d1d0c54d8e84869ef839b45934052682181a057ce57d49bb9b275",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/emit.stderr": "695f523fc2de6efe5cec1dbb428523923bf0fa43818e2ae28b75b4c52f585f23",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/emit.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/enum-inventory.json": "5d580a807cd3e72edae09fec02e232fde1aa1d016257700ed24148d6858627ce",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/result.json": "fa96e4b8e5dbac91f02fe47801e5ef157ddba24dd80042b9d80290113956ba85",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir": "bef16c9f044459180209a4ccf950528edcb8760a396d71788e9b28d51396b172",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr154-main-rebase-7c59/jvm-build/frontend/jvm/query/build/libs/graphite.jar": "2881d1dd80abb7da309d24edd0d1ea80a5d60b69702ec0e58d2233395e2df3e6",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/graphs/signal.graphite": "58527dab9ffd9e78b3a09f3fd8b51a6117d6167ecef7a250369ce49318a53f17",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/bin/graphite-frontend-apple": "4d1ec27b902fab6b5c59360ebc8c6dd742245a1ec7361c8a1c4920fcd885fa0a",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/full-verification.json": "3eb90665c1bb261a6916b79c1750b040f5915587a2256494d736470a6bc4bc93"
+  },
+  "enumInventory": {
+    "uniqueCaseConstructorArity": {
+      "0": 10027
+    },
+    "irEntryRecords": 10037,
+    "duplicateRecords": {
+      "samePayload": 10
+    },
+    "nonemptyExamples": [],
+    "uniqueCases": 10027
+  },
+  "metadataMismatch": {
+    "uniqueCasesCompared": 10027,
+    "irKeysPresent": 10027,
+    "mappedLookupsReturningNull": 10027,
+    "savedPhysicalKeys": 0,
+    "cause": "GraphStore.collectMetadata enumerates EnumConstant nodes as its only source of enum keys. Swift stores enum cases as fields and also emits explicit EnumValueEntry declarations; this graph has no EnumConstant nodes."
+  },
+  "status": "failed",
+  "detailedResults": {
+    "IRSummary": {
+      "nodes": 560895,
+      "strings": 130944,
+      "edges": 199849
+    },
+    "irNodeKinds": {
+      "AnnotationNode": 6280,
+      "BooleanConstant": 4536,
+      "CallSiteNode": 190396,
+      "DoubleConstant": 675,
+      "FieldNode": 34748,
+      "IntConstant": 7131,
+      "LocalVariable": 154938,
+      "LongConstant": 1,
+      "NullConstant": 2253,
+      "ParameterNode": 12217,
+      "ResourceFileNode": 91,
+      "ResourceValueNode": 123844,
+      "ReturnNode": 3481,
+      "StringConstant": 20304
+    },
+    "savedNodeKinds": {
+      "AnnotationNode": 6280,
+      "BooleanConstant": 4536,
+      "CallSiteNode": 190396,
+      "DoubleConstant": 675,
+      "FieldNode": 34748,
+      "IntConstant": 7131,
+      "LocalVariable": 154938,
+      "LongConstant": 1,
+      "NullConstant": 2253,
+      "ParameterNode": 12217,
+      "ResourceFileNode": 91,
+      "ResourceValueNode": 123844,
+      "ReturnNode": 3481,
+      "StringConstant": 20304
+    },
+    "irEdgeKinds": {
+      "DataFlowEdge": 199849
+    },
+    "savedEdgeKinds": {
+      "DataFlowEdge": 199849
+    },
+    "reverseEdgesScanned": 199849,
+    "nodeIdsScanned": 560895,
+    "metadata": {
+      "methods": {
+        "savedEntries": 42519,
+        "irEntries": 42519
+      },
+      "serializedMethods": {
+        "savedEntries": 42519,
+        "irEntries": 42519
+      },
+      "classOrigins": {
+        "savedEntries": 8416,
+        "irEntries": 8416
+      },
+      "memberAnnotations": {
+        "savedEntries": 5881,
+        "irEntries": 5881
+      },
+      "artifactDependencies": {
+        "savedEntries": 0,
+        "irEntries": 0
+      },
+      "syntheticIdentities": {
+        "savedEntries": 0,
+        "irEntries": 0
+      },
+      "branchScopes": {
+        "savedEntries": 0,
+        "irEntries": 0
+      },
+      "localDefinitions": {
+        "savedEntries": 0,
+        "irEntries": 0
+      },
+      "hierarchyTypeKeys": 6296,
+      "hierarchyKeysWithSupertype": 5308,
+      "hierarchyKeysWithSubtype": 1305,
+      "serializedSupertypes": {
+        "savedEntries": 5308,
+        "irEntries": 5308
+      },
+      "serializedSubtypes": {
+        "savedEntries": 1305,
+        "irEntries": 1305
+      },
+      "enumValues": {
+        "savedEntries": 10027,
+        "irEntries": 10027
+      },
+      "serializedEnumEntries": {
+        "savedEntries": 0,
+        "irEntries": 10027
+      },
+      "IRRawEnumEntries": 10037,
+      "declaredTypes": {
+        "types": 0,
+        "methods": 0,
+        "fields": 0,
+        "classes": 0
+      },
+      "binaryResourceAccessorEntries": {
+        "savedEntries": 0,
+        "irEntries": 0
+      }
+    },
+    "differences": {
+      "enumValues": 10027,
+      "serializedEnumEntries": 10027
+    },
+    "exampleDifferences": [
+      {
+        "IR": "ArrayList []",
+        "saved": "null",
+        "key": "SignalServiceKit.WhoAmIRequestFactory.Responses.WhoAmI.(CodingKeys in _2880BDBBF41270B8E87DF0FE8DD70D5C)#aci",
+        "category": "enumValues"
+      },
+      {
+        "IR": "ArrayList []",
+        "saved": "null",
+        "key": "LibMobileCoin.ConsensusCommon_ProposeTxResult#invalidRangeProof",
+        "category": "enumValues"
+      },
+      {
+        "IR": "ArrayList []",
+        "saved": "null",
+        "key": "LibMobileCoin.MistyswapOfframp_OfframpResultCode#orcMixinCredentialsJson",
+        "category": "enumValues"
+      },
+      {
+        "IR": "ArrayList []",
+        "saved": "null",
+        "key": "Lottie.Repeater.(TransformKeys in _AE71D12FF9FED444AC1CAB5147F5866A)#startOpacity",
+        "category": "enumValues"
+      },
+      {
+        "IR": "Boolean true",
+        "saved": "Boolean false",
+        "key": "SignalServiceKit.WhoAmIRequestFactory.Responses.WhoAmI.(CodingKeys in _2880BDBBF41270B8E87DF0FE8DD70D5C)#aci",
+        "category": "serializedEnumEntries"
+      },
+      {
+        "IR": "Boolean true",
+        "saved": "Boolean false",
+        "key": "LibMobileCoin.ConsensusCommon_ProposeTxResult#invalidRangeProof",
+        "category": "serializedEnumEntries"
+      },
+      {
+        "IR": "Boolean true",
+        "saved": "Boolean false",
+        "key": "LibMobileCoin.MistyswapOfframp_OfframpResultCode#orcMixinCredentialsJson",
+        "category": "serializedEnumEntries"
+      },
+      {
+        "IR": "Boolean true",
+        "saved": "Boolean false",
+        "key": "Lottie.Repeater.(TransformKeys in _AE71D12FF9FED444AC1CAB5147F5866A)#startOpacity",
+        "category": "serializedEnumEntries"
+      }
+    ],
+    "matched": false
+  }
+}

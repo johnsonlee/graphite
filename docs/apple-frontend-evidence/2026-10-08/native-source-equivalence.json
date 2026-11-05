@@ -1,0 +1,23 @@
+{
+  "buildRevision": "77ecf81b6e782cc4e574fb4025021a84ffaf5936",
+  "finalProductionRevision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+  "command": [
+    "git",
+    "diff",
+    "--name-only",
+    "77ecf81b",
+    "357a6206",
+    "--",
+    "Cargo.toml",
+    "Cargo.lock",
+    "cli",
+    "backend/cypher",
+    "backend/storage",
+    "backend/explore",
+    "backend/README.md"
+  ],
+  "changedPaths": [],
+  "equal": true,
+  "nativeBinarySha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6",
+  "note": "Benchmark scripts excluded; final Swift frontend was built separately at357a6206."
+}

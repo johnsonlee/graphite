@@ -1,0 +1,4 @@
+Reading IR from: /Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-baseline/signal-ios/corpus.graphite-ir
+IR from graphite-frontend-apple 0.1.0 (swift): 331236 nodes, 153346 edges, 101340 strings
+Saving to: /Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-baseline/signal-ios/graph
+Done.

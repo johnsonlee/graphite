@@ -1,0 +1,70 @@
+   Compiling graphite-cli v2.5.0 (/Users/johnsonlee/.codex/worktrees/19db/graphite/cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.44s
+     Running unittests src/main.rs (target/aarch64-apple-darwin/debug/deps/graphite-7335ce586a76eafe)
+
+running 56 tests
+test build::jvm_options::tests::all_explicit_options_bypass_detection_and_empty_values_keep_existing_behavior ... ok
+test build::jvm_options::tests::non_utf8_explicit_options_are_not_reinterpreted ... ok
+test build::jvm_options::tests::pure_forwarded_help_and_version_skip_probe_without_rewriting_arguments ... ok
+test build::jvm_options::tests::capture_removes_its_file_after_closing_the_handle ... ok
+test build::jvm_options::tests::unsupported_missing_java_and_executable_frontends_keep_the_old_path ... ok
+test build::tests::caller_heap_settings_are_respected ... ok
+test build::jvm_options::tests::effective_flags_require_every_exact_value_once ... ok
+test build::tests::apple_arguments_are_split_into_input_output_and_passthrough ... ok
+test build::tests::a_graphite_output_is_staged_in_a_sibling_directory_and_packed ... ok
+test build::tests::import_invocation_runs_the_jar_import_with_the_same_shell ... ok
+test build::tests::jar_invocation_passes_every_argument_through_after_build ... ok
+test build::tests::launcher_frontend_runs_directly_without_java ... ok
+test build::tests::missing_java_is_reported_for_a_jar_frontend ... ok
+test build::tests::profile_without_async_profiler_is_the_wrapper_error ... ok
+test build::tests::run_without_a_frontend_exits_two_with_the_install_hint ... ok
+test build::tests::selected_resource_bundles_are_options_not_positional_inputs ... ok
+test fold::tests::select_sites_reads_call_site_keys_off_a_real_graph ... ok
+test fold::tests::the_fold_file_is_found_in_either_form_and_removed_with_strict ... ok
+test fold::tests::the_input_is_the_first_argument_that_is_no_option_and_staging_links_calls ... ok
+test fold::tests::the_output_is_found_and_redirected_in_every_form ... ok
+test fold::tests::select_rules_are_listed_and_resolved_in_place ... ok
+test fold::tests::the_plan_command_runs_fold_plan_on_the_frontend ... ok
+test build::jvm_options::tests::verified_environment_exports_the_profile_once_without_mutating_input ... ok
+test frontend::tests::apple_description_carries_the_frontends_own_fields_and_checks_the_schema ... ok
+test frontend::tests::apple_release_assets_are_named_by_version_and_target_and_the_base_can_move ... ok
+test build::tests::ambiguous_app_directory_lists_eligible_paths_and_never_falls_back_to_jvm ... ok
+test frontend::tests::heap_default_matches_the_homebrew_wrapper ... ok
+test frontend::tests::describe_reports_kind_path_and_version ... ok
+test frontend::tests::languages_have_aliases_and_a_fixed_order ... ok
+test frontend::tests::pinned_variable_wins_and_distinguishes_jar_from_launcher ... ok
+test build::tests::the_frontend_is_chosen_by_lang_then_frontend_then_input ... ok
+test frontend::tests::release_asset_urls_point_at_the_tagged_release ... ok
+test build::tests::profile_is_consumed_by_the_shell_and_becomes_an_agent ... ok
+test frontend::tests::version_ordering_puts_releases_above_their_prereleases ... ok
+test build::tests::app_directory_uses_its_workspace_or_project_as_the_actual_frontend_argument ... ok
+test install::tests::install_path_is_versioned_under_the_home_frontends_dir ... ok
+test install::tests::sha256_files_are_parsed_and_validated ... ok
+test frontend::tests::jar_next_to_the_executable_or_in_libexec_is_found ... ok
+test frontend::tests::java_lookup_order_is_variable_then_java_home_then_path ... ok
+test install::tests::sha256_of_a_file_matches_the_reference_digest ... ok
+test frontend::tests::profiler_agent_comes_from_asprof_on_path ... ok
+test install::tests::a_failed_install_leaves_no_version_directory_behind ... ok
+test frontend::tests::apple_lookup_order_is_variable_exe_dir_path_then_home_install ... ok
+test install::tests::an_existing_install_is_reused_without_downloading ... ok
+test frontend::tests::path_launcher_outranks_the_home_install_which_picks_the_newest_version ... ok
+tar: Failed to set default locale
+test pack::tests::pack_takes_files_under_their_names_and_insists_on_a_whole_graph ... ok
+test build::tests::finish_pack_packs_on_success_and_only_cleans_up_on_failure ... ok
+test pack::tests::pack_verify_info_and_unpack_round_trip ... ok
+curl: (37) Couldn't open file /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-apple-install-79862/release/graphite-frontend-apple-9.9.9-aarch64-apple-darwin.tar.gz.sha256
+tar: Failed to set default locale
+test build::jvm_options::tests::build_run_probes_once_then_exports_profile_and_preserves_build_failure ... ok
+tar: Failed to set default locale
+curl: (37) Couldn't open file /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-apple-install-79862/release/graphite-frontend-apple-9.9.8-aarch64-apple-darwin.tar.gz.sha256
+tar: Failed to set default locale
+test install::tests::the_apple_frontend_is_installed_from_a_verified_tarball ... ok
+test build::tests::apple_build_prepares_nested_output_and_refuses_blocked_parent_before_building ... ok
+test build::tests::an_apple_build_describes_builds_and_imports ... ok
+test build::tests::jvm_selection_flags_are_consumed_and_explicit_frontends_build_the_output ... ok
+test frontend::tests::own_description_runs_the_frontend ... ok
+test build::jvm_options::tests::probe_checks_exit_status_effective_values_and_exact_requested_options ... ok
+test build::jvm_options::tests::probe_timeout_and_output_limit_reap_the_direct_child ... ok
+
+test result: ok. 56 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.41s
+
