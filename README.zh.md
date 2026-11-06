@@ -32,7 +32,7 @@ JVM 前端从**编译后的字节码**出发：方法描述符、字段引用和
 
 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) 提供语法树。在其上构建同等级别的程序分析，需要另外实现符号与类型解析、控制流与数据流模型、实参与形参映射，以及跨方法分析。这些都是超出解析器职责的分析系统。Graphite 将程序图模型、持久化存储和 Cypher／MCP 访问整合在同一套系统中。
 
-这套基础也已用于生产规模：**单进程服务 40+ 张图、100M+ 节点**；仓库还提供包含 1,940 万节点的[公开 64 图演示及复现步骤](docs/public-scale-demo.md)。
+这套基础也已用于生产规模：**单进程服务 50 张图、1.2 亿节点**；仓库还提供包含 1,940 万节点的[公开 64 图演示及复现步骤](docs/public-scale-demo.md)。
 
 | 问题 | 语法之外所需的信息 | Graphite 提供的可查询上下文 |
 |----------|---------------------------|-----------------------------|
@@ -48,14 +48,19 @@ JVM 前端从**编译后的字节码**出发：方法描述符、字段引用和
 
 ## 生产环境规模
 
-**单个进程服务 40+ 张图，共计 100M+ 节点。**
+**单个进程服务 50 张图，共计 1.2 亿节点。**
 
-以下数据测量自生产环境部署的 `graphite serve`（Rust 后端，图通过内存映射加载）：
+当前生产环境使用 `graphite serve`（Rust 后端，图通过内存映射加载）：
 
 | | |
 |---|---|
-| 单个进程服务的图数量 | 40+ |
-| 节点 | 100M+ |
+| 单个进程服务的图数量 | 50 |
+| 节点 | 120M（1.2 亿） |
+
+以下计数与延迟来自较早的生产快照，当时服务 40+ 张图、100M+ 节点；尚未在当前 50 图部署下更新测量：
+
+| | |
+|---|---|
 | 边 | 100M+ |
 | 方法 | 10M+ |
 | 调用点 | 20M+ |
@@ -63,6 +68,12 @@ JVM 前端从**编译后的字节码**出发：方法描述符、字段引用和
 | Cypher 延迟，P95 | ~15 s |
 
 延迟统计来自生产环境的混合查询流，其中大部分为跨图查询。针对类、方法或常量的精确查询可通过字符串索引在毫秒级返回；P95 对应的是遍历每个节点所有属性的宽泛查询。通过 `--metrics`，你也可以在自己的部署中查看相同指标，包括 `http_server_requests_seconds` 和 Cypher 系列指标。
+
+要在本地复现性能对比，可使用 [benchmark 工具](benchmark/README.zh.md)：它从四个公开 JAR 语料构建
+64 张不同的图，在同一台机器上对比两个版本。这是公开测试工作负载，不代表图数量上限。
+工具通过生产 Rust 服务执行跨图查询，并分别报告各类查询的
+p50/p95。[CI benchmark 检查](docs/benchmark-regression-gate.md)验证正确性、执行完整性及 OOM 情况；
+仅有耗时观测不能证明性能验收通过。
 
 ## 本地试用
 
@@ -89,7 +100,27 @@ bash examples/quickstart/run.sh
 | **Lambda/方法引用** | `items.stream().map(User::getName)` | 这个引用指向哪个方法？ |
 | **资源** | fat JAR 中的 `config/application.yml` | 打包的配置键在哪里被读取？ |
 
-Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进制程序在执行 `query`、`serve` 和 `mcp` 时使用 `backend/cypher` 中的 Rust 引擎；Kotlin API 的 `graph.query(...)` 则使用 `frontend/jvm/cypher` 中基于 ANTLR 的引擎。差分测试框架（`backend/bench`）会对照检查这两套实现。
+## Cypher 兼容性
+
+Graphite 使用 Cypher 查询已保存的程序图；这些图保持只读。
+原生 `graphite query`、`serve` 和 `mcp` 命令支持两种方言：
+
+- `graphite`（默认）：保留 Graphite 现有的查询和错误行为。
+- `opencypher-m23`：显式启用标准 openCypher M23 语义。
+
+```bash
+graphite query app.graphite 'MATCH (n) RETURN count(n)' --dialect opencypher-m23
+```
+
+HTTP 查询可设置 JSON 字段 `"dialect": "opencypher-m23"` 或 URL 参数
+`dialect=opencypher-m23`。MCP 的 `cypher` 工具接受相同的 `dialect` 参数。
+方言选择也适用于跨图查询和 fanout 模式；未知方言会被拒绝。
+
+生产 Rust 引擎使用 `opencypher-m23` 通过了固定版本官方 openCypher M23
+技术兼容性测试套件（TCK）的全部 **3,897 个场景**。这覆盖该套件的测试场景，
+不代表支持所有 Cypher 查询或 Neo4j 扩展，也不是多图性能证据。
+Kotlin API 的 `graph.query(...)` 使用独立的 JVM 引擎；上述 M23 结果适用于原生 Rust 引擎。
+兼容性细节、测试范围和复现方法见 [TCK 文档](docs/cypher-tck.md)。
 
 ## 前端支持
 
@@ -677,6 +708,8 @@ claude mcp add --transport http --scope project graphite http://localhost:8080/m
 
 为 `graphite` 条目选择 stdio 或 HTTP 其中一种方式。其他支持 HTTP 的客户端可通过其 Streamable HTTP 设置连接 `http://localhost:8080/mcp`。
 `/mcp` 会校验 `Origin` 请求头（防止 DNS 重绑定）：接受不带该请求头的请求及来源为回环地址的请求；其他来源默认返回 403，除非通过 `graphite serve --mcp-allowed-origin https://tools.example.com` 显式允许（可重复指定；`*` 表示允许所有来源）。REST API 不受影响。
+
+查询方言的选择方式见 [Cypher 兼容性](#cypher-兼容性)。
 
 从 `npx graphite-mcp` 迁移：工具、参数和输出保持不变，npm 包曾协商使用的所有协议版本（从 `2024-11-05` 到 `2025-11-25`）仍受支持。将 `command`/`args` 替换为 `graphite mcp` 及要打开的图，并移除 `GRAPHITE_URL`。唯一的参数变化是 `node`、`outgoing` 和 `incoming` 必须提供 `graph_id`（原 npm 包将其标为可选，但未提供时会返回 404）。从 v2.5.0 起不再发布 npm 包；最后一个版本 2.4.8 仍可与 2.5.0 及以后的服务端配合使用，因为它仅调用上述 REST 路由。
 
