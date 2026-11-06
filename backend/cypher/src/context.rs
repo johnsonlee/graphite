@@ -6,6 +6,16 @@ use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use indexmap::IndexMap;
 
 pub trait GraphContext {
+    /// Correlated existence using the production matcher's graph semantics.
+    fn pattern_exists(
+        &self,
+        _pattern: &crate::ast::Pattern,
+        _row: &IndexMap<String, Value>,
+    ) -> crate::CypherResult<bool> {
+        Err(crate::CypherError::NotImplemented(
+            "pattern predicates require a graph executor".into(),
+        ))
+    }
     fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
         None
     }

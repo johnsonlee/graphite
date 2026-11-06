@@ -43,6 +43,14 @@ fn write(out: &mut String, e: &Expr) {
             }
             out.push(')');
         }
+        Expr::LabelPredicate { expr, labels } => {
+            write(out, expr);
+            for label in labels {
+                out.push(':');
+                out.push_str(label);
+            }
+        }
+        Expr::PatternPredicate(pattern) => out.push_str(&pattern_to_string(pattern)),
         Expr::CountStar => out.push_str("count(*)"),
         Expr::Distinct(inner) => {
             out.push_str("DISTINCT ");
@@ -231,6 +239,77 @@ fn str_op_str(op: StrOp) -> &'static str {
 #[allow(dead_code)]
 fn _f32_marker(v: f32) -> String {
     java_float_to_string(v)
+}
+
+pub fn pattern_to_string(pattern: &Pattern) -> String {
+    fn node(node: &NodePattern) -> String {
+        let mut text = node.variable.clone().unwrap_or_default();
+        for label in &node.labels {
+            text.push(':');
+            text.push_str(label);
+        }
+        if !node.properties.is_empty() {
+            text.push_str(" {");
+            text.push_str(
+                &node
+                    .properties
+                    .iter()
+                    .map(|(k, v)| format!("{k}: {}", to_cypher_string(v)))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            );
+            text.push('}');
+        }
+        format!("({text})")
+    }
+    let mut text = pattern
+        .path_variable
+        .as_ref()
+        .map(|p| format!("{p} = "))
+        .unwrap_or_default();
+    text.push_str(&node(&pattern.nodes[0]));
+    for (index, rel) in pattern.rels.iter().enumerate() {
+        text.push_str(if rel.direction == Direction::Incoming {
+            "<-["
+        } else {
+            "-["
+        });
+        text.push_str(rel.variable.as_deref().unwrap_or(""));
+        if !rel.types.is_empty() {
+            text.push(':');
+            text.push_str(&rel.types.join("|"));
+        }
+        if rel.variable_length {
+            text.push('*');
+            if let Some(n) = rel.min_hops {
+                text.push_str(&n.to_string());
+            }
+            if rel.max_hops != rel.min_hops {
+                text.push_str("..");
+                if let Some(n) = rel.max_hops {
+                    text.push_str(&n.to_string());
+                }
+            }
+        }
+        if !rel.properties.is_empty() {
+            text.push_str(" {");
+            text.push_str(
+                &rel.properties
+                    .iter()
+                    .map(|(k, v)| format!("{k}: {}", to_cypher_string(v)))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            );
+            text.push('}');
+        }
+        text.push_str(if rel.direction == Direction::Outgoing {
+            "]->"
+        } else {
+            "]-"
+        });
+        text.push_str(&node(&pattern.nodes[index + 1]));
+    }
+    text
 }
 
 #[cfg(test)]

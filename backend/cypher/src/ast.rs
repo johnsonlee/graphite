@@ -52,6 +52,11 @@ pub enum Expr {
         distinct: bool,
         args: Vec<Expr>,
     },
+    LabelPredicate {
+        expr: Box<Expr>,
+        labels: Vec<String>,
+    },
+    PatternPredicate(Box<Pattern>),
     CountStar,
     /// `DISTINCT expr` used as an atom.
     Distinct(Box<Expr>),

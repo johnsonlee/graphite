@@ -498,3 +498,67 @@ fn deleted_node_and_relationship_reads_have_native_diagnostics_with_no_side_effe
         );
     }
 }
+
+#[test]
+fn native_label_and_pattern_predicates_use_the_same_store_matcher() {
+    let (_, ex) = session();
+    ex.execute(
+        "CREATE (a:A:X {id:1})-[:R]->(b:B {id:2}), (:A {id:3})",
+        None,
+    )
+    .unwrap();
+    let selected = ex
+        .execute("MATCH(n) WHERE n:A:X RETURN n.id AS id", None)
+        .unwrap();
+    assert_eq!(selected.rows.len(), 1);
+    assert!(matches!(selected.rows[0]["id"], Value::Int(1)));
+    let selected = ex
+        .execute("MATCH(n:A) WHERE (n)-[:R]->(:B) RETURN n.id AS id", None)
+        .unwrap();
+    assert_eq!(selected.rows.len(), 1);
+    assert!(matches!(selected.rows[0]["id"], Value::Int(1)));
+    let selected = ex
+        .execute("MATCH(n:A) WHERE NOT (n)-[:R]->() RETURN n.id AS id", None)
+        .unwrap();
+    assert_eq!(selected.rows.len(), 1);
+    assert!(matches!(selected.rows[0]["id"], Value::Int(3)));
+    let selected = ex
+        .execute("MATCH(n:A) WHERE exists((n)-[:Absent]->()) RETURN n", None)
+        .unwrap();
+    assert!(selected.rows.is_empty());
+    let selected = ex
+        .execute(
+            "MATCH(n:A) WHERE exists((n)-[:R]->()) RETURN n.id AS id",
+            None,
+        )
+        .unwrap();
+    assert_eq!(selected.rows.len(), 1);
+    assert!(matches!(selected.rows[0]["id"], Value::Int(1)));
+}
+
+#[test]
+fn correlated_predicate_nulls_are_unknown_and_case_sensitive_labels_stay_distinct() {
+    let (_, ex) = session();
+    ex.execute("CREATE (:A)", None).unwrap();
+    let result = ex
+        .execute(
+            "OPTIONAL MATCH(n:Missing) RETURN n:A AS label, exists((n)-[:R]->()) AS path",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows.len(), 1);
+    assert!(result.rows[0]["label"].is_null());
+    assert!(result.rows[0]["path"].is_null());
+    assert!(ex
+        .execute("MATCH(n) WHERE n:a RETURN n", None)
+        .unwrap()
+        .rows
+        .is_empty());
+    assert!(
+        ex.execute("MATCH(n:A) WHERE (n)-[:R*0..0]->(n) RETURN n", None)
+            .unwrap()
+            .rows
+            .len()
+            == 1
+    );
+}

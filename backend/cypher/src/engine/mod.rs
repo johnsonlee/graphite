@@ -379,6 +379,20 @@ impl Executor {
 }
 
 impl GraphContext for Executor {
+    fn pattern_exists(
+        &self,
+        pattern: &crate::ast::Pattern,
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<bool> {
+        let ev = crate::eval::Evaluator::new(self, &self.params);
+        let matcher = matching::Matcher { ex: self, ev: &ev };
+        let mut exists = false;
+        matcher.match_patterns(row, std::slice::from_ref(pattern), &mut |_| {
+            exists = true;
+            Ok(false)
+        })?;
+        Ok(exists)
+    }
     fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
         self.property_graph.as_deref()
     }

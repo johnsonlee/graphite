@@ -45,7 +45,8 @@ pub fn contains_aggregation(e: &Expr) -> bool {
         Expr::FunctionCall { name, args, .. } => {
             is_aggregation_name(name) || args.iter().any(contains_aggregation)
         }
-        Expr::Property { expr, .. }
+        Expr::LabelPredicate { expr, .. }
+        | Expr::Property { expr, .. }
         | Expr::Unary { expr, .. }
         | Expr::Distinct(expr)
         | Expr::IsNull(expr)
@@ -89,6 +90,12 @@ pub fn contains_aggregation(e: &Expr) -> bool {
                 || from.as_deref().is_some_and(contains_aggregation)
                 || to.as_deref().is_some_and(contains_aggregation)
         }
+        Expr::PatternPredicate(pattern) => pattern
+            .nodes
+            .iter()
+            .flat_map(|n| &n.properties)
+            .chain(pattern.rels.iter().flat_map(|r| &r.properties))
+            .any(|(_, e)| contains_aggregation(e)),
         Expr::Literal(_) | Expr::Variable(_) | Expr::Parameter(_) => false,
     }
 }
@@ -218,6 +225,46 @@ impl<'a> Evaluator<'a> {
 
     pub fn eval(&self, expr: &Expr, row: &Row) -> CypherResult<Value> {
         match expr {
+            Expr::LabelPredicate { expr, labels } => {
+                let value = self.eval(expr, row)?;
+                match value {
+                    Value::Null => Ok(Value::Null),
+                    Value::Node(node) => {
+                        let matches = if let Some(graph) = self.ctx.property_graph() {
+                            graph.node(node.id).is_some_and(|node| {
+                                labels.iter().all(|label| node.labels.contains(label))
+                            })
+                        } else {
+                            let actual = self.ctx.node_labels(node);
+                            labels.iter().all(|label| actual.contains(&label.as_str()))
+                        };
+                        Ok(Value::Bool(matches))
+                    }
+                    Value::Method(_) => {
+                        Ok(Value::Bool(labels.iter().all(|label| label == "Method")))
+                    }
+                    _ => Err(CypherError::execution(
+                        "TypeError",
+                        "InvalidArgumentType",
+                        "A label predicate requires a node",
+                    )),
+                }
+            }
+            Expr::PatternPredicate(pattern) => {
+                // A null bound endpoint makes the predicate unknown, rather than
+                // pretending that the graph simply contains no matching path.
+                for variable in pattern
+                    .nodes
+                    .iter()
+                    .filter_map(|n| n.variable.as_ref())
+                    .chain(pattern.rels.iter().filter_map(|r| r.variable.as_ref()))
+                {
+                    if row.get(variable).is_some_and(Value::is_null) {
+                        return Ok(Value::Null);
+                    }
+                }
+                Ok(Value::Bool(self.ctx.pattern_exists(pattern, row)?))
+            }
             Expr::Literal(l) => Ok(literal_value(l)),
             Expr::Variable(name) => Ok(row.get(name).cloned().unwrap_or(Value::Null)),
             Expr::Parameter(name) => Ok(self.params.get(name).cloned().unwrap_or(Value::Null)),
@@ -231,6 +278,12 @@ impl<'a> Evaluator<'a> {
             Expr::CountStar => Err(CypherError::Aggregation("count".into())),
             Expr::Distinct(inner) => self.eval(inner, row),
             Expr::FunctionCall { name, args, .. } => {
+                if name.eq_ignore_ascii_case("exists")
+                    && args.len() == 1
+                    && matches!(args[0], Expr::PatternPredicate(_))
+                {
+                    return self.eval(&args[0], row);
+                }
                 if is_aggregation_name(name) {
                     return Err(CypherError::Aggregation(name.to_ascii_lowercase()));
                 }

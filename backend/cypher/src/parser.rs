@@ -991,6 +991,15 @@ impl Parser<'_> {
                     expr: Box::new(e),
                     key,
                 };
+            } else if self.eat(T::Colon) {
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                e = Expr::LabelPredicate {
+                    expr: Box::new(e),
+                    labels,
+                };
             } else if self.at(T::LBrack) {
                 self.bump();
                 if self.eat(T::Range) {
@@ -1070,6 +1079,13 @@ impl Parser<'_> {
                 })
             }
             T::LParen => {
+                let saved = self.i;
+                if let Ok(pattern) = self.pattern_part() {
+                    if !pattern.rels.is_empty() {
+                        return Ok(Expr::PatternPredicate(Box::new(pattern)));
+                    }
+                }
+                self.i = saved;
                 self.bump();
                 let e = self.expression()?;
                 self.expect(T::RParen, "')'")?;
@@ -1429,6 +1445,39 @@ mod mutation_tests {
                     labels: vec!["B".into(), "C".into()]
                 }
             ]
+        );
+    }
+}
+
+#[cfg(test)]
+mod graph_predicate_tests {
+    use super::*;
+    #[test]
+    fn distinguishes_node_labels_relationship_patterns_and_parenthesized_arithmetic() {
+        let clauses =
+            parse("MATCH(n) WHERE n:A:B AND NOT (n)-[:R*1..2]->(:C) RETURN (1)-2 AS value")
+                .unwrap();
+        let Clause::Where(Expr::And(label, not)) = &clauses[1] else {
+            panic!("where")
+        };
+        assert!(
+            matches!(label.as_ref(),Expr::LabelPredicate{expr,labels} if matches!(expr.as_ref(),Expr::Variable(v) if v=="n") && labels==&["A","B"])
+        );
+        let Expr::Not(inner) = not.as_ref() else {
+            panic!("not")
+        };
+        let Expr::PatternPredicate(pattern) = inner.as_ref() else {
+            panic!("pattern")
+        };
+        assert_eq!(pattern.nodes[0].variable.as_deref(), Some("n"));
+        assert_eq!(pattern.nodes[1].labels, vec!["C"]);
+        assert_eq!(pattern.rels[0].types, vec!["R"]);
+        assert_eq!(
+            (pattern.rels[0].min_hops, pattern.rels[0].max_hops),
+            (Some(1), Some(2))
+        );
+        assert!(
+            matches!(&clauses[2],Clause::Return{items:Some(items),..} if matches!(items[0].expr,Expr::Binary{op:BinOp::Sub,..}))
         );
     }
 }
