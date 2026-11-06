@@ -701,7 +701,13 @@ fn id_candidates_filter_before_row_construction_and_keep_polling_and_stop() {
 fn id_candidates_fallback_errors_parameters_and_deadline_remain_observable() {
     let Some((_, graph)) = fixture() else { return };
     let wanted = graph.ids_by_tag(TAG_CALL_SITE_NODE)[0];
-    let ex = multi(graph.clone()).with_params([("id".into(), Value::Int(wanted as i64))].into());
+    let ex = multi(graph.clone()).with_params(
+        [
+            ("id".into(), Value::Int(wanted as i64)),
+            ("step".into(), Value::Int(0)),
+        ]
+        .into(),
+    );
     for predicate in [
         format!("id(n) = {wanted}.0"),
         "id(n) = $id".into(),
@@ -712,12 +718,30 @@ fn id_candidates_fallback_errors_parameters_and_deadline_remain_observable() {
         compare_generic(&ex, &format!("MATCH (n) WHERE {predicate} RETURN n"), None);
     }
     for query in [
-        format!("MATCH (n) WHERE id(n, unknown()) = {wanted} RETURN n"),
-        format!("MATCH (n) WHERE id(n) = {wanted} AND unknown() RETURN n"),
-        format!("MATCH (n) WHERE id(n) = {wanted} RETURN unknown()"),
+        format!("MATCH (n) WHERE id(head(range(0, 1, $step))) = {wanted} RETURN n"),
+        format!("MATCH (n) WHERE id(n) = {wanted} AND size(range(0, 1, $step)) > 0 RETURN n"),
+        format!("MATCH (n) WHERE id(n) = {wanted} RETURN head(range(0, 1, $step))"),
     ] {
-        assert!(
-            matches!(ex.execute(&query, None), Err(CypherError::Runtime(message)) if message == "Unknown function: unknown")
+        assert_eq!(
+            ex.execute(&query, None).unwrap_err(),
+            CypherError::Runtime("Step cannot be zero in range()".into()),
+            "{query}"
+        );
+    }
+    let standard = multi(graph.clone()).with_dialect(crate::CypherDialect::OpenCypherM23);
+    for (expression, expected) in [
+        ("id(n, unknown())", "InvalidNumberOfArguments"),
+        ("unknown()", "UnknownFunction"),
+    ] {
+        let query = format!("MATCH (n) WHERE id(n) = {wanted} RETURN {expression}");
+        let error = standard
+            .execute(&query, None)
+            .unwrap_err()
+            .diagnostic()
+            .unwrap();
+        assert_eq!(
+            (error.error_type, error.phase, error.detail),
+            ("SyntaxError", "compile time", expected)
         );
     }
     let cancel = CancelToken::new();

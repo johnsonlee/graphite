@@ -15,7 +15,7 @@ use axum::routing::get;
 use axum::Router;
 use graphite_cypher::engine::{CancelToken, Executor, QueryResult, Source};
 use graphite_cypher::materialize::materialize;
-use graphite_cypher::CypherError;
+use graphite_cypher::{CypherDialect, CypherError};
 use serde_json::{json, Map, Value as J};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -1440,6 +1440,29 @@ fn read_query(body: &str, q: &Params) -> Option<String> {
     q.get("query").cloned()
 }
 
+/// JSON dialect fields take precedence over URL parameters. Invalid values never execute.
+#[allow(clippy::result_large_err)]
+fn read_dialect(body: &str, q: &Params) -> Result<CypherDialect, Response> {
+    let parsed = serde_json::from_str::<J>(body).ok();
+    let value = parsed
+        .as_ref()
+        .and_then(|v| v.as_object())
+        .and_then(|o| o.get("dialect"));
+    let raw = match value {
+        Some(J::String(s)) => Some(s.as_str()),
+        Some(_) => {
+            return Err(error_json(
+                StatusCode::BAD_REQUEST,
+                "'dialect' must be 'graphite' or 'opencypher-m23'",
+            ))
+        }
+        None => q.get("dialect").map(String::as_str),
+    };
+    raw.map(str::parse)
+        .unwrap_or(Ok(CypherDialect::default()))
+        .map_err(|e: String| error_json(StatusCode::BAD_REQUEST, &e))
+}
+
 #[allow(clippy::result_large_err)]
 fn read_timeout(body: &str, q: &Params) -> Result<Option<u64>, Response> {
     const BAD: &str = "'timeoutMs' must be a positive integer";
@@ -1665,6 +1688,10 @@ async fn cypher_one(
     Query(q): Query<Params>,
     body: String,
 ) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let l = match s.registry.acquire(&gid) {
         Ok(Some(l)) => l,
         Ok(None) => return error_json(StatusCode::NOT_FOUND, "Graph not loaded"),
@@ -1684,6 +1711,7 @@ async fn cypher_one(
         CypherSources::Leases(vec![l]),
         false,
         query,
+        dialect,
         limit,
         timeout,
         vec![],
@@ -1692,6 +1720,10 @@ async fn cypher_one(
 }
 
 async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let query = match read_query(&body, &q) {
         Some(query) if !query.trim().is_empty() => query.trim().to_string(),
         _ => return text(StatusCode::BAD_REQUEST, "Missing 'query' parameter"),
@@ -1708,6 +1740,7 @@ async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Resp
         CypherSources::Shared(sources),
         true,
         query,
+        dialect,
         limit,
         timeout,
         vec![("graphCount", json!(count))],
@@ -1716,6 +1749,10 @@ async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Resp
 }
 
 async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let parsed: Option<J> = serde_json::from_str(&body).ok();
     let obj = parsed.as_ref().and_then(|j| j.as_object());
     let query = match read_query(&body, &q) {
@@ -1813,6 +1850,7 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
             CypherSources::Leases(leases),
             true,
             query,
+            dialect,
             limit,
             timeout,
             vec![
@@ -1838,7 +1876,17 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
                 .map(|s| truthy(s))
                 .unwrap_or(false)
         });
-    run_fanout(s, leases, query, limit, per_graph, include_rows, timeout).await
+    run_fanout(
+        s,
+        leases,
+        query,
+        dialect,
+        limit,
+        per_graph,
+        include_rows,
+        timeout,
+    )
+    .await
 }
 
 fn cypher_request_error(message: &str) -> Response {
@@ -1887,11 +1935,13 @@ enum CypherSources {
 }
 
 /// Run a query on the blocking pool under a guard permit.
+#[allow(clippy::too_many_arguments)]
 async fn run_cypher(
     s: Arc<AppState>,
     sources: CypherSources,
     cross: bool,
     query: String,
+    dialect: CypherDialect,
     limit: i64,
     timeout: Option<u64>,
     extra: Vec<(&'static str, J)>,
@@ -1931,6 +1981,7 @@ async fn run_cypher(
                 .collect(),
         };
         let ex = Executor::new(sources, cross)
+            .with_dialect(dialect)
             .with_cancel(cancel)
             .with_compact()
             .with_probe();
@@ -1979,10 +2030,12 @@ pub fn total_json(returned: usize, more: bool) -> J {
 }
 
 /// Fanout: run the query once per graph and concatenate, injecting a `graphId` column.
+#[allow(clippy::too_many_arguments)]
 async fn run_fanout(
     s: Arc<AppState>,
     leases: Vec<GraphLease>,
     query: String,
+    dialect: CypherDialect,
     limit: i64,
     per_graph: i64,
     include_rows: bool,
@@ -2023,6 +2076,7 @@ async fn run_fanout(
                 break;
             }
             let ex = Executor::single(l.id.as_str(), l.graph.clone())
+                .with_dialect(dialect)
                 .with_cancel(permit.cancel.clone())
                 .with_probe();
             let take = per_graph.min(remaining).max(0) as usize;
@@ -2297,6 +2351,142 @@ async fn style_css(headers: HeaderMap) -> Response {
 mod tests {
     use super::*;
 
+    #[tokio::test(flavor = "multi_thread")]
+    async fn public_dialect_selection_and_validation_precede_execution() {
+        use tower::ServiceExt;
+        let (app, state) = metrics_app();
+        for path in [
+            "/api/cypher",
+            "/api/graphs/missing/cypher",
+            "/api/cypher/graphs",
+        ] {
+            let response = app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method("POST")
+                        .uri(path)
+                        .body(Body::from(
+                            json!({"query":"RETURN 1", "dialect":"unknown"}).to_string(),
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{path}");
+        }
+        for dialect in [json!(false), json!(null), json!(42)] {
+            assert!(read_dialect(&json!({"dialect":dialect}).to_string(), &Params::new()).is_err());
+        }
+        assert_eq!(
+            read_dialect(
+                "{}",
+                &Params::from([("dialect".into(), "opencypher-m23".into())])
+            )
+            .unwrap(),
+            CypherDialect::OpenCypherM23
+        );
+        assert_eq!(
+            read_dialect(
+                "{\"dialect\":\"graphite\"}",
+                &Params::from([("dialect".into(), "opencypher-m23".into())])
+            )
+            .unwrap(),
+            CypherDialect::Graphite
+        );
+        // Neither invalid requests nor parsing helpers acquired an execution permit.
+        assert_eq!(
+            state
+                .guard
+                .metrics
+                .active
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        for (dialect, expected) in [
+            ("graphite", StatusCode::OK),
+            ("opencypher-m23", StatusCode::BAD_REQUEST),
+        ] {
+            let response = app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method("POST")
+                        .uri(format!("/api/cypher?dialect={dialect}"))
+                        .body(Body::from(
+                            json!({"query":"RETURN toString([1, 2]) AS value"}).to_string(),
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), expected, "{dialect}");
+            let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+                .await
+                .unwrap();
+            let result: J = serde_json::from_slice(&bytes).unwrap();
+            if dialect == "graphite" {
+                assert_eq!(result["rows"][0]["value"], "[1, 2]");
+            } else {
+                assert!(result["error"].as_str().unwrap().contains("toString"));
+            }
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn dialect_reaches_single_cross_graph_and_fanout_executors() {
+        use tower::ServiceExt;
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let (app, state) = metrics_app();
+        for id in ["a", "b"] {
+            state
+                .registry
+                .load(id, std::path::Path::new(&dir), None)
+                .unwrap();
+        }
+        for (path, selection) in [
+            ("/api/graphs/a/cypher", json!({})),
+            ("/api/cypher", json!({})),
+            ("/api/cypher/graphs", json!({"graphs":["a","b"]})),
+            (
+                "/api/cypher/graphs",
+                json!({"graphs":["a","b"],"mode":"fanout"}),
+            ),
+        ] {
+            for (dialect, expected) in [
+                ("graphite", StatusCode::OK),
+                ("opencypher-m23", StatusCode::BAD_REQUEST),
+            ] {
+                let mut body = selection.clone();
+                body["query"] = json!("RETURN toString([1, 2]) AS value");
+                body["dialect"] = json!(dialect);
+                let response = app
+                    .clone()
+                    .oneshot(
+                        axum::http::Request::builder()
+                            .method("POST")
+                            .uri(path)
+                            .body(Body::from(body.to_string()))
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(response.status(), expected, "{path}: {body}");
+                let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
+                let result: J = serde_json::from_slice(&bytes).unwrap();
+                if dialect == "graphite" {
+                    assert_eq!(result["rows"][0]["value"], "[1, 2]");
+                } else {
+                    assert!(result["error"].as_str().unwrap().contains("toString"));
+                }
+            }
+        }
+    }
+
     fn metrics_app() -> (Router, Arc<AppState>) {
         let dir = std::env::temp_dir().join(format!(
             "graphite-metrics-test-{}-{}",
@@ -2359,6 +2549,7 @@ mod tests {
             CypherSources::Leases(leases),
             true,
             query.into(),
+            CypherDialect::Graphite,
             200,
             None,
             vec![("graphCount", json!(2))],

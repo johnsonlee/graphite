@@ -125,6 +125,9 @@ impl<'a> Matcher<'a> {
         patterns: &[Pattern],
         emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
+        if self.ex.property_graph.is_some() {
+            return super::property_matching::match_patterns(self.ex, row, patterns, emit);
+        }
         let mut state = Self::state_for(patterns);
         self.match_from(row, patterns, 0, &mut state, emit)
     }
@@ -404,6 +407,7 @@ impl<'a> Matcher<'a> {
                 continue;
             }
             let er = EdgeRef {
+                property_id: None,
                 source: cur.source,
                 edge: e,
             };
@@ -527,6 +531,7 @@ impl<'a> Matcher<'a> {
                 id: tgt_id,
             };
             let er = EdgeRef {
+                property_id: None,
                 source: cur.source,
                 edge: e,
             };
@@ -607,7 +612,11 @@ impl<'a> Matcher<'a> {
         }
         for (k, expr) in &rel.properties {
             let expected = self.ev.eval(expr, row)?;
-            let er = EdgeRef { source, edge: *e };
+            let er = EdgeRef {
+                property_id: None,
+                source,
+                edge: *e,
+            };
             let actual = super::props::rel_property(self.ex.graph(source), er, k, None);
             if !matches!(k.as_str(), "kind" | "virtual" | "dynamic") {
                 return Ok(false);
@@ -661,6 +670,7 @@ impl<'a> Matcher<'a> {
             })
             .collect();
         Value::Path(Arc::new(PathValue {
+            property_path: None,
             source,
             nodes: node_ids,
             edges: edges.iter().map(|e| e.edge).collect(),

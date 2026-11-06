@@ -6,6 +6,45 @@ use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use indexmap::IndexMap;
 
 pub trait GraphContext {
+    fn pattern_rows(
+        &self,
+        _pattern: &crate::ast::Pattern,
+        _row: &IndexMap<String, Value>,
+    ) -> crate::CypherResult<Vec<IndexMap<String, Value>>> {
+        Err(crate::CypherError::NotImplemented(
+            "pattern comprehensions require a graph executor".into(),
+        ))
+    }
+    fn subquery_rows(
+        &self,
+        _clauses: &[crate::ast::Clause],
+        _row: &IndexMap<String, Value>,
+    ) -> crate::CypherResult<Vec<IndexMap<String, Value>>> {
+        Err(crate::CypherError::NotImplemented(
+            "correlated subqueries require a graph executor".into(),
+        ))
+    }
+    /// Correlated existence using the production matcher's graph semantics.
+    fn pattern_exists(
+        &self,
+        _pattern: &crate::ast::Pattern,
+        _row: &IndexMap<String, Value>,
+    ) -> crate::CypherResult<bool> {
+        Err(crate::CypherError::NotImplemented(
+            "pattern predicates require a graph executor".into(),
+        ))
+    }
+    /// Query compatibility mode; external contexts preserve Graphite extensions by default.
+    fn dialect(&self) -> crate::CypherDialect {
+        crate::CypherDialect::Graphite
+    }
+    fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
+        None
+    }
+    /// Stable transaction/statement clock; callers may override for explicit query scopes.
+    fn temporal_clock(&self) -> chrono::DateTime<chrono::Utc> {
+        chrono::Utc::now()
+    }
     /// Number of graph sources (1 for a single-graph executor).
     fn source_count(&self) -> usize;
     /// True when the executor runs in cross-graph mode (values become "qualified":

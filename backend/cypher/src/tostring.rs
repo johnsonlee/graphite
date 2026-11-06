@@ -18,6 +18,7 @@ use crate::value::Value;
 pub fn java_to_string(v: &Value, ctx: &dyn GraphContext) -> String {
     match v {
         Value::Null => "null".to_string(),
+        Value::Temporal(t) => t.to_string(),
         Value::Bool(b) => b.to_string(),
         Value::Int(i) => i.to_string(),
         Value::Float(f) => java_double_to_string(*f),
@@ -187,11 +188,8 @@ fn path_elements(p: &crate::value::PathValue, _ctx: &dyn GraphContext) -> Vec<Va
             source: p.source,
             id: *id,
         }));
-        if let Some(e) = p.edges.get(i) {
-            out.push(Value::Rel(crate::value::EdgeRef {
-                source: p.source,
-                edge: *e,
-            }));
+        if i < p.edges.len() {
+            out.push(Value::Rel(p.relationship(i)));
         }
     }
     out

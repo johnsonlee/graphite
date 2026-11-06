@@ -48,6 +48,43 @@ fn digest(value: &Value) -> String {
         .collect()
 }
 
+fn all_scenarios_passed(results: &[Value]) -> bool {
+    !results.is_empty()
+        && results
+            .iter()
+            .all(|result| result["status"] == "passed" && result["executed"] == true)
+}
+
+fn inventory_matches_pin(results: &[Value], pin: &Value) -> bool {
+    if pin["count"].as_u64() != Some(results.len() as u64) {
+        return false;
+    }
+    let mut identities = BTreeMap::new();
+    for result in results {
+        let (Some(id), Some(hash)) = (result["id"].as_str(), result["scenarioSha256"].as_str())
+        else {
+            return false;
+        };
+        if identities.insert(id, hash).is_some() {
+            return false;
+        }
+    }
+    pin["sha256"].as_str() == Some(digest(&json!(identities)).as_str())
+}
+
+fn record_verified_baseline(
+    path: &std::path::Path,
+    signature: &Value,
+    verified: bool,
+) -> Result<bool> {
+    if !verified {
+        return Ok(false);
+    }
+    let sorted: Value = serde_json::from_str(&canonical(signature))?;
+    fs::write(path, serde_json::to_string_pretty(&sorted)? + "\n")?;
+    Ok(true)
+}
+
 #[derive(Parser)]
 #[command(about = "Run pinned official openCypher TCK scenarios against Graphite")]
 struct Args {
@@ -93,27 +130,35 @@ fn execute(args: Args) -> Result<bool> {
             .or_default() += 1;
     }
     let signature = runner::baseline_signature(&run.results);
+    let all_passed = all_scenarios_passed(&run.results);
+    let inventory_verified = inventory_matches_pin(&run.results, &upstream["scenarioInventory"]);
     let baseline = args
         .baseline
         .unwrap_or_else(|| args.root.join("baseline.json"));
+    let baseline_recorded = args.record_baseline
+        && record_verified_baseline(
+            &baseline,
+            &signature,
+            all_passed && inventory_verified && run.infrastructure_errors.is_empty(),
+        )?;
     let changes = if args.record_baseline {
-        if run.infrastructure_errors.is_empty() {
-            fs::write(&baseline, serde_json::to_string_pretty(&signature)? + "\n")?;
-        }
         vec![]
     } else {
         let expected: Value = serde_json::from_slice(&fs::read(&baseline)?)?;
         runner::baseline_changes(&expected, &signature)
     };
-    let passed = changes.is_empty() && run.infrastructure_errors.is_empty();
-    let report = json!({"upstream":upstream,"counts":counts,"total":run.results.len(),"baselineChanges":changes,"gatePassed":passed,"infrastructureErrors":run.infrastructure_errors,"scenarios":run.results,"scope":"official TCK scenarios; empty/any graph and supported scalar/list/map contracts only; unsupported is never pass"});
+    let passed = all_passed
+        && inventory_verified
+        && changes.is_empty()
+        && run.infrastructure_errors.is_empty();
+    let report = json!({"upstream":upstream,"counts":counts,"total":run.results.len(),"baselineChanges":changes,"gatePassed":passed,"allScenariosPassed":all_passed,"inventoryVerified":inventory_verified,"baselineRecorded":baseline_recorded,"infrastructureErrors":run.infrastructure_errors,"scenarios":run.results,"dialect":"opencypher-m23","scope":"official openCypher M23 scenarios executed by the production engine in opencypher-m23 mode; unsupported is never pass"});
     let output = args.output.unwrap();
     fs::create_dir_all(&output)?;
     fs::write(
         output.join("report.json"),
         serde_json::to_string_pretty(&report)? + "\n",
     )?;
-    let mut markdown = format!("# openCypher TCK compatibility inventory\n\nTotal: {}; {}\n\nGate checks the exact reviewed inventory, statuses and outcomes. Known failures and unsupported scenarios remain visible; this is not full compliance.\n\n| Feature | Passed | Failed | Unsupported | Not run |\n|---|---:|---:|---:|---:|\n", run.results.len(), counts.iter().map(|(k,v)| format!("{k}: {v}")).collect::<Vec<_>>().join("; "));
+    let mut markdown = format!("# openCypher TCK compatibility inventory\n\nDialect: `opencypher-m23` (production executor).\n\nTotal: {}; {}\n\nGate requires every official scenario to execute and pass, no infrastructure errors, and the exact reviewed inventory and outcomes. This covers the pinned M23 suite, not every possible Cypher query.\n\n| Feature | Passed | Failed | Unsupported | Not run |\n|---|---:|---:|---:|---:|\n", run.results.len(), counts.iter().map(|(k,v)| format!("{k}: {v}")).collect::<Vec<_>>().join("; "));
     let mut features: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
     for r in &run.results {
         *features
@@ -140,7 +185,7 @@ fn execute(args: Args) -> Result<bool> {
     fs::write(output.join("report.md"), markdown)?;
     println!(
         "{}",
-        json!({"total":run.results.len(),"counts":counts,"baselineChanges":changes.len(),"gatePassed":passed,"infrastructureErrors":run.infrastructure_errors})
+        json!({"total":run.results.len(),"counts":counts,"baselineChanges":changes.len(),"gatePassed":passed,"inventoryVerified":inventory_verified,"infrastructureErrors":run.infrastructure_errors})
     );
     Ok(passed)
 }
@@ -159,6 +204,72 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn baseline_recording_requires_the_complete_pinned_inventory() {
+        let complete = vec![
+            json!({"id":"one","scenarioSha256":"first","status":"passed","executed":true}),
+            json!({"id":"two","scenarioSha256":"second","status":"passed","executed":true}),
+        ];
+        let pin = json!({"count":2,"sha256":digest(&json!({"one":"first","two":"second"}))});
+        assert!(inventory_matches_pin(&complete, &pin));
+        let directory = tempfile::tempdir().unwrap();
+        let baseline = directory.path().join("baseline.json");
+        fs::write(&baseline, b"reviewed baseline").unwrap();
+        for incomplete in [
+            vec![complete[0].clone()],
+            vec![complete[0].clone(), complete[0].clone()],
+            vec![
+                complete[0].clone(),
+                json!({"id":"two","scenarioSha256":"changed","status":"passed","executed":true}),
+            ],
+        ] {
+            assert!(all_scenarios_passed(&incomplete));
+            assert!(!inventory_matches_pin(&incomplete, &pin));
+            assert!(!record_verified_baseline(
+                &baseline,
+                &json!({}),
+                all_scenarios_passed(&incomplete) && inventory_matches_pin(&incomplete, &pin)
+            )
+            .unwrap());
+            assert_eq!(fs::read(&baseline).unwrap(), b"reviewed baseline");
+        }
+    }
+    #[test]
+    fn known_failures_or_unexecuted_cases_cannot_be_blessed_as_a_baseline() {
+        let directory = tempfile::tempdir().unwrap();
+        let baseline = directory.path().join("baseline.json");
+        fs::write(&baseline, b"reviewed baseline").unwrap();
+        for results in [
+            vec![],
+            vec![json!({"status":"failed","executed":true})],
+            vec![json!({"status":"unsupported","executed":true})],
+            vec![json!({"status":"not_run","executed":false})],
+            vec![json!({"status":"passed","executed":false})],
+            vec![
+                json!({"status":"passed","executed":true}),
+                json!({"status":"failed","executed":true}),
+            ],
+        ] {
+            assert!(!record_verified_baseline(
+                &baseline,
+                &json!({}),
+                all_scenarios_passed(&results)
+            )
+            .unwrap());
+            assert_eq!(fs::read(&baseline).unwrap(), b"reviewed baseline");
+        }
+        let complete = vec![json!({"status":"passed","executed":true})];
+        assert!(record_verified_baseline(
+            &baseline,
+            &json!({"verified":true}),
+            all_scenarios_passed(&complete)
+        )
+        .unwrap());
+        assert_eq!(
+            serde_json::from_slice::<Value>(&fs::read(&baseline).unwrap()).unwrap(),
+            json!({"verified":true})
+        );
+    }
     #[test]
     fn inventory_encoding_preserves_types_unicode_and_exponents() {
         assert_eq!(

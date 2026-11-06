@@ -1,7 +1,7 @@
 //! Scalar/list/map portion of the TCK's value notation. Graph, temporal and spatial
 //! values remain explicitly unsupported; no lossy conversion to strings or nulls.
 use regex::Regex;
-use serde_json::{Map, Number, Value};
+use serde_json::{json, Map, Number, Value};
 use std::sync::OnceLock;
 
 #[derive(Clone)]
@@ -12,17 +12,19 @@ struct Token {
 
 pub fn value(text: &str) -> Result<Value, String> {
     static TOKEN: OnceLock<Regex> = OnceLock::new();
-    let regex = TOKEN.get_or_init(|| Regex::new(r#"^\s*(?:(?P<string>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?P<number>-?(?:\d+\.\d*(?:[eE][+-]?\d+)?|\d+[eE][+-]?\d+|\d+))|(?P<name>[A-Za-z_][A-Za-z_0-9]*)|(?P<punct>[\[\]{},:]))"#).unwrap());
+    let regex = TOKEN.get_or_init(|| Regex::new(r#"^\s*(?:(?P<string>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?P<number>-?(?:\d+\.\d*(?:[eE][+-]?\d+)?|\d+[eE][+-]?\d+|\d+))|(?P<quoted>`(?:``|[^`])*`)|(?P<special>(?:-?Infinity|NaN)\b)|(?P<name>[\p{L}_][\p{L}\p{N}_]*)|(?P<arrow><-|->)|(?P<punct>[\[\]{},:()<>-]))"#).unwrap());
     let mut tokens = Vec::new();
     let mut pos = 0;
     while pos < text.trim_end().len() {
         let captures = regex
             .captures(&text[pos..])
             .ok_or_else(|| format!("unsupported TCK value: {text}"))?;
-        let kind = ["string", "number", "name", "punct"]
-            .into_iter()
-            .find(|name| captures.name(name).is_some())
-            .unwrap();
+        let kind = [
+            "string", "number", "quoted", "special", "name", "arrow", "punct",
+        ]
+        .into_iter()
+        .find(|name| captures.name(name).is_some())
+        .unwrap();
         tokens.push(Token {
             kind,
             text: captures.name(kind).unwrap().as_str().to_owned(),
@@ -83,10 +85,20 @@ impl Parser {
                 }
                 return Ok(Value::Number(number));
             }
+            "special" => return Ok(json!({"$tck":["float", token.text]})),
             "name" if token.text == "true" => return Ok(Value::Bool(true)),
             "name" if token.text == "false" => return Ok(Value::Bool(false)),
             "name" if token.text == "null" => return Ok(Value::Null),
             _ => {}
+        }
+        if token.text == "(" {
+            return self.node();
+        }
+        if token.text == "<" {
+            return self.path();
+        }
+        if token.text == "[" && self.tokens.get(self.pos).is_some_and(|t| t.text == ":") {
+            return self.relationship();
         }
         if token.text == "[" {
             let mut result = Vec::new();
@@ -106,13 +118,14 @@ impl Parser {
         if token.text == "{" {
             let mut result = Map::new();
             if self.consume("}") {
-                return Ok(Value::Object(result));
+                return Ok(literal_map(result));
             }
             loop {
                 let key = self.pop()?;
                 let key = match key.kind {
                     "string" => string(&key.text)?,
                     "name" => key.text,
+                    "quoted" => key.text[1..key.text.len() - 1].replace("``", "`"),
                     _ => return Err("unsupported map key".to_owned()),
                 };
                 if result.contains_key(&key) || !self.consume(":") {
@@ -120,7 +133,7 @@ impl Parser {
                 }
                 result.insert(key, self.value()?);
                 if self.consume("}") {
-                    return Ok(Value::Object(result));
+                    return Ok(literal_map(result));
                 }
                 if !self.consume(",") {
                     return Err("invalid map delimiter".to_owned());
@@ -128,6 +141,93 @@ impl Parser {
             }
         }
         Err(format!("unsupported TCK value token: {}", token.text))
+    }
+    fn identifier(&mut self) -> Result<String, String> {
+        let token = self.pop()?;
+        match token.kind {
+            "name" | "special" => Ok(token.text),
+            "quoted" => Ok(token.text[1..token.text.len() - 1].replace("``", "`")),
+            _ => Err("expected a graph label or relationship type".into()),
+        }
+    }
+    fn properties(&mut self) -> Result<Value, String> {
+        if self.tokens.get(self.pos).is_some_and(|t| t.text == "{") {
+            let parsed = self.value()?;
+            if parsed["$tck"][0] == "map" {
+                Ok(parsed["$tck"][1].clone())
+            } else {
+                Ok(parsed)
+            }
+        } else {
+            Ok(json!({}))
+        }
+    }
+    fn node(&mut self) -> Result<Value, String> {
+        let mut labels = Vec::new();
+        while self.consume(":") {
+            labels.push(self.identifier()?);
+        }
+        labels.sort();
+        labels.dedup();
+        let properties = self.properties()?;
+        if !self.consume(")") {
+            return Err("invalid TCK node closing delimiter".into());
+        }
+        Ok(json!({"$tck":["node", labels, properties]}))
+    }
+    fn relationship(&mut self) -> Result<Value, String> {
+        if !self.consume(":") {
+            return Err("TCK relationship must have a type".into());
+        }
+        let kind = self.identifier()?;
+        let properties = self.properties()?;
+        if !self.consume("]") {
+            return Err("invalid TCK relationship closing delimiter".into());
+        }
+        Ok(json!({"$tck":["relationship", kind, properties]}))
+    }
+    fn path(&mut self) -> Result<Value, String> {
+        let mut nodes = vec![self.value()?];
+        let mut relationships = Vec::new();
+        let mut directions = Vec::new();
+        while !self.consume(">") {
+            let backward = self.consume("<-");
+            if !backward && !self.consume("-") {
+                return Err("invalid TCK path relationship prefix".into());
+            }
+            let relationship = self.value()?;
+            if relationship["$tck"][0] != "relationship" {
+                return Err("TCK path requires a relationship".into());
+            }
+            if !(if backward {
+                self.consume("-")
+            } else {
+                self.consume("->")
+            }) {
+                return Err("invalid TCK path relationship suffix".into());
+            }
+            let node = self.value()?;
+            if node["$tck"][0] != "node" {
+                return Err("TCK path requires a node".into());
+            }
+            relationships.push(relationship);
+            nodes.push(node);
+            directions.push(if backward { -1 } else { 1 });
+        }
+        if nodes[0]["$tck"][0] != "node" {
+            return Err("TCK path must start with a node".into());
+        }
+        Ok(json!({"$tck":["path", nodes, relationships, directions]}))
+    }
+}
+
+/// Literal maps containing the reserved wire key are escaped, so they never
+/// compare equal to graph values or non-finite numbers with a similar shape.
+pub fn literal_map(values: Map<String, Value>) -> Value {
+    if values.contains_key("$tck") {
+        json!({"$tck":["map", values]})
+    } else {
+        Value::Object(values)
     }
 }
 
@@ -188,6 +288,31 @@ mod tests {
     use super::*;
     use serde_json::json;
     #[test]
+    fn graph_values_preserve_labels_properties_paths_and_value_kind() {
+        assert_eq!(
+            value("(:B:A {x: 1})").unwrap(),
+            json!({"$tck":["node",["A","B"],{"x":1}]})
+        );
+        assert_eq!(
+            value("[:R {x: null}]").unwrap(),
+            json!({"$tck":["relationship","R",{"x":null}]})
+        );
+        let path = value("<(:A)-[:R]->(:B)<-[:S]-()>").unwrap();
+        assert_eq!(path["$tck"][0], "path");
+        assert_eq!(path["$tck"][1].as_array().unwrap().len(), 3);
+        assert_eq!(path["$tck"][3], json!([1, -1]));
+        assert_ne!(
+            value("(:Person)").unwrap(),
+            value("{'$tck': ['node', ['Person'], {}]}").unwrap()
+        );
+        assert_eq!(value("NaN").unwrap(), json!({"$tck":["float","NaN"]}));
+        assert_eq!(
+            value("-Infinity").unwrap(),
+            json!({"$tck":["float","-Infinity"]})
+        );
+    }
+
+    #[test]
     fn nested_values_preserve_types_null_and_strings() {
         assert_eq!(
             value("{x: [true, null, 1, 1.0, 'null'], y: 'a\\'b'}").unwrap(),
@@ -195,7 +320,7 @@ mod tests {
         );
         assert!(value("1").unwrap().as_number().unwrap().is_i64());
         assert!(value("1.0").unwrap().as_number().unwrap().is_f64());
-        for input in ["(:Person)", "NaN", "date('2020-01-01')", "1 2", "{x:1,x:2}"] {
+        for input in ["date('2020-01-01')", "1 2", "{x:1,x:2}"] {
             assert!(value(input).is_err(), "{input}");
         }
     }

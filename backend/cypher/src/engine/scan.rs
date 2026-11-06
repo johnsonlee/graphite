@@ -4399,7 +4399,8 @@ mod tests {
         };
         let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
         assert!(graph.count_by_tag(TAG_FIELD_NODE) > 0);
-        let ex = Executor::single("generic", std::sync::Arc::new(graph));
+        let ex = Executor::single("generic", std::sync::Arc::new(graph))
+            .with_params([("step".into(), Value::Int(0))].into());
         let queries = |predicate: &str| {
             let direct = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
             // CASE is deliberately outside scan predicate extraction. It leaves
@@ -4415,14 +4416,33 @@ mod tests {
             (direct, fallback)
         };
         for predicate in [
-            "any(k IN keys(n) WHERE toString(n[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
-            "any(k IN keys(n) WHERE toString(properties(n)[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(n[k] + head(range(0, 1, $step))) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(properties(n)[k] + head(range(0, 1, $step))) CONTAINS 'ZZZAbsent')",
         ] {
             let (direct, fallback) = queries(predicate);
-            let actual = ex.execute(&direct, None).unwrap_err().to_string();
-            let expected = ex.execute(&fallback, None).unwrap_err().to_string();
-            assert!(actual.contains("Unknown function"), "{actual}");
+            let actual = ex.execute(&direct, None).unwrap_err();
+            let expected = ex.execute(&fallback, None).unwrap_err();
+            assert_eq!(actual, crate::CypherError::Runtime("Step cannot be zero in range()".into()));
             assert_eq!(actual, expected);
+        }
+        // M23 checks extra arguments before graph evaluation, independently
+        // from Graphite's valid runtime-error cases above.
+        let standard = Executor::new(ex.sources.clone(), false)
+            .with_dialect(crate::CypherDialect::OpenCypherM23);
+        for expression in [
+            "toString(n[k], 'unused')",
+            "toString(n[k], unknownFunction())",
+        ] {
+            let query = format!("MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE {expression} CONTAINS 'first') RETURN id(n)");
+            let error = standard
+                .execute(&query, None)
+                .unwrap_err()
+                .diagnostic()
+                .unwrap();
+            assert_eq!(
+                (error.error_type, error.phase, error.detail),
+                ("SyntaxError", "compile time", "InvalidNumberOfArguments")
+            );
         }
         for predicate in [
             "any(n IN keys(n) WHERE toString(n[n]) CONTAINS 'first')",
@@ -4437,7 +4457,7 @@ mod tests {
             );
         }
         let (direct, fallback) =
-            queries("any(k IN keys(n) WHERE toString(n[k], 'unused') CONTAINS 'first')");
+            queries("any(k IN keys(n) WHERE toString(coalesce(n[k], 'unused')) CONTAINS 'first')");
         let actual = ex.execute(&direct, None).unwrap().rows;
         assert!(
             !actual.is_empty(),

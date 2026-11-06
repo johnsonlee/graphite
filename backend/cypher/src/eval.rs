@@ -5,7 +5,8 @@ use crate::context::GraphContext;
 use crate::error::{CypherError, CypherResult};
 use crate::functions;
 use crate::semantics::{
-    compare_values_with, cypher_equals, kotlin_to_string, to_double, utf16_len, value_key, Row,
+    compare_values_with, cypher_equals, kotlin_to_string, predicate_order, to_double, utf16_len,
+    value_key, PredicateOrder, Row,
 };
 use crate::value::Value;
 use indexmap::IndexMap;
@@ -33,28 +34,93 @@ pub fn is_aggregation_name(name: &str) -> bool {
     )
 }
 
-/// Whether an expression contains an aggregation, using Kotlin's exact recursion set.
-///
-/// Note the deliberate gaps: `CASE`, list/map literals, `AND`/`OR`/`NOT`, subscripts
-/// and slices are **not** descended into, so `CASE WHEN .. THEN count(x) END` does
-/// not register as an aggregation.
+/// Whether an M23 expression contains an aggregate anywhere in its expression tree.
+/// Graphite retains its historical recursion through `legacy_contains_aggregation`.
 pub fn contains_aggregation(e: &Expr) -> bool {
     match e {
         Expr::CountStar => true,
         Expr::FunctionCall { name, args, .. } => {
             is_aggregation_name(name) || args.iter().any(contains_aggregation)
         }
-        Expr::Property { expr, .. } => contains_aggregation(expr),
+        Expr::LabelPredicate { expr, .. }
+        | Expr::Property { expr, .. }
+        | Expr::Unary { expr, .. }
+        | Expr::Distinct(expr)
+        | Expr::IsNull(expr)
+        | Expr::IsNotNull(expr)
+        | Expr::Not(expr) => contains_aggregation(expr),
+        Expr::Binary { left, right, .. }
+        | Expr::Comparison { left, right, .. }
+        | Expr::StringOp { left, right, .. }
+        | Expr::In { left, right }
+        | Expr::And(left, right)
+        | Expr::Or(left, right)
+        | Expr::Xor(left, right) => contains_aggregation(left) || contains_aggregation(right),
+        Expr::ListLiteral(items) => items.iter().any(contains_aggregation),
+        Expr::MapLiteral(items) => items.iter().any(|(_, e)| contains_aggregation(e)),
+        Expr::Case {
+            test,
+            whens,
+            else_expr,
+        } => {
+            test.as_deref().is_some_and(contains_aggregation)
+                || whens
+                    .iter()
+                    .any(|(a, b)| contains_aggregation(a) || contains_aggregation(b))
+                || else_expr.as_deref().is_some_and(contains_aggregation)
+        }
+        Expr::ListComprehension {
+            list, filter, map, ..
+        } => {
+            contains_aggregation(list)
+                || filter.as_deref().is_some_and(contains_aggregation)
+                || map.as_deref().is_some_and(contains_aggregation)
+        }
         Expr::PredicateFunction {
             list, predicate, ..
         } => contains_aggregation(list) || predicate.as_deref().is_some_and(contains_aggregation),
+        Expr::Subscript { expr, index } => {
+            contains_aggregation(expr) || contains_aggregation(index)
+        }
+        Expr::Slice { expr, from, to } => {
+            contains_aggregation(expr)
+                || from.as_deref().is_some_and(contains_aggregation)
+                || to.as_deref().is_some_and(contains_aggregation)
+        }
+        Expr::ExistsSubquery(_) | Expr::PatternComprehension { .. } => false,
+        Expr::PatternPredicate(pattern) => pattern
+            .nodes
+            .iter()
+            .flat_map(|n| &n.properties)
+            .chain(pattern.rels.iter().flat_map(|r| &r.properties))
+            .any(|(_, e)| contains_aggregation(e)),
+        Expr::Literal(_) | Expr::Variable(_) | Expr::Parameter(_) => false,
+    }
+}
+
+// Historical recursion policy retained for Graphite compatibility.
+pub(crate) fn legacy_contains_aggregation(e: &Expr) -> bool {
+    match e {
+        Expr::CountStar => true,
+        Expr::FunctionCall { name, args, .. } => {
+            is_aggregation_name(name) || args.iter().any(legacy_contains_aggregation)
+        }
+        Expr::Property { expr, .. } => legacy_contains_aggregation(expr),
+        Expr::PredicateFunction {
+            list, predicate, ..
+        } => {
+            legacy_contains_aggregation(list)
+                || predicate
+                    .as_deref()
+                    .is_some_and(legacy_contains_aggregation)
+        }
         Expr::Binary { left, right, .. } => {
-            contains_aggregation(left) || contains_aggregation(right)
+            legacy_contains_aggregation(left) || legacy_contains_aggregation(right)
         }
         Expr::Comparison { left, right, .. } => {
-            contains_aggregation(left) || contains_aggregation(right)
+            legacy_contains_aggregation(left) || legacy_contains_aggregation(right)
         }
-        Expr::Distinct(inner) => contains_aggregation(inner),
+        Expr::Distinct(inner) => legacy_contains_aggregation(inner),
         _ => false,
     }
 }
@@ -184,16 +250,109 @@ impl<'a> Evaluator<'a> {
 
     pub fn eval(&self, expr: &Expr, row: &Row) -> CypherResult<Value> {
         match expr {
+            Expr::LabelPredicate { expr, labels } => {
+                let value = self.eval(expr, row)?;
+                match value {
+                    Value::Null => Ok(Value::Null),
+                    Value::Node(node) => {
+                        let matches = if let Some(graph) = self.ctx.property_graph() {
+                            graph.ensure_live_entity(&Value::Node(node))?;
+                            graph.node(node.id).is_some_and(|node| {
+                                labels.iter().all(|label| node.labels.contains(label))
+                            })
+                        } else {
+                            let actual = self.ctx.node_labels(node);
+                            labels.iter().all(|label| actual.contains(&label.as_str()))
+                        };
+                        Ok(Value::Bool(matches))
+                    }
+                    Value::Method(_) => {
+                        Ok(Value::Bool(labels.iter().all(|label| label == "Method")))
+                    }
+                    Value::Rel(rel) => {
+                        let type_name = if let Some(id) = rel.property_id {
+                            self.ctx
+                                .property_graph()
+                                .and_then(|graph| graph.relationship(u64::from(id.get())))
+                                .map(|relationship| relationship.type_name)
+                                .ok_or_else(|| {
+                                    CypherError::execution(
+                                        "EntityNotFound",
+                                        "DeletedEntityAccess",
+                                        "The relationship has been deleted",
+                                    )
+                                })?
+                        } else {
+                            self.ctx.rel_type(rel).to_owned()
+                        };
+                        Ok(Value::Bool(labels.iter().all(|label| *label == type_name)))
+                    }
+                    _ => Err(CypherError::execution(
+                        "TypeError",
+                        "InvalidArgumentType",
+                        "A label predicate requires a node or relationship",
+                    )),
+                }
+            }
+            Expr::PatternComprehension {
+                pattern,
+                filter,
+                map,
+            } => {
+                for variable in pattern.nodes.iter().filter_map(|n| n.variable.as_ref()) {
+                    if row.get(variable).is_some_and(Value::is_null) {
+                        return Ok(Value::Null);
+                    }
+                }
+                let mut result = Vec::new();
+                for binding in self.ctx.pattern_rows(pattern, row)? {
+                    self.ctx.check_cancelled()?;
+                    if let Some(filter) = filter {
+                        if self.eval(filter, &binding)?.as_bool() != Some(true) {
+                            continue;
+                        }
+                    }
+                    result.push(self.eval(map, &binding)?);
+                }
+                Ok(Value::list(result))
+            }
+            Expr::ExistsSubquery(clauses) => Ok(Value::Bool(
+                !self.ctx.subquery_rows(clauses, row)?.is_empty(),
+            )),
+            Expr::PatternPredicate(pattern) => {
+                // A null bound endpoint makes the predicate unknown, rather than
+                // pretending that the graph simply contains no matching path.
+                for variable in pattern
+                    .nodes
+                    .iter()
+                    .filter_map(|n| n.variable.as_ref())
+                    .chain(pattern.rels.iter().filter_map(|r| r.variable.as_ref()))
+                {
+                    if row.get(variable).is_some_and(Value::is_null) {
+                        return Ok(Value::Null);
+                    }
+                }
+                Ok(Value::Bool(self.ctx.pattern_exists(pattern, row)?))
+            }
             Expr::Literal(l) => Ok(literal_value(l)),
             Expr::Variable(name) => Ok(row.get(name).cloned().unwrap_or(Value::Null)),
             Expr::Parameter(name) => Ok(self.params.get(name).cloned().unwrap_or(Value::Null)),
             Expr::Property { expr, key } => {
                 let base = self.eval(expr, row)?;
+                if let Some(graph) = self.ctx.property_graph() {
+                    graph.ensure_live_entity(&base)?;
+                }
                 Ok(self.property(&base, key))
             }
             Expr::CountStar => Err(CypherError::Aggregation("count".into())),
             Expr::Distinct(inner) => self.eval(inner, row),
             Expr::FunctionCall { name, args, .. } => {
+                if name.eq_ignore_ascii_case("exists")
+                    && args.len() == 1
+                    && matches!(args[0], Expr::PatternPredicate(_))
+                {
+                    return self.eval(&args[0], row);
+                }
                 if is_aggregation_name(name) {
                     return Err(CypherError::Aggregation(name.to_ascii_lowercase()));
                 }
@@ -350,8 +509,11 @@ impl<'a> Evaluator<'a> {
             } => self.predicate_function(name, variable, list, predicate.as_deref(), row),
             Expr::Subscript { expr, index } => {
                 let base = self.eval(expr, row)?;
+                if let Some(graph) = self.ctx.property_graph() {
+                    graph.ensure_live_entity(&base)?;
+                }
                 let idx = self.eval(index, row)?;
-                Ok(self.subscript(&base, &idx))
+                self.subscript(&base, &idx)
             }
             Expr::Slice { expr, from, to } => {
                 let base = self.eval(expr, row)?;
@@ -375,6 +537,7 @@ impl<'a> Evaluator<'a> {
             Value::Rel(r) => self.ctx.rel_property(*r, key),
             Value::Method(m) => self.ctx.method_property(*m, key),
             Value::Map(m) => m.get(key).cloned().unwrap_or(Value::Null),
+            Value::Temporal(t) => t.property(key),
             Value::Path(p) => match key {
                 "length" => Value::Int(p.edges.len() as i64),
                 "graphId" if self.ctx.is_cross_graph() => Value::str(self.ctx.graph_id(p.source)),
@@ -387,6 +550,9 @@ impl<'a> Evaluator<'a> {
     fn eval_is_null(&self, expr: &Expr, row: &Row) -> CypherResult<bool> {
         if let Expr::Property { expr, key } = expr {
             let base = self.eval(expr, row)?;
+            if let Some(graph) = self.ctx.property_graph() {
+                graph.ensure_live_entity(&base)?;
+            }
             return Ok(match base {
                 Value::Node(node) => self.ctx.node_property_is_null(node, key),
                 Value::Method(method) => self.ctx.method_property_is_null(method, key),
@@ -397,8 +563,32 @@ impl<'a> Evaluator<'a> {
     }
 
     fn binary(&self, op: BinOp, l: &Value, r: &Value) -> CypherResult<Value> {
+        let standard = self.ctx.dialect() == crate::CypherDialect::OpenCypherM23;
+        if op == BinOp::Add && standard {
+            match (l, r) {
+                (Value::List(a), Value::List(b)) => {
+                    let mut out = a.as_ref().clone();
+                    out.extend(b.iter().cloned());
+                    return Ok(Value::list(out));
+                }
+                (Value::List(a), other) => {
+                    let mut out = a.as_ref().clone();
+                    out.push(other.clone());
+                    return Ok(Value::list(out));
+                }
+                (other, Value::List(b)) => {
+                    let mut out = vec![other.clone()];
+                    out.extend(b.iter().cloned());
+                    return Ok(Value::list(out));
+                }
+                _ => {}
+            }
+        }
         if l.is_null() || r.is_null() {
             return Ok(Value::Null);
+        }
+        if let Some(result) = crate::temporal::binary(op, l, r) {
+            return result;
         }
         // String concatenation wins for '+' when either side is a String.
         if op == BinOp::Add {
@@ -416,14 +606,15 @@ impl<'a> Evaluator<'a> {
                     b
                 )));
             }
-            if let (Value::List(a), Value::List(b)) = (l, r) {
+        }
+        if op == BinOp::Add && !standard {
+            if let Value::List(a) = l {
                 let mut out = a.as_ref().clone();
-                out.extend(b.iter().cloned());
-                return Ok(Value::list(out));
-            }
-            if let (Value::List(a), other) = (l, r) {
-                let mut out = a.as_ref().clone();
-                out.push(other.clone());
+                if let Value::List(b) = r {
+                    out.extend(b.iter().cloned());
+                } else {
+                    out.push(r.clone());
+                }
                 return Ok(Value::list(out));
             }
         }
@@ -465,7 +656,7 @@ impl<'a> Evaluator<'a> {
             BinOp::Sub => Value::Float(a - b),
             BinOp::Mul => Value::Float(a * b),
             BinOp::Div => {
-                if b == 0.0 {
+                if !standard && b == 0.0 {
                     return Err(CypherError::Runtime("Division by zero".into()));
                 }
                 Value::Float(a / b)
@@ -494,7 +685,15 @@ impl<'a> Evaluator<'a> {
                 if l.is_null() || r.is_null() {
                     return Value::Null;
                 }
-                let ord = compare_values_with(l, r, self.ctx);
+                let ord = if self.ctx.dialect() == crate::CypherDialect::Graphite {
+                    compare_values_with(l, r, self.ctx)
+                } else {
+                    match predicate_order(l, r) {
+                        PredicateOrder::Ordered(order) => order,
+                        PredicateOrder::Unknown => return Value::Null,
+                        PredicateOrder::Unordered => return Value::Bool(false),
+                    }
+                };
                 Value::Bool(match op {
                     CmpOp::Lt => ord.is_lt(),
                     CmpOp::Gt => ord.is_gt(),
@@ -614,13 +813,25 @@ impl<'a> Evaluator<'a> {
         })
     }
 
-    fn subscript(&self, base: &Value, index: &Value) -> Value {
-        match base {
+    fn subscript(&self, base: &Value, index: &Value) -> CypherResult<Value> {
+        if base.is_null() || index.is_null() {
+            return Ok(Value::Null);
+        }
+        let standard = self.ctx.dialect() == crate::CypherDialect::OpenCypherM23;
+        let invalid = || {
+            CypherError::execution(
+                "TypeError",
+                "InvalidArgumentType",
+                "Indexing requires a list and integer index or a map and string key",
+            )
+        };
+        Ok(match base {
             Value::List(items) => {
                 let i = match index {
                     Value::Int(i) => *i,
-                    Value::Float(f) => *f as i64,
-                    _ => return Value::Null,
+                    Value::Float(f) if !standard => *f as i64,
+                    _ if !standard => return Ok(Value::Null),
+                    _ => return Err(invalid()),
                 };
                 let len = items.len() as i64;
                 let idx = if i < 0 { len + i } else { i };
@@ -632,17 +843,37 @@ impl<'a> Evaluator<'a> {
             }
             Value::Map(m) => match index.as_str() {
                 Some(k) => m.get(k).cloned().unwrap_or(Value::Null),
-                None => Value::Null,
+                None if !standard => Value::Null,
+                None => {
+                    return Err(CypherError::execution(
+                        "TypeError",
+                        "MapElementAccessByNonString",
+                        "Map indexes must be strings",
+                    ))
+                }
             },
             Value::Node(_) | Value::Rel(_) | Value::Method(_) => match index.as_str() {
                 Some(k) => self.property(base, k),
-                None => Value::Null,
+                None if !standard => Value::Null,
+                None => {
+                    return Err(CypherError::execution(
+                        "TypeError",
+                        "MapElementAccessByNonString",
+                        "Property indexes must be strings",
+                    ))
+                }
             },
-            _ => Value::Null,
-        }
+            _ if !standard => Value::Null,
+            _ => return Err(invalid()),
+        })
     }
 
     fn slice(&self, base: &Value, from: Option<&Value>, to: Option<&Value>) -> Value {
+        if self.ctx.dialect() == crate::CypherDialect::OpenCypherM23
+            && (from.is_some_and(Value::is_null) || to.is_some_and(Value::is_null))
+        {
+            return Value::Null;
+        }
         let items = match base {
             Value::List(l) => l,
             Value::Str(s) => {
@@ -699,6 +930,7 @@ fn class_cast(v: &Value, target: &str) -> CypherError {
         Value::Str(_) => "java.lang.String",
         Value::List(_) => "java.util.List",
         Value::Map(_) => "java.util.Map",
+        Value::Temporal(_) => "Temporal",
         _ => "java.lang.Object",
     };
     CypherError::Other(format!("class {actual} cannot be cast to class {target}"))

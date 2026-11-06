@@ -5,6 +5,7 @@ use crate::semantics::to_double;
 use std::collections::HashSet;
 
 pub(super) struct AggregateState {
+    dialect: crate::CypherDialect,
     distinct: Option<HashSet<Key>>,
     kind: Kind,
 }
@@ -14,7 +15,7 @@ enum Kind {
     Number(Box<NumberState>),
     Extreme {
         min: bool,
-        best: Option<(Value, f64)>,
+        best: Option<Value>,
     },
     Collect {
         values: Vec<Value>,
@@ -61,7 +62,16 @@ struct NumberState {
 }
 
 impl AggregateState {
+    #[cfg(test)]
     pub(super) fn new(agg: &AggCall, prefix: Option<usize>) -> Self {
+        Self::with_dialect(agg, prefix, crate::CypherDialect::OpenCypherM23)
+    }
+
+    pub(super) fn with_dialect(
+        agg: &AggCall,
+        prefix: Option<usize>,
+        dialect: crate::CypherDialect,
+    ) -> Self {
         let kind = match agg.name.to_ascii_lowercase().as_str() {
             "count" => Kind::Count(DeferredCount::default()),
             "sum" | "avg" => Kind::Number(Box::new(NumberState {
@@ -90,6 +100,7 @@ impl AggregateState {
             },
         };
         Self {
+            dialect,
             distinct: agg.distinct.then(HashSet::new),
             kind,
         }
@@ -140,17 +151,11 @@ impl AggregateState {
                 if value.is_null() {
                     return;
                 }
-                let number = to_double(&value);
-                let replace = best.as_ref().is_none_or(|(_, previous)| {
-                    let (a, b) = if *min {
-                        (number, *previous)
-                    } else {
-                        (*previous, number)
-                    };
-                    !a.is_nan() && (b.is_nan() || a < b)
+                let replace = best.as_ref().is_none_or(|previous| {
+                    crate::functions::prefer_extreme(&value, previous, *min, self.dialect)
                 });
                 if replace {
-                    *best = Some((value, number));
+                    *best = Some(value);
                 }
             }
             Kind::Collect {
@@ -170,10 +175,29 @@ impl AggregateState {
         }
     }
 
-    pub(super) fn finish(self, agg: &AggCall) -> CypherResult<Value> {
+    pub(super) fn finish(self, agg: &AggCall, percentile: Option<&Value>) -> CypherResult<Value> {
         match self.kind {
             Kind::Count(count) => Ok(Value::Int(count.finish())),
             Kind::Number(state) => {
+                if self.dialect == crate::CypherDialect::OpenCypherM23
+                    && !state.average
+                    && state.non_integer.is_none()
+                {
+                    if state.overflow {
+                        return Err(CypherError::execution(
+                            "ArithmeticError",
+                            "IntegerOverflow",
+                            "Integer sum exceeds signed 64-bit range",
+                        ));
+                    }
+                    return i64::try_from(state.total).map(Value::Int).map_err(|_| {
+                        CypherError::execution(
+                            "ArithmeticError",
+                            "IntegerOverflow",
+                            "Integer sum exceeds signed 64-bit range",
+                        )
+                    });
+                }
                 let weighted_count = if state.weighted && state.average {
                     let count = state.weighted_count.finish();
                     if count == 0 {
@@ -211,7 +235,7 @@ impl AggregateState {
                     Value::Float(sum)
                 })
             }
-            Kind::Extreme { best, .. } => Ok(best.map(|(v, _)| v).unwrap_or(Value::Null)),
+            Kind::Extreme { best, .. } => Ok(best.unwrap_or(Value::Null)),
             Kind::Collect {
                 mut values,
                 weighted: false,
@@ -226,7 +250,13 @@ impl AggregateState {
             ))),
             Kind::Inputs { values, weights } => {
                 if weights.iter().all(|w| *w == 1) {
-                    aggregate(&agg.name, &values)
+                    if let Some(parameter) =
+                        percentile.filter(|_| self.dialect == crate::CypherDialect::OpenCypherM23)
+                    {
+                        crate::functions::percentile(&agg.name, &values, parameter)
+                    } else {
+                        aggregate(&agg.name, &values)
+                    }
                 } else {
                     aggregate_weighted(&agg.name, &values, &weights)
                 }
@@ -244,6 +274,7 @@ mod tests {
             name: name.into(),
             distinct,
             arg: None,
+            percentile: None,
         }
     }
 
@@ -308,7 +339,7 @@ mod tests {
                         .cloned()
                         .collect();
                     same(
-                        state.finish(&agg).unwrap(),
+                        state.finish(&agg, None).unwrap(),
                         aggregate(name, &reference).unwrap(),
                     );
                 }
@@ -342,7 +373,7 @@ mod tests {
                 } else {
                     aggregate_weighted(name, values, weights)
                 };
-                match (state.finish(&agg), reference) {
+                match (state.finish(&agg, None), reference) {
                     (Ok(actual), Ok(expected)) => same(actual, expected),
                     (Err(actual), Err(expected)) => {
                         assert_eq!(format!("{actual:?}"), format!("{expected:?}"))
@@ -367,7 +398,7 @@ mod tests {
             };
             assert_eq!(values.len(), cap.min(10));
             same(
-                state.finish(&agg).unwrap(),
+                state.finish(&agg, None).unwrap(),
                 Value::list((0..cap.min(10)).map(|n| Value::Int(n as i64)).collect()),
             );
         }
@@ -381,7 +412,7 @@ mod tests {
             state.push(Value::Int(0), i64::MAX);
         }
         same(
-            state.finish(&agg).unwrap(),
+            state.finish(&agg, None).unwrap(),
             aggregate_weighted(
                 "sum",
                 &[Value::Int(0), Value::Int(0)],
@@ -407,6 +438,7 @@ mod tests {
                 })
                 .collect();
             let item = ReturnItem {
+                source_text: None,
                 alias: Some("result".into()),
                 expr: Expr::FunctionCall {
                     name: name.into(),
@@ -436,7 +468,8 @@ mod tests {
         let mut state = AggregateState::new(&agg, None);
         state.push(Value::Int(1), i64::MAX);
         state.push(Value::Int(1), 1);
-        let actual = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| state.finish(&agg)));
+        let actual =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| state.finish(&agg, None)));
         let expected = std::panic::catch_unwind(|| {
             aggregate_weighted("count", &[Value::Int(1), Value::Int(1)], &[i64::MAX, 1])
         });
@@ -477,10 +510,14 @@ mod tests {
         let clauses = crate::parser::parse("MATCH (n:CallSite) WITH any(x IN collect(n.callee_name) WHERE count(*) > 0) AS flag, collect(n.callee_name) AS names, collect(n.caller_name) AS dropped RETURN names[0..10] AS result").unwrap();
         let (shape, _, consumed) = FusedShape::detect_with(&clauses).unwrap();
         assert_eq!(
-            AggPlan::new(shape.items.as_deref().unwrap())
-                .unwrap()
-                .aggs
-                .len(),
+            AggPlan::new(
+                shape.items.as_deref().unwrap(),
+                shape.order.as_deref(),
+                crate::CypherDialect::OpenCypherM23
+            )
+            .unwrap()
+            .aggs
+            .len(),
             4
         );
         assert!(collect_prefix_caps(&shape, &clauses[consumed..]).is_empty());

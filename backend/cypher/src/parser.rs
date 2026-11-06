@@ -1,18 +1,20 @@
 //! Recursive-descent parser mirroring `CypherParser.g4` + `CypherDslAdapter`.
 //!
-//! Deliberate parity quirks (all verified against the Kotlin adapter):
-//! - Comparison chains left-fold: `1 < 2 < 3` parses as `(1 < 2) < 3`.
+//! Grammar and adapter compatibility:
+//! - Graphite preserves left-folded comparison chains and right-associative powers;
+//!   openCypher M23 uses adjacent comparison conjunctions and left-associative powers.
 //! - String predicates bind tighter than comparisons, looser than `+`/`-`.
 //! - Every keyword is a legal `symbolicName` (variable, label, property, map key).
 //! - `MATCH ... WHERE p` emits `Match` **then** `Where`; `OPTIONAL MATCH` keeps the
 //!   predicate inside `Match.where_clause` (it drives null-filling).
 //! - `RETURN`/`WITH` are flattened into `Return`/`With` + `OrderBy` + `Skip` + `Limit`.
-//! - `MERGE p` lowers to `Create`; `UNION` becomes a marker clause.
+//! - Mutation clauses retain their operands; `UNION` becomes a marker clause.
 //! - A query containing `;` is split, parsed per part, and the clause lists concatenated.
 
 use crate::ast::*;
 use crate::error::{CypherError, CypherResult};
 use crate::lexer::{tokenize, Keyword as K, Token, TokenKind as T};
+use crate::CypherDialect;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -21,8 +23,14 @@ use std::sync::Arc;
 // Entry points
 // ---------------------------------------------------------------------------
 
-/// Parse a query into a flat clause list.
+/// Parse using Graphite's established grammar. Standard parsing is opt-in via
+/// [`parse_with_dialect`] with [`CypherDialect::OpenCypherM23`].
 pub fn parse(text: &str) -> CypherResult<Vec<Clause>> {
+    parse_with_dialect(text, CypherDialect::Graphite)
+}
+
+/// Parse using the caller's explicit public compatibility contract.
+pub fn parse_with_dialect(text: &str, dialect: CypherDialect) -> CypherResult<Vec<Clause>> {
     if text.trim().is_empty() {
         return Ok(Vec::new());
     }
@@ -32,20 +40,26 @@ pub fn parse(text: &str) -> CypherResult<Vec<Clause>> {
         if parts.len() > 1 {
             let mut out = Vec::new();
             for p in parts {
-                out.extend(parse_single(p)?);
+                out.extend(parse_single(p, dialect)?);
             }
             return Ok(out);
         }
     }
-    parse_single(text)
+    parse_single(text, dialect)
 }
 
-fn parse_single(text: &str) -> CypherResult<Vec<Clause>> {
+fn parse_single(text: &str, dialect: CypherDialect) -> CypherResult<Vec<Clause>> {
     if text.trim().is_empty() {
         return Ok(Vec::new());
     }
     let tokens = tokenize(text)?;
-    let mut p = Parser { toks: tokens, i: 0 };
+    let mut p = Parser {
+        toks: tokens,
+        i: 0,
+        source: text,
+        dialect,
+        parameter_properties_forbidden: true,
+    };
     let clauses = p.script()?;
     Ok(clauses)
 }
@@ -55,36 +69,46 @@ const PARSE_CACHE_CAPACITY: usize = 1024;
 static PARSE_CACHE: Mutex<Option<LruCache>> = Mutex::new(None);
 
 struct LruCache {
-    map: HashMap<String, Arc<Vec<Clause>>>,
-    order: Vec<String>,
+    map: HashMap<(CypherDialect, String), Arc<Vec<Clause>>>,
+    order: Vec<(CypherDialect, String)>,
 }
 
-/// Parse with a process-wide LRU cache keyed by the exact query text.
-/// Failed parses are never cached.
+/// Parse Graphite's established grammar using a process-wide LRU cache.
+/// Standard grammar is opt-in via [`parse_cached_with_dialect`]. Failed parses
+/// are never cached.
 pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
+    parse_cached_with_dialect(text, CypherDialect::Graphite)
+}
+
+/// Cache entries include both dialect and exact source, preventing cross-mode reuse.
+pub fn parse_cached_with_dialect(
+    text: &str,
+    dialect: CypherDialect,
+) -> CypherResult<Arc<Vec<Clause>>> {
+    let key = (dialect, text.to_owned());
     {
         let mut guard = PARSE_CACHE.lock();
         let cache = guard.get_or_insert_with(|| LruCache {
             map: HashMap::new(),
             order: Vec::new(),
         });
-        if let Some(hit) = cache.map.get(text).cloned() {
-            if let Some(pos) = cache.order.iter().position(|k| k == text) {
+        if let Some(hit) = cache.map.get(&key).cloned() {
+            if let Some(pos) = cache.order.iter().position(|k| k == &key) {
                 let k = cache.order.remove(pos);
                 cache.order.push(k);
             }
             return Ok(hit);
         }
     }
-    let parsed = Arc::new(parse(text)?);
+    let parsed = Arc::new(parse_with_dialect(text, dialect)?);
     let mut guard = PARSE_CACHE.lock();
     let cache = guard.get_or_insert_with(|| LruCache {
         map: HashMap::new(),
         order: Vec::new(),
     });
-    if !cache.map.contains_key(text) {
-        cache.map.insert(text.to_string(), parsed.clone());
-        cache.order.push(text.to_string());
+    if !cache.map.contains_key(&key) {
+        cache.map.insert(key.clone(), parsed.clone());
+        cache.order.push(key);
         while cache.order.len() > PARSE_CACHE_CAPACITY {
             let evict = cache.order.remove(0);
             cache.map.remove(&evict);
@@ -97,12 +121,15 @@ pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
 // Parser
 // ---------------------------------------------------------------------------
 
-struct Parser {
+struct Parser<'a> {
+    dialect: CypherDialect,
+    source: &'a str,
     toks: Vec<Token>,
     i: usize,
+    parameter_properties_forbidden: bool,
 }
 
-impl Parser {
+impl Parser<'_> {
     #[inline]
     fn peek(&self) -> &Token {
         &self.toks[self.i.min(self.toks.len() - 1)]
@@ -150,9 +177,10 @@ impl Parser {
     }
 
     fn err<S: Into<String>>(&self, msg: S) -> CypherError {
-        CypherError::Parse {
+        CypherError::Syntax {
             position: self.peek().col,
             message: msg.into(),
+            detail: "UnexpectedSyntax",
         }
     }
 
@@ -219,7 +247,8 @@ impl Parser {
     fn starts_clause(&self) -> bool {
         matches!(
             self.kind(),
-            T::Keyword(K::Match)
+            T::Keyword(K::Call)
+                | T::Keyword(K::Match)
                 | T::Keyword(K::Optional)
                 | T::Keyword(K::Unwind)
                 | T::Keyword(K::With)
@@ -233,8 +262,63 @@ impl Parser {
         )
     }
 
+    fn call_st(&mut self, out: &mut Vec<Clause>) -> CypherResult<()> {
+        self.bump();
+        let mut name = self.symbolic_name()?;
+        while self.eat(T::Dot) {
+            name.push('.');
+            name.push_str(&self.symbolic_name()?);
+        }
+        let arguments = if self.eat(T::LParen) {
+            let mut values = Vec::new();
+            if !self.eat(T::RParen) {
+                values.push(self.expression()?);
+                while self.eat(T::Comma) {
+                    values.push(self.expression()?);
+                }
+                self.expect(T::RParen, "')'")?;
+            }
+            Some(values)
+        } else {
+            None
+        };
+        let mut yields = None;
+        let mut yield_all = false;
+        if self.eat_kw(K::Yield) {
+            if self.eat(T::Mult) {
+                yield_all = true;
+            } else {
+                let mut fields = Vec::new();
+                loop {
+                    let source = self.symbolic_name()?;
+                    let alias = if self.eat_kw(K::As) {
+                        self.symbolic_name()?
+                    } else {
+                        source.clone()
+                    };
+                    fields.push((source, alias));
+                    if !self.eat(T::Comma) {
+                        break;
+                    }
+                }
+                yields = Some(fields);
+            }
+        }
+        out.push(Clause::Call(ProcedureCall {
+            name,
+            arguments,
+            yields,
+            yield_all,
+        }));
+        if self.eat_kw(K::Where) {
+            out.push(Clause::Where(self.expression()?));
+        }
+        Ok(())
+    }
+
     fn clause(&mut self, out: &mut Vec<Clause>) -> CypherResult<()> {
         match self.kind() {
+            T::Keyword(K::Call) => self.call_st(out),
             T::Keyword(K::Optional) | T::Keyword(K::Match) => self.match_st(out),
             T::Keyword(K::Unwind) => {
                 self.bump();
@@ -250,14 +334,42 @@ impl Parser {
             T::Keyword(K::Return) => self.return_st(out),
             T::Keyword(K::Create) => {
                 self.bump();
-                let patterns = self.pattern_list()?;
+                let previous = self.parameter_properties_forbidden;
+                self.parameter_properties_forbidden = false;
+                let parsed = self.pattern_list();
+                self.parameter_properties_forbidden = previous;
+                let patterns = parsed?;
                 out.push(Clause::Create(patterns));
                 Ok(())
             }
             T::Keyword(K::Merge) => {
                 self.bump();
-                let p = self.pattern_part()?;
-                out.push(Clause::Create(vec![p]));
+                let pattern = self.pattern_part()?;
+                let mut on_create = Vec::new();
+                let mut on_match = Vec::new();
+                while self.eat_kw(K::On) {
+                    let create = if self.eat_kw(K::Create) {
+                        true
+                    } else if self.eat_kw(K::Match) {
+                        false
+                    } else {
+                        return Err(self.mismatched("CREATE or MATCH"));
+                    };
+                    if !self.eat_kw(K::Set) {
+                        return Err(self.mismatched("SET"));
+                    }
+                    let items = self.set_items()?;
+                    if create {
+                        on_create.extend(items);
+                    } else {
+                        on_match.extend(items);
+                    }
+                }
+                out.push(Clause::Merge {
+                    pattern,
+                    on_create,
+                    on_match,
+                });
                 Ok(())
             }
             T::Keyword(K::Detach) | T::Keyword(K::Delete) => {
@@ -274,14 +386,12 @@ impl Parser {
             }
             T::Keyword(K::Set) => {
                 self.bump();
-                self.set_items()?;
-                out.push(Clause::Set);
+                out.push(Clause::Set(self.set_items()?));
                 Ok(())
             }
             T::Keyword(K::Remove) => {
                 self.bump();
-                self.remove_items()?;
-                out.push(Clause::Remove);
+                out.push(Clause::Remove(self.remove_items()?));
                 Ok(())
             }
             _ => Err(self.mismatched("a clause")),
@@ -397,46 +507,109 @@ impl Parser {
     }
 
     fn return_item(&mut self) -> CypherResult<ReturnItem> {
+        let start = self.i;
         let expr = self.expression()?;
+        let last = &self.toks[self.i - 1];
+        let first = &self.toks[start];
+        let byte_offset = |token: &Token| -> usize {
+            let line_start = self
+                .source
+                .split_inclusive('\n')
+                .take(token.line - 1)
+                .map(str::len)
+                .sum::<usize>();
+            line_start
+                + self.source[line_start..]
+                    .chars()
+                    .take(token.col)
+                    .map(char::len_utf8)
+                    .sum::<usize>()
+        };
+        let source_span = byte_offset(first)..byte_offset(last) + last.text.len();
         let alias = if self.eat_kw(K::As) {
             Some(self.variable()?)
         } else {
             None
         };
-        Ok(ReturnItem { expr, alias })
+        let source_text = if alias.is_some() || matches!(expr, Expr::Variable(_)) {
+            None
+        } else {
+            Some(self.source[source_span].to_owned())
+        };
+        Ok(ReturnItem {
+            expr,
+            alias,
+            source_text,
+        })
     }
 
-    // SET / REMOVE are parsed (for error parity) but discarded.
-    fn set_items(&mut self) -> CypherResult<()> {
+    fn update_variable(&mut self) -> CypherResult<String> {
+        if self.eat(T::LParen) {
+            let variable = self.update_variable()?;
+            self.expect(T::RParen, "')'")?;
+            Ok(variable)
+        } else {
+            self.variable()
+        }
+    }
+    fn set_items(&mut self) -> CypherResult<Vec<SetItem>> {
+        let mut items = Vec::new();
         loop {
-            let _ = self.variable()?;
-            if self.eat(T::Dot) {
-                let _ = self.symbolic_name()?;
+            let variable = self.update_variable()?;
+            let item = if self.eat(T::Dot) {
+                let key = self.symbolic_name()?;
                 self.expect(T::Assign, "'='")?;
-                let _ = self.expression()?;
-            } else if self.eat(T::AddAssign) || self.eat(T::Assign) {
-                let _ = self.expression()?;
+                SetItem::Property {
+                    variable,
+                    key,
+                    value: self.expression()?,
+                }
+            } else if self.at(T::AddAssign) || self.at(T::Assign) {
+                let merge = self.eat(T::AddAssign);
+                if !merge {
+                    self.expect(T::Assign, "'='")?;
+                }
+                SetItem::Map {
+                    variable,
+                    value: self.expression()?,
+                    merge,
+                }
             } else if self.eat(T::Colon) {
-                let _ = self.symbolic_name()?;
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                SetItem::Labels { variable, labels }
             } else {
                 return Err(self.mismatched("{'.', '=', '+=', ':'}"));
-            }
+            };
+            items.push(item);
             if !self.eat(T::Comma) {
-                return Ok(());
+                return Ok(items);
             }
         }
     }
-
-    fn remove_items(&mut self) -> CypherResult<()> {
+    fn remove_items(&mut self) -> CypherResult<Vec<RemoveItem>> {
+        let mut items = Vec::new();
         loop {
-            let _ = self.variable()?;
-            if self.eat(T::Dot) || self.eat(T::Colon) {
-                let _ = self.symbolic_name()?;
+            let variable = self.update_variable()?;
+            let item = if self.eat(T::Dot) {
+                RemoveItem::Property {
+                    variable,
+                    key: self.symbolic_name()?,
+                }
+            } else if self.eat(T::Colon) {
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                RemoveItem::Labels { variable, labels }
             } else {
                 return Err(self.mismatched("{'.', ':'}"));
-            }
+            };
+            items.push(item);
             if !self.eat(T::Comma) {
-                return Ok(());
+                return Ok(items);
             }
         }
     }
@@ -486,13 +659,22 @@ impl Parser {
         while self.eat(T::Colon) {
             labels.push(self.symbolic_name()?);
         }
-        let properties = if self.at(T::LBrace) {
+        if self.parameter_properties_forbidden && self.at(T::Dollar) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidParameterUse",
+                "A pattern predicate must be a literal property map",
+            ));
+        }
+        let properties_present = self.at(T::LBrace);
+        let properties = if properties_present {
             self.map_entries()?
         } else {
             Vec::new()
         };
         self.expect(T::RParen, "{')', '{', ':'}")?;
         Ok(NodePattern {
+            properties_present,
             variable,
             labels,
             properties,
@@ -543,13 +725,34 @@ impl Parser {
                 d.types.push(self.symbolic_name()?);
             }
         }
+        if self.at(T::Range) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidRelationshipPattern",
+                "Relationship length bounds require an asterisk",
+            ));
+        }
         if self.at(T::Mult) {
             self.bump();
             d.variable_length = true;
+            if matches!(self.kind(), T::Sub | T::Plus | T::Float) {
+                return Err(CypherError::compilation(
+                    "SyntaxError",
+                    "InvalidRelationshipPattern",
+                    "Relationship length bounds must be non-negative integers",
+                ));
+            }
             // `*`, `*n`, `*n..m`, `*n..`, `*..m`, `*..`
             let has_min = self.kind().is_integer_literal();
             let min = if has_min { Some(self.integer()?) } else { None };
             if self.eat(T::Range) {
+                if matches!(self.kind(), T::Sub | T::Plus | T::Float) {
+                    return Err(CypherError::compilation(
+                        "SyntaxError",
+                        "InvalidRelationshipPattern",
+                        "Relationship length bounds must be non-negative integers",
+                    ));
+                }
                 let max = if self.kind().is_integer_literal() {
                     Some(self.integer()?)
                 } else {
@@ -561,6 +764,13 @@ impl Parser {
                 d.min_hops = Some(m);
                 d.max_hops = Some(m);
             }
+        }
+        if self.parameter_properties_forbidden && self.at(T::Dollar) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidParameterUse",
+                "A relationship pattern predicate must be a literal property map",
+            ));
         }
         if self.at(T::LBrace) {
             d.properties = self.map_entries()?;
@@ -578,7 +788,11 @@ impl Parser {
             _ => None,
         };
         match n {
-            Some(v) if v >= 0 => Ok(v as u32),
+            Some(v) if v >= 0 => u32::try_from(v).map_err(|_| {
+                CypherError::NotImplemented(
+                    "Relationship length bounds above u32::MAX are not supported".into(),
+                )
+            }),
             _ => Err(CypherError::Other(format!(
                 "For input string: \"{}\"",
                 t.text
@@ -650,6 +864,7 @@ impl Parser {
 
     fn comparison_expr(&mut self) -> CypherResult<Expr> {
         let mut left = self.string_predicate_expr()?;
+        let mut comparisons: Option<Expr> = None;
         loop {
             let op = match self.kind() {
                 T::Assign => CmpOp::Eq,
@@ -662,13 +877,26 @@ impl Parser {
             };
             self.bump();
             let right = self.string_predicate_expr()?;
-            left = Expr::Comparison {
+            if self.dialect == CypherDialect::Graphite {
+                left = Expr::Comparison {
+                    op,
+                    left: Box::new(left),
+                    right: Box::new(right),
+                };
+                continue;
+            }
+            let comparison = Expr::Comparison {
                 op,
                 left: Box::new(left),
-                right: Box::new(right),
+                right: Box::new(right.clone()),
             };
+            comparisons = Some(match comparisons {
+                Some(previous) => Expr::And(Box::new(previous), Box::new(comparison)),
+                None => comparison,
+            });
+            left = right;
         }
-        Ok(left)
+        Ok(comparisons.unwrap_or(left))
     }
 
     fn string_predicate_expr(&mut self) -> CypherResult<Expr> {
@@ -788,17 +1016,21 @@ impl Parser {
         Ok(left)
     }
 
-    /// Right-associative `^`.
+    /// Cypher exponentiation associates left to right.
     fn power_expr(&mut self) -> CypherResult<Expr> {
-        let left = self.unary_expr()?;
-        if self.at(T::Caret) {
+        let mut left = self.unary_expr()?;
+        while self.at(T::Caret) {
             self.bump();
-            let right = self.power_expr()?;
-            return Ok(Expr::Binary {
+            let right = if self.dialect == CypherDialect::Graphite {
+                self.power_expr()?
+            } else {
+                self.unary_expr()?
+            };
+            left = Expr::Binary {
                 op: BinOp::Pow,
                 left: Box::new(left),
                 right: Box::new(right),
-            });
+            };
         }
         Ok(left)
     }
@@ -806,6 +1038,17 @@ impl Parser {
     fn unary_expr(&mut self) -> CypherResult<Expr> {
         if self.at(T::Sub) {
             self.bump();
+            let token = self.peek();
+            let magnitude = match token.kind {
+                T::Int => token.text.parse::<u64>().ok(),
+                T::Hex => u64::from_str_radix(&token.text[2..], 16).ok(),
+                T::Octal => u64::from_str_radix(&token.text[2..], 8).ok(),
+                _ => None,
+            };
+            if magnitude == Some(i64::MAX as u64 + 1) {
+                self.bump();
+                return Ok(Expr::Literal(Literal::Int(i64::MIN)));
+            }
             return Ok(Expr::Unary {
                 negate: true,
                 expr: Box::new(self.unary_expr()?),
@@ -827,6 +1070,15 @@ impl Parser {
                 e = Expr::Property {
                     expr: Box::new(e),
                     key,
+                };
+            } else if self.eat(T::Colon) {
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                e = Expr::LabelPredicate {
+                    expr: Box::new(e),
+                    labels,
                 };
             } else if self.at(T::LBrack) {
                 self.bump();
@@ -874,9 +1126,20 @@ impl Parser {
 
     fn atom_expr(&mut self) -> CypherResult<Expr> {
         match self.kind() {
+            T::InvalidNumber => Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidNumberLiteral",
+                format!("Invalid numeric literal: {}", self.peek().text),
+            )),
+
             T::Dollar => {
                 self.bump();
-                Ok(Expr::Parameter(self.symbolic_name()?))
+                let name = if self.at(T::Int) {
+                    self.bump().text
+                } else {
+                    self.symbolic_name()?
+                };
+                Ok(Expr::Parameter(name))
             }
             T::Keyword(K::Case) => self.case_expr(),
             T::Keyword(K::Count) if self.peek_at(1) == T::LParen && self.peek_at(2) == T::Mult => {
@@ -895,6 +1158,31 @@ impl Parser {
             {
                 self.predicate_function()
             }
+            T::Keyword(K::Exists) if self.peek_at(1) == T::LBrace => {
+                self.bump();
+                self.bump();
+                let mut clauses = Vec::new();
+                if self.at(T::LParen) {
+                    let patterns = self.pattern_list()?;
+                    clauses.push(Clause::Match {
+                        patterns,
+                        optional: false,
+                        where_clause: None,
+                    });
+                    if self.eat_kw(K::Where) {
+                        clauses.push(Clause::Where(self.expression()?));
+                    }
+                } else {
+                    while !self.at(T::RBrace) && !self.at(T::Eof) {
+                        self.clause(&mut clauses)?;
+                    }
+                }
+                if clauses.is_empty() {
+                    return Err(self.mismatched("a subquery"));
+                }
+                self.expect(T::RBrace, "'}'")?;
+                Ok(Expr::ExistsSubquery(clauses))
+            }
             T::Keyword(K::Exists) if self.peek_at(1) == T::LParen => {
                 self.bump();
                 self.bump();
@@ -907,6 +1195,13 @@ impl Parser {
                 })
             }
             T::LParen => {
+                let saved = self.i;
+                if let Ok(pattern) = self.pattern_part() {
+                    if !pattern.rels.is_empty() {
+                        return Ok(Expr::PatternPredicate(Box::new(pattern)));
+                    }
+                }
+                self.i = saved;
                 self.bump();
                 let e = self.expression()?;
                 self.expect(T::RParen, "')'")?;
@@ -981,32 +1276,57 @@ impl Parser {
 
     fn literal(&mut self) -> CypherResult<Expr> {
         let t = self.bump();
-        let lit =
-            match t.kind {
-                T::Int => {
-                    let v: i64 = t.text.parse().map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", t.text))
-                    })?;
-                    Literal::Int(v)
+        let lit = match t.kind {
+            T::Int => {
+                let v: i64 = t.text.parse().map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Hex => {
+                let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Octal => {
+                let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Float => {
+                let value = t.text.parse::<f64>().map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "InvalidNumberLiteral",
+                        "Invalid floating point literal",
+                    )
+                })?;
+                if !value.is_finite() {
+                    return Err(CypherError::compilation(
+                        "SyntaxError",
+                        "FloatingPointOverflow",
+                        "Floating point literal is outside finite range",
+                    ));
                 }
-                T::Hex => {
-                    let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                    })?;
-                    Literal::Int(v)
-                }
-                T::Octal => {
-                    let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                    })?;
-                    Literal::Int(v)
-                }
-                T::Float => Literal::Float(t.text.parse::<f64>().map_err(|_| {
-                    CypherError::Other(format!("For input string: \"{}\"", t.text))
-                })?),
-                T::Str => Literal::Str(decode_string_literal(&t.text)),
-                _ => return Err(self.err("Unknown literal type")),
-            };
+                Literal::Float(value)
+            }
+            T::Str => Literal::Str(decode_string_literal(&t.text)),
+            _ => return Err(self.err("Unknown literal type")),
+        };
         Ok(Expr::Literal(lit))
     }
 
@@ -1046,6 +1366,29 @@ impl Parser {
 
     fn list_or_comprehension(&mut self) -> CypherResult<Expr> {
         self.expect(T::LBrack, "'['")?;
+        // Pattern comprehensions introduce their own node/relationship/path locals.
+        let saved = self.i;
+        if self.at(T::LParen) || (self.kind().is_symbolic_name() && self.peek_at(1) == T::Assign) {
+            if let Ok(pattern) = self.pattern_part() {
+                if !pattern.rels.is_empty() {
+                    let filter = if self.eat_kw(K::Where) {
+                        Some(Box::new(self.expression()?))
+                    } else {
+                        None
+                    };
+                    if self.eat(T::Stick) {
+                        let map = Box::new(self.expression()?);
+                        self.expect(T::RBrack, "']'")?;
+                        return Ok(Expr::PatternComprehension {
+                            pattern: Box::new(pattern),
+                            filter,
+                            map,
+                        });
+                    }
+                }
+            }
+        }
+        self.i = saved;
         // `[x IN list WHERE p | m]`
         if self.kind().is_symbolic_name() && self.peek_at(1) == T::Keyword(K::In) {
             let variable = self.variable()?;
@@ -1189,17 +1532,18 @@ pub fn decode_string_literal(raw: &str) -> String {
                     out.push('\u{8}');
                     i += 2;
                 }
-                'u' => {
-                    if i + 6 <= body.len() {
-                        let hex: String = body[i + 2..i + 6].iter().collect();
+                'u' | 'U' => {
+                    let count = if n == 'u' { 4 } else { 8 };
+                    if i + count + 2 <= body.len() {
+                        let hex: String = body[i + 2..i + count + 2].iter().collect();
                         match u32::from_str_radix(&hex, 16).ok().and_then(char::from_u32) {
                             Some(ch) => {
                                 out.push(ch);
-                                i += 6;
+                                i += count + 2;
                             }
                             None => {
                                 out.push('\\');
-                                out.push('u');
+                                out.push(n);
                                 i += 2;
                             }
                         }
@@ -1223,4 +1567,221 @@ pub fn decode_string_literal(raw: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod mutation_tests {
+    use super::*;
+    #[test]
+    fn retains_set_remove_and_merge_actions_in_the_production_ast() {
+        let clauses=parse("MERGE (n:A {id:1}) ON CREATE SET n.x=2, n:B:C ON MATCH SET n += {seen:true} REMOVE n.x, n:B:C RETURN n").unwrap();
+        let Clause::Merge {
+            pattern,
+            on_create,
+            on_match,
+        } = &clauses[0]
+        else {
+            panic!("merge")
+        };
+        assert_eq!(pattern.nodes[0].labels, vec!["A"]);
+        assert_eq!(
+            pattern.nodes[0].properties,
+            vec![("id".into(), Expr::Literal(Literal::Int(1)))]
+        );
+        assert!(
+            matches!(&on_create[0],SetItem::Property{variable,key,value:Expr::Literal(Literal::Int(2))} if variable=="n" && key=="x")
+        );
+        assert!(
+            matches!(&on_create[1],SetItem::Labels{variable,labels} if variable=="n" && labels==&["B","C"])
+        );
+        assert!(matches!(&on_match[0],SetItem::Map{variable,merge:true,..} if variable=="n"));
+        let Clause::Remove(items) = &clauses[1] else {
+            panic!("remove")
+        };
+        assert_eq!(
+            items,
+            &vec![
+                RemoveItem::Property {
+                    variable: "n".into(),
+                    key: "x".into()
+                },
+                RemoveItem::Labels {
+                    variable: "n".into(),
+                    labels: vec!["B".into(), "C".into()]
+                }
+            ]
+        );
+    }
+}
+
+#[cfg(test)]
+mod graph_predicate_tests {
+    use super::*;
+    #[test]
+    fn distinguishes_node_labels_relationship_patterns_and_parenthesized_arithmetic() {
+        let clauses =
+            parse("MATCH(n) WHERE n:A:B AND NOT (n)-[:R*1..2]->(:C) RETURN (1)-2 AS value")
+                .unwrap();
+        let Clause::Where(Expr::And(label, not)) = &clauses[1] else {
+            panic!("where")
+        };
+        assert!(
+            matches!(label.as_ref(),Expr::LabelPredicate{expr,labels} if matches!(expr.as_ref(),Expr::Variable(v) if v=="n") && labels==&["A","B"])
+        );
+        let Expr::Not(inner) = not.as_ref() else {
+            panic!("not")
+        };
+        let Expr::PatternPredicate(pattern) = inner.as_ref() else {
+            panic!("pattern")
+        };
+        assert_eq!(pattern.nodes[0].variable.as_deref(), Some("n"));
+        assert_eq!(pattern.nodes[1].labels, vec!["C"]);
+        assert_eq!(pattern.rels[0].types, vec!["R"]);
+        assert_eq!(
+            (pattern.rels[0].min_hops, pattern.rels[0].max_hops),
+            (Some(1), Some(2))
+        );
+        assert!(
+            matches!(&clauses[2],Clause::Return{items:Some(items),..} if matches!(items[0].expr,Expr::Binary{op:BinOp::Sub,..}))
+        );
+    }
+}
+
+#[cfg(test)]
+mod correlated_expression_tests {
+    use super::*;
+    #[test]
+    fn pattern_comprehension_and_exists_keep_patterns_filters_maps_and_native_clauses() {
+        let clauses =
+            parse("MATCH(a) RETURN [p=(a)-[:R]->(b) WHERE b.x=1 | length(p)] AS paths").unwrap();
+        let Clause::Return {
+            items: Some(items), ..
+        } = &clauses[1]
+        else {
+            panic!("return")
+        };
+        let Expr::PatternComprehension {
+            pattern,
+            filter,
+            map,
+        } = &items[0].expr
+        else {
+            panic!("comprehension")
+        };
+        assert_eq!(pattern.path_variable.as_deref(), Some("p"));
+        assert_eq!(pattern.rels[0].types, vec!["R"]);
+        assert!(matches!(
+            filter.as_deref(),
+            Some(Expr::Comparison { op: CmpOp::Eq, .. })
+        ));
+        assert!(
+            matches!(map.as_ref(),Expr::FunctionCall{name,args,..} if name=="length" && matches!(&args[0],Expr::Variable(v) if v=="p"))
+        );
+        let clauses = parse("MATCH(a) WHERE EXISTS { (a)-->(b) WHERE b.x=1 } RETURN a").unwrap();
+        let Clause::Where(Expr::ExistsSubquery(inside)) = &clauses[1] else {
+            panic!("exists")
+        };
+        assert!(
+            matches!(&inside[0],Clause::Match{patterns,..} if patterns[0].nodes[1].variable.as_deref()==Some("b"))
+        );
+        assert!(matches!(&inside[1], Clause::Where(Expr::Comparison { .. })));
+    }
+}
+
+#[cfg(test)]
+mod native_grammar_diagnostics {
+    use super::*;
+    use crate::{engine::Executor, property_graph::PropertyGraph, Value};
+    use std::sync::Arc;
+
+    #[test]
+    fn invalid_literals_and_pattern_predicates_have_precise_origin_diagnostics() {
+        for (query, detail) in [
+            ("RETURN 9223372036854775808", "IntegerOverflow"),
+            ("RETURN -9223372036854775809", "IntegerOverflow"),
+            ("RETURN 0x8000000000000000", "IntegerOverflow"),
+            ("RETURN -0x8000000000000001", "IntegerOverflow"),
+            ("RETURN 0o1000000000000000000000", "IntegerOverflow"),
+            ("RETURN -0o1000000000000000000001", "IntegerOverflow"),
+            ("RETURN 1.34E999", "FloatingPointOverflow"),
+            ("MATCH (n $properties) RETURN n", "InvalidParameterUse"),
+            (
+                "MATCH ()-[r:R $properties]->() RETURN r",
+                "InvalidParameterUse",
+            ),
+            ("MERGE (n $properties) RETURN n", "InvalidParameterUse"),
+            (
+                "MERGE (a)-[r:R $properties]->(b) RETURN r",
+                "InvalidParameterUse",
+            ),
+            ("MATCH ()-[:R..]->() RETURN 1", "InvalidRelationshipPattern"),
+            (
+                "MATCH ()-[:R*-2]->() RETURN 1",
+                "InvalidRelationshipPattern",
+            ),
+            (
+                "MATCH ()-[:R*1..-2]->() RETURN 1",
+                "InvalidRelationshipPattern",
+            ),
+        ] {
+            let error = parse(query).unwrap_err();
+            let diagnostic = error.diagnostic().unwrap();
+            assert_eq!(
+                (diagnostic.error_type, diagnostic.phase, diagnostic.detail),
+                ("SyntaxError", "compile time", detail),
+                "{query}"
+            );
+        }
+    }
+
+    #[test]
+    fn malformed_numbers_keep_identifier_position_diagnostics_distinct() {
+        let literal = parse("RETURN 1key").unwrap_err();
+        assert_eq!(literal.diagnostic().unwrap().detail, "InvalidNumberLiteral");
+        let key = parse("RETURN {1key: 0}").unwrap_err();
+        assert_eq!(key.diagnostic().unwrap().detail, "UnexpectedSyntax");
+        let label = parse("MATCH (n:1label) RETURN n").unwrap_err();
+        assert_eq!(label.diagnostic().unwrap().detail, "UnexpectedSyntax");
+    }
+
+    #[test]
+    fn valid_signed_boundaries_numeric_parameter_names_and_property_map_parameters_are_preserved() {
+        for query in [
+            "RETURN -9223372036854775808 AS n",
+            "RETURN -0x8000000000000000 AS n",
+            "RETURN -0o1000000000000000000000 AS n",
+        ] {
+            let result = Executor::new(vec![], false).execute(query, None).unwrap();
+            assert!(matches!(result.rows[0]["n"], Value::Int(i64::MIN)));
+        }
+        let parsed = parse("RETURN $1 AS n").unwrap();
+        assert!(
+            matches!(&parsed[0],Clause::Return {items:Some(items),..} if items[0].expr==Expr::Parameter("1".into()))
+        );
+        let result = Executor::new(vec![], false)
+            .with_params(indexmap::IndexMap::from([("1".into(), Value::Int(7))]))
+            .execute("RETURN $1 AS n", None)
+            .unwrap();
+        assert!(matches!(result.rows[0]["n"], Value::Int(7)));
+        let clauses = parse("MATCH (n {key:$1}) RETURN n").unwrap();
+        assert!(
+            matches!(&clauses[0],Clause::Match {patterns,..} if patterns[0].nodes[0].properties[0].1==Expr::Parameter("1".into()))
+        );
+        assert!(parse("MATCH ()-[:R*0..2]->() RETURN 1").is_ok());
+        let unicode = Executor::new(vec![], false)
+            .execute(r"RETURN '\U0001F600' AS n", None)
+            .unwrap();
+        assert_eq!(unicode.rows[0]["n"].as_str(), Some("😀"));
+    }
+
+    #[test]
+    fn grammar_failure_occurs_before_an_earlier_mutation_can_execute() {
+        let graph = Arc::new(PropertyGraph::new());
+        let executor = Executor::property_graph(graph.clone());
+        let error = executor
+            .execute("CREATE (:A) MATCH (n $properties) RETURN n", None)
+            .unwrap_err();
+        assert_eq!(error.diagnostic().unwrap().detail, "InvalidParameterUse");
+        assert!(graph.snapshot().nodes.is_empty());
+    }
 }

@@ -19,6 +19,10 @@ pub struct Prepared {
     pub parameters: Value,
     pub expected: Value,
     pub ordered: bool,
+    pub setup: Vec<String>,
+    pub named_graph: Option<String>,
+    pub procedures: Vec<Value>,
+    pub controls: Vec<Value>,
 }
 
 fn table(step: &Value) -> Result<Vec<Vec<String>>, String> {
@@ -42,38 +46,67 @@ fn table(step: &Value) -> Result<Vec<Vec<String>>, String> {
         .collect()
 }
 
+fn zero_effects() -> Value {
+    json!({"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0})
+}
+
+fn query_text(step: &Value) -> Result<String, String> {
+    step["argument"]["docString"]["content"]
+        .as_str()
+        .map(str::to_owned)
+        .ok_or("missing query doc string".into())
+}
+
 pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
     let mut query = None;
     let mut parameters = Map::new();
     let mut expected = None;
     let mut ordered = false;
     let mut graph = false;
-    let mut side_effects = false;
+    let mut side_effects = None;
+    let mut setup = Vec::new();
+    let mut named_graph = None;
+    let mut procedures = Vec::new();
+    let mut controls: Vec<Value> = Vec::new();
+    let mut control = None;
     for step in scenario["steps"]
         .as_array()
         .ok_or("scenario missing steps")?
     {
         let text = step["text"].as_str().ok_or("step missing text")?;
+        let mut result = None;
+        let mut result_ordered = false;
         match text {
             "an empty graph" | "any graph" => graph = true,
+            "the binary-tree-1 graph" | "the binary-tree-2 graph" => {
+                graph = true;
+                named_graph = Some(
+                    text.strip_prefix("the ")
+                        .unwrap()
+                        .strip_suffix(" graph")
+                        .unwrap()
+                        .to_owned(),
+                );
+            }
+            "having executed:" => setup.push(query_text(step)?),
             "parameters are:" => {
                 parameters.clear();
                 for row in table(step)? {
                     if row.len() != 2 {
-                        return Err("invalid TCK parameter row".to_owned());
+                        return Err("invalid TCK parameter row".into());
                     }
                     parameters.insert(row[0].clone(), crate::values::value(&row[1])?);
                 }
             }
-            "executing query:" if query.is_none() => {
-                query = Some(
-                    step["argument"]["docString"]["content"]
-                        .as_str()
-                        .ok_or("missing query doc string")?
-                        .to_owned(),
-                )
+            "executing query:" if query.is_none() => query = Some(query_text(step)?),
+            "executing control query:" => {
+                controls.push(json!({"query":query_text(step)?,"parameters":parameters,"expected":null,"ordered":false}));
+                control = Some(controls.len() - 1);
             }
-            "the result should be, in any order:" | "the result should be, in order:" => {
+            "the result should be, in any order:"
+            | "the result should be, in order:"
+            | "the result should be (ignoring element order for lists):"
+            | "the result should be, in order (ignoring element order for lists):" => {
                 let rows = table(step)?;
                 let columns = rows.first().ok_or("result table missing header")?;
                 let rows = rows
@@ -85,41 +118,208 @@ pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
                             .collect::<Result<Vec<_>, String>>()
                     })
                     .collect::<Result<Vec<_>, String>>()?;
-                expected = Some(json!({"columns":columns,"rows":rows}));
-                ordered = text.ends_with("in order:");
+                result = Some(json!({"columns":columns,"rows":rows}));
+                if text.contains("ignoring element order for lists") {
+                    result.as_mut().unwrap()["ignoreListOrder"] = json!(true);
+                }
+                result_ordered = text.contains("in order");
             }
-            "the result should be empty" => expected = Some(json!({"empty":true})),
-            "no side effects" => side_effects = true,
+            "the result should be empty" => result = Some(json!({"empty":true})),
+            "no side effects" => side_effects = Some(zero_effects()),
+            "the side effects should be:" => {
+                let mut effects = zero_effects();
+                for row in table(step)? {
+                    if row.len() != 2 || effects.get(&row[0]).is_none() {
+                        return Err("invalid TCK side-effect row".into());
+                    }
+                    let count = row[1]
+                        .parse::<u64>()
+                        .map_err(|_| "invalid TCK side-effect count")?;
+                    effects[&row[0]] = json!(count);
+                }
+                side_effects = Some(effects);
+            }
+            _ if expected_error(text).is_some() => {
+                result = Some(json!({"error":expected_error(text).unwrap()}))
+            }
+            _ if text.starts_with("there exists a procedure ") => {
+                let signature = text
+                    .strip_prefix("there exists a procedure ")
+                    .unwrap()
+                    .strip_suffix(':')
+                    .ok_or("invalid TCK procedure signature")?
+                    .trim();
+                let rows = table(step)?;
+                let columns = rows.first().ok_or("procedure table missing header")?;
+                let rows = rows
+                    .iter()
+                    .skip(1)
+                    .map(|row| {
+                        row.iter()
+                            .map(|cell| crate::values::value(cell))
+                            .collect::<Result<Vec<_>, String>>()
+                    })
+                    .collect::<Result<Vec<_>, String>>()?;
+                procedures.push(json!({"signature":signature,"columns":columns,"rows":rows}));
+            }
             _ => return Err(format!("step adapter missing: {text}")),
         }
+        if let Some(result) = result {
+            if let Some(index) = control {
+                controls[index]["expected"] = result;
+                controls[index]["ordered"] = json!(result_ordered);
+            } else {
+                expected = Some(result);
+                ordered = result_ordered;
+            }
+        }
     }
-    if !graph || query.is_none() || expected.is_none() || !side_effects {
-        return Err(
-            "scenario lacks supported graph/query/result/no-side-effects contract".to_owned(),
-        );
+    if !graph
+        || query.is_none()
+        || expected.is_none()
+        || (side_effects.is_none() && expected.as_ref().unwrap()["error"].is_null())
+    {
+        return Err("scenario lacks supported graph/query/result/side-effects contract".into());
     }
+    if controls.iter().any(|control| control["expected"].is_null()) {
+        return Err("control query lacks result expectation".into());
+    }
+    let mut expected = expected.unwrap();
+    expected["sideEffects"] = side_effects.unwrap_or_else(zero_effects);
     Ok(Prepared {
         query: query.unwrap(),
         parameters: Value::Object(parameters),
-        expected: expected.unwrap(),
+        expected,
         ordered,
+        setup,
+        named_graph,
+        procedures,
+        controls,
     })
+}
+
+fn expected_error(text: &str) -> Option<Value> {
+    let rest = text.strip_prefix("a ")?;
+    let (error_type, rest) = rest.split_once(" should be raised at ")?;
+    let (phase, detail) = rest.split_once(": ")?;
+    if !matches!(phase, "compile time" | "runtime" | "any time")
+        || error_type.is_empty()
+        || detail.is_empty()
+    {
+        return None;
+    }
+    Some(json!({"type": error_type, "phase": phase, "detail": detail}))
+}
+
+// Official CypherFloat is a Double-valued case class: signed floating zeroes
+// compare equal, while CypherInteger and CypherBoolean remain distinct types.
+// Keep this key separate from raw response serialization and evidence hashes.
+fn comparison_key(value: &Value) -> String {
+    fn normalized(value: &Value) -> Value {
+        match value {
+            Value::Number(number) if number.is_f64() && number.as_f64() == Some(0.0) => json!(0.0),
+            Value::Array(values) => Value::Array(values.iter().map(normalized).collect()),
+            Value::Object(values) => Value::Object(
+                values
+                    .iter()
+                    .map(|(key, value)| (key.clone(), normalized(value)))
+                    .collect(),
+            ),
+            _ => value.clone(),
+        }
+    }
+    crate::canonical(&normalized(value))
+}
+
+fn normalize_map_values(value: &Value) -> Value {
+    match value.as_object() {
+        Some(values) => Value::Object(
+            values
+                .iter()
+                .map(|(key, value)| (key.clone(), normalize_lists(value)))
+                .collect(),
+        ),
+        None => value.clone(),
+    }
+}
+
+fn normalize_lists(value: &Value) -> Value {
+    match value {
+        Value::Array(values) => {
+            let mut values: Vec<_> = values.iter().map(normalize_lists).collect();
+            values.sort_by_key(comparison_key);
+            Value::Array(values)
+        }
+        Value::Object(values)
+            if values.len() == 1 && values.get("$tck").is_some_and(Value::is_array) =>
+        {
+            let parts = values["$tck"].as_array().unwrap();
+            // These arrays encode graph structure, not Cypher list values. Keep
+            // node/path ordering and relationship directions intact; normalize
+            // only actual values held in graph properties or escaped maps.
+            let mut normalized = parts.clone();
+            match parts.first().and_then(Value::as_str) {
+                Some("node" | "relationship") if parts.len() == 3 => {
+                    normalized[2] = normalize_map_values(&parts[2])
+                }
+                Some("path") if parts.len() == 4 => {
+                    for index in [1, 2] {
+                        if let Some(items) = parts[index].as_array() {
+                            normalized[index] =
+                                Value::Array(items.iter().map(normalize_lists).collect());
+                        }
+                    }
+                }
+                Some("map") if parts.len() == 2 => normalized[1] = normalize_map_values(&parts[1]),
+                _ => {}
+            }
+            json!({"$tck":normalized})
+        }
+        Value::Object(_) => normalize_map_values(value),
+        _ => value.clone(),
+    }
 }
 
 fn multiset(rows: &[Value]) -> BTreeMap<String, usize> {
     let mut result = BTreeMap::new();
     for row in rows {
-        *result.entry(crate::canonical(row)).or_insert(0) += 1;
+        *result.entry(comparison_key(row)).or_insert(0) += 1;
     }
     result
 }
 
 pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String> {
+    if actual["setupError"] == true {
+        return Some("production setup query failed".into());
+    }
     if !actual["adapterError"].is_null() {
         return Some(format!(
             "probe adapter error: {}",
             display(&actual["adapterError"])
         ));
+    }
+    if expected.get("sideEffects").is_some() && actual["sideEffects"] != expected["sideEffects"] {
+        return Some("side-effect snapshot difference mismatch".into());
+    }
+    if !expected["error"].is_null() {
+        if actual["error"].is_null() {
+            return Some("expected an engine error, query succeeded".into());
+        }
+        let observed = &actual["diagnostic"];
+        if !observed.is_object() {
+            return Some("engine error lacks a structured diagnostic".into());
+        }
+        let wanted = &expected["error"];
+        let phase_matches = wanted["phase"] == observed["phase"]
+            || (wanted["phase"] == "any time"
+                && matches!(observed["phase"].as_str(), Some("compile time" | "runtime")));
+        let detail_matches = wanted["detail"] == observed["detail"]
+            || (wanted["detail"] == "*" && observed["detail"].is_string());
+        return if wanted["type"] == observed["type"] && phase_matches && detail_matches {
+            None
+        } else {
+            Some("structured error type/phase/detail mismatch".into())
+        };
     }
     if !actual["error"].is_null() {
         return Some(format!("engine error: {}", display(&actual["error"])));
@@ -137,8 +337,17 @@ pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String
     if actual["columns"] != expected["columns"] {
         return Some("column names/order mismatch".to_owned());
     }
+    let normalized_actual;
+    let normalized_expected;
+    let (actual, expected) = if expected["ignoreListOrder"] == true {
+        normalized_actual = json!({"rows": actual["rows"].as_array().unwrap().iter().map(|row| Value::Array(row.as_array().unwrap().iter().map(normalize_lists).collect())).collect::<Vec<_>>()});
+        normalized_expected = json!({"rows": expected["rows"].as_array().unwrap().iter().map(|row| Value::Array(row.as_array().unwrap().iter().map(normalize_lists).collect())).collect::<Vec<_>>()});
+        (&normalized_actual, &normalized_expected)
+    } else {
+        (actual, expected)
+    };
     let equal = if ordered {
-        crate::canonical(&actual["rows"]) == crate::canonical(&expected["rows"])
+        comparison_key(&actual["rows"]) == comparison_key(&expected["rows"])
     } else {
         multiset(actual["rows"].as_array().unwrap())
             == multiset(expected["rows"].as_array().unwrap())
@@ -196,25 +405,36 @@ impl Probe {
             lines,
         })
     }
-    fn execute(&mut self, query: &str, parameters: &Value) -> Result<Response> {
-        self.execute_with_timeout(query, parameters, Duration::from_secs(15))
+    fn execute_prepared(&mut self, prepared: &Prepared, root: Option<&Path>) -> Result<Response> {
+        let mut setup = Vec::new();
+        if let Some(name) = &prepared.named_graph {
+            let root = root.ok_or_else(|| anyhow!("named graph requires corpus root"))?;
+            setup.push(std::fs::read_to_string(
+                root.join("upstream/tck/graphs")
+                    .join(name)
+                    .join(format!("{name}.cypher")),
+            )?);
+        }
+        setup.extend(prepared.setup.iter().cloned());
+        self.execute_request(&json!({"query":prepared.query,"parameters":prepared.parameters,"setup":setup,"procedures":prepared.procedures,"controls":prepared.controls.iter().map(|c| json!({"query":c["query"],"parameters":c["parameters"]})).collect::<Vec<_>>()}), Duration::from_secs(15))
     }
 
+    #[cfg(test)]
     fn execute_with_timeout(
         &mut self,
         query: &str,
         parameters: &Value,
         timeout: Duration,
     ) -> Result<Response> {
+        self.execute_request(&json!({"query":query,"parameters":parameters}), timeout)
+    }
+
+    fn execute_request(&mut self, request: &Value, timeout: Duration) -> Result<Response> {
         let input = self
             .input
             .as_mut()
             .ok_or_else(|| anyhow!("probe stdin closed"))?;
-        writeln!(
-            input,
-            "{}",
-            crate::canonical(&json!({"query":query,"parameters":parameters}))
-        )?;
+        writeln!(input, "{}", crate::canonical(request))?;
         input.flush()?;
         let line = self
             .lines
@@ -288,10 +508,19 @@ fn identity(scenario: &Value) -> Map<String, Value> {
 
 pub fn run(root: &Path, binary: &Path) -> Result<Run> {
     let inventory = crate::corpus::scenarios(root)?;
-    run_inventory(inventory, binary)
+    run_inventory_with_root(inventory, binary, Some(root))
 }
 
+#[cfg(test)]
 fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
+    run_inventory_with_root(inventory, binary, None)
+}
+
+fn run_inventory_with_root(
+    inventory: Vec<Value>,
+    binary: &Path,
+    root: Option<&Path>,
+) -> Result<Run> {
     let mut results = Vec::new();
     let mut infrastructure_errors = Vec::new();
     let mut probe = match Probe::new(binary) {
@@ -310,7 +539,7 @@ fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
                     result["reason"] = json!(reason);
                     result["executed"] = json!(false);
                 }
-                Ok(prepared) => match probe.execute(&prepared.query, &prepared.parameters) {
+                Ok(prepared) => match probe.execute_prepared(&prepared, root) {
                     Err(error) => {
                         infrastructure_errors.push(error.to_string());
                         break;
@@ -321,7 +550,28 @@ fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
                         result["executed"] = json!(true);
                     }
                     Ok(Response::Actual(actual)) => {
-                        let reason = compare(&actual, &prepared.expected, prepared.ordered);
+                        let mut reason = compare(&actual, &prepared.expected, prepared.ordered);
+                        if reason.is_none() && !prepared.controls.is_empty() {
+                            match actual["controls"].as_array() {
+                                Some(actual_controls)
+                                    if actual_controls.len() == prepared.controls.len() =>
+                                {
+                                    for (actual_control, expected_control) in
+                                        actual_controls.iter().zip(&prepared.controls)
+                                    {
+                                        if let Some(failure) = compare(
+                                            actual_control,
+                                            &expected_control["expected"],
+                                            expected_control["ordered"] == true,
+                                        ) {
+                                            reason = Some(format!("control query: {failure}"));
+                                            break;
+                                        }
+                                    }
+                                }
+                                _ => reason = Some("control query result count mismatch".into()),
+                            }
+                        }
                         result["status"] =
                             json!(if reason.is_some() { "failed" } else { "passed" });
                         result["reason"] = json!(reason);
@@ -331,6 +581,7 @@ fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
                         result["expected"] = prepared.expected;
                         result["actual"] = actual;
                         result["ordered"] = json!(prepared.ordered);
+                        result["controls"] = json!(prepared.controls);
                     }
                 },
             }
@@ -378,6 +629,186 @@ pub fn baseline_changes(expected: &Value, actual: &Value) -> Vec<Value> {
 mod tests {
     use super::*;
     #[test]
+    fn retained_control_expectations_do_not_change_raw_response_fingerprints() {
+        let original = json!({"id":"case","scenarioSha256":"fixed","status":"passed","reason":null,"actual":{"columns":["v"],"rows":[[1]],"error":null}});
+        let mut with_metadata = original.clone();
+        with_metadata["controls"] = json!([{"query":"RETURN 1 AS v","parameters":{},"expected":{"columns":["v"],"rows":[[1]]},"ordered":false}]);
+        assert_eq!(
+            baseline_signature(&[original]),
+            baseline_signature(&[with_metadata])
+        );
+    }
+
+    #[test]
+    fn official_float_zero_equality_is_comparison_only_and_type_preserving() {
+        let actual = json!({"columns":["v"],"rows":[[-0.0]],"error":null});
+        let expected = json!({"columns":["v"],"rows":[[0.0]]});
+        let raw_digest = crate::digest(&actual);
+        assert_ne!(
+            crate::canonical(&actual["rows"]),
+            crate::canonical(&expected["rows"])
+        );
+        for ordered in [false, true] {
+            assert!(compare(&actual, &expected, ordered).is_none());
+        }
+        assert_eq!(crate::digest(&actual), raw_digest);
+        assert!(actual["rows"][0][0].as_f64().unwrap().is_sign_negative());
+        for different in [json!(0), json!(false), json!(1.0e-300)] {
+            let expected = json!({"columns":["v"],"rows":[[different]]});
+            for ordered in [false, true] {
+                assert!(compare(&actual, &expected, ordered).is_some());
+            }
+        }
+        let expected = json!({"columns":["v"],"rows":[[0.0],[0.0]]});
+        assert!(compare(&actual, &expected, false).is_some());
+        assert_ne!(
+            comparison_key(&json!(1.0000000000000002)),
+            comparison_key(&json!(1.0))
+        );
+        let expected = json!({"columns":["v"],"rows":[[[0.0,0]]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[0,-0.0]]],"error":null}),
+            &expected,
+            false
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn list_order_ignoring_preserves_graph_path_order_and_escapes_literal_maps() {
+        let node_a = json!({"$tck":["node",["A"],{}]});
+        let node_b = json!({"$tck":["node",["B"],{}]});
+        let rel = json!({"$tck":["relationship","R",{}]});
+        let forward = json!({"$tck":["path",[node_a,node_b],[rel],[1]]});
+        let reversed = json!({"$tck":["path",[node_b,node_a],[rel],[1]]});
+        let expected = json!({"columns":["p"],"rows":[[forward]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["p"],"rows":[[reversed]],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+        let property_path_a = json!({"$tck":["path",[{"$tck":["node",[],{"items":[1,2]}]}],[],[]]});
+        let property_path_b = json!({"$tck":["path",[{"$tck":["node",[],{"items":[2,1]}]}],[],[]]});
+        let expected_path =
+            json!({"columns":["p"],"rows":[[property_path_a]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["p"],"rows":[[property_path_b]],"error":null}),
+            &expected_path,
+            false
+        )
+        .is_none());
+        let expected = json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["a","b"]}]}]],"ignoreListOrder":true});
+        let actual =
+            json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["b","a"]}]}]],"error":null});
+        assert!(compare(&actual, &expected, false).is_none());
+    }
+
+    #[test]
+    fn prepares_setup_procedures_effects_and_control_queries_without_replacing_primary_expectation()
+    {
+        let scenario = json!({"steps":[
+            {"text":"the binary-tree-1 graph"},
+            {"text":"having executed:","argument":{"docString":{"content":"CREATE (:Extra)"}}},
+            {"text":"there exists a procedure test.proc() :: (n :: INTEGER?):","argument":{"dataTable":{"rows":[{"cells":[{"value":"n"}]},{"cells":[{"value":"1"}]}]}}},
+            {"text":"executing query:","argument":{"docString":{"content":"CREATE (:N)"}}},
+            {"text":"the result should be empty"},
+            {"text":"the side effects should be:","argument":{"dataTable":{"rows":[{"cells":[{"value":"+nodes"},{"value":"1"}]}]}}},
+            {"text":"executing control query:","argument":{"docString":{"content":"MATCH (n:N) RETURN n"}}},
+            {"text":"the result should be, in any order:","argument":{"dataTable":{"rows":[{"cells":[{"value":"n"}]},{"cells":[{"value":"(:N)"}]}]}}}
+        ]});
+        let prepared = prepare(&scenario).unwrap();
+        assert_eq!(prepared.named_graph.as_deref(), Some("binary-tree-1"));
+        assert_eq!(prepared.setup, vec!["CREATE (:Extra)"]);
+        assert_eq!(prepared.procedures[0]["rows"], json!([[1]]));
+        assert_eq!(prepared.expected["empty"], true);
+        assert_eq!(prepared.expected["sideEffects"]["+nodes"], 1);
+        assert_eq!(prepared.expected["sideEffects"]["-nodes"], 0);
+        assert_eq!(prepared.controls[0]["query"], "MATCH (n:N) RETURN n");
+        assert_eq!(
+            prepared.controls[0]["expected"]["rows"][0][0],
+            json!({"$tck":["node",["N"],{}]})
+        );
+    }
+
+    #[test]
+    fn side_effect_expectations_are_checked_even_for_empty_rows() {
+        let expected = json!({"empty":true,"sideEffects":zero_effects()});
+        let actual = json!({"columns":[],"rows":[],"error":null,"sideEffects":zero_effects()});
+        assert!(compare(&actual, &expected, false).is_none());
+        let mut wrong = actual.clone();
+        wrong["sideEffects"]["+nodes"] = json!(1);
+        assert!(compare(&wrong, &expected, false).is_some());
+        let missing = json!({"columns":[],"rows":[],"error":null});
+        assert!(compare(&missing, &expected, false).is_some());
+    }
+
+    #[test]
+    fn expected_errors_require_native_type_phase_and_detail() {
+        let expected = json!({"error":{"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"}});
+        let actual = json!({"columns":[],"rows":[],"error":"bad grammar","diagnostic":{"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"}});
+        assert_eq!(compare(&actual, &expected, false), None);
+        for (key, value) in [
+            ("type", "TypeError"),
+            ("phase", "runtime"),
+            ("detail", "UndefinedVariable"),
+        ] {
+            let mut wrong = actual.clone();
+            wrong["diagnostic"][key] = json!(value);
+            assert!(compare(&wrong, &expected, false).is_some());
+        }
+        assert!(compare(
+            &json!({"columns":[],"rows":[],"error":"bad grammar"}),
+            &expected,
+            false
+        )
+        .is_some());
+        assert!(compare(
+            &json!({"columns":[],"rows":[],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+    }
+
+    #[test]
+    fn native_error_scenarios_do_not_require_a_success_result_or_no_side_effects_step() {
+        let scenario = json!({"steps":[{"text":"an empty graph"},{"text":"executing query:","argument":{"docString":{"content":"RETURN ("}}},{"text":"a SyntaxError should be raised at compile time: UnexpectedSyntax"}]});
+        let prepared = prepare(&scenario).unwrap();
+        assert_eq!(prepared.query, "RETURN (");
+        assert_eq!(
+            prepared.expected["error"],
+            json!({"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"})
+        );
+    }
+
+    #[test]
+    fn list_order_ignoring_is_explicit_recursive_and_preserves_multiplicity() {
+        let expected = json!({"columns":["v"],"rows":[[[1,2,2]]],"ignoreListOrder":true});
+        assert_eq!(
+            compare(
+                &json!({"columns":["v"],"rows":[[[2,1,2]]],"error":null}),
+                &expected,
+                false
+            ),
+            None
+        );
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[1,2]]],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+        let strict = json!({"columns":["v"],"rows":[[[1,2,2]]]});
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[2,1,2]]],"error":null}),
+            &strict,
+            false
+        )
+        .is_some());
+    }
+
+    #[test]
     fn unordered_comparison_preserves_multiplicity_and_types() {
         let expected = json!({"columns":["v"],"rows":[[null],[1],[1]]});
         assert_eq!(
@@ -423,14 +854,9 @@ mod tests {
             false
         )
         .is_some());
-        for text in [
-            "having executed:",
-            "a SyntaxError should be raised at compile time: InvalidSyntax",
-        ] {
-            assert!(prepare(&json!({"steps":[{"text":text}]}))
-                .unwrap_err()
-                .contains("step adapter missing"));
-        }
+        assert!(prepare(&json!({"steps":[{"text":"having executed:"}]}))
+            .unwrap_err()
+            .contains("missing query doc string"));
     }
     #[test]
     fn baseline_rejects_removal_new_pass_and_changed_failure() {
@@ -521,7 +947,7 @@ mod tests {
     fn child_crash_keeps_completed_result_and_marks_remaining_inventory_not_run() {
         let (_directory, binary) = scripted_probe(
             r#"IFS= read -r request
-printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null}'
+printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null,"sideEffects":{"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0}}'
 IFS= read -r request
 exit 7"#,
         );
@@ -559,7 +985,7 @@ exit 7"#,
     fn nonzero_exit_after_last_response_still_records_infrastructure_failure() {
         let (_directory, binary) = scripted_probe(
             r#"IFS= read -r request
-printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null}'
+printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null,"sideEffects":{"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0}}'
 exit 9"#,
         );
         let run = run_inventory(vec![simple_scenario("first")], &binary).unwrap();
