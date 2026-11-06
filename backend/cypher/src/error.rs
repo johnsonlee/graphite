@@ -12,6 +12,13 @@ pub enum CypherError {
         message: String,
         detail: &'static str,
     },
+    /// A standard diagnostic emitted directly by semantic validation or execution.
+    /// Classification never depends on matching display-message text.
+    #[error("{message}")]
+    Standard {
+        message: String,
+        diagnostic: CypherDiagnostic,
+    },
     /// `CypherException` with a verbatim message (e.g. "Unknown function: foo").
     #[error("{0}")]
     Runtime(String),
@@ -43,6 +50,7 @@ pub struct CypherDiagnostic {
 impl CypherError {
     pub fn diagnostic(&self) -> Option<CypherDiagnostic> {
         match self {
+            Self::Standard { diagnostic, .. } => Some(*diagnostic),
             Self::Syntax { detail, .. } => Some(CypherDiagnostic {
                 error_type: "SyntaxError",
                 phase: "compile time",
@@ -52,6 +60,34 @@ impl CypherError {
         }
     }
 
+    pub fn compilation(
+        error_type: &'static str,
+        detail: &'static str,
+        message: impl Into<String>,
+    ) -> Self {
+        Self::Standard {
+            message: message.into(),
+            diagnostic: CypherDiagnostic {
+                error_type,
+                phase: "compile time",
+                detail,
+            },
+        }
+    }
+    pub fn execution(
+        error_type: &'static str,
+        detail: &'static str,
+        message: impl Into<String>,
+    ) -> Self {
+        Self::Standard {
+            message: message.into(),
+            diagnostic: CypherDiagnostic {
+                error_type,
+                phase: "runtime",
+                detail,
+            },
+        }
+    }
     pub fn runtime<S: Into<String>>(s: S) -> CypherError {
         CypherError::Runtime(s.into())
     }
@@ -92,5 +128,40 @@ mod diagnostic_tests {
             CypherError::runtime("UndefinedVariable SyntaxError").diagnostic(),
             None
         );
+    }
+}
+
+#[cfg(test)]
+mod standard_diagnostic_tests {
+    use super::*;
+    #[test]
+    fn native_failure_origin_preserves_type_phase_detail_and_display() {
+        let compile = CypherError::compilation(
+            "ParameterMissing",
+            "MissingParameter",
+            "parameter x missing",
+        );
+        assert_eq!(compile.to_string(), "parameter x missing");
+        assert_eq!(
+            compile.diagnostic(),
+            Some(CypherDiagnostic {
+                error_type: "ParameterMissing",
+                phase: "compile time",
+                detail: "MissingParameter"
+            })
+        );
+        let runtime = CypherError::execution("TypeError", "InvalidPropertyType", "invalid value");
+        assert_eq!(runtime.to_string(), "invalid value");
+        assert_eq!(
+            runtime.diagnostic(),
+            Some(CypherDiagnostic {
+                error_type: "TypeError",
+                phase: "runtime",
+                detail: "InvalidPropertyType"
+            })
+        );
+        assert!(CypherError::runtime("TypeError InvalidPropertyType")
+            .diagnostic()
+            .is_none());
     }
 }
