@@ -226,6 +226,8 @@
     "tck/features/expressions/typeConversion/TypeConversion5.feature": "d6e3b26926e8e29e9d29be0764aed34b679af328ea7bb87a052ca6e5d7a27018",
     "tck/features/expressions/typeConversion/TypeConversion6.feature": "80f8e8e72271502d17e03a586c7350cd86a06aa14ae1dfd72c10003312ed7a56",
     "tck/features/useCases/countingSubgraphMatches/CountingSubgraphMatches1.feature": "fa733d246b583591a1d6a1a6bbd4177a8c4d843589d4fc275ecd6499583eae19",
-    "tck/features/useCases/triadicSelection/TriadicSelection1.feature": "492504a1d036a9cf0963b85570e74354da44be73ba98d93cbddccf03716eb301"
+    "tck/features/useCases/triadicSelection/TriadicSelection1.feature": "492504a1d036a9cf0963b85570e74354da44be73ba98d93cbddccf03716eb301",
+    "tck/graphs/binary-tree-1/binary-tree-1.cypher": "fbcada6966edb9e2d66b1a11a4f8a4c906a9da6afd622640ab08c686962d42da",
+    "tck/graphs/binary-tree-2/binary-tree-2.cypher": "923bcaf5686ea9051f46ad5c440a286381fd111daad5dbd6377aa3edd7dbfc4c"
   }
 }

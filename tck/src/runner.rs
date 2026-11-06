@@ -19,6 +19,10 @@ pub struct Prepared {
     pub parameters: Value,
     pub expected: Value,
     pub ordered: bool,
+    pub setup: Vec<String>,
+    pub named_graph: Option<String>,
+    pub procedures: Vec<Value>,
+    pub controls: Vec<Value>,
 }
 
 fn table(step: &Value) -> Result<Vec<Vec<String>>, String> {
@@ -42,40 +46,67 @@ fn table(step: &Value) -> Result<Vec<Vec<String>>, String> {
         .collect()
 }
 
+fn zero_effects() -> Value {
+    json!({"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0})
+}
+
+fn query_text(step: &Value) -> Result<String, String> {
+    step["argument"]["docString"]["content"]
+        .as_str()
+        .map(str::to_owned)
+        .ok_or("missing query doc string".into())
+}
+
 pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
     let mut query = None;
     let mut parameters = Map::new();
     let mut expected = None;
     let mut ordered = false;
     let mut graph = false;
-    let mut side_effects = false;
+    let mut side_effects = None;
+    let mut setup = Vec::new();
+    let mut named_graph = None;
+    let mut procedures = Vec::new();
+    let mut controls: Vec<Value> = Vec::new();
+    let mut control = None;
     for step in scenario["steps"]
         .as_array()
         .ok_or("scenario missing steps")?
     {
         let text = step["text"].as_str().ok_or("step missing text")?;
+        let mut result = None;
+        let mut result_ordered = false;
         match text {
             "an empty graph" | "any graph" => graph = true,
+            "the binary-tree-1 graph" | "the binary-tree-2 graph" => {
+                graph = true;
+                named_graph = Some(
+                    text.strip_prefix("the ")
+                        .unwrap()
+                        .strip_suffix(" graph")
+                        .unwrap()
+                        .to_owned(),
+                );
+            }
+            "having executed:" => setup.push(query_text(step)?),
             "parameters are:" => {
                 parameters.clear();
                 for row in table(step)? {
                     if row.len() != 2 {
-                        return Err("invalid TCK parameter row".to_owned());
+                        return Err("invalid TCK parameter row".into());
                     }
                     parameters.insert(row[0].clone(), crate::values::value(&row[1])?);
                 }
             }
-            "executing query:" if query.is_none() => {
-                query = Some(
-                    step["argument"]["docString"]["content"]
-                        .as_str()
-                        .ok_or("missing query doc string")?
-                        .to_owned(),
-                )
+            "executing query:" if query.is_none() => query = Some(query_text(step)?),
+            "executing control query:" => {
+                controls.push(json!({"query":query_text(step)?,"parameters":parameters,"expected":null,"ordered":false}));
+                control = Some(controls.len() - 1);
             }
             "the result should be, in any order:"
             | "the result should be, in order:"
-            | "the result should be (ignoring element order for lists):" => {
+            | "the result should be (ignoring element order for lists):"
+            | "the result should be, in order (ignoring element order for lists):" => {
                 let rows = table(step)?;
                 let columns = rows.first().ok_or("result table missing header")?;
                 let rows = rows
@@ -87,34 +118,83 @@ pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
                             .collect::<Result<Vec<_>, String>>()
                     })
                     .collect::<Result<Vec<_>, String>>()?;
-                expected = Some(json!({"columns":columns,"rows":rows}));
-                if text == "the result should be (ignoring element order for lists):" {
-                    expected.as_mut().unwrap()["ignoreListOrder"] = json!(true);
+                result = Some(json!({"columns":columns,"rows":rows}));
+                if text.contains("ignoring element order for lists") {
+                    result.as_mut().unwrap()["ignoreListOrder"] = json!(true);
                 }
-                ordered = text.ends_with("in order:");
+                result_ordered = text.contains("in order");
             }
-            "the result should be empty" => expected = Some(json!({"empty":true})),
-            "no side effects" => side_effects = true,
+            "the result should be empty" => result = Some(json!({"empty":true})),
+            "no side effects" => side_effects = Some(zero_effects()),
+            "the side effects should be:" => {
+                let mut effects = zero_effects();
+                for row in table(step)? {
+                    if row.len() != 2 || effects.get(&row[0]).is_none() {
+                        return Err("invalid TCK side-effect row".into());
+                    }
+                    let count = row[1]
+                        .parse::<u64>()
+                        .map_err(|_| "invalid TCK side-effect count")?;
+                    effects[&row[0]] = json!(count);
+                }
+                side_effects = Some(effects);
+            }
             _ if expected_error(text).is_some() => {
-                expected = Some(json!({"error": expected_error(text).unwrap()}))
+                result = Some(json!({"error":expected_error(text).unwrap()}))
+            }
+            _ if text.starts_with("there exists a procedure ") => {
+                let signature = text
+                    .strip_prefix("there exists a procedure ")
+                    .unwrap()
+                    .strip_suffix(':')
+                    .ok_or("invalid TCK procedure signature")?
+                    .trim();
+                let rows = table(step)?;
+                let columns = rows.first().ok_or("procedure table missing header")?;
+                let rows = rows
+                    .iter()
+                    .skip(1)
+                    .map(|row| {
+                        row.iter()
+                            .map(|cell| crate::values::value(cell))
+                            .collect::<Result<Vec<_>, String>>()
+                    })
+                    .collect::<Result<Vec<_>, String>>()?;
+                procedures.push(json!({"signature":signature,"columns":columns,"rows":rows}));
             }
             _ => return Err(format!("step adapter missing: {text}")),
+        }
+        if let Some(result) = result {
+            if let Some(index) = control {
+                controls[index]["expected"] = result;
+                controls[index]["ordered"] = json!(result_ordered);
+            } else {
+                expected = Some(result);
+                ordered = result_ordered;
+            }
         }
     }
     if !graph
         || query.is_none()
         || expected.is_none()
-        || (!side_effects && expected.as_ref().unwrap()["error"].is_null())
+        || (side_effects.is_none() && expected.as_ref().unwrap()["error"].is_null())
     {
-        return Err(
-            "scenario lacks supported graph/query/result/no-side-effects contract".to_owned(),
-        );
+        return Err("scenario lacks supported graph/query/result/side-effects contract".into());
     }
+    if controls.iter().any(|control| control["expected"].is_null()) {
+        return Err("control query lacks result expectation".into());
+    }
+    let mut expected = expected.unwrap();
+    expected["sideEffects"] = side_effects.unwrap_or_else(zero_effects);
     Ok(Prepared {
         query: query.unwrap(),
         parameters: Value::Object(parameters),
-        expected: expected.unwrap(),
+        expected,
         ordered,
+        setup,
+        named_graph,
+        procedures,
+        controls,
     })
 }
 
@@ -157,11 +237,17 @@ fn multiset(rows: &[Value]) -> BTreeMap<String, usize> {
 }
 
 pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String> {
+    if actual["setupError"] == true {
+        return Some("production setup query failed".into());
+    }
     if !actual["adapterError"].is_null() {
         return Some(format!(
             "probe adapter error: {}",
             display(&actual["adapterError"])
         ));
+    }
+    if expected.get("sideEffects").is_some() && actual["sideEffects"] != expected["sideEffects"] {
+        return Some("side-effect snapshot difference mismatch".into());
     }
     if !expected["error"].is_null() {
         if actual["error"].is_null() {
@@ -267,25 +353,36 @@ impl Probe {
             lines,
         })
     }
-    fn execute(&mut self, query: &str, parameters: &Value) -> Result<Response> {
-        self.execute_with_timeout(query, parameters, Duration::from_secs(15))
+    fn execute_prepared(&mut self, prepared: &Prepared, root: Option<&Path>) -> Result<Response> {
+        let mut setup = Vec::new();
+        if let Some(name) = &prepared.named_graph {
+            let root = root.ok_or_else(|| anyhow!("named graph requires corpus root"))?;
+            setup.push(std::fs::read_to_string(
+                root.join("upstream/tck/graphs")
+                    .join(name)
+                    .join(format!("{name}.cypher")),
+            )?);
+        }
+        setup.extend(prepared.setup.iter().cloned());
+        self.execute_request(&json!({"query":prepared.query,"parameters":prepared.parameters,"setup":setup,"procedures":prepared.procedures,"controls":prepared.controls.iter().map(|c| json!({"query":c["query"],"parameters":c["parameters"]})).collect::<Vec<_>>()}), Duration::from_secs(15))
     }
 
+    #[cfg(test)]
     fn execute_with_timeout(
         &mut self,
         query: &str,
         parameters: &Value,
         timeout: Duration,
     ) -> Result<Response> {
+        self.execute_request(&json!({"query":query,"parameters":parameters}), timeout)
+    }
+
+    fn execute_request(&mut self, request: &Value, timeout: Duration) -> Result<Response> {
         let input = self
             .input
             .as_mut()
             .ok_or_else(|| anyhow!("probe stdin closed"))?;
-        writeln!(
-            input,
-            "{}",
-            crate::canonical(&json!({"query":query,"parameters":parameters}))
-        )?;
+        writeln!(input, "{}", crate::canonical(request))?;
         input.flush()?;
         let line = self
             .lines
@@ -359,10 +456,19 @@ fn identity(scenario: &Value) -> Map<String, Value> {
 
 pub fn run(root: &Path, binary: &Path) -> Result<Run> {
     let inventory = crate::corpus::scenarios(root)?;
-    run_inventory(inventory, binary)
+    run_inventory_with_root(inventory, binary, Some(root))
 }
 
+#[cfg(test)]
 fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
+    run_inventory_with_root(inventory, binary, None)
+}
+
+fn run_inventory_with_root(
+    inventory: Vec<Value>,
+    binary: &Path,
+    root: Option<&Path>,
+) -> Result<Run> {
     let mut results = Vec::new();
     let mut infrastructure_errors = Vec::new();
     let mut probe = match Probe::new(binary) {
@@ -381,7 +487,7 @@ fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
                     result["reason"] = json!(reason);
                     result["executed"] = json!(false);
                 }
-                Ok(prepared) => match probe.execute(&prepared.query, &prepared.parameters) {
+                Ok(prepared) => match probe.execute_prepared(&prepared, root) {
                     Err(error) => {
                         infrastructure_errors.push(error.to_string());
                         break;
@@ -392,7 +498,28 @@ fn run_inventory(inventory: Vec<Value>, binary: &Path) -> Result<Run> {
                         result["executed"] = json!(true);
                     }
                     Ok(Response::Actual(actual)) => {
-                        let reason = compare(&actual, &prepared.expected, prepared.ordered);
+                        let mut reason = compare(&actual, &prepared.expected, prepared.ordered);
+                        if reason.is_none() && !prepared.controls.is_empty() {
+                            match actual["controls"].as_array() {
+                                Some(actual_controls)
+                                    if actual_controls.len() == prepared.controls.len() =>
+                                {
+                                    for (actual_control, expected_control) in
+                                        actual_controls.iter().zip(&prepared.controls)
+                                    {
+                                        if let Some(failure) = compare(
+                                            actual_control,
+                                            &expected_control["expected"],
+                                            expected_control["ordered"] == true,
+                                        ) {
+                                            reason = Some(format!("control query: {failure}"));
+                                            break;
+                                        }
+                                    }
+                                }
+                                _ => reason = Some("control query result count mismatch".into()),
+                            }
+                        }
                         result["status"] =
                             json!(if reason.is_some() { "failed" } else { "passed" });
                         result["reason"] = json!(reason);
@@ -448,6 +575,45 @@ pub fn baseline_changes(expected: &Value, actual: &Value) -> Vec<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn prepares_setup_procedures_effects_and_control_queries_without_replacing_primary_expectation()
+    {
+        let scenario = json!({"steps":[
+            {"text":"the binary-tree-1 graph"},
+            {"text":"having executed:","argument":{"docString":{"content":"CREATE (:Extra)"}}},
+            {"text":"there exists a procedure test.proc() :: (n :: INTEGER?):","argument":{"dataTable":{"rows":[{"cells":[{"value":"n"}]},{"cells":[{"value":"1"}]}]}}},
+            {"text":"executing query:","argument":{"docString":{"content":"CREATE (:N)"}}},
+            {"text":"the result should be empty"},
+            {"text":"the side effects should be:","argument":{"dataTable":{"rows":[{"cells":[{"value":"+nodes"},{"value":"1"}]}]}}},
+            {"text":"executing control query:","argument":{"docString":{"content":"MATCH (n:N) RETURN n"}}},
+            {"text":"the result should be, in any order:","argument":{"dataTable":{"rows":[{"cells":[{"value":"n"}]},{"cells":[{"value":"(:N)"}]}]}}}
+        ]});
+        let prepared = prepare(&scenario).unwrap();
+        assert_eq!(prepared.named_graph.as_deref(), Some("binary-tree-1"));
+        assert_eq!(prepared.setup, vec!["CREATE (:Extra)"]);
+        assert_eq!(prepared.procedures[0]["rows"], json!([[1]]));
+        assert_eq!(prepared.expected["empty"], true);
+        assert_eq!(prepared.expected["sideEffects"]["+nodes"], 1);
+        assert_eq!(prepared.expected["sideEffects"]["-nodes"], 0);
+        assert_eq!(prepared.controls[0]["query"], "MATCH (n:N) RETURN n");
+        assert_eq!(
+            prepared.controls[0]["expected"]["rows"][0][0],
+            json!({"$tck":["node",["N"],{}]})
+        );
+    }
+
+    #[test]
+    fn side_effect_expectations_are_checked_even_for_empty_rows() {
+        let expected = json!({"empty":true,"sideEffects":zero_effects()});
+        let actual = json!({"columns":[],"rows":[],"error":null,"sideEffects":zero_effects()});
+        assert!(compare(&actual, &expected, false).is_none());
+        let mut wrong = actual.clone();
+        wrong["sideEffects"]["+nodes"] = json!(1);
+        assert!(compare(&wrong, &expected, false).is_some());
+        let missing = json!({"columns":[],"rows":[],"error":null});
+        assert!(compare(&missing, &expected, false).is_some());
+    }
+
     #[test]
     fn expected_errors_require_native_type_phase_and_detail() {
         let expected = json!({"error":{"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"}});
@@ -561,7 +727,7 @@ mod tests {
         .is_some());
         assert!(prepare(&json!({"steps":[{"text":"having executed:"}]}))
             .unwrap_err()
-            .contains("step adapter missing"));
+            .contains("missing query doc string"));
     }
     #[test]
     fn baseline_rejects_removal_new_pass_and_changed_failure() {
@@ -652,7 +818,7 @@ mod tests {
     fn child_crash_keeps_completed_result_and_marks_remaining_inventory_not_run() {
         let (_directory, binary) = scripted_probe(
             r#"IFS= read -r request
-printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null}'
+printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null,"sideEffects":{"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0}}'
 IFS= read -r request
 exit 7"#,
         );
@@ -690,7 +856,7 @@ exit 7"#,
     fn nonzero_exit_after_last_response_still_records_infrastructure_failure() {
         let (_directory, binary) = scripted_probe(
             r#"IFS= read -r request
-printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null}'
+printf '%s\n' '{"columns":["value"],"rows":[[1]],"error":null,"sideEffects":{"+nodes":0,"-nodes":0,"+relationships":0,"-relationships":0,"+labels":0,"-labels":0,"+properties":0,"-properties":0}}'
 exit 9"#,
         );
         let run = run_inventory(vec![simple_scenario("first")], &binary).unwrap();
