@@ -455,6 +455,9 @@ impl<'a> Evaluator<'a> {
         if l.is_null() || r.is_null() {
             return Ok(Value::Null);
         }
+        if let Some(result) = crate::temporal::binary(op, l, r) {
+            return result;
+        }
         // String concatenation wins for '+' when either side is a String.
         if op == BinOp::Add {
             if let (Value::Str(a), _) = (l, r) {

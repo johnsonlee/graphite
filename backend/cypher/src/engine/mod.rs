@@ -110,6 +110,7 @@ static EPOCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1
 
 pub struct Executor {
     pub property_graph: Option<Arc<crate::property_graph::PropertyGraph>>,
+    temporal_clock: chrono::DateTime<chrono::Utc>,
     pub sources: Vec<Source>,
     /// Cross-graph (qualified) mode.
     pub cross: bool,
@@ -156,6 +157,7 @@ impl Executor {
     pub fn new(sources: Vec<Source>, cross: bool) -> Executor {
         Executor {
             property_graph: None,
+            temporal_clock: chrono::Utc::now(),
             sources,
             cross,
             params: IndexMap::new(),
@@ -368,6 +370,9 @@ impl Executor {
 impl GraphContext for Executor {
     fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
         self.property_graph.as_deref()
+    }
+    fn temporal_clock(&self) -> chrono::DateTime<chrono::Utc> {
+        self.temporal_clock
     }
     fn source_count(&self) -> usize {
         if self.property_graph.is_some() {

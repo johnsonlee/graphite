@@ -1,6 +1,8 @@
 //! Typed ISO calendar and clock values. Text rendering is a boundary operation;
 //! equality, ordering and field access retain temporal types throughout execution.
 use crate::{CypherError, CypherResult, Value};
+mod civil;
+mod duration;
 use chrono::{
     Datelike, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike, Utc,
 };
@@ -9,6 +11,9 @@ use std::{cmp::Ordering, fmt, sync::Arc};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Temporal {
+    Duration(duration::Duration),
+    ExtendedDate(civil::CivilDate),
+    ExtendedLocalDateTime(civil::CivilDate, NaiveTime),
     Date(NaiveDate),
     LocalTime(NaiveTime),
     Time {
@@ -47,6 +52,14 @@ fn temporal(value: Temporal) -> Value {
     Value::Temporal(Arc::new(value))
 }
 impl Temporal {
+    fn civil_date(&self) -> Option<civil::CivilDate> {
+        match self {
+            Self::ExtendedDate(d) | Self::ExtendedLocalDateTime(d, _) => Some(*d),
+            _ => self
+                .date()
+                .and_then(|d| civil::CivilDate::new(d.year(), d.month(), d.day()).ok()),
+        }
+    }
     pub fn date(&self) -> Option<NaiveDate> {
         match self {
             Self::Date(d) => Some(*d),
@@ -56,7 +69,9 @@ impl Temporal {
     }
     pub fn time(&self) -> Option<NaiveTime> {
         match self {
-            Self::LocalTime(t) | Self::Time { time: t, .. } => Some(*t),
+            Self::LocalTime(t) | Self::Time { time: t, .. } | Self::ExtendedLocalDateTime(_, t) => {
+                Some(*t)
+            }
             Self::LocalDateTime(d) | Self::DateTime { local: d, .. } => Some(d.time()),
             _ => None,
         }
@@ -68,6 +83,22 @@ impl Temporal {
         }
     }
     pub fn compare(&self, other: &Self) -> Option<Ordering> {
+        if matches!(self, Self::Date(_) | Self::ExtendedDate(_))
+            && matches!(other, Self::Date(_) | Self::ExtendedDate(_))
+        {
+            return Some(self.civil_date()?.cmp(&other.civil_date()?));
+        }
+        if matches!(
+            self,
+            Self::LocalDateTime(_) | Self::ExtendedLocalDateTime(..)
+        ) && matches!(
+            other,
+            Self::LocalDateTime(_) | Self::ExtendedLocalDateTime(..)
+        ) {
+            return Some(
+                (self.civil_date()?, self.time()?).cmp(&(other.civil_date()?, other.time()?)),
+            );
+        }
         match (self, other) {
             (Self::Date(a), Self::Date(b)) => Some(a.cmp(b)),
             (Self::LocalTime(a), Self::LocalTime(b)) => Some(a.cmp(b)),
@@ -121,7 +152,30 @@ impl Temporal {
             _ => None,
         }
     }
+    pub fn order_compare(&self, other: &Self) -> Ordering {
+        if let (Self::Duration(a), Self::Duration(b)) = (self, other) {
+            let key = |d: &duration::Duration| {
+                (
+                    (i128::from(d.months) * 2_629_746
+                        + i128::from(d.days) * 86400
+                        + i128::from(d.seconds))
+                        * 1_000_000_000
+                        + i128::from(d.nanos),
+                    d.months,
+                    d.days,
+                    d.seconds,
+                    d.nanos,
+                )
+            };
+            return key(a).cmp(&key(b));
+        }
+        self.compare(other)
+            .unwrap_or_else(|| self.to_string().cmp(&other.to_string()))
+    }
     pub fn property(&self, key: &str) -> Value {
+        if let Self::Duration(d) = self {
+            return d.property(key);
+        }
         if let Some(d) = self.date() {
             let n = match key {
                 "year" => Some(i64::from(d.year())),
@@ -220,6 +274,9 @@ fn offset_string(seconds: i32) -> String {
 impl fmt::Display for Temporal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Duration(d) => write!(f, "{d}"),
+            Self::ExtendedDate(d) => write!(f, "{d}"),
+            Self::ExtendedLocalDateTime(d, t) => write!(f, "{d}T{}", time_string(*t)),
             Self::Date(d) => write!(f, "{d}"),
             Self::LocalTime(t) => write!(f, "{}", time_string(*t)),
             Self::Time { time, offset } => {
@@ -515,10 +572,43 @@ fn build(kind: &str, arg: Option<&Value>) -> CypherResult<Value> {
                 map.insert("time".into(), temporal(Temporal::LocalTime(time)));
             }
             if let Some(offset) = t.offset() {
-                map.insert("timezone".into(), Value::str(offset_string(offset)));
+                map.insert(
+                    "timezone".into(),
+                    Value::str(match t.as_ref() {
+                        Temporal::DateTime {
+                            zone: Some(zone), ..
+                        } => zone.clone(),
+                        _ => offset_string(offset),
+                    }),
+                );
             }
         }
         Some(Value::Str(text)) => {
+            if kind == "date" || kind == "localdatetime" {
+                let (calendar, clock) = text
+                    .split_once('T')
+                    .map(|(d, t)| (d, Some(t)))
+                    .unwrap_or((text.as_ref(), None));
+                if let Ok(civil) = civil::CivilDate::parse(calendar) {
+                    if NaiveDate::from_ymd_opt(civil.year, civil.month, civil.day).is_none() {
+                        return Ok(temporal(if kind == "date" {
+                            Temporal::ExtendedDate(civil)
+                        } else {
+                            Temporal::ExtendedLocalDateTime(
+                                civil,
+                                clock.map(parse_time).transpose()?.unwrap_or(NaiveTime::MIN),
+                            )
+                        }));
+                    }
+                }
+                if kind == "localdatetime" && clock.is_none() {
+                    if let Ok(d) = parse_date(calendar) {
+                        return Ok(temporal(Temporal::LocalDateTime(
+                            d.and_time(NaiveTime::MIN),
+                        )));
+                    }
+                }
+            }
             if kind == "date" {
                 return Ok(temporal(Temporal::Date(parse_date(text)?)));
             }
@@ -549,7 +639,11 @@ fn build(kind: &str, arg: Option<&Value>) -> CypherResult<Value> {
                     offset = Some(&timepart[pos..])
                 }
             }
-            let time = parse_time(clock)?;
+            let time = if clock.is_empty() && datepart.is_some() {
+                NaiveTime::MIN
+            } else {
+                parse_time(clock)?
+            };
             if let Some(datepart) = datepart {
                 map.insert(
                     "date".into(),
@@ -582,8 +676,14 @@ fn build(kind: &str, arg: Option<&Value>) -> CypherResult<Value> {
                 .or_insert_with(|| temporal(Temporal::LocalTime(time)));
         }
         if let Some(offset) = t.offset() {
-            map.entry("timezone".into())
-                .or_insert_with(|| Value::str(offset_string(offset)));
+            map.entry("timezone".into()).or_insert_with(|| {
+                Value::str(match t.as_ref() {
+                    Temporal::DateTime {
+                        zone: Some(zone), ..
+                    } => zone.clone(),
+                    _ => offset_string(offset),
+                })
+            });
         }
     }
     let d = map_date(&map)?;
@@ -597,7 +697,16 @@ fn build(kind: &str, arg: Option<&Value>) -> CypherResult<Value> {
                 .get("datetime")
                 .or_else(|| map.get("time"))
                 .and_then(|v| temporal_argument(v).ok());
-            let inherited = selected.and_then(Temporal::offset);
+            let inherited = selected
+                .and_then(Temporal::offset)
+                .map(|offset| match selected {
+                    Some(Temporal::DateTime {
+                        zone: Some(zone), ..
+                    }) if kind == "datetime" => parse_offset(zone, d.and_time(t))
+                        .map(|v| v.0)
+                        .unwrap_or(offset),
+                    _ => offset,
+                });
             let zone = map
                 .get("timezone")
                 .and_then(Value::as_str)
@@ -605,7 +714,7 @@ fn build(kind: &str, arg: Option<&Value>) -> CypherResult<Value> {
                 .unwrap_or_else(|| match selected {
                     Some(Temporal::DateTime {
                         zone: Some(zone), ..
-                    }) => zone.clone(),
+                    }) if kind == "datetime" => zone.clone(),
                     _ => offset_string(inherited.unwrap_or(0)),
                 });
             let (offset, zone) = parse_offset(&zone, d.and_time(t))?;
@@ -728,8 +837,25 @@ fn truncate(kind: &str, args: &[Value]) -> CypherResult<Value> {
     }
     build(kind, Some(&Value::map(map)))
 }
-pub fn call(name: &str, args: &[Value]) -> Option<CypherResult<Value>> {
+pub fn call(
+    name: &str,
+    args: &[Value],
+    ctx: &dyn crate::context::GraphContext,
+) -> Option<CypherResult<Value>> {
     let name = name.to_ascii_lowercase();
+    if [
+        "duration.between",
+        "duration.inmonths",
+        "duration.indays",
+        "duration.inseconds",
+    ]
+    .contains(&name.as_str())
+    {
+        return Some(between(&name, args));
+    }
+    if name == "duration" {
+        return Some(duration::construct(args));
+    }
     if name == "datetime.fromepoch" || name == "datetime.fromepochmillis" {
         return Some((|| {
             let first = args
@@ -773,6 +899,63 @@ pub fn call(name: &str, args: &[Value]) -> Option<CypherResult<Value>> {
         })());
     }
     for kind in ["date", "localtime", "time", "localdatetime", "datetime"] {
+        let clock_kind = ["transaction", "statement", "realtime"]
+            .into_iter()
+            .find(|clock| name == format!("{kind}.{clock}"));
+        let zone_only =
+            matches!(args,[Value::Map(map)] if map.len()==1&&map.contains_key("timezone"));
+        if clock_kind.is_some() || (name == kind && (args.is_empty() || zone_only)) {
+            if args.first().is_some_and(Value::is_null) {
+                return Some(Ok(Value::Null));
+            }
+            let now = if clock_kind == Some("realtime") {
+                Utc::now()
+            } else {
+                ctx.temporal_clock()
+            };
+            if args.len() > 1
+                || args
+                    .first()
+                    .is_some_and(|value| !matches!(value, Value::Map(_)))
+            {
+                return Some(Err(error(
+                    "Temporal clock accepts at most one timezone map",
+                )));
+            }
+            let zone = args.first().and_then(|value| {
+                if let Value::Map(map) = value {
+                    map.get("timezone").and_then(Value::as_str)
+                } else {
+                    None
+                }
+            });
+            let local = if let Some(zone) = zone {
+                if let Ok(tz) = zone.parse::<chrono_tz::Tz>() {
+                    now.with_timezone(&tz).naive_local()
+                } else {
+                    let offset = match parse_offset(zone, now.naive_utc()) {
+                        Ok((offset, _)) => offset,
+                        Err(error) => return Some(Err(error)),
+                    };
+                    match now
+                        .naive_utc()
+                        .checked_add_signed(chrono::Duration::seconds(i64::from(offset)))
+                    {
+                        Some(local) => local,
+                        None => return Some(Err(error("Temporal clock outside supported range"))),
+                    }
+                }
+            } else {
+                now.naive_utc()
+            };
+            let mut fields = IndexMap::new();
+            fields.insert("date".into(), temporal(Temporal::Date(local.date())));
+            fields.insert("time".into(), temporal(Temporal::LocalTime(local.time())));
+            if let Some(Value::Map(overrides)) = args.first() {
+                fields.extend(overrides.iter().map(|(k, v)| (k.clone(), v.clone())));
+            }
+            return Some(build(kind, Some(&Value::map(fields))));
+        }
         if name == kind {
             return Some(if args.len() > 1 {
                 Err(error("Temporal constructor accepts at most one argument"))
@@ -887,6 +1070,410 @@ mod tests {
                     .is_err(),
                 "{input}"
             );
+        }
+    }
+}
+
+fn shift_date(date: NaiveDate, months: i64, days: i64) -> CypherResult<NaiveDate> {
+    let months_abs = u32::try_from(months.unsigned_abs())
+        .map_err(|_| error("Calendar month shift out of range"))?;
+    let shifted = if months < 0 {
+        date.checked_sub_months(chrono::Months::new(months_abs))
+    } else {
+        date.checked_add_months(chrono::Months::new(months_abs))
+    }
+    .ok_or_else(|| error("Calendar month shift out of range"))?;
+    shifted
+        .checked_add_signed(
+            chrono::Duration::try_days(days)
+                .ok_or_else(|| error("Calendar day shift out of range"))?,
+        )
+        .ok_or_else(|| error("Calendar day shift out of range"))
+}
+fn shift(value: &Temporal, d: &duration::Duration) -> CypherResult<Temporal> {
+    let elapsed = chrono::Duration::try_seconds(d.seconds)
+        .and_then(|v| v.checked_add(&chrono::Duration::nanoseconds(i64::from(d.nanos))))
+        .ok_or_else(|| error("Temporal arithmetic out of range"))?;
+    Ok(match value {
+        Temporal::Date(date) => Temporal::Date(shift_date(*date, d.months, d.days)?),
+        Temporal::LocalTime(time) => Temporal::LocalTime(time.overflowing_add_signed(elapsed).0),
+        Temporal::Time { time, offset } => Temporal::Time {
+            time: time.overflowing_add_signed(elapsed).0,
+            offset: *offset,
+        },
+        Temporal::LocalDateTime(dt) => Temporal::LocalDateTime(
+            shift_date(dt.date(), d.months, d.days)?
+                .and_time(dt.time())
+                .checked_add_signed(elapsed)
+                .ok_or_else(|| error("Temporal arithmetic out of range"))?,
+        ),
+        Temporal::DateTime {
+            local,
+            offset,
+            zone,
+        } => {
+            let calendar = shift_date(local.date(), d.months, d.days)?.and_time(local.time());
+            if let Some(zone) = zone {
+                let tz: chrono_tz::Tz = zone
+                    .parse()
+                    .map_err(|_| error("Invalid temporal time zone"))?;
+                let value = tz
+                    .from_local_datetime(&calendar)
+                    .earliest()
+                    .ok_or_else(|| error("Temporal arithmetic falls in time zone gap"))?
+                    .checked_add_signed(elapsed)
+                    .ok_or_else(|| error("Temporal arithmetic out of range"))?;
+                Temporal::DateTime {
+                    local: value.naive_local(),
+                    offset: value.offset().fix().local_minus_utc(),
+                    zone: Some(zone.clone()),
+                }
+            } else {
+                Temporal::DateTime {
+                    local: calendar
+                        .checked_add_signed(elapsed)
+                        .ok_or_else(|| error("Temporal arithmetic out of range"))?,
+                    offset: *offset,
+                    zone: None,
+                }
+            }
+        }
+        Temporal::Duration(a) => Temporal::Duration(a.add(d, 1)?),
+        Temporal::ExtendedDate(date) => Temporal::ExtendedDate(date.shift(d.months, d.days)?),
+        Temporal::ExtendedLocalDateTime(date, time) => {
+            let shifted = date.shift(d.months, d.days)?;
+            let (time, overflow) = time.overflowing_add_signed(elapsed);
+            Temporal::ExtendedLocalDateTime(shifted.shift(0, overflow / 86400)?, time)
+        }
+    })
+}
+pub fn binary(op: crate::ast::BinOp, left: &Value, right: &Value) -> Option<CypherResult<Value>> {
+    use crate::ast::BinOp;
+    match (left, right) {
+        (Value::Temporal(a), Value::Temporal(b)) => {
+            if let Temporal::Duration(b) = b.as_ref() {
+                if op == BinOp::Add {
+                    return Some(shift(a, b).map(temporal));
+                }
+                if op == BinOp::Sub {
+                    return Some(b.scale(-1.0).and_then(|b| shift(a, &b)).map(temporal));
+                }
+            }
+            if op == BinOp::Add {
+                if let Temporal::Duration(a) = a.as_ref() {
+                    return Some(shift(b, a).map(temporal));
+                }
+            }
+            Some(Err(error("Unsupported temporal arithmetic operands")))
+        }
+        (Value::Temporal(a), b) if b.is_number() => {
+            if let Temporal::Duration(a) = a.as_ref() {
+                let n = b.as_f64().unwrap();
+                match op {
+                    BinOp::Mul => return Some(a.scale(n).map(|d| temporal(Temporal::Duration(d)))),
+                    BinOp::Div => {
+                        return Some(if n == 0.0 {
+                            Err(error("Division by zero"))
+                        } else {
+                            a.scale(1.0 / n).map(|d| temporal(Temporal::Duration(d)))
+                        })
+                    }
+                    _ => {}
+                }
+            }
+            None
+        }
+        (a, Value::Temporal(b)) if a.is_number() && op == BinOp::Mul => {
+            if let Temporal::Duration(b) = b.as_ref() {
+                Some(
+                    b.scale(a.as_f64().unwrap())
+                        .map(|d| temporal(Temporal::Duration(d))),
+                )
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
+fn offset_at(value: &Temporal, local: NaiveDateTime, inherited: &Temporal) -> CypherResult<i32> {
+    let chosen = if value.offset().is_some() {
+        value
+    } else {
+        inherited
+    };
+    match chosen {
+        Temporal::DateTime {
+            zone: Some(zone), ..
+        } => Ok(parse_offset(zone, local)?.0),
+        _ => Ok(chosen.offset().unwrap_or(0)),
+    }
+}
+fn temporal_instant(
+    value: &Temporal,
+    local: NaiveDateTime,
+    inherited: &Temporal,
+) -> CypherResult<(i64, u32)> {
+    Ok((
+        local.and_utc().timestamp() - i64::from(offset_at(value, local, inherited)?),
+        local.nanosecond(),
+    ))
+}
+fn between(name: &str, args: &[Value]) -> CypherResult<Value> {
+    if args.len() != 2 {
+        return Err(error("Temporal difference requires two operands"));
+    }
+    if args.iter().any(Value::is_null) {
+        return Ok(Value::Null);
+    }
+    let a = temporal_argument(&args[0])?;
+    let b = temporal_argument(&args[1])?;
+    if matches!(a, Temporal::Duration(_)) || matches!(b, Temporal::Duration(_)) {
+        return Err(error("Duration difference requires date/time operands"));
+    }
+    if matches!(
+        a,
+        Temporal::ExtendedDate(_) | Temporal::ExtendedLocalDateTime(..)
+    ) || matches!(
+        b,
+        Temporal::ExtendedDate(_) | Temporal::ExtendedLocalDateTime(..)
+    ) {
+        return between_extended(name, a, b);
+    }
+    let ad = a.date();
+    let bd = b.date();
+    let common = ad.or(bd).unwrap_or(date(1970, 1, 1)?);
+    let at = a.time().unwrap_or(NaiveTime::MIN);
+    let bt = b.time().unwrap_or(NaiveTime::MIN);
+    let start = ad.unwrap_or(common).and_time(at);
+    let end = bd.unwrap_or(common).and_time(bt);
+    let both_dates = ad.is_some() && bd.is_some();
+    let mut months = if both_dates {
+        i64::from(end.year() - start.year()) * 12 + i64::from(end.month())
+            - i64::from(start.month())
+    } else {
+        0
+    };
+    let month_anchor = shift_date(start.date(), months, 0)?.and_time(at);
+    let anchor_instant = temporal_instant(a, month_anchor, b)?;
+    let end_instant = temporal_instant(b, end, a)?;
+    if months > 0 && anchor_instant > end_instant {
+        months -= 1
+    } else if months < 0 && anchor_instant < end_instant {
+        months += 1
+    }
+    if name == "duration.inmonths" {
+        return Ok(temporal(Temporal::Duration(duration::Duration {
+            months,
+            days: 0,
+            seconds: 0,
+            nanos: 0,
+        })));
+    }
+    let mut calendar_days = if both_dates {
+        end.date().signed_duration_since(start.date()).num_days()
+    } else {
+        0
+    };
+    if both_dates {
+        let candidate = shift_date(start.date(), 0, calendar_days)?.and_time(at);
+        let candidate_instant = temporal_instant(a, candidate, b)?;
+        if calendar_days > 0 && candidate_instant > end_instant {
+            calendar_days -= 1
+        } else if calendar_days < 0 && candidate_instant < end_instant {
+            calendar_days += 1
+        }
+    }
+    if name == "duration.indays" {
+        return Ok(temporal(Temporal::Duration(duration::Duration {
+            months: 0,
+            days: calendar_days,
+            seconds: 0,
+            nanos: 0,
+        })));
+    }
+    let (months, days, anchor) = if name == "duration.between" {
+        let anchor = shift_date(start.date(), months, 0)?.and_time(at);
+        let mut days = if both_dates {
+            end.date().signed_duration_since(anchor.date()).num_days()
+        } else {
+            0
+        };
+        if days > 0 && bt < at {
+            days -= 1
+        } else if days < 0 && bt > at {
+            days += 1
+        }
+        (
+            months,
+            days,
+            shift_date(anchor.date(), 0, days)?.and_time(at),
+        )
+    } else {
+        (0, 0, start)
+    };
+    let offset_delta = i64::from(offset_at(a, anchor, b)? - offset_at(b, end, a)?);
+    let elapsed = end
+        .signed_duration_since(anchor)
+        .checked_add(&chrono::Duration::seconds(offset_delta))
+        .ok_or_else(|| error("Duration difference out of range"))?;
+    let seconds = elapsed.num_seconds();
+    let nanos = (elapsed - chrono::Duration::seconds(seconds))
+        .num_nanoseconds()
+        .ok_or_else(|| error("Duration fraction out of range"))?;
+    Ok(temporal(Temporal::Duration(duration::Duration {
+        months,
+        days,
+        seconds: seconds + nanos.div_euclid(1_000_000_000),
+        nanos: nanos.rem_euclid(1_000_000_000) as i32,
+    })))
+}
+
+fn between_extended(name: &str, a: &Temporal, b: &Temporal) -> CypherResult<Value> {
+    let ad = a
+        .civil_date()
+        .ok_or_else(|| error("Extended temporal requires calendar dates"))?;
+    let bd = b
+        .civil_date()
+        .ok_or_else(|| error("Extended temporal requires calendar dates"))?;
+    let at = a.time().unwrap_or(NaiveTime::MIN);
+    let bt = b.time().unwrap_or(NaiveTime::MIN);
+    let mut months = i64::from(bd.year - ad.year) * 12 + i64::from(bd.month) - i64::from(ad.month);
+    if months > 0 && (bd.day, bt) < (ad.day, at) {
+        months -= 1
+    } else if months < 0 && (bd.day, bt) > (ad.day, at) {
+        months += 1
+    }
+    if name == "duration.inmonths" {
+        return Ok(temporal(Temporal::Duration(duration::Duration {
+            months,
+            days: 0,
+            seconds: 0,
+            nanos: 0,
+        })));
+    }
+    let mut days = bd.epoch_day() - ad.epoch_day();
+    if days > 0 && bt < at {
+        days -= 1
+    } else if days < 0 && bt > at {
+        days += 1
+    }
+    if name == "duration.indays" {
+        return Ok(temporal(Temporal::Duration(duration::Duration {
+            months: 0,
+            days,
+            seconds: 0,
+            nanos: 0,
+        })));
+    }
+    let (months, days, anchor) = if name == "duration.between" {
+        let anchor = ad.shift(months, 0)?;
+        let mut days = bd.epoch_day() - anchor.epoch_day();
+        if days > 0 && bt < at {
+            days -= 1
+        } else if days < 0 && bt > at {
+            days += 1
+        }
+        (months, days, anchor.shift(0, days)?)
+    } else {
+        (0, 0, ad)
+    };
+    let seconds = (bd.epoch_day() - anchor.epoch_day()) * 86400
+        + i64::from(bt.num_seconds_from_midnight())
+        - i64::from(at.num_seconds_from_midnight());
+    let nanos = i64::from(bt.nanosecond()) - i64::from(at.nanosecond());
+    Ok(temporal(Temporal::Duration(duration::Duration {
+        months,
+        days,
+        seconds: seconds + nanos.div_euclid(1_000_000_000),
+        nanos: nanos.rem_euclid(1_000_000_000) as i32,
+    })))
+}
+
+#[cfg(test)]
+mod duration_tests {
+    use super::*;
+    use crate::engine::Executor;
+    fn result(query: &str) -> Value {
+        let result = Executor::new(vec![], false).execute(query, None).unwrap();
+        result.rows[0][&result.columns[0]].clone()
+    }
+    fn text(expression: &str) -> String {
+        crate::semantics::kotlin_to_string_plain(&result(&format!("RETURN {expression} AS d")))
+    }
+    #[test]
+    fn duration_components_retain_calendar_units_and_subsecond_precision() {
+        assert_eq!(text("duration({months:0.75})"), "P22DT19H51M49.5S");
+        assert_eq!(
+            text("duration({days:14,seconds:70,nanoseconds:1})"),
+            "P14DT1M10.000000001S"
+        );
+        assert_eq!(
+            text("duration('P2012-02-02T14:37:21.545')"),
+            "P2012Y2M2DT14H37M21.545S"
+        );
+        assert!(matches!(
+            result("RETURN duration('P1D') = duration('PT24H') AS same"),
+            Value::Bool(false)
+        ));
+        assert!(matches!(
+            result("RETURN duration({seconds:70}) = duration({minutes:1,seconds:10}) AS same"),
+            Value::Bool(true)
+        ));
+    }
+    #[test]
+    fn calendar_arithmetic_clamps_month_end_and_clock_arithmetic_wraps() {
+        assert_eq!(text("date('2023-01-31') + duration('P1M')"), "2023-02-28");
+        assert_eq!(text("localtime('12:31:14.000000001') + duration({hours:16,minutes:12,seconds:70,nanoseconds:2})"),"04:44:24.000000003");
+        assert_eq!(text("duration('P1M') * 0.5"), "P15DT5H14M33S");
+        assert_eq!(
+            text("duration('PT0.001S') - duration('PT0.002S')"),
+            "PT-0.001S"
+        );
+    }
+    #[test]
+    fn duration_differences_distinguish_calendar_and_elapsed_time_across_dst() {
+        assert_eq!(text("duration.between(datetime('2017-10-28T23:00+02:00[Europe/Stockholm]'), datetime('2017-10-29T04:00+01:00[Europe/Stockholm]'))"),"PT6H");
+        assert_eq!(text("duration.inSeconds(datetime({year:2017,month:10,day:29,hour:0,timezone:'Europe/Stockholm'}),localdatetime({year:2017,month:10,day:29,hour:4}))"),"PT5H");
+        assert_eq!(
+            text("duration.between(date('1984-10-11'),date('2015-06-24'))"),
+            "P30Y8M13D"
+        );
+        assert_eq!(text("duration.inSeconds(localdatetime('2014-07-21T21:40:36.143'),localdatetime('2014-07-21T21:40:36.142'))"),"PT-0.001S");
+    }
+    #[test]
+    fn proleptic_gregorian_extremes_use_integer_calendar_arithmetic() {
+        assert_eq!(
+            text("duration.between(date('-999999999-01-01'),date('+999999999-12-31'))"),
+            "P1999999998Y11M30D"
+        );
+        assert_eq!(text("duration.inSeconds(localdatetime('-999999999-01-01'),localdatetime('+999999999-12-31T23:59:59'))"),"PT17531639991215H59M59S");
+        let epoch = civil::CivilDate::new(1970, 1, 1).unwrap();
+        assert_eq!(epoch.epoch_day(), 0);
+        for d in [
+            civil::CivilDate::new(-999999999, 1, 1).unwrap(),
+            civil::CivilDate::new(0, 2, 29).unwrap(),
+            civil::CivilDate::new(999999999, 12, 31).unwrap(),
+        ] {
+            assert_eq!(civil::CivilDate::from_epoch_day(d.epoch_day()).unwrap(), d);
+        }
+    }
+    #[test]
+    fn query_clock_is_stable_and_all_clock_modes_propagate_null() {
+        assert_eq!(
+            text("duration.inSeconds(localdatetime(),localdatetime())"),
+            "PT0S"
+        );
+        assert_eq!(
+            text("duration.inSeconds(time.transaction(),time.statement())"),
+            "PT0S"
+        );
+        assert!(matches!(result("RETURN datetime.transaction({timezone:'+01:00'}).epochSeconds = datetime.transaction({timezone:'+02:00'}).epochSeconds AS ok"),Value::Bool(true)));
+        for kind in ["date", "time", "localtime", "datetime", "localdatetime"] {
+            for mode in ["transaction", "statement", "realtime"] {
+                assert!(result(&format!("RETURN {kind}.{mode}(null) AS t")).is_null());
+            }
         }
     }
 }
