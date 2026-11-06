@@ -319,3 +319,68 @@ fn all_mutations_remain_rejected_by_default_program_graph_execution() {
         );
     }
 }
+
+#[test]
+fn property_updates_accept_parenthesized_entities_and_copy_entity_properties() {
+    let (graph, ex) = session();
+    ex.execute("CREATE (a:A {name:'a'})-[r:R {old:true}]->(b:B)", None)
+        .unwrap();
+    ex.execute(
+        "MATCH (a:A)-[r:R]->(b:B) SET (a).name='new', ((r)).x=2 SET r=a, b+=r",
+        None,
+    )
+    .unwrap();
+    let snapshot = graph.snapshot();
+    assert_eq!(snapshot.relationships[0].properties.len(), 1);
+    assert_eq!(
+        snapshot.relationships[0].properties["name"].as_str(),
+        Some("new")
+    );
+    assert_eq!(snapshot.nodes[1].properties["name"].as_str(), Some("new"));
+}
+
+#[test]
+fn merge_undirected_pattern_creates_outgoing_and_then_matches_either_direction() {
+    let (graph, ex) = session();
+    ex.execute("CREATE (a:A {id:1}),(b:B {id:2})", None)
+        .unwrap();
+    ex.execute("MATCH (a:A),(b:B) MERGE (a)-[:R]-(b)", None)
+        .unwrap();
+    assert_eq!(graph.snapshot().relationships.len(), 1);
+    assert_eq!(graph.snapshot().relationships[0].from, 0);
+    assert_eq!(graph.snapshot().relationships[0].to, 1);
+    ex.execute("MATCH (a:A),(b:B) MERGE (b)-[:R]-(a)", None)
+        .unwrap();
+    assert_eq!(graph.snapshot().relationships.len(), 1);
+}
+
+#[test]
+fn property_failures_emit_native_runtime_diagnostics_and_rollback() {
+    let (graph, ex) = session();
+    for (query, error_type, detail) in [
+        (
+            "CREATE (a:A) SET a.p=[{x:1}]",
+            "TypeError",
+            "InvalidPropertyType",
+        ),
+        ("MERGE (:A {p:null})", "SemanticError", "MergeReadOwnWrites"),
+        (
+            "CREATE (a:A)-[:R]->(b:B) DELETE a",
+            "ConstraintVerificationFailed",
+            "DeleteConnectedNode",
+        ),
+    ] {
+        let error = ex.execute(query, None).unwrap_err();
+        assert_eq!(
+            error.diagnostic(),
+            Some(crate::error::CypherDiagnostic {
+                error_type,
+                phase: "runtime",
+                detail
+            }),
+            "{query}"
+        );
+        assert!(graph.snapshot().nodes.is_empty());
+        assert!(graph.snapshot().relationships.is_empty());
+    }
+}

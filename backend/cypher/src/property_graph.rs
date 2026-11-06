@@ -110,10 +110,23 @@ impl PropertyGraph {
         if target.is_null() {
             return Ok(());
         }
-        let Value::Map(values) = values else {
-            return Err(crate::CypherError::runtime(
-                "SET map assignment requires a map",
-            ));
+        let values = match values {
+            Value::Map(values) => (*values).clone(),
+            Value::Node(node) => {
+                self.node(node.id)
+                    .ok_or_else(|| crate::CypherError::runtime("Graph entity has been deleted"))?
+                    .properties
+            }
+            Value::Rel(rel) if rel.property_id.is_some() => {
+                self.relationship(u64::from(rel.property_id.unwrap().get()))
+                    .ok_or_else(|| crate::CypherError::runtime("Graph entity has been deleted"))?
+                    .properties
+            }
+            _ => {
+                return Err(crate::CypherError::runtime(
+                    "SET map assignment requires a map, node or relationship",
+                ))
+            }
         };
         for value in values.values() {
             validate_property(value)?;
@@ -196,7 +209,9 @@ impl PropertyGraph {
                 if detach {
                     relationships.insert(rel.id);
                 } else if !relationships.contains(&rel.id) {
-                    return Err(crate::CypherError::runtime(
+                    return Err(crate::CypherError::execution(
+                        "ConstraintVerificationFailed",
+                        "DeleteConnectedNode",
                         "Cannot delete node, because it still has relationships",
                     ));
                 }
@@ -325,7 +340,11 @@ fn entity_properties<'a>(
 /// recursively following a node property back to the same node.
 pub(crate) fn validate_property(value: &Value) -> crate::CypherResult<()> {
     let invalid = || {
-        crate::CypherError::runtime("Property values must be primitive values or homogeneous lists")
+        crate::CypherError::execution(
+            "TypeError",
+            "InvalidPropertyType",
+            "Property values must be primitive values or homogeneous lists",
+        )
     };
     match value {
         Value::Map(_) | Value::Node(_) | Value::Rel(_) | Value::Path(_) | Value::Method(_) => {

@@ -107,9 +107,11 @@ pub fn merge(
             .chain(pattern.rels.iter().flat_map(|r| &r.properties))
         {
             if ev.eval(value, &row)?.is_null() {
-                return Err(CypherError::runtime(format!(
-                    "Cannot merge using null property value for `{key}`"
-                )));
+                return Err(CypherError::execution(
+                    "SemanticError",
+                    "MergeReadOwnWrites",
+                    format!("Cannot merge using null property value for `{key}`"),
+                ));
             }
         }
         let mut matched = Vec::new();
@@ -123,8 +125,19 @@ pub fn merge(
             },
         )?;
         if matched.is_empty() {
-            let created =
-                super::property_matching::create(ex, vec![row], std::slice::from_ref(pattern))?;
+            // Unspecified MERGE direction searches both ways, but newly created
+            // relationships use the pattern's outgoing direction.
+            let mut created_pattern = pattern.clone();
+            for rel in &mut created_pattern.rels {
+                if rel.direction == crate::ast::Direction::Both {
+                    rel.direction = crate::ast::Direction::Outgoing;
+                }
+            }
+            let created = super::property_matching::create(
+                ex,
+                vec![row],
+                std::slice::from_ref(&created_pattern),
+            )?;
             set(ex, &created, on_create)?;
             output.extend(created);
         } else {

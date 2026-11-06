@@ -460,10 +460,19 @@ impl Parser<'_> {
         })
     }
 
+    fn update_variable(&mut self) -> CypherResult<String> {
+        if self.eat(T::LParen) {
+            let variable = self.update_variable()?;
+            self.expect(T::RParen, "')'")?;
+            Ok(variable)
+        } else {
+            self.variable()
+        }
+    }
     fn set_items(&mut self) -> CypherResult<Vec<SetItem>> {
         let mut items = Vec::new();
         loop {
-            let variable = self.variable()?;
+            let variable = self.update_variable()?;
             let item = if self.eat(T::Dot) {
                 let key = self.symbolic_name()?;
                 self.expect(T::Assign, "'='")?;
@@ -500,7 +509,7 @@ impl Parser<'_> {
     fn remove_items(&mut self) -> CypherResult<Vec<RemoveItem>> {
         let mut items = Vec::new();
         loop {
-            let variable = self.variable()?;
+            let variable = self.update_variable()?;
             let item = if self.eat(T::Dot) {
                 RemoveItem::Property {
                     variable,
