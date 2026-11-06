@@ -1804,10 +1804,20 @@ fn stash_order_values(
     columns: &[String],
 ) -> CypherResult<()> {
     if let Some(order) = order {
+        let mut scope: Option<Row> = None;
         for (i, item) in order.iter().enumerate() {
             let is_col = matches!(&item.expr, Expr::Variable(v) if columns.iter().any(|c| c == v));
             if !is_col {
-                let v = ev.eval(&item.expr, pre)?;
+                let scope = scope.get_or_insert_with(|| {
+                    let mut scope = pre.clone();
+                    for column in columns {
+                        if let Some(value) = out.get(column) {
+                            scope.insert(column.clone(), value.clone());
+                        }
+                    }
+                    scope
+                });
+                let v = ev.eval(&item.expr, scope)?;
                 out.insert(format!("{ORDER_STASH_PREFIX}{i}"), v);
             }
         }

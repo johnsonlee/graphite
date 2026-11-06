@@ -344,3 +344,37 @@ fn percentile_aggregations_use_the_requested_parameter_and_reject_out_of_range_v
         }
     }
 }
+
+#[test]
+fn order_by_expressions_resolve_projected_aliases_before_shadowed_input_bindings() {
+    let ex = Executor::new(vec![], false);
+    let result = ex
+        .execute(
+            "UNWIND [{num: 1}, {num: 3}, {num: -5}] AS n RETURN n.num AS n ORDER BY n + 2",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.columns, vec!["n"]);
+    assert_eq!(
+        result
+            .rows
+            .iter()
+            .map(|r| format!("{:?}", r["n"]))
+            .collect::<Vec<_>>(),
+        vec!["Int(-5)", "Int(1)", "Int(3)"]
+    );
+    let result = ex
+        .execute(
+            "UNWIND [4, 2, 0, 3, 1] AS x WITH x % 3 AS x ORDER BY x * -1 LIMIT 3 RETURN x",
+            None,
+        )
+        .unwrap();
+    assert_eq!(
+        result
+            .rows
+            .iter()
+            .map(|r| format!("{:?}", r["x"]))
+            .collect::<Vec<_>>(),
+        vec!["Int(2)", "Int(1)", "Int(1)"]
+    );
+}
