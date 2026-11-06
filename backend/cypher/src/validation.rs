@@ -105,6 +105,7 @@ fn infer(expr: &Expr, scope: &Scope) -> Kind {
         | Expr::In { .. }
         | Expr::StringOp { .. } => Kind::Bool,
         Expr::FunctionCall { name, .. } => match name.to_ascii_lowercase().as_str() {
+            "startnode" | "endnode" => Kind::Node,
             "count" | "size" | "length" | "id" | "timestamp" | "tointeger" | "toint" => Kind::Int,
             "tostring" | "tolower" | "toupper" | "tolowercase" | "touppercase" | "trim"
             | "ltrim" | "rtrim" | "left" | "right" | "replace" | "substring" | "type"
@@ -176,7 +177,9 @@ fn signature(name: &str) -> Option<(usize, usize)> {
         "split" | "left" | "right" | "atan2" | "percentilecont" | "percentiledisc"
         | "datetime.fromepoch" | "duration.between" | "duration.inmonths" | "duration.indays"
         | "duration.inseconds" => Some((2, 2)),
-        "id"
+        "startnode"
+        | "endnode"
+        | "id"
         | "elementid"
         | "qualifiedid"
         | "graphid"
@@ -493,7 +496,12 @@ fn bind(scope: &mut Scope, name: &str, kind: Kind, path: bool) -> CypherResult<(
     }
     Ok(())
 }
-fn patterns(patterns: &[Pattern], scope: &mut Scope, create: bool) -> CypherResult<()> {
+fn patterns(
+    patterns: &[Pattern],
+    scope: &mut Scope,
+    create: bool,
+    directed: bool,
+) -> CypherResult<()> {
     let mut rels = HashSet::new();
     // Bind every pattern before checking property expressions, so references to
     // another pattern in this MATCH observe the same complete lexical scope.
@@ -515,7 +523,7 @@ fn patterns(patterns: &[Pattern], scope: &mut Scope, create: bool) -> CypherResu
                     && scope.contains_key(name)
                     && (!node.labels.is_empty()
                         || !node.properties.is_empty()
-                        || pattern.rels.is_empty())
+                        || (directed && pattern.rels.is_empty()))
                 {
                     return Err(fail(
                         "VariableAlreadyBound",
@@ -569,7 +577,7 @@ fn patterns(patterns: &[Pattern], scope: &mut Scope, create: bool) -> CypherResu
                         "A created relationship requires exactly one type",
                     ));
                 }
-                if rel.direction == Direction::Both {
+                if directed && rel.direction == Direction::Both {
                     return Err(fail(
                         "RequiresDirectedRelationship",
                         "A created relationship requires a direction",
@@ -650,6 +658,70 @@ fn nondeterministic(expr: &Expr) -> bool {
     matches!(expr,Expr::FunctionCall{name,..}if name.eq_ignore_ascii_case("rand"))
         || children(expr).into_iter().any(nondeterministic)
 }
+/// Conservative scope proof for fused plans. Local comprehension variables are
+/// scoped only inside their filter/projection; future expression kinds decline.
+pub fn references_only(expr: &Expr, allowed: &HashSet<String>) -> bool {
+    match expr {
+        Expr::Variable(name) => allowed.contains(name),
+        Expr::Literal(_) | Expr::Parameter(_) | Expr::CountStar => true,
+        Expr::ListComprehension {
+            variable,
+            list,
+            filter,
+            map,
+        } => {
+            if !references_only(list, allowed) {
+                return false;
+            }
+            let mut local = allowed.clone();
+            local.insert(variable.clone());
+            filter
+                .iter()
+                .chain(map.iter())
+                .all(|child| references_only(child, &local))
+        }
+        Expr::PredicateFunction {
+            variable,
+            list,
+            predicate,
+            ..
+        } => {
+            if !references_only(list, allowed) {
+                return false;
+            }
+            let mut local = allowed.clone();
+            local.insert(variable.clone());
+            predicate.iter().all(|child| references_only(child, &local))
+        }
+        _ => {
+            matches!(
+                expr,
+                Expr::Property { .. }
+                    | Expr::Distinct(_)
+                    | Expr::Unary { .. }
+                    | Expr::IsNull(_)
+                    | Expr::IsNotNull(_)
+                    | Expr::Not(_)
+                    | Expr::FunctionCall { .. }
+                    | Expr::ListLiteral(_)
+                    | Expr::MapLiteral(_)
+                    | Expr::Case { .. }
+                    | Expr::Binary { .. }
+                    | Expr::Comparison { .. }
+                    | Expr::StringOp { .. }
+                    | Expr::In { .. }
+                    | Expr::And(..)
+                    | Expr::Or(..)
+                    | Expr::Xor(..)
+                    | Expr::Subscript { .. }
+                    | Expr::Slice { .. }
+            ) && children(expr)
+                .into_iter()
+                .all(|child| references_only(child, allowed))
+        }
+    }
+}
+
 fn has_variable(expr: &Expr) -> bool {
     matches!(expr, Expr::Variable(_)) || children(expr).into_iter().any(has_variable)
 }
@@ -810,7 +882,7 @@ pub fn resolve_with_procedures(
                 on_create,
                 on_match,
             } => {
-                patterns(std::slice::from_ref(pattern), &mut scope, true)?;
+                patterns(std::slice::from_ref(pattern), &mut scope, true, false)?;
                 validate_set(on_create, &scope)?;
                 validate_set(on_match, &scope)?;
             }
@@ -834,13 +906,13 @@ pub fn resolve_with_procedures(
                         "MATCH after OPTIONAL MATCH requires WITH",
                     ));
                 }
-                patterns(ps, &mut scope, false)?;
+                patterns(ps, &mut scope, false, false)?;
                 if let Some(expr) = where_clause {
                     expression(expr, &scope, false, false, &[])?;
                 }
                 optional |= *is_optional;
             }
-            Clause::Create(ps) => patterns(ps, &mut scope, true)?,
+            Clause::Create(ps) => patterns(ps, &mut scope, true, true)?,
             Clause::Where(expr) => expression(expr, &scope, false, false, &[])?,
             Clause::Unwind { expr, variable } => {
                 expression(expr, &scope, false, false, &[])?;
@@ -1053,5 +1125,27 @@ mod tests {
     fn aggregate_sources_do_not_capture_comprehension_local_variables() {
         assert!(validate("MATCH(n) RETURN all(ok IN collect(n IS NULL) WHERE ok)").is_ok());
         assert!(validate("MATCH(n) RETURN [x IN collect(n) | x]").is_ok());
+    }
+    #[test]
+    fn fused_scope_proof_respects_comprehension_locals_and_outer_inputs() {
+        let expr = |text: &str| {
+            let clauses = crate::parser::parse(&format!("RETURN {text}")).unwrap();
+            let Clause::Return {
+                items: Some(items), ..
+            } = &clauses[0]
+            else {
+                panic!()
+            };
+            items[0].expr.clone()
+        };
+        let allowed = HashSet::from(["xs".to_owned()]);
+        assert!(references_only(&expr("all(x IN xs WHERE x > 1)"), &allowed));
+        assert!(references_only(&expr("[x IN xs | x + 1]"), &allowed));
+        assert!(!references_only(&expr("[x IN hidden | x]"), &allowed));
+        assert!(!references_only(
+            &expr("all(x IN xs WHERE x > hidden)"),
+            &allowed
+        ));
+        assert!(!references_only(&expr("x IS NULL"), &allowed));
     }
 }

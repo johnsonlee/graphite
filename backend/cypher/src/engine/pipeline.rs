@@ -153,6 +153,20 @@ impl Executor {
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
+        if self.property_graph.is_none() {
+            if let Some(name) = clauses.iter().find_map(|clause| match clause {
+                Clause::Create(_) => Some("CREATE"),
+                Clause::Merge { .. } => Some("MERGE"),
+                Clause::Delete { .. } => Some("DELETE"),
+                Clause::Set(_) => Some("SET"),
+                Clause::Remove(_) => Some("REMOVE"),
+                _ => None,
+            }) {
+                return Err(CypherError::NotImplemented(format!(
+                    "{name} is not supported — graph is immutable"
+                )));
+            }
+        }
         self.validate_procedure_calls(clauses)?;
         let validated =
             crate::validation::resolve_with_procedures(clauses, self.procedures.as_deref())?;
