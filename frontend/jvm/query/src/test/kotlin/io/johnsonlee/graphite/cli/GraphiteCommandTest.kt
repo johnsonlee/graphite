@@ -307,6 +307,17 @@ class GraphiteCommandTest {
     }
 
     @Test
+    fun `build refuses a dependency body scope without the libraries, before reading anything`() {
+        val cmd = BuildCommand()
+        cmd.input = Path.of(".")
+        cmd.output = Path.of("unused")
+        cmd.dependencyPackages = listOf("kotlin.text.")
+        val (_, err, code) = captureOutput { cmd.call() }
+        assertEquals(1, code)
+        assertTrue(err.contains("Error: dependencyBodies needs includeLibraries"), err)
+    }
+
+    @Test
     fun `build with includeLibs and libFilters`() {
         val emptyDir = Files.createTempDirectory("build-test-libs")
         val outputDir = Files.createTempDirectory("build-test-libs-out")

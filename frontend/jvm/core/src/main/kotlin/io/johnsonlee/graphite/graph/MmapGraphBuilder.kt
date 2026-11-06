@@ -100,9 +100,15 @@ class MmapGraphBuilder(
     private val localDefinitions = HashMap<Int, IntArray>()
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
     private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+    private var analysisCompleteness: AnalysisCompleteness? = null
 
     override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
         declaredTypeTable = table
+        return this
+    }
+
+    override fun setAnalysisCompleteness(completeness: AnalysisCompleteness): FullGraphBuilder {
+        analysisCompleteness = completeness
         return this
     }
 
@@ -272,7 +278,8 @@ class MmapGraphBuilder(
             localDefinitionData = localDefinitions.toMap(),
             incomingIndex = null,
             resources = resourceAccessor,
-            declaredTypeTable = declaredTypeTable
+            declaredTypeTable = declaredTypeTable,
+            analysisCompleteness = analysisCompleteness
         )
     }
 

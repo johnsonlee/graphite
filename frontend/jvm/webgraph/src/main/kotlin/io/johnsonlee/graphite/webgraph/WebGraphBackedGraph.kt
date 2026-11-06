@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
@@ -38,7 +39,9 @@ internal class WebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor,
     private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
-    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY)
+    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY),
+    /** The build's completeness evidence, read on first use; absent for a graph saved without it. */
+    private val analysisCompleteness: Lazy<AnalysisCompleteness?> = lazyOf(null)
 ) : Graph, EnumValueIndexSource {
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
@@ -161,6 +164,10 @@ internal class WebGraphBackedGraph(
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
 
     override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)
+
+    override fun hasMethod(method: MethodDescriptor): Boolean = metadata.methods.containsKey(method.identity)
+
+    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness.value
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

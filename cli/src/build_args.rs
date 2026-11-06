@@ -22,6 +22,10 @@ const VALUE_OPTIONS: &[&str] = &[
     "--exclude",
     "--android-sdk",
     "--lib-filter",
+    "--dependency-artifacts",
+    "--dependency-packages",
+    "--dependency-reachable",
+    "--dependency-roots",
     "--fold",
 ];
 

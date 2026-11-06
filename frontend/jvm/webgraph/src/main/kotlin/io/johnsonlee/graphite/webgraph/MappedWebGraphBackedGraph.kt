@@ -17,6 +17,7 @@ import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.checkThreadInterrupted
+import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
@@ -173,7 +174,9 @@ internal class MappedWebGraphBackedGraph(
     /** Read and validated on first use, like the other sidecars: readiness owes queries nothing of it. */
     private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY),
     /** The saver's per-node and per-method presence answers, bound to the same table; absent for older graphs. */
-    private val declaredPresence: Lazy<DeclaredPresence?> = lazyOf(null)
+    private val declaredPresence: Lazy<DeclaredPresence?> = lazyOf(null),
+    /** The build's completeness evidence, read on first use; absent for a graph saved without it. */
+    private val analysisCompleteness: Lazy<AnalysisCompleteness?> = lazyOf(null)
 ) : Graph,
     EnumValueIndexSource,
     NodePropertyTextCandidates,
@@ -2203,6 +2206,20 @@ internal class MappedWebGraphBackedGraph(
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.value.artifactDependencies
 
     override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)
+
+    /** An exact lookup through the method index's class range, so a proof over many callees pays no scan per callee. */
+    override fun hasMethod(method: MethodDescriptor): Boolean {
+        val pattern = MethodPattern(
+            declaringClass = method.declaringClass.className,
+            name = method.name,
+            parameterTypes = method.parameterTypes.map { it.className },
+            returnType = method.returnType.className
+        )
+        if (MappedMethodIndex.cannotMatch(pattern, stringTable)) return false
+        return methodIndex().slice(pattern, 1).isNotEmpty()
+    }
+
+    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness.value
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

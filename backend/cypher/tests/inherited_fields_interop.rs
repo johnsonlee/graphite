@@ -13,7 +13,11 @@ const CHILD: &str = "fixture.InheritedFixture$Child";
 const PARENT: &str = "fixture.InheritedFixture$Parent";
 const ITEMS: &str = "fixture.InheritedFixture$Items";
 const SHADOW: &str = "fixture.InheritedFixture$Shadow";
-const NAMES: [&str; 4] = ["names", "value", "shared", "ITEMS"];
+/// Instance fields `Child` reads through itself: a `Child` node bound to the declaration.
+const ALIASED: [&str; 2] = ["names", "value"];
+/// Static fields `Child` reads through itself: the JVM resolves the reference to the class that
+/// declares the field, so the graph holds the declaring class's node only, and no `Child` alias.
+const DECLARED_ONLY: [(&str, &str); 2] = [("shared", PARENT), ("ITEMS", ITEMS)];
 
 #[test]
 fn java_inherited_aliases_survive_both_builders_resave_and_native_containers() {
@@ -102,10 +106,44 @@ fn find_field(graph: &Graph, owner: &str, expected_name: &str) -> Node {
     matching.into_iter().next().unwrap()
 }
 
+fn count_fields(graph: &Graph, owner: &str, expected_name: &str) -> usize {
+    graph
+        .ids_by_tag(TAG_FIELD_NODE)
+        .iter()
+        .filter_map(|id| graph.node(*id))
+        .filter(|node| {
+            matches!(&node.kind, NodeKind::Field {declaring_class, name, ..}
+            if graph.str(*declaring_class) == owner && graph.str(*name) == expected_name)
+        })
+        .count()
+}
+
 fn assert_aliases(graph: &Graph) {
     let table = graph.declared_types().unwrap();
-    for name in NAMES {
-        let owner = if name == "ITEMS" { ITEMS } else { PARENT };
+    for (name, owner) in DECLARED_ONLY {
+        assert_eq!(
+            count_fields(graph, CHILD, name),
+            0,
+            "a static reference through Child resolves to the declaring class: {name}"
+        );
+        let original = find_field(graph, owner, name);
+        let original_props = node_properties(graph, &original);
+        assert_eq!(original_props["static"].as_bool(), Some(true));
+        assert_eq!(
+            original_props["generic_type"].as_str(),
+            Some(rendered(name))
+        );
+        assert_eq!(
+            value_json(&original_props["type_info"]),
+            expected_info(name)
+        );
+        assert!(
+            table.field_type(CHILD, name, "Ljava/util/List;").is_none(),
+            "no Child alias row for {name}"
+        );
+    }
+    for name in ALIASED {
+        let owner = PARENT;
         let descriptor = if name == "value" {
             "Ljava/lang/Object;"
         } else {
@@ -133,10 +171,7 @@ fn assert_aliases(graph: &Graph) {
             value_json(&original_props["type_info"]),
             expected_info(name)
         );
-        assert_eq!(
-            alias_props["static"].as_bool(),
-            Some(matches!(name, "shared" | "ITEMS"))
-        );
+        assert_eq!(alias_props["static"].as_bool(), Some(false));
     }
     let shadow = find_field(graph, SHADOW, "names");
     let properties = node_properties(graph, &shadow);
@@ -158,12 +193,12 @@ fn assert_query(sources: &[Source]) {
     let executor = Executor::new(sources.to_vec(), true);
     let query = format!("MATCH (f:FieldNode) WHERE f.class = '{CHILD}' RETURN f.graphId AS source, f.id AS id, f.name AS name, f.class AS owner, f.type AS erased, f.static AS static, f.generic_type AS declared, f.type_info AS info ORDER BY source, name");
     let result = executor.execute(&query, None).unwrap();
-    assert_eq!(result.rows.len(), 8 * NAMES.len());
+    assert_eq!(result.rows.len(), 8 * ALIASED.len());
     let mut actual = BTreeMap::<String, BTreeSet<String>>::new();
     for row in &result.rows {
         let source = row["source"].as_str().unwrap();
         let name = row["name"].as_str().unwrap();
-        assert!(NAMES.contains(&name));
+        assert!(ALIASED.contains(&name));
         assert_eq!(row["owner"].as_str(), Some(CHILD));
         assert_eq!(row["declared"].as_str(), Some(rendered(name)));
         assert_eq!(value_json(&row["info"]), expected_info(name));
@@ -175,10 +210,7 @@ fn assert_query(sources: &[Source]) {
                 "java.util.List"
             })
         );
-        assert_eq!(
-            row["static"].as_bool(),
-            Some(matches!(name, "shared" | "ITEMS"))
-        );
+        assert_eq!(row["static"].as_bool(), Some(false));
         assert_eq!(value_json(&row[INTERNAL_PROVENANCE_KEY]), json!([source]));
         let graph = &sources
             .iter()
@@ -198,7 +230,7 @@ fn assert_query(sources: &[Source]) {
     for names in actual.values() {
         assert_eq!(
             names,
-            &NAMES
+            &ALIASED
                 .iter()
                 .map(|name| name.to_string())
                 .collect::<BTreeSet<_>>()

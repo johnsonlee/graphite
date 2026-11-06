@@ -68,9 +68,14 @@ class MmapGraph internal constructor(
     private val localDefinitionData: Map<Int, IntArray>,
     incomingIndex: EdgeOffsetIndex?,
     override val resources: ResourceAccessor,
-    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY,
+    private val analysisCompleteness: AnalysisCompleteness? = null
 ) : Graph, EnumValueIndexSource, Closeable, PackedBranchMetadataSource {
     override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+
+    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
+
+    override fun hasMethod(method: MethodDescriptor): Boolean = methodIndex.containsKey(method.identity)
 
 
     private val nodeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use {

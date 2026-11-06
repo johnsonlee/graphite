@@ -762,6 +762,118 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
   and record the host's memory counters and the anon/file split of each sample beside the
   verdict, so a pressure one cell saw is visible in its record rather than inferred.
 
+### Application Identity and Body Scope Are Two Settings, and a Node Is Not a Status
+
+`includePackages` said two things at once: what the application is, and which bodies are built.
+A build that named its application packages therefore built no body of any library, and a Spring
+Boot or WAR build did not even load a nested jar that held no application package (issue #192:
+`kotlin-stdlib` beside the application turned a valid resource proof into a failure, because the
+graph stopped at the stdlib call). `LoaderConfig.dependencyBodies` (`DependencyBodyScope`) is the
+second setting: a library class it covers is processed as an application class is, its bodies and
+fields, but registers no endpoint and runs no extension, and its artifact keeps the `LIBRARY`
+role. The loader keeps a nested jar the scope names, or one that holds a class of a scope
+package, whatever `includePackages` says (`jarInScope`). Lessons:
+
+- A proof cannot read completeness off the graph: `processMethod` creates the method and its
+  `ReturnNode` before the body is read, an out-of-memory body is skipped and the build goes on,
+  a streaming resolution failure is a log line, and a method with no outgoing call looks exactly
+  like one whose calls were never read. `Graph.analysisCompleteness()` records, per class, whether
+  it was analysed, excluded by scope or failed to resolve, and per method every status other than
+  `ANALYZED` (`ABSTRACT`, `NATIVE`, `NO_BODY`, `INCOMPLETE`, `RESOLUTION_FAILED`,
+  `ANALYZED_WITHOUT_CONTROL_FLOW`), keyed by the full identity; `Graph.analysisStatus(callee)`
+  adds `EXTERNAL` (never loaded) and `UNKNOWN_MEMBER` (analysed class, no such method), and
+  answers `null` on a graph built before the evidence existed. Record the exceptions, not the
+  corpus: a map of every analysed method would have cost a string per method on every build.
+- A call site's `callee` is the declaring method as the adapter resolves it, not the class the
+  bytecode spells: `kotlin.text.StringsKt.trim` is `StringsKt__StringsKt.trim` in the graph, and
+  asking about the facade answers `UNKNOWN_MEMBER`. Ask about what the `CallSite` holds.
+- `Graph.hasMethod` is an index lookup on every implementation; the mapped graph answers through
+  the method index's class range, never a scan per callee, because a proof asks it once per call.
+- The evidence is a sidecar (`graph.completeness`) whose own trailer digest the save records in
+  `forward.properties` beside the node layout digest it carries, read on first use, like the
+  other sidecars and for the same reasons: a record-format
+  bump fails the base revision's reader across every gate, a file the base never opens costs
+  nothing, and a file left beside a rewritten graph must read as absent. It names classes and
+  methods, not node ids, so it needs no layout to read, only a binding to the save that wrote it.
+- The scope is part of the fold provenance (`dependency_artifacts`, `dependency_packages`): a
+  build with more bodies holds more calls, and a key selected on one scope may name another call
+  on another. New identity keys are written only when set, so earlier plans read unchanged.
+- Duplicate class definitions are detected from the archive listing, not the view (the view holds
+  one class per name), across every nested jar whether loaded or not; a `META-INF/versions/`
+  entry marks its archive multi-release rather than defining a class, since this frontend reads
+  the base version as SootUp does. The existing bogus `META-INF.versions.9.x.Y` origins the
+  listing produces for unloaded jars were left as they were: changing `classOrigins()` of
+  multi-artifact graphs is a separate change.
+- `DependencyBodyScope.Reachable(maxClasses)` is the selective expansion: every library jar is
+  loaded, pass 2 reads the application, then a worklist reads the class of every noted callee
+  (declared callee, CHA overrides of a virtual one, the class a `new` names) and the class that
+  declares the field every static field access resolves to (`getstatic` runs its initialiser
+  with no call in sight, review of #193; `Child.value` on a field `Base` declares initialises
+  `Base`, not `Child`, and javac spells a superinterface's field through the implementing
+  class, so the lookup is the JVM's: the class, its superinterfaces, then its superclass, per
+  reference and before the class is deduplicated), and before each class it reads the classes
+  the JVM initialises first (its superclass, and every superinterface that declares a default
+  method, JVMS 5.5: an interface initialiser runs with no call in the class's bytecode) until
+  nothing new is reached or the budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
+  noted at call-site creation only under that scope (once per callee, by identity: descriptors
+  are canonical per signature), and the expansion runs before the dispatch fixpoint, so a
+  function-object class the application allocates is read through its constructor call and its
+  body is a dispatch target; it runs once more after the fixpoint for bodies reached only through
+  a resolved function value. Only library classes are reached: `--exclude` keeps excluding.
+- A call on a function value that resolves to nothing is a gap, not a call with no effect:
+  after the fixpoint, every pending dispatch whose holder saturated (`SATURATED_TARGETS`, by
+  identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). Resolving
+  some bodies does not close a call either (review of #193): a receiver that merges a lambda
+  with a parameter no known caller fills ran the lambda in the graph and nothing for the other
+  branch. A slot nothing flows into and nothing seeds holds a value the scope cannot name, and
+  so does everything it flows into; one pass over the final flow graph marks them
+  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. The closure
+  derives the override flows itself (`expandOverrideFlows`): the fixpoint records a parameter's
+  flows to its overrides only once a target reaches it, so an interface parameter that only an
+  unknown value reaches had no flow to the implementation's parameter, and `Impl.use(cb)` read
+  as complete while `Sink.use(external)` ran it too. A saturated
+  holder lost its targets rather than never having any: the loss follows its flows and its
+  seeds (`lostSlots`, `lostSeeds`), so `choose ? lambda : saturatedField` is partial and a call
+  downstream that resolved nothing is saturated, not unresolved. With cross-method tracking
+  off the same question is answered per method: a local assigned from a parameter, a field, a
+  call result, an element of such an array or a copy of such a local is open (`openLocals`),
+  openness follows a store into an array to the array and its aliases whatever their type says
+  (`inheritOpenness`), and a call on it that resolved a lambda is partial too. A reached
+  stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
+  which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
+- A static field reference is the field of the class that declares it, by the JVM's field
+  resolution (`resolvedFieldSignature`), for the field node and the dispatch slot alike: javac
+  spells an inherited or interface field through the class it is read from (`getstatic
+  Leaf.inherited` on a field `Top` declares), and keyed by that spelling the initialiser's
+  `FIELD_STORE` ended on `Top.inherited` while the read started on a second node `Leaf.inherited`
+  that nothing wrote (review of #193). Instance field references keep the class they spell
+  for the field node: javac spells every inherited instance field through the subclass too, so
+  resolving them is a graph-wide identity change to be measured on the corpora and declared to
+  the gates first. Their dispatch slot is resolved all the same (`Base.install` storing
+  `this::value` into `Base.callback` and `child.callback.get()` reading `Child.callback` are one
+  slot), or the call dispatched to the overwrite alone with no gap (review of #193); the slot
+  of a Kotlin callable reference's `receiver` resolves the same way on both sides.
+- `Reachable.roots` restricts which application classes seed the expansion (the others are
+  still read; they are the application), and a root's reach runs through the application: an
+  application method nothing followed has reached holds its notes (callees, classes its
+  static accesses initialise) with the method, and a followed call, override, resolved function
+  value or class initialisation that reaches the method releases them (review of #193: a root
+  calling `Helper.read()` that calls `lib.Live.read()` left `Live` unread). The walk over the
+  classes the JVM initialises first goes through an analysed application class to the library
+  class it extends (`lib.Owner extends app.Mid extends lib.Base`: `Base` was never reached
+  because `Mid` was already read). `BOOT-INF/classpath.idx` orders a Spring Boot jar's
+  nested libraries as the launcher loads them, for the view's input locations and for the
+  duplicate-definition evidence alike, so the definition the graph holds is the one that runs;
+  other layouts keep the listing order; every archive the listing names is ranked, loaded or
+  not, since an archive without a role is a library, never the application. A root decision is
+  the caller's: a call on a function
+  value is resolved after every class was processed, so a flag left by the last class is the
+  wrong class's (review of #193); the resolved call seeds by `callSite.caller`. An APK beside its
+  platform jar is a single-artifact input for the graph's origin index, which stays empty, but
+  the evidence names the input location each class was read from, or the platform's classes read
+  as the APK's and no scope could name them. Not done: a Rust reader of the sidecar (no consumer,
+  and it would be a new gzip dependency for a file the Rust server never opens).
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

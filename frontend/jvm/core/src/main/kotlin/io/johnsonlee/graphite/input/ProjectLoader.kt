@@ -93,10 +93,23 @@ data class LoaderConfig(
     val interproceduralDataflow: Boolean = false,
 
     /**
+     * Which library classes have their method bodies analysed, see [DependencyBodyScope]. The
+     * default builds no library body, as before; a declared scope needs [includeLibraries], since
+     * a library's bodies can only be analysed once its classes are loaded.
+     */
+    val dependencyBodies: DependencyBodyScope = DependencyBodyScope.None,
+
+    /**
      * Verbose logging callback
      */
     val verbose: ((String) -> Unit)? = null
-)
+) {
+    init {
+        require(dependencyBodies == DependencyBodyScope.None || includeLibraries) {
+            "dependencyBodies needs includeLibraries: a library's bodies are analysed only once its classes are loaded"
+        }
+    }
+}
 
 enum class CallGraphAlgorithm {
     /**

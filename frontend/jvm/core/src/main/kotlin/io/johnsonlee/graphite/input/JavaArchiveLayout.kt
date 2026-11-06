@@ -18,6 +18,8 @@ object JavaArchiveLayout {
 
     const val BOOT_INF_CLASSES = "${BOOT_INF_ROOT}${CLASSES_DIRECTORY}"
     const val BOOT_INF_LIB = "${BOOT_INF_ROOT}${LIB_DIRECTORY}"
+    /** The nested-jar order Spring Boot's launcher loads, one jar per line. */
+    const val BOOT_INF_CLASSPATH_INDEX = "${BOOT_INF_ROOT}classpath.idx"
     const val WEB_INF_CLASSES = "${WEB_INF_ROOT}${CLASSES_DIRECTORY}"
     const val WEB_INF_LIB = "${WEB_INF_ROOT}${LIB_DIRECTORY}"
     const val META_INF_MANIFEST = "${META_INF_ROOT}${MANIFEST_FILE}"

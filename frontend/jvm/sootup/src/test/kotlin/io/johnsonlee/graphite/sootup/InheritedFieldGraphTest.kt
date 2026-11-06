@@ -17,6 +17,7 @@ import javax.tools.ToolProvider
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -47,11 +48,12 @@ class InheritedFieldGraphTest {
     private fun assertFields(graph: Graph) {
         val table = graph.declaredTypes()
         val nodes = graph.nodes<FieldNode>().toList()
+        // An instance field reference keeps the class it spells (`child.names` is a `Child` node
+        // bound to Parent's declaration); a static one resolves to the class that declares it, as
+        // the JVM resolves it, so `Child.shared` and `Child.ITEMS` are the declaring class's nodes.
         for ((name, owner, rendered) in listOf(
             Triple("names", PARENT, "java.util.List<java.lang.String>"),
-            Triple("value", PARENT, "T"),
-            Triple("shared", PARENT, "java.util.List<java.lang.Long>"),
-            Triple("ITEMS", ITEMS, "java.util.List<java.lang.Integer>")
+            Triple("value", PARENT, "T")
         )) {
             val child = nodes.single { it.descriptor.declaringClass.className == CHILD && it.descriptor.name == name }
             val original = nodes.single { it.descriptor.declaringClass.className == owner && it.descriptor.name == name }
@@ -64,7 +66,18 @@ class InheritedFieldGraphTest {
             assertEquals(table.info(type), table.info(table.fields.getValue(aliasKey)), name)
             assertNotEquals(child.id, original.id, "Original erased field nodes remain distinct")
             assertEquals(original.descriptor.type.className, child.descriptor.type.className)
-            assertEquals(name == "shared" || name == "ITEMS", child.isStatic)
+            assertFalse(child.isStatic)
+        }
+        for ((name, owner, rendered) in listOf(
+            Triple("shared", PARENT, "java.util.List<java.lang.Long>"),
+            Triple("ITEMS", ITEMS, "java.util.List<java.lang.Integer>")
+        )) {
+            val original = nodes.single { it.descriptor.declaringClass.className == owner && it.descriptor.name == name }
+            assertTrue(original.isStatic, name)
+            assertTrue(nodes.none { it.descriptor.declaringClass.className == CHILD && it.descriptor.name == name },
+                "a static field reference through Child resolves to the declaring class: $name")
+            val type = table.fields.getValue(MemberTypeKey(owner, name, jvmTypeDescriptor(original.descriptor.type.className)))
+            assertEquals(rendered, table.render(type), name)
         }
         val variable = table.fields.getValue(MemberTypeKey(CHILD, "value", "Ljava/lang/Object;"))
         assertEquals(mapOf("kind" to "variable", "name" to "T", "scope" to "class:$PARENT",
