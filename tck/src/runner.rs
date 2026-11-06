@@ -581,6 +581,7 @@ fn run_inventory_with_root(
                         result["expected"] = prepared.expected;
                         result["actual"] = actual;
                         result["ordered"] = json!(prepared.ordered);
+                        result["controls"] = json!(prepared.controls);
                     }
                 },
             }
@@ -627,6 +628,17 @@ pub fn baseline_changes(expected: &Value, actual: &Value) -> Vec<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn retained_control_expectations_do_not_change_raw_response_fingerprints() {
+        let original = json!({"id":"case","scenarioSha256":"fixed","status":"passed","reason":null,"actual":{"columns":["v"],"rows":[[1]],"error":null}});
+        let mut with_metadata = original.clone();
+        with_metadata["controls"] = json!([{"query":"RETURN 1 AS v","parameters":{},"expected":{"columns":["v"],"rows":[[1]]},"ordered":false}]);
+        assert_eq!(
+            baseline_signature(&[original]),
+            baseline_signature(&[with_metadata])
+        );
+    }
+
     #[test]
     fn official_float_zero_equality_is_comparison_only_and_type_preserving() {
         let actual = json!({"columns":["v"],"rows":[[-0.0]],"error":null});
