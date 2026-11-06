@@ -64,3 +64,47 @@ fn graphite_unwind_rebinding_is_preserved_while_m23_rejects_it() {
         .unwrap_err();
     assert_eq!(error.diagnostic().unwrap().detail, "VariableAlreadyBound");
 }
+
+#[test]
+fn graphite_distinct_allows_legacy_hidden_order_sources() {
+    let clauses = graphite_cypher::parser::parse(
+        "MATCH (m) RETURN DISTINCT properties(m) AS value ORDER BY m.graphId, m.return_type",
+    )
+    .unwrap();
+    assert!(graphite_cypher::validation::resolve_with_dialect(
+        &clauses,
+        None,
+        CypherDialect::Graphite
+    )
+    .is_ok());
+    let error = graphite_cypher::validation::resolve_with_dialect(
+        &clauses,
+        None,
+        CypherDialect::OpenCypherM23,
+    )
+    .unwrap_err();
+    assert_eq!(error.diagnostic().unwrap().detail, "UndefinedVariable");
+}
+
+#[test]
+fn graphite_dynamic_indexing_extensions_remain_available() {
+    let legacy = Executor::new(vec![], false);
+    for (query, expected) in [
+        ("WITH 'key' AS n RETURN n[n] AS value", None),
+        ("RETURN [10, 20][1.9] AS value", Some(20)),
+        ("RETURN {a:1}[0] AS value", None),
+    ] {
+        let result = legacy.execute(query, None).unwrap();
+        match expected {
+            Some(number) => {
+                assert!(matches!(result.rows[0]["value"], Value::Int(n) if n == number))
+            }
+            None => assert!(matches!(result.rows[0]["value"], Value::Null)),
+        }
+        let error = Executor::new(vec![], false)
+            .with_dialect(CypherDialect::OpenCypherM23)
+            .execute(query, None)
+            .unwrap_err();
+        assert_eq!(error.diagnostic().unwrap().error_type, "TypeError");
+    }
+}

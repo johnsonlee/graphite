@@ -772,6 +772,7 @@ impl<'a> Evaluator<'a> {
         if base.is_null() || index.is_null() {
             return Ok(Value::Null);
         }
+        let standard = self.ctx.dialect() == crate::CypherDialect::OpenCypherM23;
         let invalid = || {
             CypherError::execution(
                 "TypeError",
@@ -783,6 +784,8 @@ impl<'a> Evaluator<'a> {
             Value::List(items) => {
                 let i = match index {
                     Value::Int(i) => *i,
+                    Value::Float(f) if !standard => *f as i64,
+                    _ if !standard => return Ok(Value::Null),
                     _ => return Err(invalid()),
                 };
                 let len = items.len() as i64;
@@ -795,6 +798,7 @@ impl<'a> Evaluator<'a> {
             }
             Value::Map(m) => match index.as_str() {
                 Some(k) => m.get(k).cloned().unwrap_or(Value::Null),
+                None if !standard => Value::Null,
                 None => {
                     return Err(CypherError::execution(
                         "TypeError",
@@ -805,6 +809,7 @@ impl<'a> Evaluator<'a> {
             },
             Value::Node(_) | Value::Rel(_) | Value::Method(_) => match index.as_str() {
                 Some(k) => self.property(base, k),
+                None if !standard => Value::Null,
                 None => {
                     return Err(CypherError::execution(
                         "TypeError",
@@ -813,6 +818,7 @@ impl<'a> Evaluator<'a> {
                     ))
                 }
             },
+            _ if !standard => Value::Null,
             _ => return Err(invalid()),
         })
     }

@@ -1193,13 +1193,14 @@ fn resolve_scoped(
                         .any(|item| item.alias.is_none() && !matches!(item.expr, Expr::Variable(_)))
                 });
                 let (next, agg, keys, known) = projection(items, &scope, true)?;
-                order_scope = if *distinct || agg {
-                    next.clone()
-                } else {
-                    let mut all = scope.clone();
-                    all.extend(next.clone());
-                    all
-                };
+                order_scope =
+                    if (*distinct && dialect == crate::CypherDialect::OpenCypherM23) || agg {
+                        next.clone()
+                    } else {
+                        let mut all = scope.clone();
+                        all.extend(next.clone());
+                        all
+                    };
                 order_known = known;
                 order_keys = keys;
                 order_aggregate = agg;
@@ -1213,13 +1214,14 @@ fn resolve_scoped(
             }
             Clause::Return { distinct, items } => {
                 let (next, agg, keys, known) = projection(items, &scope, false)?;
-                order_scope = if *distinct || agg {
-                    next.clone()
-                } else {
-                    let mut all = scope.clone();
-                    all.extend(next.clone());
-                    all
-                };
+                order_scope =
+                    if (*distinct && dialect == crate::CypherDialect::OpenCypherM23) || agg {
+                        next.clone()
+                    } else {
+                        let mut all = scope.clone();
+                        all.extend(next.clone());
+                        all
+                    };
                 order_known = known;
                 order_keys = keys;
                 order_aggregate = agg;
