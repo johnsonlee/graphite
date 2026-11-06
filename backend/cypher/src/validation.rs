@@ -512,10 +512,10 @@ fn expression_context(
                 }
             }
         }
-        Expr::In { right, .. } => {
-            if !matches!(infer(right, scope), Kind::Unknown | Kind::Null | Kind::List) {
-                return Err(fail("InvalidArgumentType", "IN requires a list operand"));
-            }
+        Expr::In { right, .. }
+            if !matches!(infer(right, scope), Kind::Unknown | Kind::Null | Kind::List) =>
+        {
+            return Err(fail("InvalidArgumentType", "IN requires a list operand"));
         }
         _ => {}
     }
