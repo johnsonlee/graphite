@@ -3,9 +3,7 @@ package io.johnsonlee.graphite.core
 /**
  * Represents a complete type structure with resolved generic parameters and field types.
  *
- * This is the core output of type hierarchy analysis, enabling understanding of
- * nested type structures like:
- *
+ * This is the core output of type hierarchy analysis, enabling understanding of nested type structures like:
  * ```
  * ApiResponse<PageData<User>>
  * ├── data: PageData<User>
@@ -24,31 +22,23 @@ data class TypeStructure(
     val typeArguments: Map<String, TypeStructure> = emptyMap(),
     val fields: Map<String, FieldStructure> = emptyMap()
 ) {
-    /**
-     * Get the simple class name without package
-     */
-    val simpleName: String get() = type.simpleName
+    /** Get the simple class name without package */
+    val simpleName: String
+        get() = type.simpleName
 
-    /**
-     * Get the fully qualified class name
-     */
-    val className: String get() = type.className
+    /** Get the fully qualified class name */
+    val className: String
+        get() = type.className
 
-    /**
-     * Check if this type has any generic type arguments
-     */
-    val isGeneric: Boolean get() = typeArguments.isNotEmpty()
+    /** Check if this type has any generic type arguments */
+    val isGeneric: Boolean
+        get() = typeArguments.isNotEmpty()
 
-    /**
-     * Check if any fields have Object as declared type (potential polymorphism)
-     */
-    val hasObjectFields: Boolean get() = fields.values.any {
-        it.declaredType.className == "java.lang.Object"
-    }
+    /** Check if any fields have Object as declared type (potential polymorphism) */
+    val hasObjectFields: Boolean
+        get() = fields.values.any { it.declaredType.className == "java.lang.Object" }
 
-    /**
-     * Get a human-readable representation of the type structure
-     */
+    /** Get a human-readable representation of the type structure */
     fun toTreeString(indent: String = ""): String {
         val sb = StringBuilder()
         sb.append(formatTypeName())
@@ -67,37 +57,24 @@ data class TypeStructure(
         return sb.toString()
     }
 
-    /**
-     * Format the type name with generic arguments
-     * e.g., ApiResponse<PageData<User>>
-     */
+    /** Format the type name with generic arguments e.g., ApiResponse<PageData<User>> */
     fun formatTypeName(): String {
-        // First check if TypeStructure has named type arguments
-        if (typeArguments.isNotEmpty()) {
-            val args = typeArguments.values.joinToString(", ") { it.formatTypeName() }
-            return "${type.simpleName}<$args>"
-        }
-
-        // Otherwise check if the underlying TypeDescriptor has type arguments
-        if (type.typeArguments.isNotEmpty()) {
-            val args = type.typeArguments.joinToString(", ") { it.simpleName }
-            return "${type.simpleName}<$args>"
-        }
-
-        return type.simpleName
+        val arguments =
+            when {
+                typeArguments.isNotEmpty() -> typeArguments.values.joinToString(", ") { it.formatTypeName() }
+                type.typeArguments.isNotEmpty() -> type.typeArguments.joinToString(", ") { it.simpleName }
+                else -> null
+            }
+        return arguments?.let { "${type.simpleName}<$it>" } ?: type.simpleName
     }
 
     companion object {
-        /**
-         * Create a simple type structure without generics or fields
-         */
+        /** Create a simple type structure without generics or fields */
         fun simple(className: String): TypeStructure {
             return TypeStructure(TypeDescriptor(className))
         }
 
-        /**
-         * Create a type structure from a TypeDescriptor
-         */
+        /** Create a type structure from a TypeDescriptor */
         fun from(type: TypeDescriptor): TypeStructure {
             return TypeStructure(type)
         }
@@ -107,8 +84,7 @@ data class TypeStructure(
 /**
  * Represents a field's type information including both declared and actual types.
  *
- * For fields declared as Object or generic types, the actualTypes set contains
- * all concrete types that have been assigned to this field.
+ * For fields declared as Object or generic types, the actualTypes set contains all concrete types that have been assigned to this field.
  *
  * @property name The field name
  * @property declaredType The declared type of the field
@@ -121,21 +97,15 @@ data class FieldStructure(
     val actualTypes: Set<TypeStructure> = emptySet(),
     val isGenericParameter: Boolean = false
 ) {
-    /**
-     * Check if the actual types differ from the declared type
-     */
-    val hasPolymorphicAssignment: Boolean get() =
-        actualTypes.isNotEmpty() && actualTypes.any { it.type != declaredType }
+    /** Check if the actual types differ from the declared type */
+    val hasPolymorphicAssignment: Boolean
+        get() = actualTypes.isNotEmpty() && actualTypes.any { it.type != declaredType }
 
-    /**
-     * Check if the declared type is Object
-     */
-    val isDeclaredAsObject: Boolean get() =
-        declaredType.className == "java.lang.Object"
+    /** Check if the declared type is Object */
+    val isDeclaredAsObject: Boolean
+        get() = declaredType.className == "java.lang.Object"
 
-    /**
-     * Format the declared type with generic arguments if available
-     */
+    /** Format the declared type with generic arguments if available */
     private fun formatDeclaredType(): String {
         return if (declaredType.typeArguments.isEmpty()) {
             declaredType.simpleName
@@ -145,9 +115,7 @@ data class FieldStructure(
         }
     }
 
-    /**
-     * Get a human-readable representation
-     */
+    /** Get a human-readable representation */
     fun toTreeString(indent: String = ""): String {
         val sb = StringBuilder()
         val declaredTypeName = formatDeclaredType()
@@ -197,16 +165,12 @@ data class TypeHierarchyResult(
     val returnStructures: Set<TypeStructure>,
     val callSiteStructures: Map<CallSiteNode, TypeStructure> = emptyMap()
 ) {
-    /**
-     * Get a consolidated view of all types that can be returned
-     */
+    /** Get a consolidated view of all types that can be returned */
     fun allReturnTypes(): Set<TypeDescriptor> {
         return returnStructures.map { it.type }.toSet()
     }
 
-    /**
-     * Get all field types used in the return structures (recursively)
-     */
+    /** Get all field types used in the return structures (recursively) */
     fun allFieldTypes(): Set<TypeDescriptor> {
         val types = mutableSetOf<TypeDescriptor>()
         fun collect(structure: TypeStructure) {
@@ -222,53 +186,35 @@ data class TypeHierarchyResult(
         return types
     }
 
-    /**
-     * Print a human-readable tree representation
-     */
+    /** Print a human-readable tree representation */
     fun toTreeString(): String {
         val sb = StringBuilder()
         sb.appendLine("Method: ${method.name}()")
         sb.appendLine("Declared return type: ${method.returnType.className}")
         sb.appendLine()
         sb.appendLine("Actual return type structure(s):")
-        returnStructures.forEach { structure ->
-            sb.appendLine(structure.toTreeString("  "))
-        }
+        returnStructures.forEach { structure -> sb.appendLine(structure.toTreeString("  ")) }
         return sb.toString()
     }
 }
 
-/**
- * Configuration for type hierarchy analysis.
- */
+/** Configuration for type hierarchy analysis. */
 data class TypeHierarchyConfig(
-    /**
-     * Maximum depth to traverse nested types
-     */
+    /** Maximum depth to traverse nested types */
     val maxDepth: Int = 10,
 
-    /**
-     * Whether to analyze Object fields to find actual types
-     */
+    /** Whether to analyze Object fields to find actual types */
     val resolveObjectFields: Boolean = true,
 
-    /**
-     * Whether to analyze generic type parameters
-     */
+    /** Whether to analyze generic type parameters */
     val resolveGenerics: Boolean = true,
 
-    /**
-     * Whether to follow method calls to analyze returned types
-     */
+    /** Whether to follow method calls to analyze returned types */
     val interProcedural: Boolean = true,
 
-    /**
-     * Package prefixes to include in analysis (empty = all)
-     */
+    /** Package prefixes to include in analysis (empty = all) */
     val includePackages: List<String> = emptyList(),
 
-    /**
-     * Package prefixes to exclude from analysis
-     */
+    /** Package prefixes to exclude from analysis */
     val excludePackages: List<String> = listOf("java.", "javax.", "kotlin.", "sun.", "com.sun.")
 )

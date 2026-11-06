@@ -27,6 +27,11 @@ import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.OptionsBuilder
 import java.util.concurrent.TimeUnit
 
+private const val FIXTURE_CALL_SITE_COUNT = 500
+private const val FIXTURE_CALLEE_COUNT = 50
+private const val FIXTURE_STRING_COUNT = 100
+private const val FIXTURE_FIELD_COUNT = 100
+
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -45,9 +50,11 @@ open class CypherBenchmark {
         val barType = TypeDescriptor("com.example.Bar")
 
         // Create 500 call site nodes with corresponding int constants and dataflow edges
-        for (i in 1..500) {
+        for (i in 1..FIXTURE_CALL_SITE_COUNT) {
             val method = MethodDescriptor(fooType, "method$i", emptyList(), TypeDescriptor("void"))
-            val callee = MethodDescriptor(barType, "target${i % 50}", listOf(TypeDescriptor("int")), TypeDescriptor("void"))
+            val callee = MethodDescriptor(
+                barType, "target${i % FIXTURE_CALLEE_COUNT}", listOf(TypeDescriptor("int")), TypeDescriptor("void")
+            )
             val csId = NodeId.next()
             val cs = CallSiteNode(csId, method, callee, i, null, emptyList())
             builder.addNode(cs)
@@ -62,7 +69,7 @@ open class CypherBenchmark {
         }
 
         // Add string constants
-        for (i in 1..100) {
+        for (i in 1..FIXTURE_STRING_COUNT) {
             val sc = StringConstant(NodeId.next(), "value_$i")
             builder.addNode(sc)
         }
@@ -71,7 +78,7 @@ open class CypherBenchmark {
         builder.addTypeRelation(barType, fooType, TypeRelation.EXTENDS)
 
         // Add fields
-        for (i in 1..100) {
+        for (i in 1..FIXTURE_FIELD_COUNT) {
             val field = FieldNode(
                 NodeId.next(),
                 FieldDescriptor(fooType, "field$i", TypeDescriptor("java.lang.String")),
@@ -165,7 +172,7 @@ open class CypherBenchmark {
  * Run benchmarks from command line:
  *   java -cp <classpath> io.johnsonlee.graphite.cypher.CypherBenchmarkRunner
  */
-class CypherBenchmarkRunner {
+class CypherBenchmarkRunner private constructor() {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {

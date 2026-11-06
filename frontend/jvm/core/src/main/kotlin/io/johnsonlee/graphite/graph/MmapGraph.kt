@@ -1,24 +1,11 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.LocalDefinition
-import io.johnsonlee.graphite.core.BranchComparison
-import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
-import io.johnsonlee.graphite.core.ComparisonOp
-import io.johnsonlee.graphite.core.ControlFlowEdge
-import io.johnsonlee.graphite.core.ControlFlowKind
-import io.johnsonlee.graphite.core.DataFlowEdge
-import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
-import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
-import io.johnsonlee.graphite.core.ResourceEdge
-import io.johnsonlee.graphite.core.ResourceRelation
-import io.johnsonlee.graphite.core.TypeEdge
-import io.johnsonlee.graphite.core.TypeDescriptor
-import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.input.ResourceAccessor
 import java.io.Closeable
 import java.io.DataInput
@@ -37,9 +24,8 @@ private const val USHORT_MASK = 0xFFFF
 /**
  * A [Graph] implementation backed by disk files.
  *
- * Node and edge data are read on demand from `nodes.dat` and `edges.dat`
- * via [RandomAccessFile.seek].  Only lightweight indexes (nodeId -> file offset,
- * nodeType -> nodeIds) are held in memory.
+ * Node and edge data are read on demand from `nodes.dat` and `edges.dat` via [RandomAccessFile.seek]. Only lightweight indexes (nodeId ->
+ * file offset, nodeType -> nodeIds) are held in memory.
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
  * - Node index: ~47 MB (`LongArray`, 8 bytes per slot x 5.9M)
@@ -49,53 +35,33 @@ private const val USHORT_MASK = 0xFFFF
  *
  * Created by [MmapGraphBuilder.build].
  */
-@Suppress("LongParameterList")
-class MmapGraph internal constructor(
-    private val dataDir: Path,
-    private val nodeIndex: LongArray,
-    private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
-    private val outgoingIndex: EdgeOffsetIndex,
-    private val nodeMethods: List<MethodDescriptor>,
-    private val nodeTypes: List<TypeDescriptor>,
-    private val methodIndex: Map<String, MethodDescriptor>,
-    private val typeHierarchy: TypeHierarchy,
-    private val enumValuesMap: Map<String, List<Any?>>,
-    private val classOriginsMap: Map<String, String>,
-    private val syntheticIdentitiesMap: Map<String, String>,
-    private val artifactDependenciesMap: Map<String, Map<String, Int>>,
-    private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
-    private val branchScopeData: List<DefaultGraph.RawBranchScope>,
-    private val localDefinitionData: Map<Int, IntArray>,
-    incomingIndex: EdgeOffsetIndex?,
-    override val resources: ResourceAccessor,
-    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY,
-    private val analysisCompleteness: AnalysisCompleteness? = null
-) : Graph, EnumValueIndexSource, Closeable, PackedBranchMetadataSource {
-    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+class MmapGraph
+internal constructor(
+    nodes: MappedNodeInputs,
+    edges: MappedEdgeInputs,
+    metadata: GraphMetadataInputs,
+    branches: RawBranchInputs,
+    override val resources: ResourceAccessor
+) : IndexedGraphMetadata(metadata), Closeable, PackedBranchMetadataSource {
+    private val dataDir = nodes.directory
+    private val nodeIndex = nodes.offsets
+    private val nodeTypeIndex = nodes.byType
+    private val nodeMethods = nodes.methods
+    private val nodeTypes = nodes.types
+    private val outgoingIndex = edges.outgoing
+    private val branchScopeData = branches.scopes
+    private val localDefinitionData = branches.definitions
 
-    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
+    private val nodeMmap: ByteBuffer =
+        FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use { it.map(FileChannel.MapMode.READ_ONLY, 0, it.size()) }
+    private val edgeMmap: ByteBuffer =
+        FileChannel.open(dataDir.resolve("edges.dat"), StandardOpenOption.READ).use { it.map(FileChannel.MapMode.READ_ONLY, 0, it.size()) }
+    private val edgeReader = MmapEdgeReader(edgeMmap)
+    private val incomingIndex: EdgeOffsetIndex by lazy { edges.incoming ?: buildIncomingEdgeOffsetIndex() }
 
-    override fun hasMethod(method: MethodDescriptor): Boolean = methodIndex.containsKey(method.identity)
+    private val branchScopeIndex = lazy { branchScopeData.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value } }
 
-
-    private val nodeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use {
-        it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
-    }
-    private val edgeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("edges.dat"), StandardOpenOption.READ).use {
-        it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
-    }
-    private val incomingIndex: EdgeOffsetIndex by lazy {
-        incomingIndex ?: buildIncomingEdgeOffsetIndex()
-    }
-
-    private val branchScopeIndex = lazy {
-        branchScopeData.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
-    }
-
-    internal data class EdgeOffsetIndex(
-        val starts: IntArray,
-        val offsets: LongOffsetIndex
-    )
+    internal data class EdgeOffsetIndex(val starts: IntArray, val offsets: LongOffsetIndex)
 
     internal interface LongOffsetIndex {
         operator fun get(position: Int): Long
@@ -106,39 +72,35 @@ class MmapGraph internal constructor(
     }
 
     internal class MappedLongOffsetIndex(path: Path) : LongOffsetIndex {
-        private val offsets: ByteBuffer = FileChannel.open(path, StandardOpenOption.READ).use {
-            it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
-        }
+        private val offsets: ByteBuffer =
+            FileChannel.open(path, StandardOpenOption.READ).use { it.map(FileChannel.MapMode.READ_ONLY, 0, it.size()) }
 
         override fun get(position: Int): Long = offsets.getLong(position * Long.SIZE_BYTES)
     }
 
     override fun node(id: NodeId): Node? {
         val nodeId = id.value
-        if (nodeId < 0 || nodeId >= nodeIndex.size) return null
-        val offset = nodeIndex[nodeId]
-        if (offset < 0L) return null
-        return readNodeAt(offset)
+        val offset = nodeIndex.getOrNull(nodeId)?.takeIf { it >= 0L }
+        return offset?.let(::readNodeAt)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
-        val ids = when {
-            type == Node::class.java -> return allNodes() as Sequence<T>
-            nodeTypeIndex.containsKey(type) -> nodeTypeIndex.getValue(type).asSequence()
-            else -> nodeTypeIndex.entries.asSequence()
-                .filter { type.isAssignableFrom(it.key) }
-                .flatMap { it.value.asSequence() }
-        }
+        val ids =
+            when {
+                type == Node::class.java -> return allNodes() as Sequence<T>
+                nodeTypeIndex.containsKey(type) -> nodeTypeIndex.getValue(type).asSequence()
+                else -> nodeTypeIndex.entries.asSequence().filter { type.isAssignableFrom(it.key) }.flatMap { it.value.asSequence() }
+            }
         return ids.mapNotNull { node(NodeId(it)) as? T }
     }
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
-        return edgeOffsets(outgoingIndex, id).map { readEdgeAt(it) }
+        return edgeOffsets(outgoingIndex, id).map { edgeReader.read(it) }
     }
 
     override fun incoming(id: NodeId): Sequence<Edge> {
-        return edgeOffsets(incomingIndex, id).map { readEdgeAt(it) }
+        return edgeOffsets(incomingIndex, id).map { edgeReader.read(it) }
     }
 
     fun forEachOutgoingEdge(nodeId: Int, action: (Edge) -> Unit) {
@@ -148,7 +110,7 @@ class MmapGraph internal constructor(
         if (start == end) return
         val buf = edgeMmap.duplicate()
         for (position in start until end) {
-            action(readEdgeAt(buf, outgoingIndex.offsets[position]))
+            action(edgeReader.read(buf, outgoingIndex.offsets[position]))
         }
     }
 
@@ -165,60 +127,20 @@ class MmapGraph internal constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
-        outgoing(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> = outgoing(id).filter { type.isInstance(it) } as Sequence<T>
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> =
-        incoming(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> = incoming(id).filter { type.isInstance(it) } as Sequence<T>
 
     override fun callSites(methodPattern: MethodPattern): Sequence<CallSiteNode> =
         nodes(CallSiteNode::class.java).filter { methodPattern.matches(it.callee) }
 
-    override fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        typeHierarchy.supertypes(type)
-
-    override fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        typeHierarchy.subtypes(type)
-
-    override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
-        methodIndex.values.asSequence().filter { pattern.matches(it) }
-
-    override fun methodCount(): Long = methodIndex.size.toLong()
-
-    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
-        methods(pattern).take(limit.coerceAtLeast(0)).toList()
-
-    override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
-        enumValuesMap["$enumClass#$enumName"]
-
-    override fun enumValueIndex(): Map<String, List<Any?>> = enumValuesMap
-
-    override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
-        memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
-
-    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
-        memberAnnotationsMap
-
-    override fun classOrigin(className: String): String? = classOriginsMap[className]
-
-    override fun classOrigins(): Map<String, String> = classOriginsMap
-
-    override fun syntheticIdentity(member: String): String? = syntheticIdentitiesMap[member]
-
-    override fun syntheticIdentities(): Map<String, String> = syntheticIdentitiesMap
-
-    override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
-
-    override fun branchScopes(): Sequence<BranchScope> =
-        branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
+    override fun branchScopes(): Sequence<BranchScope> = branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex.value[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
-    private val localDefinitionIndex = lazy {
-        BranchScope.unpackDefinitionTable(localDefinitionData)
-    }
+    private val localDefinitionIndex = lazy { BranchScope.unpackDefinitionTable(localDefinitionData) }
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex.value
 
@@ -231,8 +153,6 @@ class MmapGraph internal constructor(
         if (localDefinitionIndex.isInitialized()) return null
         return localDefinitionData.packedLocalDefinitionSnapshot()
     }
-
-    override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 
     override fun close() {
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
@@ -254,46 +174,11 @@ class MmapGraph internal constructor(
         }
     }
 
-    private fun readEdgeAt(offset: Long): Edge {
-        val buf = edgeMmap.duplicate()
-        return readEdgeAt(buf, offset)
-    }
-
-    private fun readEdgeAt(buf: ByteBuffer, offset: Long): Edge {
-        buf.position(offset.toInt())
-        val from = NodeId(buf.int)
-        val to = NodeId(buf.int)
-        return when (val tag = buf.get().toInt()) {
-            MmapGraphBuilder.TAG_EDGE_DATAFLOW ->
-                DataFlowEdge(from, to, DataFlowKind.entries[buf.get().toInt()])
-            MmapGraphBuilder.TAG_EDGE_CALL -> {
-                val flags = buf.get().toInt()
-                CallEdge(from, to, isVirtual = (flags and 1) != 0, isDynamic = (flags and 2) != 0)
-            }
-            MmapGraphBuilder.TAG_EDGE_TYPE ->
-                TypeEdge(from, to, TypeRelation.entries[buf.get().toInt()])
-            MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW -> {
-                val kind = ControlFlowKind.entries[buf.get().toInt()]
-                val hasComparison = buf.get().toInt() == 1
-                val comparison = if (hasComparison) {
-                    BranchComparison(ComparisonOp.entries[buf.get().toInt()], NodeId(buf.int))
-                } else {
-                    null
-                }
-                ControlFlowEdge(from, to, kind, comparison)
-            }
-            MmapGraphBuilder.TAG_EDGE_RESOURCE ->
-                ResourceEdge(from, to, ResourceRelation.entries[buf.get().toInt()])
-            else -> error("Unknown edge type tag: $tag")
-        }
-    }
-
     private fun edgeOffsets(index: EdgeOffsetIndex, id: NodeId): Sequence<Long> {
         val nodeId = id.value
         if (nodeId < 0 || nodeId + 1 >= index.starts.size) return emptySequence()
         val start = index.starts[nodeId]
         val end = index.starts[nodeId + 1]
-        if (start == end) return emptySequence()
         return (start until end).asSequence().map { position -> index.offsets[position] }
     }
 
@@ -305,11 +190,11 @@ class MmapGraph internal constructor(
             countBuf.int
             val to = countBuf.int
             counts[to]++
-            skipEdgePayload(countBuf)
+            edgeReader.skipPayload(countBuf)
             totalEdges++
         }
 
-        val starts = buildPrefixStarts(counts)
+        val starts = edgeReader.prefixStarts(counts)
         if (totalEdges == 0) {
             return EdgeOffsetIndex(starts, HeapLongOffsetIndex(LongArray(0)))
         }
@@ -322,17 +207,15 @@ class MmapGraph internal constructor(
             val recordOffset = fillBuf.position().toLong()
             fillBuf.int
             val to = fillBuf.int
-            skipEdgePayload(fillBuf)
+            edgeReader.skipPayload(fillBuf)
             offsets.putLong(counts[to]++, recordOffset)
         }
 
         return EdgeOffsetIndex(starts, MappedLongOffsetIndex(offsetsFile))
     }
 
-    internal class WritableLongOffsetIndex private constructor(
-        private val channel: FileChannel,
-        private val buffer: ByteBuffer
-    ) : Closeable {
+    internal class WritableLongOffsetIndex private constructor(private val channel: FileChannel, private val buffer: ByteBuffer) :
+        Closeable {
         fun putLong(position: Int, value: Long) {
             buffer.putLong(position * Long.SIZE_BYTES, value)
         }
@@ -347,13 +230,13 @@ class MmapGraph internal constructor(
                 require(bytes <= Int.MAX_VALUE) {
                     "Memory-mapped edge offset indexes support at most ${Int.MAX_VALUE / Long.SIZE_BYTES} edges"
                 }
-                val channel = FileChannel.open(
-                    path,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.READ,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-                )
+                val channel =
+                    FileChannel.open(
+                        path,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.READ,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING)
                 channel.truncate(bytes)
                 val buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes)
                 return WritableLongOffsetIndex(channel, buffer)
@@ -362,37 +245,12 @@ class MmapGraph internal constructor(
     }
 
     internal companion object {
-        fun createMappedLongOffsetIndex(path: Path, entries: Int): WritableLongOffsetIndex =
-            WritableLongOffsetIndex.create(path, entries)
-    }
-
-    private fun skipEdgePayload(buf: ByteBuffer) {
-        when (buf.get().toInt()) {
-            MmapGraphBuilder.TAG_EDGE_DATAFLOW,
-            MmapGraphBuilder.TAG_EDGE_CALL,
-            MmapGraphBuilder.TAG_EDGE_TYPE,
-            MmapGraphBuilder.TAG_EDGE_RESOURCE -> buf.get()
-            MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW -> {
-                buf.get()
-                if (buf.get().toInt() == 1) {
-                    buf.get()
-                    buf.int
-                }
-            }
-            else -> error("Unknown edge type tag")
-        }
-    }
-
-    private fun buildPrefixStarts(counts: IntArray): IntArray {
-        val starts = IntArray(counts.size + 1)
-        for (i in counts.indices) {
-            starts[i + 1] = starts[i] + counts[i]
-        }
-        return starts
+        fun createMappedLongOffsetIndex(path: Path, entries: Int): WritableLongOffsetIndex = WritableLongOffsetIndex.create(path, entries)
     }
 
     internal class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {
         override fun read(): Int = if (buf.hasRemaining()) buf.get().toInt() and BYTE_MASK else -1
+
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             if (!buf.hasRemaining()) return -1
             val n = minOf(len, buf.remaining())
@@ -476,8 +334,7 @@ class MmapGraph internal constructor(
             return value
         }
 
-        override fun readLine(): String =
-            throw UnsupportedOperationException("ByteBufferDataInput does not support readLine")
+        override fun readLine(): String = throw UnsupportedOperationException("ByteBufferDataInput does not support readLine")
 
         override fun readUTF(): String = DataInputStream.readUTF(this)
 

@@ -26,8 +26,7 @@ subprojects {
     extensions.configure<DetektExtension>("detekt") {
         buildUponDefaultConfig = true
         allRules = false
-        config.setFrom(rootProject.files("config/detekt/detekt.yml"))
-        baseline = rootProject.file("config/detekt/baselines/${project.name}.xml")
+        config.setFrom(rootProject.files("detekt.yml"))
     }
 
     tasks.withType<Detekt>().configureEach {

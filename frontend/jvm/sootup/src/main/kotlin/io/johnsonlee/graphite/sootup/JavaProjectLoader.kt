@@ -472,7 +472,7 @@ class JavaProjectLoader(
             ZipFile(path.toFile()).use { zip ->
                 zip.getEntry(JavaArchiveLayout.BOOT_INF_CLASSES) != null
             }
-        } catch (e: Exception) {
+        } catch (_: java.io.IOException) {
             false
         }
     }
@@ -493,6 +493,7 @@ class JavaProjectLoader(
         val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-springboot")
         var artifactOrder: List<String> = emptyList()
+        var completed = false
 
         try {
             ZipFile(path.toFile()).use { zip ->
@@ -501,50 +502,21 @@ class JavaProjectLoader(
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
 
-                zip.entries().asSequence()
-                    .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_CLASSES) && !it.isDirectory }
-                    .forEach { entry ->
-                        val relativePath = entry.name.removePrefix(JavaArchiveLayout.BOOT_INF_CLASSES)
-                        val targetFile = classesDir.resolve(relativePath)
-                        Files.createDirectories(targetFile.parent)
-                        zip.getInputStream(entry).use { input ->
-                            Files.copy(input, targetFile)
-                        }
-                    }
+                extractArchiveClasses(zip, JavaArchiveLayout.BOOT_INF_CLASSES, classesDir)
 
                 locations.addInputLocation(JavaArchiveLayout.BOOT_INF_CLASSES, sources, classesDir, SourceType.Application)
 
                 // Optionally include libraries
-                if (config.includeLibraries) {
-                    val libDir = tempDir.resolve("lib")
-                    Files.createDirectories(libDir)
-
-                    val nested = zip.entries().asSequence()
-                        .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
-                        .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
-                        .mapNotNull { entry ->
-                            val jarName = entry.name.substringAfterLast("/")
-                            val targetFile = libDir.resolve(jarName)
-                            zip.getInputStream(entry).use { input ->
-                                Files.copy(input, targetFile)
-                            }
-                            // Only add JAR if it holds classes the build analyses.
-                            (jarName to targetFile).takeIf { jarInScope(targetFile, jarName) }
-                        }
-                        .toList()
-                    // The view resolves a class from the first location that defines it: the
-                    // launcher's order, where the archive declares one, so a duplicate class is
-                    // the definition that runs; the listing order otherwise.
-                    val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
-                    nested.sortedBy { (jarName, _) -> rank[jarName] ?: Int.MAX_VALUE }.forEach { (jarName, targetFile) ->
-                        locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
-                    }
+                val nested = if (config.includeLibraries) {
+                    NestedArchiveLibraries(::matchesLibraryFilter, ::jarInScope, ::log).springBoot(zip, tempDir, artifactOrder)
+                } else emptyList()
+                nested.forEach { (jarName, targetFile) ->
+                    locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                 }
             }
-        } catch (e: Exception) {
-            // Cleanup on failure
-            tempDir.toFile().deleteRecursively()
-            throw e
+            completed = true
+        } finally {
+            if (!completed) tempDir.toFile().deleteRecursively()
         }
 
         return InputLocations(locations, sources, artifactOrder = artifactOrder)
@@ -561,6 +533,7 @@ class JavaProjectLoader(
         val locations = mutableListOf<AnalysisInputLocation>()
         val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-war")
+        var completed = false
 
         try {
             ZipFile(path.toFile()).use { zip ->
@@ -568,68 +541,22 @@ class JavaProjectLoader(
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
 
-                var classFileCount = 0
-                zip.entries().asSequence()
-                    .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_CLASSES) && !it.isDirectory }
-                    .forEach { entry ->
-                        val relativePath = entry.name.removePrefix(JavaArchiveLayout.WEB_INF_CLASSES)
-                        val targetFile = classesDir.resolve(relativePath)
-                        Files.createDirectories(targetFile.parent)
-                        zip.getInputStream(entry).use { input ->
-                            Files.copy(input, targetFile)
-                        }
-                        if (entry.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION)) classFileCount++
-                }
+                val classFileCount = extractArchiveClasses(zip, JavaArchiveLayout.WEB_INF_CLASSES, classesDir)
 
                 log("Extracted $classFileCount class files from ${JavaArchiveLayout.WEB_INF_CLASSES}")
                 locations.addInputLocation(JavaArchiveLayout.WEB_INF_CLASSES, sources, classesDir, SourceType.Application)
 
                 // Optionally include libraries
-                if (config.includeLibraries) {
-                    val libDir = tempDir.resolve("lib")
-                    Files.createDirectories(libDir)
-
-                    val allJars = zip.entries().asSequence()
-                        .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
-                        .toList()
-
-                    log("Found ${allJars.size} JARs in ${JavaArchiveLayout.WEB_INF_LIB}")
-
-                    var loadedJarCount = 0
-                    var skippedByFilter = 0
-                    var skippedByPackage = 0
-
-                    allJars.forEach { entry ->
-                        val jarName = entry.name.substringAfterLast("/")
-
-                        if (!matchesLibraryFilter(jarName)) {
-                            skippedByFilter++
-                            return@forEach
-                        }
-
-                        val targetFile = libDir.resolve(jarName)
-                        zip.getInputStream(entry).use { input ->
-                            Files.copy(input, targetFile)
-                        }
-
-                        // Only add JAR if it holds classes the build analyses.
-                        if (jarInScope(targetFile, jarName)) {
-                            locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
-                            loadedJarCount++
-                            log("  + Loading JAR: $jarName")
-                        } else {
-                            skippedByPackage++
-                            // Clean up unneeded JAR
-                            Files.deleteIfExists(targetFile)
-                        }
-                    }
-
-                    log("Loaded $loadedJarCount JARs (skipped: $skippedByFilter by filter, $skippedByPackage by package)")
+                val nested = if (config.includeLibraries) {
+                    NestedArchiveLibraries(::matchesLibraryFilter, ::jarInScope, ::log).war(zip, tempDir)
+                } else emptyList()
+                nested.forEach { (jarName, targetFile) ->
+                    locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                 }
             }
-        } catch (e: Exception) {
-            tempDir.toFile().deleteRecursively()
-            throw e
+            completed = true
+        } finally {
+            if (!completed) tempDir.toFile().deleteRecursively()
         }
 
         return InputLocations(locations, sources)
@@ -709,9 +636,20 @@ class JavaProjectLoader(
                     }
                 }
         }
-    } catch (e: Exception) {
-        true // On error, include to be safe
+    } catch (_: java.io.IOException) {
+        true // An unreadable JAR must not be excluded by the package prefilter.
     }
 
     private fun matchesGlobPattern(name: String, pattern: String): Boolean = GlobPatterns.matches(name, pattern)
 }
+
+private fun copyArchiveEntry(zip: ZipFile, entry: java.util.zip.ZipEntry, targetFile: Path) {
+    zip.getInputStream(entry).use { input -> Files.copy(input, targetFile) }
+}
+
+private fun extractArchiveClasses(zip: ZipFile, prefix: String, classesDir: Path): Int =
+    zip.entries().asSequence().filter { it.name.startsWith(prefix) && !it.isDirectory }.onEach { entry ->
+        val target = classesDir.resolve(entry.name.removePrefix(prefix))
+        Files.createDirectories(target.parent)
+        copyArchiveEntry(zip, entry, target)
+    }.count { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }

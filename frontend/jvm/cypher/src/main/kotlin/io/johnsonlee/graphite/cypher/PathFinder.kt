@@ -122,7 +122,6 @@ object PathFinder {
      * A bounded memo suppresses only suffixes that completed without producing a match or touching
      * an edge from the prefix. Result-producing or prefix-dependent suffixes are always replayed.
      */
-    @Suppress("CyclomaticComplexMethod")
     private fun depthFirst(
         graph: Graph,
         startNode: Node,
@@ -145,36 +144,46 @@ object PathFinder {
         while (stack.isNotEmpty()) {
             val frame = stack.last()
             if (!frame.edges.hasNext()) {
-                val completed = stack.removeLast()
-                if (!completed.foundMatch && !completed.prefixEdgeBlocked) {
-                    rememberBounded(
-                        deadSuffixMemo,
-                        ExpansionKey(completed.state.node.id.value, completed.state.depth),
-                        Unit
-                    )
+                completeFrame(stack, deadSuffixMemo)
+            } else {
+                val nextState = advanceFrame(graph, frame, options)
+                if (nextState != null) {
+                    if (matchesTarget(nextState, options)) {
+                        frame.foundMatch = true
+                        yield(PathMatch(nextState))
+                    }
+                    if (canExpand(nextState.depth, options.maxDepth)) {
+                        expandableFrame(graph, nextState.node.id, nextState, options, deadSuffixMemo)?.let(stack::addLast)
+                    }
                 }
-                stack.lastOrNull()?.let { parent ->
-                    parent.foundMatch = parent.foundMatch || completed.foundMatch
-                    parent.prefixEdgeBlocked = parent.prefixEdgeBlocked || completed.prefixEdgeBlocked
-                }
-                continue
             }
+        }
+    }
 
-            val edge = frame.edges.next()
-            if (hasAncestorEdge(frame.state, edge)) {
-                frame.prefixEdgeBlocked = true
-                continue
-            }
+    private fun completeFrame(stack: ArrayDeque<SearchFrame>, deadSuffixMemo: LinkedHashMap<ExpansionKey, Unit>) {
+        val completed = stack.removeLast()
+        if (!completed.foundMatch && !completed.prefixEdgeBlocked) {
+            rememberBounded(
+                deadSuffixMemo,
+                ExpansionKey(completed.state.node.id.value, completed.state.depth),
+                Unit
+            )
+        }
+        stack.lastOrNull()?.let { parent ->
+            parent.foundMatch = parent.foundMatch || completed.foundMatch
+            parent.prefixEdgeBlocked = parent.prefixEdgeBlocked || completed.prefixEdgeBlocked
+        }
+    }
+
+    private fun advanceFrame(graph: Graph, frame: SearchFrame, options: SearchOptions): SearchState? {
+        val edge = frame.edges.next()
+        return if (hasAncestorEdge(frame.state, edge)) {
+            frame.prefixEdgeBlocked = true
+            null
+        } else {
             val nextId = nextNodeId(edge, frame.state.node.id, options.direction)
-            val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
-            val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
-            if (matchesTarget(nextState, options)) {
-                frame.foundMatch = true
-                yield(PathMatch(nextState))
-            }
-
-            if (canExpand(nextState.depth, options.maxDepth)) {
-                expandableFrame(graph, nextId, nextState, options, deadSuffixMemo)?.let(stack::addLast)
+            loadNode(graph, nextId, options.workTracker)?.let { node ->
+                SearchState(node, edge, frame.state, frame.state.depth + 1)
             }
         }
     }
@@ -194,7 +203,6 @@ object PathFinder {
         }
     }
 
-    @Suppress("ReturnCount")
     private fun expandableFrame(
         graph: Graph,
         nodeId: NodeId,
@@ -204,8 +212,7 @@ object PathFinder {
     ): SearchFrame? {
         if (ExpansionKey(nodeId.value, state.depth) in deadSuffixMemo) return null
         val edges = edgesForDirection(graph, nodeId, options).iterator()
-        if (!edges.hasNext()) return null
-        return SearchFrame(state, edges)
+        return if (edges.hasNext()) SearchFrame(state, edges) else null
     }
 
     private fun <K, V> rememberBounded(memo: LinkedHashMap<K, V>, key: K, value: V) {

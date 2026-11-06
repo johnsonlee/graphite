@@ -7,7 +7,6 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 /**
  * Test annotation extraction from Spring MVC annotations.

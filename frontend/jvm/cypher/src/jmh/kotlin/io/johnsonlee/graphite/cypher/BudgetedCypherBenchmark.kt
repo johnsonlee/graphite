@@ -95,8 +95,9 @@ private const val RELATIONSHIP_QUERY =
     "MATCH (n:IntConstant)-[:DATAFLOW]->(v:LocalVariable) RETURN n.value, v.name LIMIT 500"
 private const val VARIABLE_PATH_QUERY =
     "MATCH (n:IntConstant)-[r:DATAFLOW*2..2]->(c:CallSiteNode) RETURN r LIMIT 500"
+private const val REGEX_LITERAL_LETTER_COUNT = 100
 private val GENERAL_REGEX_QUERY =
-    "UNWIND range(1, 10000) AS x WITH '${"a".repeat(100)}12345678901234' AS s " +
+    "UNWIND range(1, 10000) AS x WITH '${"a".repeat(REGEX_LITERAL_LETTER_COUNT)}12345678901234' AS s " +
         "WHERE s =~ '[a-z]+[0-9]+' RETURN count(*) AS n"
 private const val LIST_CONCATENATION_QUERY = "RETURN size(range(1, 50000) + range(1, 50000)) AS n"
 private const val LIST_MEMBERSHIP_QUERY = "RETURN -1 IN range(1, 100000) AS found"

@@ -2,6 +2,7 @@
 //! to read `it.unimi.dsi.util.FrontCodedStringList` written via `BinIO.storeObject`.
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error)]
 pub enum JavaSerError {
@@ -22,25 +23,28 @@ type R<T> = Result<T, JavaSerError>;
 #[derive(Debug, Clone)]
 pub struct FieldDesc {
     pub type_code: u8,
-    pub name: String,
-    pub class_name: Option<String>,
+    pub name: Arc<str>,
+    pub class_name: Option<Arc<str>>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ClassDesc {
-    pub name: String,
+    pub name: Arc<str>,
     pub flags: u8,
     pub fields: Vec<FieldDesc>,
-    pub super_desc: Option<Box<ClassDesc>>,
+    pub super_desc: Option<Arc<ClassDesc>>,
+    inheritance_depth: usize,
 }
 
 #[derive(Debug, Clone)]
 pub enum Value {
+    /// Java object identity stays shared; decoding a reference never expands a tree.
+    Reference(Arc<SharedValue>),
     Null,
-    Str(String),
+    Str(Arc<str>),
     Object {
-        class: String,
-        fields: HashMap<String, Value>,
+        class: Arc<str>,
+        fields: HashMap<Arc<str>, Value>,
     },
     CharArray(Vec<u16>),
     ByteArray(Vec<u8>),
@@ -58,24 +62,73 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn field(&self, name: &str) -> Option<&Value> {
+    pub fn resolved(&self) -> &Value {
+        let mut value = self;
+        while let Value::Reference(target) = value {
+            value = target;
+        }
+        value
+    }
+
+    fn graph_depth(&self) -> usize {
         match self {
-            Value::Object { fields, .. } => fields.get(name),
+            Value::Reference(target) => target.depth,
+            Value::Object { fields, .. } => {
+                1 + fields.values().map(Value::graph_depth).max().unwrap_or(0)
+            }
+            Value::ObjArray(values) => 1 + values.iter().map(Value::graph_depth).max().unwrap_or(0),
+            _ => 1,
+        }
+    }
+
+    pub fn field(&self, name: &str) -> Option<&Value> {
+        match self.resolved() {
+            Value::Object { fields, .. } => fields.get(name).map(Value::resolved),
             _ => None,
         }
     }
 }
 
+const MAX_NESTING: usize = 128;
+
+/// Cached graph depth follows aliases without repeatedly walking their shared contents.
+#[derive(Debug)]
+pub struct SharedValue {
+    value: Value,
+    depth: usize,
+}
+
+impl std::ops::Deref for SharedValue {
+    type Target = Value;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl SharedValue {
+    fn new(value: Value) -> R<Arc<Self>> {
+        let depth = value.graph_depth();
+        if depth > MAX_NESTING {
+            return Err(JavaSerError::Other(format!(
+                "Java object graph nesting exceeds {MAX_NESTING}"
+            )));
+        }
+        Ok(Arc::new(Self { value, depth }))
+    }
+}
+
 #[derive(Clone)]
 enum Handle {
-    Class(ClassDesc),
-    Value(Value),
+    Class(Arc<ClassDesc>),
+    Value(Arc<SharedValue>),
 }
 
 struct Parser<'a> {
     data: &'a [u8],
     pos: usize,
     handles: Vec<Handle>,
+    depth: usize,
 }
 
 const TC_NULL: u8 = 0x70;
@@ -98,6 +151,25 @@ const SC_BLOCK_DATA: u8 = 0x08;
 const SC_EXTERNALIZABLE: u8 = 0x04;
 
 impl<'a> Parser<'a> {
+    fn enter(&mut self) -> R<()> {
+        if self.depth >= MAX_NESTING {
+            return Err(JavaSerError::Other(
+                "Java serialization nesting exceeds 128".into(),
+            ));
+        }
+        self.depth += 1;
+        Ok(())
+    }
+
+    fn set_handle(&mut self, handle: u32, value: Handle) -> R<()> {
+        let slot = self
+            .handles
+            .get_mut(handle.wrapping_sub(BASE_HANDLE) as usize)
+            .ok_or(JavaSerError::BadHandle(handle))?;
+        *slot = value;
+        Ok(())
+    }
+
     fn u8(&mut self) -> R<u8> {
         let b = *self.data.get(self.pos).ok_or(JavaSerError::Truncated)?;
         self.pos += 1;
@@ -127,7 +199,8 @@ impl<'a> Parser<'a> {
         Ok(decode_modified_utf8(b))
     }
     fn long_utf(&mut self) -> R<String> {
-        let n = self.i64()? as usize;
+        let n = usize::try_from(self.i64()?)
+            .map_err(|_| JavaSerError::Other("negative string length".into()))?;
         let b = self.bytes(n)?;
         Ok(decode_modified_utf8(b))
     }
@@ -141,7 +214,14 @@ impl<'a> Parser<'a> {
             .ok_or(JavaSerError::BadHandle(h))
     }
 
-    fn class_desc(&mut self) -> R<Option<ClassDesc>> {
+    fn class_desc(&mut self) -> R<Option<Arc<ClassDesc>>> {
+        self.enter()?;
+        let result = self.class_desc_inner();
+        self.depth -= 1;
+        result
+    }
+
+    fn class_desc_inner(&mut self) -> R<Option<Arc<ClassDesc>>> {
         let tc = self.u8()?;
         match tc {
             TC_NULL => Ok(None),
@@ -153,24 +233,25 @@ impl<'a> Parser<'a> {
                 }
             }
             TC_CLASSDESC => {
-                let name = self.utf()?;
+                let name: Arc<str> = self.utf()?.into();
                 let _uid = self.i64()?;
                 // Reserve handle before reading fields (the JDK assigns it here).
-                let idx = self.new_handle(Handle::Class(ClassDesc {
+                let idx = self.new_handle(Handle::Class(Arc::new(ClassDesc {
                     name: name.clone(),
                     flags: 0,
                     fields: vec![],
                     super_desc: None,
-                }));
+                    inheritance_depth: 1,
+                })));
                 let flags = self.u8()?;
                 let nfields = self.u16()? as usize;
                 let mut fields = Vec::with_capacity(nfields);
                 for _ in 0..nfields {
                     let type_code = self.u8()?;
-                    let fname = self.utf()?;
+                    let fname: Arc<str> = self.utf()?.into();
                     let class_name = if type_code == b'L' || type_code == b'[' {
-                        match self.value()? {
-                            Value::Str(s) => Some(s),
+                        match self.value()?.resolved() {
+                            Value::Str(s) => Some(s.clone()),
                             _ => return Err(JavaSerError::Other("bad field class name".into())),
                         }
                     } else {
@@ -183,14 +264,25 @@ impl<'a> Parser<'a> {
                     });
                 }
                 self.skip_annotation()?;
-                let super_desc = self.class_desc()?.map(Box::new);
-                let desc = ClassDesc {
+                let super_desc = self.class_desc()?;
+                // A reference to an earlier descriptor adds no parser recursion, but still
+                // extends the owned superclass chain that Clone and Drop must traverse.
+                let inheritance_depth = 1 + super_desc
+                    .as_ref()
+                    .map_or(0, |parent| parent.inheritance_depth);
+                if inheritance_depth > MAX_NESTING {
+                    return Err(JavaSerError::Other(format!(
+                        "Java superclass nesting exceeds {MAX_NESTING}"
+                    )));
+                }
+                let desc = Arc::new(ClassDesc {
                     name,
                     flags,
                     fields,
                     super_desc,
-                };
-                self.handles[(idx - BASE_HANDLE) as usize] = Handle::Class(desc.clone());
+                    inheritance_depth,
+                });
+                self.set_handle(idx, Handle::Class(desc.clone()))?;
                 Ok(Some(desc))
             }
             TC_PROXYCLASSDESC => Err(JavaSerError::Unsupported(tc, self.pos - 1)),
@@ -234,50 +326,77 @@ impl<'a> Parser<'a> {
     }
 
     fn value(&mut self) -> R<Value> {
+        self.enter()?;
+        let result = self.value_inner();
+        self.depth -= 1;
+        result
+    }
+
+    fn value_inner(&mut self) -> R<Value> {
         let tc = self.u8()?;
         match tc {
             TC_NULL => Ok(Value::Null),
             TC_REFERENCE => {
                 let h = self.i32()? as u32;
                 match self.handle(h)? {
-                    Handle::Value(v) => Ok(v.clone()),
+                    Handle::Value(v) => Ok(Value::Reference(v.clone())),
                     Handle::Class(c) => Ok(Value::Str(c.name.clone())),
                 }
             }
             TC_STRING => {
-                let s = self.utf()?;
-                self.new_handle(Handle::Value(Value::Str(s.clone())));
+                let s: Arc<str> = self.utf()?.into();
+                self.new_handle(Handle::Value(SharedValue::new(Value::Str(s.clone()))?));
                 Ok(Value::Str(s))
             }
             TC_LONGSTRING => {
-                let s = self.long_utf()?;
-                self.new_handle(Handle::Value(Value::Str(s.clone())));
+                let s: Arc<str> = self.long_utf()?.into();
+                self.new_handle(Handle::Value(SharedValue::new(Value::Str(s.clone()))?));
                 Ok(Value::Str(s))
             }
             TC_CLASS => {
                 let d = self.class_desc()?;
-                let name = d.map(|d| d.name).unwrap_or_default();
-                self.new_handle(Handle::Value(Value::Str(name.clone())));
+                let name = d.map(|d| d.name.clone()).unwrap_or_default();
+                self.new_handle(Handle::Value(SharedValue::new(Value::Str(name.clone()))?));
                 Ok(Value::Str(name))
             }
             TC_ENUM => {
                 let _d = self.class_desc()?;
-                let idx = self.new_handle(Handle::Value(Value::Null));
-                let name = match self.value()? {
-                    Value::Str(s) => s,
+                let idx = self.new_handle(Handle::Value(SharedValue::new(Value::Null)?));
+                let name = match self.value()?.resolved() {
+                    Value::Str(s) => s.clone(),
                     _ => return Err(JavaSerError::Other("bad enum".into())),
                 };
-                self.handles[(idx - BASE_HANDLE) as usize] =
-                    Handle::Value(Value::Str(name.clone()));
+                self.set_handle(
+                    idx,
+                    Handle::Value(SharedValue::new(Value::Str(name.clone()))?),
+                )?;
                 Ok(Value::Str(name))
             }
             TC_ARRAY => {
                 let desc = self
                     .class_desc()?
                     .ok_or_else(|| JavaSerError::Other("array without class".into()))?;
-                let idx = self.new_handle(Handle::Value(Value::Null));
-                let n = self.i32()? as usize;
-                let elem = desc.name.as_bytes().get(1).copied().unwrap_or(b'L');
+                let idx = self.new_handle(Handle::Value(SharedValue::new(Value::Null)?));
+                let length = self.i32()?;
+                let n = usize::try_from(length)
+                    .map_err(|_| JavaSerError::Other("negative array length".into()))?;
+                let elem = desc
+                    .name
+                    .strip_prefix('[')
+                    .and_then(|name| name.as_bytes().first())
+                    .copied()
+                    .ok_or_else(|| JavaSerError::Other("invalid array class".into()))?;
+                let width = match elem {
+                    b'B' | b'Z' | b'L' | b'[' => 1,
+                    b'C' | b'S' => 2,
+                    b'I' | b'F' => 4,
+                    b'J' | b'D' => 8,
+                    _ => return Err(JavaSerError::Other("invalid array element type".into())),
+                };
+                let bytes = n.checked_mul(width).ok_or(JavaSerError::Truncated)?;
+                if bytes > self.data.len() - self.pos {
+                    return Err(JavaSerError::Truncated);
+                }
                 let v = match elem {
                     b'C' => {
                         let b = self.bytes(n * 2)?;
@@ -311,32 +430,38 @@ impl<'a> Parser<'a> {
                         )
                     }
                     b'Z' | b'S' | b'F' | b'D' => {
-                        let mut items = Vec::with_capacity(n);
+                        let mut items = Vec::new();
+                        items.try_reserve_exact(n).map_err(|_| {
+                            JavaSerError::Other("cannot allocate Java array".into())
+                        })?;
                         for _ in 0..n {
                             items.push(self.primitive(elem)?);
                         }
                         Value::ObjArray(items)
                     }
                     _ => {
-                        let mut items = Vec::with_capacity(n);
+                        let mut items = Vec::new();
+                        items.try_reserve_exact(n).map_err(|_| {
+                            JavaSerError::Other("cannot allocate Java array".into())
+                        })?;
                         for _ in 0..n {
                             items.push(self.value()?);
                         }
                         Value::ObjArray(items)
                     }
                 };
-                self.handles[(idx - BASE_HANDLE) as usize] = Handle::Value(v.clone());
+                self.set_handle(idx, Handle::Value(SharedValue::new(v.clone())?))?;
                 Ok(v)
             }
             TC_OBJECT => {
                 let desc = self
                     .class_desc()?
                     .ok_or_else(|| JavaSerError::Other("object without class".into()))?;
-                let idx = self.new_handle(Handle::Value(Value::Null));
+                let idx = self.new_handle(Handle::Value(SharedValue::new(Value::Null)?));
                 let mut fields = HashMap::new();
                 // Collect class chain from the topmost superclass down.
                 let mut chain = vec![];
-                let mut cur = Some(&desc);
+                let mut cur = Some(desc.as_ref());
                 while let Some(c) = cur {
                     chain.push(c);
                     cur = c.super_desc.as_deref();
@@ -361,7 +486,7 @@ impl<'a> Parser<'a> {
                     class: desc.name.clone(),
                     fields,
                 };
-                self.handles[(idx - BASE_HANDLE) as usize] = Handle::Value(v.clone());
+                self.set_handle(idx, Handle::Value(SharedValue::new(v.clone())?))?;
                 Ok(v)
             }
             TC_RESET => {
@@ -407,9 +532,14 @@ pub fn read_object(data: &[u8]) -> R<Value> {
         data,
         pos: 0,
         handles: Vec::new(),
+        depth: 0,
     };
     if p.u16()? != 0xACED || p.u16()? != 0x0005 {
         return Err(JavaSerError::BadMagic);
     }
     p.value()
 }
+
+#[cfg(test)]
+#[path = "javaser_reference_tests.rs"]
+mod reference_tests;

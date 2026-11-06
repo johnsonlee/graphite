@@ -2,12 +2,10 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.Graphite
 import io.johnsonlee.graphite.core.DataFlowEdge
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.LocalVariable
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.graph.Graph
@@ -332,17 +330,7 @@ class FeatureFlagAnalysisTest {
 
                 // Look for enum constants in allConstants() which includes field-based enums
                 sliceResult.allConstants().forEach { constant ->
-                    when (constant) {
-                        is EnumConstant -> {
-                            println("  -> Found enum via method call: ${constant.enumName} = ${constant.value}")
-                            constant.value?.let { foundEnumValues.add(it as Int) }
-                        }
-                        is IntConstant -> {
-                            println("  -> Found int constant: ${constant.value}")
-                            foundEnumValues.add(constant.value)
-                        }
-                        else -> println("  -> Found other constant: $constant")
-                    }
+                    collectTracedEnumValue(constant, foundEnumValues)
                 }
             }
         }
@@ -519,4 +507,18 @@ class FeatureFlagAnalysisTest {
         val rootPath = projectDir.resolve("frontend/jvm/sootup/build/classes/java/test")
         return if (submodulePath.exists()) submodulePath else rootPath
     }
+    private fun collectTracedEnumValue(constant: io.johnsonlee.graphite.core.ConstantNode, foundEnumValues: MutableSet<Int>) {
+        when (constant) {
+            is EnumConstant -> {
+                println("  -> Found enum via method call: ${constant.enumName} = ${constant.value}")
+                constant.value?.let { foundEnumValues.add(it as Int) }
+            }
+            is IntConstant -> {
+                println("  -> Found int constant: ${constant.value}")
+                foundEnumValues.add(constant.value)
+            }
+            else -> println("  -> Found other constant: $constant")
+        }
+    }
+
 }

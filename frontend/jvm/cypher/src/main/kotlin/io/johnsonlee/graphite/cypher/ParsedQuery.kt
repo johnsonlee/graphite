@@ -40,7 +40,7 @@ data class ParsedQuery(
         }
 
         // Label can be a simple word or backtick-escaped: `ReturnNode`
-        private val LABEL = """(?:`([^`]+)`|(\w+))"""
+        private const val LABEL = """(?:`([^`]+)`|(\w+))"""
         private val NODE_PATTERN = Regex("""\((\w+)(?::$LABEL)?\)""")
         private val REL_PATTERN = Regex(
             """\((\w+)(?::$LABEL)?\)\s*-\[(?::(\w+))?(\*(?:(\d+))?(?:\.\.(\d+))?)?\]\s*->\s*\((\w+)(?::$LABEL)?\)"""

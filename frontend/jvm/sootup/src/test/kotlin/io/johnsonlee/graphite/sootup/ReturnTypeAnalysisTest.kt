@@ -228,20 +228,7 @@ class ReturnTypeAnalysisTest {
 
             allCallSites.forEach { callSite ->
                 callSite.arguments.forEach { argId ->
-                    // Get incoming dataflow edges to the argument
-                    graph.incoming(argId, DataFlowEdge::class.java).forEach { edge ->
-                        val sourceNode = graph.node(edge.from)
-                        if (sourceNode is LocalVariable && sourceNode.type.className != "java.lang.Object") {
-                            types.add(sourceNode.type.className)
-                            println("    -> Body type: ${sourceNode.type.className}")
-                        }
-                    }
-                    // Also check if the argument itself is a local variable
-                    val argNode = graph.node(argId)
-                    if (argNode is LocalVariable && argNode.type.className != "java.lang.Object") {
-                        types.add(argNode.type.className)
-                        println("    -> Body type (direct): ${argNode.type.className}")
-                    }
+                    collectArgumentBodyTypes(graph, argId, types)
                 }
             }
 
@@ -306,4 +293,25 @@ class ReturnTypeAnalysisTest {
             }
         }
     }
+    private fun collectArgumentBodyTypes(
+        graph: io.johnsonlee.graphite.graph.Graph,
+        argId: io.johnsonlee.graphite.core.NodeId,
+        types: MutableSet<String>
+    ) {
+        // Get incoming dataflow edges to the argument
+        graph.incoming(argId, DataFlowEdge::class.java).forEach { edge ->
+            val sourceNode = graph.node(edge.from)
+            if (sourceNode is LocalVariable && sourceNode.type.className != "java.lang.Object") {
+                types.add(sourceNode.type.className)
+                println("    -> Body type: ${sourceNode.type.className}")
+            }
+        }
+        // Also check if the argument itself is a local variable
+        val argNode = graph.node(argId)
+        if (argNode is LocalVariable && argNode.type.className != "java.lang.Object") {
+            types.add(argNode.type.className)
+            println("    -> Body type (direct): ${argNode.type.className}")
+        }
+    }
+
 }

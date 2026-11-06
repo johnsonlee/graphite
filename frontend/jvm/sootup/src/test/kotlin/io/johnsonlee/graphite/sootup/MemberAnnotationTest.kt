@@ -22,7 +22,8 @@ class MemberAnnotationTest {
     @Test
     fun `memberAnnotations stores and retrieves annotation`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         val annotations = graph.memberAnnotations("com.example.User", "name")
         assertEquals("user_name", annotations["com.fasterxml.jackson.annotation.JsonProperty"]?.get("value"))
@@ -31,7 +32,8 @@ class MemberAnnotationTest {
     @Test
     fun `memberAnnotations supports multiple annotations on same member`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "secret", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "secret"))
+        builder.addMemberAnnotation("com.example.User", "secret", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "secret"))
         builder.addMemberAnnotation("com.example.User", "secret", "com.fasterxml.jackson.annotation.JsonIgnore", emptyMap())
         val graph = builder.build()
         val annotations = graph.memberAnnotations("com.example.User", "secret")
@@ -53,11 +55,13 @@ class MemberAnnotationTest {
     @Test
     fun `memberAnnotations equality across same data`() {
         val builder1 = DefaultGraph.Builder()
-        builder1.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder1.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph1 = builder1.build()
 
         val builder2 = DefaultGraph.Builder()
-        builder2.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder2.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph2 = builder2.build()
 
         assertEquals(
@@ -82,7 +86,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns annotations for field`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         val result = graph.memberAnnotations("com.example.User", "name")
         assertEquals("user_name", result["com.fasterxml.jackson.annotation.JsonProperty"]?.get("value"))
@@ -91,7 +96,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns empty for wrong class`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         assertTrue(graph.memberAnnotations("com.example.Other", "name").isEmpty())
     }
@@ -99,7 +105,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns empty for wrong field`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "name", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         assertTrue(graph.memberAnnotations("com.example.User", "email").isEmpty())
     }
@@ -107,7 +114,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns annotations for getter`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         val result = graph.memberAnnotations("com.example.User", "getName")
         assertEquals("user_name", result["com.fasterxml.jackson.annotation.JsonProperty"]?.get("value"))
@@ -116,7 +124,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns empty for wrong getter class`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         assertTrue(graph.memberAnnotations("com.example.Other", "getName").isEmpty())
     }
@@ -124,7 +133,8 @@ class MemberAnnotationTest {
     @Test
     fun `builder memberAnnotations returns empty for wrong getter method`() {
         val builder = DefaultGraph.Builder()
-        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty", mapOf("value" to "user_name"))
+        builder.addMemberAnnotation("com.example.User", "getName", "com.fasterxml.jackson.annotation.JsonProperty",
+            mapOf("value" to "user_name"))
         val graph = builder.build()
         assertTrue(graph.memberAnnotations("com.example.User", "getEmail").isEmpty())
     }

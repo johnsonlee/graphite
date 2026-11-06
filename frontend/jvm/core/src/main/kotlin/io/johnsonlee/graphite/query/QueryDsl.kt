@@ -8,7 +8,6 @@ import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DoubleConstant
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
@@ -17,7 +16,6 @@ import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.MethodDescriptor
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ResourceValueNode
@@ -26,7 +24,6 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeHierarchyConfig
 import io.johnsonlee.graphite.core.TypeHierarchyResult
-import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes
@@ -48,62 +45,26 @@ private const val JAVA_LANG_STRING = "java.lang.String"
  */
 class GraphiteQuery(private val graph: Graph) {
 
-    /**
-     * Find all constant values passed to methods matching the pattern.
-     *
-     * Example - Find all AB IDs (single argument):
-     * ```
-     * graphite.findArgumentConstants {
-     *     method {
-     *         name = "getOption"
-     *         declaringClass = "com.example.ab.AbClient"
-     *         parameterTypes = listOf("java.lang.Integer")
-     *     }
-     *     argumentIndex = 0
-     * }
-     * ```
-     *
-     * Example - Track multiple arguments:
-     * ```
-     * graphite.findArgumentConstants {
-     *     method {
-     *         name = "setConfig"
-     *         declaringClass = "com.example.ConfigManager"
-     *     }
-     *     argumentIndices = listOf(0, 1, 2)
-     * }
-     * ```
-     */
     fun findArgumentConstants(block: ArgumentConstantQuery.() -> Unit): List<ArgumentConstantResult> {
         val query = ArgumentConstantQuery().apply(block)
         val analysis = DataFlowAnalysis(graph, query.analysisConfig)
-        val results = mutableListOf<ArgumentConstantResult>()
         val indices = query.resolveIndices()
-
-        // Find all call sites matching the method pattern
-        graph.callSites(query.methodPattern).forEach { callSite ->
-            for (argIndex in indices) {
-                if (argIndex < callSite.arguments.size) {
-                    val argNodeId = callSite.arguments[argIndex]
-                    val flowResult = analysis.backwardSlice(argNodeId)
-
-                    // Use constantsWithPaths() to get constants with their propagation paths
-                    flowResult.constantsWithPaths().forEach { (constant, propagationPath) ->
-                        results.add(
-                            ArgumentConstantResult(
-                                callSite = callSite,
-                                argumentIndex = argIndex,
-                                constant = constant,
-                                path = flowResult.paths.firstOrNull(),
-                                propagationPath = propagationPath
-                            )
-                        )
-                    }
-                }
+        return graph
+            .callSites(query.methodPattern)
+            .flatMap { callSite ->
+                indices
+                    .asSequence()
+                    .filter { it < callSite.arguments.size }
+                    .flatMap { index -> argumentConstants(callSite, index, analysis).asSequence() }
             }
-        }
+            .toList()
+    }
 
-        return results
+    private fun argumentConstants(callSite: CallSiteNode, index: Int, analysis: DataFlowAnalysis): List<ArgumentConstantResult> {
+        val flowResult = analysis.backwardSlice(callSite.arguments[index])
+        return flowResult.constantsWithPaths().map { (constant, propagationPath) ->
+            ArgumentConstantResult(callSite, index, constant, flowResult.paths.firstOrNull(), propagationPath)
+        }
     }
 
     /**
@@ -124,38 +85,26 @@ class GraphiteQuery(private val graph: Graph) {
 
         // Find all methods matching the pattern
         graph.methods(query.methodPattern).forEach { method ->
-            val returnNodes = graph.nodes<ReturnNode>()
-                .filter { it.method == method }
-                .toList()
+            val returnNodes = graph.nodes<ReturnNode>().filter { it.method == method }.toList()
 
             val actualTypes = mutableSetOf<TypeDescriptor>()
 
             returnNodes.forEach { returnNode ->
                 // Recursively trace backward from return to find actual types
                 // Use interprocedural analysis context to track visited methods
-                val context = InterproceduralContext(
-                    maxDepth = query.analysisConfig.maxDepth
-                )
+                val context = InterproceduralContext(maxDepth = query.analysisConfig.maxDepth)
                 findActualTypesFromNode(returnNode.id, actualTypes, mutableSetOf(), context)
             }
 
             if (actualTypes.isNotEmpty()) {
-                results.add(
-                    ReturnTypeResult(
-                        method = method,
-                        declaredType = method.returnType,
-                        actualTypes = actualTypes.toList()
-                    )
-                )
+                results.add(ReturnTypeResult(method = method, declaredType = method.returnType, actualTypes = actualTypes.toList()))
             }
         }
 
         return results
     }
 
-    /**
-     * Context for interprocedural analysis to track visited methods and depth.
-     */
+    /** Context for interprocedural analysis to track visited methods and depth. */
     private class InterproceduralContext(
         val maxDepth: Int = 10,
         val visitedMethods: MutableSet<String> = mutableSetOf(),
@@ -163,9 +112,8 @@ class GraphiteQuery(private val graph: Graph) {
     )
 
     /**
-     * Recursively trace backward through dataflow edges to find actual types.
-     * Handles cases where values flow through intermediate locals with unknown types.
-     * Supports interprocedural analysis by tracing into called methods.
+     * Recursively trace backward through dataflow edges to find actual types. Handles cases where values flow through intermediate locals
+     * with unknown types. Supports interprocedural analysis by tracing into called methods.
      */
     private fun findActualTypesFromNode(
         nodeId: NodeId,
@@ -173,8 +121,7 @@ class GraphiteQuery(private val graph: Graph) {
         visited: MutableSet<NodeId>,
         context: InterproceduralContext
     ) {
-        if (nodeId in visited) return
-        if (context.currentDepth > context.maxDepth) return
+        if (nodeId in visited || context.currentDepth > context.maxDepth) return
         visited.add(nodeId)
 
         graph.incoming(nodeId, DataFlowEdge::class.java).forEach { edge ->
@@ -190,65 +137,66 @@ class GraphiteQuery(private val graph: Graph) {
                     }
                 }
                 is FieldNode -> types.add(sourceNode.descriptor.type)
-                is CallSiteNode -> {
-                    val returnType = sourceNode.callee.returnType
-                    val calleeSignature = sourceNode.callee.signature
-
-                    // If return type is concrete (not Object/void), use it
-                    if (returnType.className != JAVA_LANG_OBJECT && returnType.className != VOID_TYPE) {
-                        types.add(returnType)
-                    } else {
-                        // Interprocedural: trace into the called method to find actual return types
-                        // Only if we haven't visited this method yet (prevent infinite recursion)
-                        if (calleeSignature !in context.visitedMethods) {
-                            context.visitedMethods.add(calleeSignature)
-                            context.currentDepth++
-
-                            // Find return nodes of the callee method
-                            val calleeReturnNodes = graph.nodes<ReturnNode>()
-                                .filter { it.method.signature == calleeSignature }
-                                .toList()
-
-                            // Trace each return node in the callee
-                            calleeReturnNodes.forEach { calleeReturn ->
-                                findActualTypesFromNode(calleeReturn.id, types, mutableSetOf(), context)
-                            }
-
-                            context.currentDepth--
-                        }
-                    }
-                }
-                is ConstantNode -> {
-                    when (sourceNode) {
-                        is IntConstant -> types.add(TypeDescriptor(JAVA_LANG_INTEGER))
-                        is LongConstant -> types.add(TypeDescriptor(JAVA_LANG_LONG))
-                        is FloatConstant -> types.add(TypeDescriptor(JAVA_LANG_FLOAT))
-                        is DoubleConstant -> types.add(TypeDescriptor(JAVA_LANG_DOUBLE))
-                        is BooleanConstant -> types.add(TypeDescriptor(JAVA_LANG_BOOLEAN))
-                        is StringConstant -> types.add(TypeDescriptor(JAVA_LANG_STRING))
-                        is EnumConstant -> types.add(sourceNode.enumType)
-                        is NullConstant -> {} // null doesn't contribute a type
-                        is ResourceValueNode -> when (sourceNode.value) {
-                            is Int -> types.add(TypeDescriptor(JAVA_LANG_INTEGER))
-                            is Long -> types.add(TypeDescriptor(JAVA_LANG_LONG))
-                            is Float -> types.add(TypeDescriptor(JAVA_LANG_FLOAT))
-                            is Double -> types.add(TypeDescriptor(JAVA_LANG_DOUBLE))
-                            is Boolean -> types.add(TypeDescriptor(JAVA_LANG_BOOLEAN))
-                            is String -> types.add(TypeDescriptor(JAVA_LANG_STRING))
-                            else -> {}
-                        }
-                    }
-                }
+                is CallSiteNode -> traceCalledReturnTypes(sourceNode, types, context)
+                is ConstantNode -> constantType(sourceNode)?.let(types::add)
                 else -> {}
             }
         }
     }
 
+    private fun traceCalledReturnTypes(sourceNode: CallSiteNode, types: MutableSet<TypeDescriptor>, context: InterproceduralContext) {
+        val returnType = sourceNode.callee.returnType
+        val calleeSignature = sourceNode.callee.signature
+
+        // If return type is concrete (not Object/void), use it
+        if (returnType.className != JAVA_LANG_OBJECT && returnType.className != VOID_TYPE) {
+            types.add(returnType)
+        } else {
+            // Interprocedural: trace into the called method to find actual return types
+            // Only if we haven't visited this method yet (prevent infinite recursion)
+            if (calleeSignature !in context.visitedMethods) {
+                context.visitedMethods.add(calleeSignature)
+                context.currentDepth++
+
+                // Find return nodes of the callee method
+                val calleeReturnNodes = graph.nodes<ReturnNode>().filter { it.method.signature == calleeSignature }.toList()
+
+                // Trace each return node in the callee
+                calleeReturnNodes.forEach { calleeReturn -> findActualTypesFromNode(calleeReturn.id, types, mutableSetOf(), context) }
+
+                context.currentDepth--
+            }
+        }
+    }
+
+    private fun constantType(node: ConstantNode): TypeDescriptor? =
+        when (node) {
+            is IntConstant -> TypeDescriptor(JAVA_LANG_INTEGER)
+            is LongConstant -> TypeDescriptor(JAVA_LANG_LONG)
+            is FloatConstant -> TypeDescriptor(JAVA_LANG_FLOAT)
+            is DoubleConstant -> TypeDescriptor(JAVA_LANG_DOUBLE)
+            is BooleanConstant -> TypeDescriptor(JAVA_LANG_BOOLEAN)
+            is StringConstant -> TypeDescriptor(JAVA_LANG_STRING)
+            is EnumConstant -> node.enumType
+            is NullConstant -> null
+            is ResourceValueNode -> resourceConstantType(node.value)
+        }
+
+    private fun resourceConstantType(value: Any?): TypeDescriptor? =
+        when (value) {
+            is Int -> TypeDescriptor(JAVA_LANG_INTEGER)
+            is Long -> TypeDescriptor(JAVA_LANG_LONG)
+            is Float -> TypeDescriptor(JAVA_LANG_FLOAT)
+            is Double -> TypeDescriptor(JAVA_LANG_DOUBLE)
+            is Boolean -> TypeDescriptor(JAVA_LANG_BOOLEAN)
+            is String -> TypeDescriptor(JAVA_LANG_STRING)
+            else -> null
+        }
+
     /**
      * Find complete type hierarchy for method return types.
      *
-     * This analyzes not just what type is returned, but the complete
-     * type structure including:
+     * This analyzes not just what type is returned, but the complete type structure including:
      * - Generic type parameters
      * - Actual types assigned to Object fields
      * - Nested type structures
@@ -280,9 +228,7 @@ class GraphiteQuery(private val graph: Graph) {
         return analysis.analyzeReturnTypes(query.methodPattern)
     }
 
-    /**
-     * Find fields of specific types (for i18n compliance checking)
-     */
+    /** Find fields of specific types (for i18n compliance checking) */
     fun findFieldsOfType(block: FieldTypeQuery.() -> Unit): List<FieldTypeResult> {
         val query = FieldTypeQuery().apply(block)
         val results = mutableListOf<FieldTypeResult>()
@@ -294,9 +240,7 @@ class GraphiteQuery(private val graph: Graph) {
                     FieldTypeResult(
                         field = fieldNode.descriptor,
                         containingClass = fieldNode.descriptor.declaringClass,
-                        isCompliant = query.complianceCheck?.invoke(fieldType) ?: true
-                    )
-                )
+                        isCompliant = query.complianceCheck?.invoke(fieldType) ?: true))
             }
         }
 
@@ -375,14 +319,14 @@ class MethodPatternBuilder {
     var annotations: List<String> = emptyList()
     var useRegex: Boolean = false
 
-    fun build() = MethodPattern(
-        declaringClass = declaringClass,
-        name = name,
-        parameterTypes = parameterTypes,
-        returnType = returnType,
-        annotations = annotations,
-        useRegex = useRegex
-    )
+    fun build() =
+        MethodPattern(
+            declaringClass = declaringClass,
+            name = name,
+            parameterTypes = parameterTypes,
+            returnType = returnType,
+            annotations = annotations,
+            useRegex = useRegex)
 }
 
 // Result classes
@@ -394,49 +338,35 @@ data class ArgumentConstantResult(
     val path: io.johnsonlee.graphite.analysis.DataFlowPath?,
     val propagationPath: io.johnsonlee.graphite.analysis.PropagationPath? = null
 ) {
-    val location: String get() = "${callSite.caller.signature}:${callSite.lineNumber ?: "?"}"
+    val location: String
+        get() = "${callSite.caller.signature}:${callSite.lineNumber ?: "?"}"
 
-    val value: Any? get() = constant.value
+    val value: Any?
+        get() = constant.value
 
-    /**
-     * Get the propagation depth (number of steps from source to sink).
-     * Higher depth indicates more complex value flow.
-     */
-    val propagationDepth: Int get() = propagationPath?.depth ?: 0
+    /** Get the propagation depth (number of steps from source to sink). Higher depth indicates more complex value flow. */
+    val propagationDepth: Int
+        get() = propagationPath?.depth ?: 0
 
-    /**
-     * Get a human-readable description of the propagation path.
-     */
-    val propagationDescription: String get() = propagationPath?.toDisplayString() ?: "(direct)"
+    /** Get a human-readable description of the propagation path. */
+    val propagationDescription: String
+        get() = propagationPath?.toDisplayString() ?: "(direct)"
 
-    /**
-     * Check if this result involves method return value propagation.
-     */
-    val involvesReturnValue: Boolean get() =
-        propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.CALL_SITE } ?: false
+    /** Check if this result involves method return value propagation. */
+    val involvesReturnValue: Boolean
+        get() = propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.CALL_SITE } ?: false
 
-    /**
-     * Check if this result involves field access.
-     */
-    val involvesFieldAccess: Boolean get() =
-        propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.FIELD } ?: false
+    /** Check if this result involves field access. */
+    val involvesFieldAccess: Boolean
+        get() = propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.FIELD } ?: false
 }
 
-data class ReturnTypeResult(
-    val method: MethodDescriptor,
-    val declaredType: TypeDescriptor,
-    val actualTypes: List<TypeDescriptor>
-) {
-    val hasGenericReturn: Boolean get() =
-        declaredType.className == JAVA_LANG_OBJECT ||
-                declaredType.typeArguments.any { it.className == "?" }
+data class ReturnTypeResult(val method: MethodDescriptor, val declaredType: TypeDescriptor, val actualTypes: List<TypeDescriptor>) {
+    val hasGenericReturn: Boolean
+        get() = declaredType.className == JAVA_LANG_OBJECT || declaredType.typeArguments.any { it.className == "?" }
 
-    val typesMismatch: Boolean get() =
-        actualTypes.any { it != declaredType && !it.isSubtypeOf(declaredType) }
+    val typesMismatch: Boolean
+        get() = actualTypes.any { it != declaredType && !it.isSubtypeOf(declaredType) }
 }
 
-data class FieldTypeResult(
-    val field: FieldDescriptor,
-    val containingClass: TypeDescriptor,
-    val isCompliant: Boolean
-)
+data class FieldTypeResult(val field: FieldDescriptor, val containingClass: TypeDescriptor, val isCompliant: Boolean)

@@ -328,7 +328,9 @@ class ControlFlowTest {
         assertTrue(
             scopesWithBothBranches.isNotEmpty(),
             "At least one BranchScope should have non-empty trueBranchNodeIds and falseBranchNodeIds. " +
-                "Scopes: ${branchScopes.map { "${it.comparison.operator}: true=${it.trueBranchNodeIds.size}, false=${it.falseBranchNodeIds.size}" }}"
+                "Scopes: ${branchScopes.map { scope ->
+                    "${scope.comparison.operator}: true=${scope.trueBranchNodeIds.size}, false=${scope.falseBranchNodeIds.size}"
+                }}"
         )
     }
 

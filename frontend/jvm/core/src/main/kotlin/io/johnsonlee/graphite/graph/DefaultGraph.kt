@@ -2,9 +2,9 @@ package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
@@ -19,52 +19,33 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Default implementation of the Graph interface.
- * Uses fastutil primitive collections for memory-efficient storage.
+ * Default implementation of the Graph interface. Uses fastutil primitive collections for memory-efficient storage.
  *
  * Memory savings vs standard HashMap:
  * - Int2ObjectOpenHashMap: ~40% less memory than HashMap<NodeId, V>
  * - ObjectArrayList: ~20% less memory than ArrayList with better cache locality
  */
-@Suppress("LongParameterList", "TooManyFunctions")
-class DefaultGraph private constructor(
-    private val nodesById: Int2ObjectOpenHashMap<Node>,
-    private val outgoingEdges: Int2ObjectOpenHashMap<List<Edge>>,
-    private val incomingEdges: Int2ObjectOpenHashMap<List<Edge>>,
-    private val methodIndex: Map<String, MethodDescriptor>,
-    private val typeHierarchy: TypeHierarchy,
-    private val enumValues: Map<String, List<Any?>>,
-    private val classOriginsMap: Map<String, String>,
-    private val syntheticIdentitiesMap: Map<String, String>,
-    private val artifactDependenciesMap: Map<String, Map<String, Int>>,
-    // Key format: "$className#$memberName" — simple concatenation is sufficient
-    // for current scale. Consider two-level map if profiling shows GC pressure.
-    private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
+class DefaultGraph
+private constructor(
+    nodes: EagerNodeInputs,
+    edges: EagerEdgeInputs,
+    metadata: GraphMetadataInputs,
     private val rawBranchScopes: Array<RawBranchScope>,
     /** Packed `[stmtOrdinal, localNodeId, constantNodeId]*` per tracked local, see [localDefinitions]. */
     private val rawLocalDefinitions: Int2ObjectOpenHashMap<IntArray>,
-    override val resources: ResourceAccessor,
-    /** Pre-computed index: concrete node class -> list of nodes of that class. */
-    private val nodesByType: Map<Class<out Node>, List<Node>>,
-    private val edgeCount: Long,
-    private val declaredTypeTable: DeclaredTypeTable,
-    private val analysisCompleteness: AnalysisCompleteness? = null
-) : Graph, EnumValueIndexSource, PackedBranchMetadataSource {
-    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
-
-    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
-
-    override fun hasMethod(method: MethodDescriptor): Boolean = methodIndex.containsKey(method.identity)
-
+    override val resources: ResourceAccessor
+) : IndexedGraphMetadata(metadata), PackedBranchMetadataSource {
+    private val nodesById = nodes.byId
+    private val nodesByType = nodes.byType
+    private val outgoingEdges = edges.outgoing
+    private val incomingEdges = edges.incoming
+    private val edgeCount = edges.count
 
     /**
-     * Compact storage for branch scope data, used until [branchScopes] or
-     * [branchScopesFor] is first called.
+     * Compact storage for branch scope data, used until [branchScopes] or [branchScopesFor] is first called.
      *
-     * Uses [IntArray] (4 bytes/element) instead of `Set<NodeId>`
-     * (`HashSet<boxed Integer>`, ~36 bytes/element) so the idle cost is
-     * roughly **9× smaller** per branch entry.  The full [BranchScope]
-     * objects and lookup index are materialised lazily on first access.
+     * Uses [IntArray] (4 bytes/element) instead of `Set<NodeId>` (`HashSet<boxed Integer>`, ~36 bytes/element) so the idle cost is roughly
+     * **9× smaller** per branch entry. The full [BranchScope] objects and lookup index are materialised lazily on first access.
      */
     internal class RawBranchScope(
         val conditionNodeId: Int,
@@ -76,21 +57,19 @@ class DefaultGraph private constructor(
         val trueDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS,
         val falseDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS
     ) {
-        fun toBranchScope(): BranchScope = BranchScope(
-            conditionNodeId = NodeId(conditionNodeId),
-            method = method,
-            comparison = comparison,
-            trueBranchNodeIds = IntOpenHashSet(trueBranchNodeIds),
-            falseBranchNodeIds = IntOpenHashSet(falseBranchNodeIds),
-            trueDefinitions = BranchScope.unpackDefinitions(trueDefinitions),
-            falseDefinitions = BranchScope.unpackDefinitions(falseDefinitions)
-        )
+        fun toBranchScope(): BranchScope =
+            BranchScope(
+                conditionNodeId = NodeId(conditionNodeId),
+                method = method,
+                comparison = comparison,
+                trueBranchNodeIds = IntOpenHashSet(trueBranchNodeIds),
+                falseBranchNodeIds = IntOpenHashSet(falseBranchNodeIds),
+                trueDefinitions = BranchScope.unpackDefinitions(trueDefinitions),
+                falseDefinitions = BranchScope.unpackDefinitions(falseDefinitions))
     }
 
     /** Materialised on first access from [rawBranchScopes]. */
-    private val branchScopeIndex = lazy {
-        rawBranchScopes.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
-    }
+    private val branchScopeIndex = lazy { rawBranchScopes.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value } }
 
     override fun node(id: NodeId): Node? = nodesById.get(id.value)
 
@@ -98,85 +77,39 @@ class DefaultGraph private constructor(
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
         // Fast path: exact type match (covers the common case where callers
         // pass a concrete class like CallSiteNode::class.java)
-        nodesByType[type]?.let { return (it as List<T>).asSequence() }
+        nodesByType[type]?.let {
+            return (it as List<T>).asSequence()
+        }
         // Slow path: supertype match (e.g., querying an abstract Node subtype
         // that has multiple concrete implementations in the index)
-        return nodesByType.entries.asSequence()
-            .filter { type.isAssignableFrom(it.key) }
-            .flatMap { it.value.asSequence() } as Sequence<T>
+        return nodesByType.entries.asSequence().filter { type.isAssignableFrom(it.key) }.flatMap { it.value.asSequence() } as Sequence<T>
     }
 
     override fun nodeCount(type: Class<out Node>): Long =
         nodesByType[type]?.size?.toLong()
-            ?: nodesByType.entries.asSequence()
-                .filter { type.isAssignableFrom(it.key) }
-                .sumOf { it.value.size.toLong() }
+            ?: nodesByType.entries.asSequence().filter { type.isAssignableFrom(it.key) }.sumOf { it.value.size.toLong() }
 
     override fun edgeCount(): Long = edgeCount
 
-    override fun outgoing(id: NodeId): Sequence<Edge> =
-        outgoingEdges.get(id.value)?.asSequence() ?: emptySequence()
+    override fun outgoing(id: NodeId): Sequence<Edge> = outgoingEdges.get(id.value)?.asSequence() ?: emptySequence()
 
-    override fun incoming(id: NodeId): Sequence<Edge> =
-        incomingEdges.get(id.value)?.asSequence() ?: emptySequence()
+    override fun incoming(id: NodeId): Sequence<Edge> = incomingEdges.get(id.value)?.asSequence() ?: emptySequence()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
-        outgoing(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> = outgoing(id).filter { type.isInstance(it) } as Sequence<T>
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> =
-        incoming(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> = incoming(id).filter { type.isInstance(it) } as Sequence<T>
 
     override fun callSites(methodPattern: MethodPattern): Sequence<CallSiteNode> =
-        nodes(CallSiteNode::class.java).filter { callSite ->
-            methodPattern.matches(callSite.callee)
-        }
+        nodes(CallSiteNode::class.java).filter { callSite -> methodPattern.matches(callSite.callee) }
 
-    override fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        typeHierarchy.supertypes(type)
-
-    override fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        typeHierarchy.subtypes(type)
-
-    override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
-        methodIndex.values.asSequence().filter { pattern.matches(it) }
-
-    override fun methodCount(): Long = methodIndex.size.toLong()
-
-    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
-        methods(pattern).take(limit.coerceAtLeast(0)).toList()
-
-    override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
-        enumValues["$enumClass#$enumName"]
-
-    override fun enumValueIndex(): Map<String, List<Any?>> = enumValues
-
-    override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
-        memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
-
-    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
-        memberAnnotationsMap
-
-    override fun classOrigin(className: String): String? = classOriginsMap[className]
-
-    override fun classOrigins(): Map<String, String> = classOriginsMap
-
-    override fun syntheticIdentity(member: String): String? = syntheticIdentitiesMap[member]
-
-    override fun syntheticIdentities(): Map<String, String> = syntheticIdentitiesMap
-
-    override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
-
-    override fun branchScopes(): Sequence<BranchScope> =
-        branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
+    override fun branchScopes(): Sequence<BranchScope> = branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex.value[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
-    private val localDefinitionIndex = lazy {
-        BranchScope.unpackDefinitionTable(rawLocalDefinitions)
-    }
+    private val localDefinitionIndex = lazy { BranchScope.unpackDefinitionTable(rawLocalDefinitions) }
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex.value
 
@@ -190,11 +123,8 @@ class DefaultGraph private constructor(
         return rawLocalDefinitions.packedLocalDefinitionSnapshot()
     }
 
-    override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
-
     /**
-     * Builder for constructing DefaultGraph instances.
-     * Uses concurrent collections during building, then compacts to fastutil collections.
+     * Builder for constructing DefaultGraph instances. Uses concurrent collections during building, then compacts to fastutil collections.
      */
     class Builder : FullGraphBuilder {
         private val nodes = Int2ObjectOpenHashMap<Node>()
@@ -254,7 +184,12 @@ class DefaultGraph private constructor(
             return this
         }
 
-        override fun addMemberAnnotation(className: String, memberName: String, annotationFqn: String, values: Map<String, Any?>): FullGraphBuilder {
+        override fun addMemberAnnotation(
+            className: String,
+            memberName: String,
+            annotationFqn: String,
+            values: Map<String, Any?>
+        ): FullGraphBuilder {
             memberAnnotations.getOrPut("$className#$memberName") { mutableMapOf() }[annotationFqn] = values
             return this
         }
@@ -275,10 +210,9 @@ class DefaultGraph private constructor(
         }
 
         override fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int): FullGraphBuilder {
-            if (fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight <= 0) return this
-            artifactDependencies
-                .computeIfAbsent(fromArtifact) { ConcurrentHashMap() }
-                .merge(toArtifact, weight, Int::plus)
+            val invalidName = fromArtifact.isBlank() || toArtifact.isBlank()
+            if (invalidName || fromArtifact == toArtifact || weight <= 0) return this
+            artifactDependencies.computeIfAbsent(fromArtifact) { ConcurrentHashMap() }.merge(toArtifact, weight, Int::plus)
             return this
         }
 
@@ -291,15 +225,15 @@ class DefaultGraph private constructor(
             trueDefinitions: IntArray,
             falseDefinitions: IntArray
         ): FullGraphBuilder {
-            branchScopes.add(RawBranchScope(
-                conditionNodeId = conditionNodeId.value,
-                method = method,
-                comparison = comparison,
-                trueBranchNodeIds = trueBranchNodeIds,
-                falseBranchNodeIds = falseBranchNodeIds,
-                trueDefinitions = trueDefinitions,
-                falseDefinitions = falseDefinitions
-            ))
+            branchScopes.add(
+                RawBranchScope(
+                    conditionNodeId = conditionNodeId.value,
+                    method = method,
+                    comparison = comparison,
+                    trueBranchNodeIds = trueBranchNodeIds,
+                    falseBranchNodeIds = falseBranchNodeIds,
+                    trueDefinitions = trueDefinitions,
+                    falseDefinitions = falseDefinitions))
             return this
         }
 
@@ -311,14 +245,10 @@ class DefaultGraph private constructor(
         override fun build(): Graph {
             // Compact edge lists to immutable form
             val compactOutgoing = Int2ObjectOpenHashMap<List<Edge>>(outgoing.size)
-            outgoing.int2ObjectEntrySet().forEach { entry ->
-                compactOutgoing.put(entry.intKey, entry.value.toList())
-            }
+            outgoing.int2ObjectEntrySet().forEach { entry -> compactOutgoing.put(entry.intKey, entry.value.toList()) }
 
             val compactIncoming = Int2ObjectOpenHashMap<List<Edge>>(incoming.size)
-            incoming.int2ObjectEntrySet().forEach { entry ->
-                compactIncoming.put(entry.intKey, entry.value.toList())
-            }
+            incoming.int2ObjectEntrySet().forEach { entry -> compactIncoming.put(entry.intKey, entry.value.toList()) }
 
             // Trim to size for memory efficiency
             nodes.trim()
@@ -330,40 +260,32 @@ class DefaultGraph private constructor(
             val edgeCount = compactOutgoing.values.sumOf { it.size.toLong() }
 
             return DefaultGraph(
-                nodesById = nodes,
-                outgoingEdges = compactOutgoing,
-                incomingEdges = compactIncoming,
-                methodIndex = methods.toMap(),
-                typeHierarchy = typeHierarchyBuilder.build(),
-                enumValues = enumValues.toMap(),
-                classOriginsMap = classOrigins.toMap(),
-                syntheticIdentitiesMap = syntheticIdentities.toMap(),
-                artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
-                memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
+                nodes = EagerNodeInputs(nodes, nodesByType),
+                edges = EagerEdgeInputs(compactOutgoing, compactIncoming, edgeCount),
+                metadata =
+                    GraphMetadataInputs(
+                        methodIndex = methods.toMap(),
+                        typeHierarchy = typeHierarchyBuilder.build(),
+                        enumValues = enumValues.toMap(),
+                        classOrigins = classOrigins.toMap(),
+                        syntheticIdentities = syntheticIdentities.toMap(),
+                        artifactDependencies = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
+                        memberAnnotations = memberAnnotations.mapValues { it.value.toMap() },
+                        declaredTypes = declaredTypeTable,
+                        completeness = analysisCompleteness),
                 rawBranchScopes = branchScopes.toTypedArray(),
                 rawLocalDefinitions = localDefinitions,
-                resources = resourceAccessor,
-                declaredTypeTable = declaredTypeTable,
-                nodesByType = nodesByType,
-                edgeCount = edgeCount,
-                analysisCompleteness = analysisCompleteness
-            )
+                resources = resourceAccessor)
         }
     }
 }
 
-/**
- * Type hierarchy for efficient subtype/supertype queries
- */
-class TypeHierarchy private constructor(
-    private val supertypeMap: Map<String, Set<TypeDescriptor>>,
-    private val subtypeMap: Map<String, Set<TypeDescriptor>>
-) {
-    fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        supertypeMap[type.className]?.asSequence() ?: emptySequence()
+/** Type hierarchy for efficient subtype/supertype queries */
+class TypeHierarchy
+private constructor(private val supertypeMap: Map<String, Set<TypeDescriptor>>, private val subtypeMap: Map<String, Set<TypeDescriptor>>) {
+    fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> = supertypeMap[type.className]?.asSequence() ?: emptySequence()
 
-    fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        subtypeMap[type.className]?.asSequence() ?: emptySequence()
+    fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> = subtypeMap[type.className]?.asSequence() ?: emptySequence()
 
     fun allKeys(): Set<String> = supertypeMap.keys + subtypeMap.keys
 
@@ -381,9 +303,7 @@ class TypeHierarchy private constructor(
             return this
         }
 
-        fun build(): TypeHierarchy = TypeHierarchy(
-            supertypeMap = supertypes.mapValues { it.value.toSet() },
-            subtypeMap = subtypes.mapValues { it.value.toSet() }
-        )
+        fun build(): TypeHierarchy =
+            TypeHierarchy(supertypeMap = supertypes.mapValues { it.value.toSet() }, subtypeMap = subtypes.mapValues { it.value.toSet() })
     }
 }

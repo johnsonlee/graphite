@@ -102,78 +102,76 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val retryUndeclaredVariables: Boolean
     )
 
-    @Suppress("CyclomaticComplexMethod") // Class, field and method declarations share one rollback-safe table.
-    fun build(): DeclaredTypeTable {
-        val fields = linkedMapOf<MemberTypeKey, Int>()
-        val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
-        val classes = linkedMapOf<String, ClassTypes>()
-        val acceptedEnvironments = hashMapOf<String, Map<String, String>>()
-        val unresolvedEnvironments = hashSetOf<String>()
-        val rejectedMethodSignatures = hashSetOf<MemberTypeKey>()
-        val orderedDeclarations = orderedDeclarations()
-        orderedDeclarations.forEach { declaration ->
+    fun build(): DeclaredTypeTable = DeclarationBuild().execute()
+
+    /** One build's environments and bindings; parsing shares only the rollback-safe type interner. */
+    private inner class DeclarationBuild {
+        private val fields = linkedMapOf<MemberTypeKey, Int>()
+        private val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
+        private val classes = linkedMapOf<String, ClassTypes>()
+        private val acceptedEnvironments = hashMapOf<String, Map<String, String>>()
+        private val unresolvedEnvironments = hashSetOf<String>()
+        private val rejectedMethodSignatures = hashSetOf<MemberTypeKey>()
+        private val ordered = orderedDeclarations()
+
+        fun execute(): DeclaredTypeTable {
+            ordered.forEach(::readDeclaration)
+            // Preserve assigned generic IDs: key erasures are appended only after declaration parsing.
+            ordered.forEach { declaration ->
+                val scope = "class:${declaration.name}"
+                declaration.fields.forEach { Parser(it.descriptor, scope, emptyMap()).completeType() }
+            }
+            return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
+        }
+
+        private fun readDeclaration(declaration: ClassDeclarations) {
             val scope = "class:${declaration.name}"
-            val inheritedEnv = acceptedEnvironment(declaration, acceptedEnvironments, methods)
-            val classFormalNames = formalNames(declaration.signature)
-            val classEnv = inheritedEnv + classFormalNames.associateWith { scope }
-            val allowUnresolvedVariables = hasIncompleteEnclosingEnvironment(
-                declaration,
-                unresolvedEnvironments,
-                rejectedMethodSignatures
-            )
-            val retryUndeclaredVariables = declaration.enclosingClass == null &&
-                declaration.enclosingMethod == null && !declaration.hasInnerClassMetadata
-            val parsedClassTypes = parseClassTypes(
-                declaration,
-                scope,
-                classEnv,
-                allowUnresolvedVariables,
-                retryUndeclaredVariables
-            )
-            val classTypes = parsedClassTypes.types
-            val memberMode = MemberParseMode(
-                allowUnresolvedVariables || parsedClassTypes.environmentIncomplete,
-                retryUndeclaredVariables
-            )
+            val inherited = acceptedEnvironment(declaration, acceptedEnvironments, methods)
+            val classEnvironment = inherited + formalNames(declaration.signature).associateWith { scope }
+            val allowUnresolved = hasIncompleteEnclosingEnvironment(declaration, unresolvedEnvironments, rejectedMethodSignatures)
+            val retryUndeclared = declaration.enclosingClass == null && declaration.enclosingMethod == null &&
+                !declaration.hasInnerClassMetadata
+            val parsed = parseClassTypes(declaration, scope, classEnvironment, allowUnresolved, retryUndeclared)
+            val classTypes = parsed.types
+            val mode = MemberParseMode(allowUnresolved || parsed.environmentIncomplete, retryUndeclared)
             classes[declaration.name] = classTypes
             classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
-            val env = inheritedEnv + classTypes.typeParameters.associate { it.name to it.scope }
-            acceptedEnvironments[declaration.name] = env
+            val environment = inherited + classTypes.typeParameters.associate { it.name to it.scope }
+            acceptedEnvironments[declaration.name] = environment
+            readFields(declaration, scope, environment, mode)
+            readMethods(declaration, environment, mode)
+            if (mode.allowUnresolvedVariables) unresolvedEnvironments.add(declaration.name)
+        }
+
+        private fun readFields(
+            declaration: ClassDeclarations,
+            scope: String,
+            environment: Map<String, String>,
+            mode: MemberParseMode
+        ) {
             declaration.fields.forEach { field ->
-                val genericField = retryUndeclared(memberMode) { allowUnresolved ->
-                    parseField(field, scope, env, allowUnresolved)
-                }
-                fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = genericField
+                val generic = retryUndeclared(mode) { parseField(field, scope, environment, it) }
+                fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = generic
                     ?: Parser(field.descriptor, scope, emptyMap()).completeType()
             }
+        }
+
+        private fun readMethods(declaration: ClassDeclarations, environment: Map<String, String>, mode: MemberParseMode) {
             declaration.methods.forEach { method ->
                 val key = MemberTypeKey(declaration.name, method.name, method.descriptor)
-                val methodScope = "method:${key.owner}#${key.name}${key.descriptor}"
-                val methodFormalNames = formalNames(method.signature)
-                val methodEnv = env + methodFormalNames.associateWith { methodScope }
-                val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
-                val genericMethodTypes = retryUndeclared(memberMode) { allowUnresolved ->
-                    parseMethod(declaration, method, methodScope, methodEnv, descriptor, allowUnresolved)
-                }
-                if (genericMethodTypes == null && method.signature != null) {
-                    rejectedMethodSignatures.add(key)
-                }
-                val methodTypes = genericMethodTypes ?: descriptor
+                val scope = "method:${key.owner}#${key.name}${key.descriptor}"
+                val methodEnvironment = environment + formalNames(method.signature).associateWith { scope }
+                val descriptor = Parser(method.descriptor, scope, emptyMap()).method()
+                val generic = retryUndeclared(mode) { parseMethod(declaration, method, scope, methodEnvironment, descriptor, it) }
+                if (generic == null && method.signature != null) rejectedMethodSignatures.add(key)
+                val methodTypes = generic ?: descriptor
                 methods[key] = methodTypes
                 methodTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             }
-            if (memberMode.allowUnresolvedVariables) unresolvedEnvironments.add(declaration.name)
         }
-        // Preserve previously assigned generic IDs; key erasures are appended only after declaration parsing.
-        orderedDeclarations.forEach { declaration ->
-            val scope = "class:${declaration.name}"
-            declaration.fields.forEach { field -> Parser(field.descriptor, scope, emptyMap()).completeType() }
-        }
-        return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
     }
 
     /** Preserve valid formals when only the signed hierarchy disagrees with the erased class metadata. */
-    @Suppress("ReturnCount")
     private fun parseClassTypes(
         declaration: ClassDeclarations,
         scope: String,

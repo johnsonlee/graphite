@@ -96,13 +96,13 @@ class ArrayTypeFormatterMigrationTest {
     )
 
     private fun descriptor(adapter: SootUpAdapter, type: Type): TypeDescriptor {
-        val method = SootUpAdapter::class.java.getDeclaredMethod("toTypeDescriptor", Type::class.java)
+        val method = adapter.operation("toTypeDescriptor", Type::class.java)
         method.isAccessible = true
         return method.invoke(adapter, type) as TypeDescriptor
     }
 
     private fun local(adapter: SootUpAdapter, caller: MethodDescriptor, name: String, type: Type): LocalVariable {
-        val method = SootUpAdapter::class.java.getDeclaredMethod(
+        val method = adapter.operation(
             "getOrCreateLocal", Local::class.java, MethodDescriptor::class.java
         )
         method.isAccessible = true

@@ -3,8 +3,6 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
-import io.johnsonlee.graphite.core.Edge
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig

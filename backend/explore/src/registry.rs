@@ -171,6 +171,18 @@ impl GraphRegistry {
         path: &Path,
         mode: Option<LoadMode>,
     ) -> Result<Arc<ServedGraph>, String> {
+        let served = self.prepare(id, path, mode)?;
+        self.graphs.lock().insert(served.id.clone(), served.clone());
+        Ok(served)
+    }
+
+    /// Prepare a complete graph without making it visible to readers.
+    pub(crate) fn prepare(
+        &self,
+        id: &str,
+        path: &Path,
+        mode: Option<LoadMode>,
+    ) -> Result<Arc<ServedGraph>, String> {
         let id = validate_graph_id(id)?;
         let resolved = self.resolve_path(path);
         // A directory or a .graphite container; the message is the Kotlin server's,
@@ -197,7 +209,6 @@ impl GraphRegistry {
             graph: Arc::new(graph),
             fingerprint,
         });
-        self.graphs.lock().insert(id, served.clone());
         Ok(served)
     }
 
@@ -301,6 +312,42 @@ impl GraphRegistry {
             .lock()
             .values()
             .fold(GraphStats::default(), |acc, s| acc.plus(s.stats))
+    }
+
+    pub(crate) fn snapshot(&self) -> BTreeMap<String, Arc<ServedGraph>> {
+        self.graphs.lock().clone()
+    }
+
+    /// Publish the topology and catalog under one catalog lock, only if all generations
+    /// still match the snapshot that was validated. Retired graphs drop outside the lock.
+    pub(crate) fn commit_snapshot<T>(
+        &self,
+        expected: &BTreeMap<String, Arc<ServedGraph>>,
+        next: BTreeMap<String, Arc<ServedGraph>>,
+        publish: impl FnOnce() -> Result<T, String>,
+    ) -> Result<T, String> {
+        let mut graphs = self.graphs.lock();
+        if graphs.len() != expected.len()
+            || graphs.iter().any(|(id, served)| {
+                expected
+                    .get(id)
+                    .is_none_or(|old| old.generation != served.generation)
+            })
+        {
+            return Err("Graph catalog changed while preparing update; retry the request".into());
+        }
+        let result = publish()?;
+        let retired = std::mem::replace(&mut *graphs, next);
+        drop(graphs);
+        drop(retired);
+        Ok(result)
+    }
+
+    pub(crate) fn read_catalog<T>(
+        &self,
+        read: impl FnOnce(&BTreeMap<String, Arc<ServedGraph>>) -> T,
+    ) -> T {
+        read(&self.graphs.lock())
     }
 
     /// Map of id to generation, used to detect a stale topology snapshot.

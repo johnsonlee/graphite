@@ -45,6 +45,7 @@ jobs:
         bun install --frozen-lockfile
         bun run check
         bun test
+        python3 -m unittest discover -s . -p test_check_coverage.py -v
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
@@ -72,41 +73,30 @@ jobs:
         retention-days: 7
 
     - name: Generate coverage report
+      id: coverage
       if: success() && github.event_name == 'pull_request'
       run: |
         set -o pipefail
-        ./gradlew koverLog koverXmlReport koverHtmlReport --no-daemon 2>&1 | tee coverage-output.txt
+        ./gradlew koverXmlReport koverHtmlReport --no-daemon 2>&1 | tee coverage-output.txt
+
+    - name: Enforce coverage threshold
+      id: coverage-gate
+      if: success() && github.event_name == 'pull_request'
+      run: python3 .github/scripts/check-coverage.py --summary coverage-summary.json
 
     - name: Comment coverage on PR
-      if: success() && github.event_name == 'pull_request'
+      if: always() && !cancelled() && github.event_name == 'pull_request' && steps.coverage.outcome == 'success'
       uses: actions/github-script@v9
       with:
         script: |
           const fs = require('fs');
-          let output = '';
-          try {
-            output = fs.readFileSync('coverage-output.txt', 'utf8');
-          } catch (e) {
-            output = '';
-          }
-
-          // Parse coverage lines: "> Task :module:koverPrintCoverage" followed by "application line coverage: XX%"
-          const lines = output.split('\n');
-          const rows = [];
-          for (let i = 0; i < lines.length; i++) {
-            const taskMatch = lines[i].match(/> Task :(.+):koverPrintCoverage/);
-            if (taskMatch && i + 1 < lines.length) {
-              const covMatch = lines[i + 1].match(/application line coverage: ([\d.]+)%/);
-              if (covMatch) {
-                const module = taskMatch[1];
-                const pct = parseFloat(covMatch[1]);
-                const icon = pct >= 98 ? ':white_check_mark:' : pct >= 50 ? ':large_orange_diamond:' : ':red_circle:';
-                rows.push(`| ${module} | ${icon} ${pct.toFixed(1)}% |`);
-              }
-            }
-          }
-
-          if (rows.length === 0) return;
+          // The gate has already failed if XML is missing or invalid. Only publish validated data.
+          if (!fs.existsSync('coverage-summary.json')) return;
+          const summary = JSON.parse(fs.readFileSync('coverage-summary.json', 'utf8'));
+          const rows = summary.modules.map(({ module, covered, total, percent, passed }) => {
+            const icon = passed ? ':white_check_mark:' : ':red_circle:';
+            return `| ${module} | ${icon} ${percent.toFixed(2)}% (${covered}/${total}) |`;
+          });
 
           const body = [
             '## :bar_chart: Test Coverage',
@@ -141,30 +131,6 @@ jobs:
             });
           }
 
-    - name: Enforce coverage threshold
-      if: success() && github.event_name == 'pull_request'
-      run: |
-        FAILED=false
-        MODULE=""
-        while IFS= read -r line; do
-          if [[ "$line" == *":koverPrintCoverage"* ]]; then
-            MODULE=${line#*> Task :}
-            MODULE=${MODULE%:koverPrintCoverage*}
-          fi
-          if [[ "$line" == *"application line coverage:"* ]]; then
-            PCT=${line#*coverage: }
-            PCT=${PCT%%\%*}
-            if awk "BEGIN{exit !($PCT < 98)}"; then
-              echo "::error::Module $MODULE coverage is ${PCT}%, below 98% threshold"
-              FAILED=true
-            fi
-          fi
-        done < coverage-output.txt
-
-        if [ "$FAILED" = true ]; then
-          exit 1
-        fi
-
     - name: Preserve coverage diagnostics
       if: always() && github.event_name == 'pull_request'
       uses: actions/upload-artifact@v7
@@ -173,6 +139,7 @@ jobs:
         path: |
           **/build/reports/kover/**
           coverage-output.txt
+          coverage-summary.json
         if-no-files-found: warn
         retention-days: 7
 

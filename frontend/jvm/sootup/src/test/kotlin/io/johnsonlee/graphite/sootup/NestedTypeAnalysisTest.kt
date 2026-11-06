@@ -4,14 +4,11 @@ import io.johnsonlee.graphite.Graphite
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.LocalVariable
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeStructure
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -447,29 +444,11 @@ class NestedTypeAnalysisTest {
     }
 
     private fun measureTypeDepth(structure: TypeStructure): Int {
-        var maxDepth = 1
-
-        // Check type arguments
-        structure.typeArguments.forEach { (_, argStructure) ->
-            val argDepth = 1 + measureTypeDepth(argStructure)
-            if (argDepth > maxDepth) {
-                maxDepth = argDepth
-            }
-        }
-
-        // Check fields for nested types
-        structure.fields.forEach { (_, field) ->
-            field.actualTypes.forEach { actualType ->
-                if (actualType.className.contains("\$L") || actualType.className == "java.lang.String") {
-                    val fieldDepth = 1 + measureTypeDepth(actualType)
-                    if (fieldDepth > maxDepth) {
-                        maxDepth = fieldDepth
-                    }
-                }
-            }
-        }
-
-        return maxDepth
+        val argumentDepth = structure.typeArguments.values.maxOfOrNull(::measureTypeDepth)?.plus(1) ?: 1
+        val fieldDepth = structure.fields.values.asSequence().flatMap { it.actualTypes }
+            .filter { it.className.contains("\$L") || it.className == "java.lang.String" }
+            .maxOfOrNull(::measureTypeDepth)?.plus(1) ?: 1
+        return maxOf(argumentDepth, fieldDepth)
     }
 
     private fun printTypeStructure(structure: TypeStructure, indent: String) {

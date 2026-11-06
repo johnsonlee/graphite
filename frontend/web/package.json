@@ -9,7 +9,8 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/*.test.mjs",
+    "check:types": "tsc -p tsconfig.types.json",
+    "test": "npm run build && npm run check:types && node --test test/*.test.mjs",
     "package:release": "npm run build && bun scripts/package-release.mjs"
   },
   "dependencies": { "typescript": "5.9.3" },

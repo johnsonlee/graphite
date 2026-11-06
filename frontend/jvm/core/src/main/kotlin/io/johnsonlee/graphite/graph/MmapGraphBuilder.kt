@@ -3,10 +3,10 @@ package io.johnsonlee.graphite.graph
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.BranchComparison
-import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -35,7 +35,6 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
-import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import java.io.ByteArrayInputStream
@@ -46,37 +45,29 @@ import java.io.DataOutput
 import java.io.DataOutputStream
 import java.io.EOFException
 import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.IdentityHashMap
 
 /**
- * A graph builder that writes nodes and edges to disk-backed files,
- * avoiding heap accumulation for large graphs.
+ * A graph builder that writes nodes and edges to disk-backed files, avoiding heap accumulation for large graphs.
  *
- * Nodes and edges are appended to temporary files as they are added.
- * [build] creates an [MmapGraph] that reads data on demand from disk,
+ * Nodes and edges are appended to temporary files as they are added. [build] creates an [MmapGraph] that reads data on demand from disk,
  * keeping only lightweight indexes in memory.
  *
- * **Memory profile during construction:** O(index structures) -- the node
- * and edge payloads live on disk, not on the JVM heap.  Only small metadata
- * (methods, type hierarchy, annotations, enum values, branch scopes) is
- * kept in memory because it is typically less than 1% of total data.
+ * **Memory profile during construction:** O(index structures) -- the node and edge payloads live on disk, not on the JVM heap. Only small
+ * metadata (methods, type hierarchy, annotations, enum values, branch scopes) is kept in memory because it is typically less than 1% of
+ * total data.
  *
- * **Memory profile after build:** Only node/edge indexes are in heap
- * (~10 bytes per node, ~16 bytes per edge).  Actual node/edge data is
+ * **Memory profile after build:** Only node/edge indexes are in heap (~10 bytes per node, ~16 bytes per edge). Actual node/edge data is
  * read from disk on demand via [MmapGraph].
  *
- * @param workDir directory for data files; defaults to a fresh
- *   temp directory.  The directory is NOT deleted after [build] because
+ * @param workDir directory for data files; defaults to a fresh temp directory. The directory is NOT deleted after [build] because
  *   [MmapGraph] continues to read from it.
  */
+// The disk-backed builder implements the complete FullGraphBuilder contract.
 @Suppress("TooManyFunctions")
-class MmapGraphBuilder(
-    internal val workDir: Path = Files.createTempDirectory("graphite-mmap")
-) : FullGraphBuilder {
+class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("graphite-mmap")) : FullGraphBuilder {
 
     private val nodeStream = workDir.resolve(NODES_FILE).toFile().outputStream().buffered()
     private val edgeStream = workDir.resolve(EDGES_FILE).toFile().outputStream().buffered()
@@ -166,10 +157,9 @@ class MmapGraphBuilder(
     }
 
     override fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int): FullGraphBuilder {
-        if (fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight <= 0) return this
-        artifactDependencies
-            .getOrPut(fromArtifact) { mutableMapOf() }
-            .merge(toArtifact, weight, Int::plus)
+        val invalidName = fromArtifact.isBlank() || toArtifact.isBlank()
+        if (invalidName || fromArtifact == toArtifact || weight <= 0) return this
+        artifactDependencies.getOrPut(fromArtifact) { mutableMapOf() }.merge(toArtifact, weight, Int::plus)
         return this
     }
 
@@ -190,9 +180,7 @@ class MmapGraphBuilder(
                 trueBranchNodeIds = trueBranchNodeIds,
                 falseBranchNodeIds = falseBranchNodeIds,
                 trueDefinitions = trueDefinitions,
-                falseDefinitions = falseDefinitions
-            )
-        )
+                falseDefinitions = falseDefinitions))
         return this
     }
 
@@ -261,26 +249,21 @@ class MmapGraphBuilder(
         methods.forEach { methodIndex[it.identity] = it }
 
         return MmapGraph(
-            dataDir = workDir,
-            nodeIndex = nodeIndex,
-            nodeTypeIndex = nodeTypeIndex,
-            outgoingIndex = MmapGraph.EdgeOffsetIndex(outgoingStarts, outgoingOffsetIndex),
-            nodeMethods = nodeMethods.toList(),
-            nodeTypes = nodeTypes.toList(),
-            methodIndex = methodIndex,
-            typeHierarchy = typeHierarchyBuilder.build(),
-            enumValuesMap = enumValues.toMap(),
-            classOriginsMap = classOrigins.toMap(),
-            syntheticIdentitiesMap = syntheticIdentities.toMap(),
-            artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
-            memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
-            branchScopeData = branchScopes.toList(),
-            localDefinitionData = localDefinitions.toMap(),
-            incomingIndex = null,
-            resources = resourceAccessor,
-            declaredTypeTable = declaredTypeTable,
-            analysisCompleteness = analysisCompleteness
-        )
+            nodes = MappedNodeInputs(workDir, nodeIndex, nodeTypeIndex, nodeMethods.toList(), nodeTypes.toList()),
+            edges = MappedEdgeInputs(MmapGraph.EdgeOffsetIndex(outgoingStarts, outgoingOffsetIndex), null),
+            metadata =
+                GraphMetadataInputs(
+                    methodIndex = methodIndex,
+                    typeHierarchy = typeHierarchyBuilder.build(),
+                    enumValues = enumValues.toMap(),
+                    classOrigins = classOrigins.toMap(),
+                    syntheticIdentities = syntheticIdentities.toMap(),
+                    artifactDependencies = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
+                    memberAnnotations = memberAnnotations.mapValues { it.value.toMap() },
+                    declaredTypes = declaredTypeTable,
+                    completeness = analysisCompleteness),
+            branches = RawBranchInputs(branchScopes.toList(), localDefinitions.toMap()),
+            resources = resourceAccessor)
     }
 
     private fun buildOutgoingEdgeOffsetIndex(
@@ -346,24 +329,24 @@ class MmapGraphBuilder(
         internal const val TAG_RESOURCE_VALUE_NODE = 14
         internal const val TAG_RESOURCE_FILE_NODE = 15
 
-        private val NODE_CLASSES_BY_TAG: Array<Class<out Node>> = arrayOf(
-            IntConstant::class.java,
-            StringConstant::class.java,
-            LongConstant::class.java,
-            FloatConstant::class.java,
-            DoubleConstant::class.java,
-            BooleanConstant::class.java,
-            NullConstant::class.java,
-            EnumConstant::class.java,
-            LocalVariable::class.java,
-            FieldNode::class.java,
-            ParameterNode::class.java,
-            ReturnNode::class.java,
-            CallSiteNode::class.java,
-            AnnotationNode::class.java,
-            ResourceValueNode::class.java,
-            ResourceFileNode::class.java
-        )
+        private val NODE_CLASSES_BY_TAG: Array<Class<out Node>> =
+            arrayOf(
+                IntConstant::class.java,
+                StringConstant::class.java,
+                LongConstant::class.java,
+                FloatConstant::class.java,
+                DoubleConstant::class.java,
+                BooleanConstant::class.java,
+                NullConstant::class.java,
+                EnumConstant::class.java,
+                LocalVariable::class.java,
+                FieldNode::class.java,
+                ParameterNode::class.java,
+                ReturnNode::class.java,
+                CallSiteNode::class.java,
+                AnnotationNode::class.java,
+                ResourceValueNode::class.java,
+                ResourceFileNode::class.java)
 
         // Edge type tags
         internal const val TAG_EDGE_DATAFLOW = 0
@@ -383,20 +366,76 @@ class MmapGraphBuilder(
         internal const val VAL_ENUM_REF = 7
         internal const val VAL_LIST = 8
 
-        /**
-         * Deserialize a node from its length-prefixed bytes (excluding the 4-byte length prefix).
-         */
+        /** Deserialize a node from its length-prefixed bytes (excluding the 4-byte length prefix). */
         internal fun deserializeNode(bytes: ByteArray, nodeMethods: List<MethodDescriptor>): Node =
             deserializeNode(DataInputStream(ByteArrayInputStream(bytes)), nodeMethods, emptyList())
 
-        @Suppress("CyclomaticComplexMethod")
-        internal fun deserializeNode(
-            s: DataInput,
-            nodeMethods: List<MethodDescriptor>,
-            nodeTypes: List<TypeDescriptor>
-        ): Node {
+        internal fun deserializeNode(s: DataInput, nodeMethods: List<MethodDescriptor>, nodeTypes: List<TypeDescriptor>): Node {
             val id = NodeId(s.readInt())
-            return when (val tag = s.readByte().toInt()) {
+            val tag = s.readByte().toInt()
+            return readConstantNode(tag, id, s, nodeTypes)
+                ?: when (tag) {
+                    TAG_LOCAL_VARIABLE ->
+                        LocalVariable(id, readString(s), readTypeDescriptor(s, nodeTypes), readMethodDescriptor(s, nodeMethods))
+                    TAG_FIELD_NODE ->
+                        FieldNode(
+                            id,
+                            FieldDescriptor(readTypeDescriptor(s, nodeTypes), readString(s), readTypeDescriptor(s, nodeTypes)),
+                            s.readBoolean())
+                    TAG_PARAMETER_NODE ->
+                        ParameterNode(id, s.readInt(), readTypeDescriptor(s, nodeTypes), readMethodDescriptor(s, nodeMethods))
+                    TAG_RETURN_NODE -> {
+                        val method = readMethodDescriptor(s, nodeMethods)
+                        val hasActual = s.readBoolean()
+                        ReturnNode(id, method, if (hasActual) readTypeDescriptor(s, nodeTypes) else null)
+                    }
+                    TAG_RESOURCE_FILE_NODE -> {
+                        val path = readString(s)
+                        val source = readString(s)
+                        val format = readString(s)
+                        val profile = if (s.readBoolean()) readString(s) else null
+                        ResourceFileNode(id, path, source, format, profile)
+                    }
+                    TAG_RESOURCE_VALUE_NODE -> {
+                        val path = readString(s)
+                        val key = readString(s)
+                        val value = readAnyValue(s, nodeTypes)
+                        val format = readString(s)
+                        val profile = if (s.readBoolean()) readString(s) else null
+                        ResourceValueNode(id, path, key, value, format, profile)
+                    }
+                    TAG_CALL_SITE_NODE -> readCallSite(id, s, nodeMethods)
+                    TAG_ANNOTATION_NODE -> {
+                        val name = readString(s)
+                        val className = readString(s)
+                        val memberName = readString(s)
+                        val kvCount = s.readInt()
+                        val values = mutableMapOf<String, Any?>()
+                        repeat(kvCount) {
+                            val k = readString(s)
+                            val v = readAnyValue(s, nodeTypes)
+                            values[k] = v
+                        }
+                        AnnotationNode(id, name, className, memberName, values)
+                    }
+                    else -> error("Unknown node type tag: $tag")
+                }
+        }
+
+        private fun readCallSite(id: NodeId, s: DataInput, nodeMethods: List<MethodDescriptor>): CallSiteNode {
+            val caller = readMethodDescriptor(s, nodeMethods)
+            val callee = readMethodDescriptor(s, nodeMethods)
+            val line = s.readInt().let { if (it == -1) null else it }
+            val receiver = s.readInt().let { if (it == -1) null else NodeId(it) }
+            val argCount = s.readInt()
+            val args = (0 until argCount).map { NodeId(s.readInt()) }
+            val ordinal = s.readInt().let { if (it == Int.MIN_VALUE) null else it }
+            val origin = s.readInt().let { if (it == -1) null else NodeId(it) }
+            return CallSiteNode(id, caller, callee, line, receiver, args, ordinal, origin)
+        }
+
+        private fun readConstantNode(tag: Int, id: NodeId, s: DataInput, nodeTypes: List<TypeDescriptor>): ConstantNode? =
+            when (tag) {
                 TAG_INT_CONSTANT -> IntConstant(id, s.readInt())
                 TAG_STRING_CONSTANT -> StringConstant(id, readString(s))
                 TAG_LONG_CONSTANT -> LongConstant(id, s.readLong())
@@ -411,69 +450,11 @@ class MmapGraphBuilder(
                     val args = (0 until argCount).map { readAnyValue(s, nodeTypes) }
                     EnumConstant(id, enumType, enumName, args)
                 }
-                TAG_LOCAL_VARIABLE -> LocalVariable(
-                    id,
-                    readString(s),
-                    readTypeDescriptor(s, nodeTypes),
-                    readMethodDescriptor(s, nodeMethods)
-                )
-                TAG_FIELD_NODE -> FieldNode(
-                    id,
-                    FieldDescriptor(readTypeDescriptor(s, nodeTypes), readString(s), readTypeDescriptor(s, nodeTypes)),
-                    s.readBoolean()
-                )
-                TAG_PARAMETER_NODE -> ParameterNode(id, s.readInt(), readTypeDescriptor(s, nodeTypes), readMethodDescriptor(s, nodeMethods))
-                TAG_RETURN_NODE -> {
-                    val method = readMethodDescriptor(s, nodeMethods)
-                    val hasActual = s.readBoolean()
-                    ReturnNode(id, method, if (hasActual) readTypeDescriptor(s, nodeTypes) else null)
-                }
-                TAG_RESOURCE_FILE_NODE -> {
-                    val path = readString(s)
-                    val source = readString(s)
-                    val format = readString(s)
-                    val profile = if (s.readBoolean()) readString(s) else null
-                    ResourceFileNode(id, path, source, format, profile)
-                }
-                TAG_RESOURCE_VALUE_NODE -> {
-                    val path = readString(s)
-                    val key = readString(s)
-                    val value = readAnyValue(s, nodeTypes)
-                    val format = readString(s)
-                    val profile = if (s.readBoolean()) readString(s) else null
-                    ResourceValueNode(id, path, key, value, format, profile)
-                }
-                TAG_CALL_SITE_NODE -> {
-                    val caller = readMethodDescriptor(s, nodeMethods)
-                    val callee = readMethodDescriptor(s, nodeMethods)
-                    val line = s.readInt().let { if (it == -1) null else it }
-                    val receiver = s.readInt().let { if (it == -1) null else NodeId(it) }
-                    val argCount = s.readInt()
-                    val args = (0 until argCount).map { NodeId(s.readInt()) }
-                    val ordinal = s.readInt().let { if (it == Int.MIN_VALUE) null else it }
-                    val origin = s.readInt().let { if (it == -1) null else NodeId(it) }
-                    CallSiteNode(id, caller, callee, line, receiver, args, ordinal, origin)
-                }
-                TAG_ANNOTATION_NODE -> {
-                    val name = readString(s)
-                    val className = readString(s)
-                    val memberName = readString(s)
-                    val kvCount = s.readInt()
-                    val values = mutableMapOf<String, Any?>()
-                    repeat(kvCount) {
-                        val k = readString(s)
-                        val v = readAnyValue(s, nodeTypes)
-                        values[k] = v
-                    }
-                    AnnotationNode(id, name, className, memberName, values)
-                }
-                else -> error("Unknown node type tag: $tag")
+                else -> null
             }
-        }
 
         /**
-         * Deserialize an edge from a [RandomAccessFile] at its current position.
-         * The file pointer is advanced past the entire edge record.
+         * Deserialize an edge from a [RandomAccessFile] at its current position. The file pointer is advanced past the entire edge record.
          */
         internal fun deserializeEdge(input: java.io.DataInput): Edge {
             val from = NodeId(input.readInt())
@@ -488,11 +469,12 @@ class MmapGraphBuilder(
                 TAG_EDGE_CONTROL_FLOW -> {
                     val kind = ControlFlowKind.entries[input.readByte().toInt()]
                     val hasComparison = input.readByte().toInt() == 1
-                    val comparison = if (hasComparison) {
-                        BranchComparison(ComparisonOp.entries[input.readByte().toInt()], NodeId(input.readInt()))
-                    } else {
-                        null
-                    }
+                    val comparison =
+                        if (hasComparison) {
+                            BranchComparison(ComparisonOp.entries[input.readByte().toInt()], NodeId(input.readInt()))
+                        } else {
+                            null
+                        }
                     ControlFlowEdge(from, to, kind, comparison)
                 }
                 TAG_EDGE_RESOURCE -> ResourceEdge(from, to, ResourceRelation.entries[input.readByte().toInt()])
@@ -501,9 +483,7 @@ class MmapGraphBuilder(
         }
 
         private fun nodeClassForTag(tag: Int): Class<out Node> {
-            require(tag in NODE_CLASSES_BY_TAG.indices) {
-                "Unknown node type tag during index build: $tag"
-            }
+            require(tag in NODE_CLASSES_BY_TAG.indices) { "Unknown node type tag during index build: $tag" }
             return NODE_CLASSES_BY_TAG[tag]
         }
 
@@ -531,30 +511,30 @@ class MmapGraphBuilder(
         private fun skipEdgePayload(input: DataInput): Int {
             return when (input.readByte().toInt()) {
                 TAG_EDGE_DATAFLOW -> {
-                    input.readByte()   // kind
+                    input.readByte() // kind
                     EDGE_TAG_BYTES + EDGE_KIND_BYTES
                 }
                 TAG_EDGE_CALL -> {
-                    input.readByte()   // flags
+                    input.readByte() // flags
                     EDGE_TAG_BYTES + EDGE_FLAGS_BYTES
                 }
                 TAG_EDGE_TYPE -> {
-                    input.readByte()   // kind
+                    input.readByte() // kind
                     EDGE_TAG_BYTES + EDGE_KIND_BYTES
                 }
                 TAG_EDGE_CONTROL_FLOW -> {
-                    input.readByte()                  // kind
+                    input.readByte() // kind
                     var consumed = EDGE_TAG_BYTES + EDGE_KIND_BYTES + CONTROL_FLOW_HAS_COMPARISON_BYTES
                     val hasComparison = input.readByte().toInt() == 1
                     if (hasComparison) {
-                        input.readByte()              // operator
-                        input.readInt()               // comparandNodeId
+                        input.readByte() // operator
+                        input.readInt() // comparandNodeId
                         consumed += COMPARISON_OPERATOR_BYTES + COMPARISON_NODE_ID_BYTES
                     }
                     consumed
                 }
                 TAG_EDGE_RESOURCE -> {
-                    input.readByte()   // kind
+                    input.readByte() // kind
                     EDGE_TAG_BYTES + EDGE_KIND_BYTES
                 }
                 else -> error("Unknown edge type tag during skip")
@@ -566,18 +546,19 @@ class MmapGraphBuilder(
             return nodeMethods[methodId]
         }
 
-        internal fun readAnyValue(dis: DataInput, nodeTypes: List<TypeDescriptor>): Any? = when (dis.readByte().toInt()) {
-            VAL_INT -> dis.readInt()
-            VAL_LONG -> dis.readLong()
-            VAL_STRING -> readString(dis)
-            VAL_FLOAT -> dis.readFloat()
-            VAL_DOUBLE -> dis.readDouble()
-            VAL_BOOLEAN -> dis.readBoolean()
-            VAL_NULL -> null
-            VAL_ENUM_REF -> EnumValueReference(readString(dis), readString(dis))
-            VAL_LIST -> List(dis.readInt()) { readAnyValue(dis, nodeTypes) }
-            else -> readString(dis)
-        }
+        internal fun readAnyValue(dis: DataInput, nodeTypes: List<TypeDescriptor>): Any? =
+            when (dis.readByte().toInt()) {
+                VAL_INT -> dis.readInt()
+                VAL_LONG -> dis.readLong()
+                VAL_STRING -> readString(dis)
+                VAL_FLOAT -> dis.readFloat()
+                VAL_DOUBLE -> dis.readDouble()
+                VAL_BOOLEAN -> dis.readBoolean()
+                VAL_NULL -> null
+                VAL_ENUM_REF -> EnumValueReference(readString(dis), readString(dis))
+                VAL_LIST -> List(dis.readInt()) { readAnyValue(dis, nodeTypes) }
+                else -> readString(dis)
+            }
 
         internal fun readTypeDescriptor(input: DataInput, nodeTypes: List<TypeDescriptor>): TypeDescriptor {
             return if (nodeTypes.isEmpty()) {
@@ -638,20 +619,7 @@ class MmapGraphBuilder(
 
         dos.writeInt(node.id.value)
         when (node) {
-            is IntConstant -> { dos.writeByte(TAG_INT_CONSTANT); dos.writeInt(node.value) }
-            is StringConstant -> { dos.writeByte(TAG_STRING_CONSTANT); writeString(dos, node.value) }
-            is LongConstant -> { dos.writeByte(TAG_LONG_CONSTANT); dos.writeLong(node.value) }
-            is FloatConstant -> { dos.writeByte(TAG_FLOAT_CONSTANT); dos.writeFloat(node.value) }
-            is DoubleConstant -> { dos.writeByte(TAG_DOUBLE_CONSTANT); dos.writeDouble(node.value) }
-            is BooleanConstant -> { dos.writeByte(TAG_BOOLEAN_CONSTANT); dos.writeBoolean(node.value) }
-            is NullConstant -> { dos.writeByte(TAG_NULL_CONSTANT) }
-            is EnumConstant -> {
-                dos.writeByte(TAG_ENUM_CONSTANT)
-                writeTypeDescriptor(dos, node.enumType)
-                writeString(dos, node.enumName)
-                dos.writeInt(node.constructorArgs.size)
-                node.constructorArgs.forEach { writeAnyValue(dos, it) }
-            }
+            is ConstantNode -> writeConstantNode(dos, node)
             is LocalVariable -> {
                 dos.writeByte(TAG_LOCAL_VARIABLE)
                 writeString(dos, node.name)
@@ -685,15 +653,6 @@ class MmapGraphBuilder(
                 dos.writeBoolean(node.profile != null)
                 if (node.profile != null) writeString(dos, node.profile)
             }
-            is ResourceValueNode -> {
-                dos.writeByte(TAG_RESOURCE_VALUE_NODE)
-                writeString(dos, node.path)
-                writeString(dos, node.key)
-                writeAnyValue(dos, node.value)
-                writeString(dos, node.format)
-                dos.writeBoolean(node.profile != null)
-                if (node.profile != null) writeString(dos, node.profile)
-            }
             is CallSiteNode -> {
                 dos.writeByte(TAG_CALL_SITE_NODE)
                 writeMethodDescriptor(dos, node.caller)
@@ -721,9 +680,61 @@ class MmapGraphBuilder(
         out.writeInt(baos.size())
         baos.writeTo(out)
 
-        if (baos.capacity > MAX_REUSABLE_NODE_BUFFER_BYTES) {
+        releaseOversizedNodeBuffer(baos.capacity)
+    }
+
+    private fun releaseOversizedNodeBuffer(capacity: Int) {
+        if (capacity > MAX_REUSABLE_NODE_BUFFER_BYTES) {
             nodeBuffer = ReusableByteArrayOutputStream(NODE_SERIALIZATION_BUFFER_BYTES)
             nodeBufferDos = DataOutputStream(nodeBuffer)
+        }
+    }
+
+    private fun writeConstantNode(dos: DataOutputStream, node: ConstantNode) {
+        when (node) {
+            is IntConstant -> {
+                dos.writeByte(TAG_INT_CONSTANT)
+                dos.writeInt(node.value)
+            }
+            is StringConstant -> {
+                dos.writeByte(TAG_STRING_CONSTANT)
+                writeString(dos, node.value)
+            }
+            is LongConstant -> {
+                dos.writeByte(TAG_LONG_CONSTANT)
+                dos.writeLong(node.value)
+            }
+            is FloatConstant -> {
+                dos.writeByte(TAG_FLOAT_CONSTANT)
+                dos.writeFloat(node.value)
+            }
+            is DoubleConstant -> {
+                dos.writeByte(TAG_DOUBLE_CONSTANT)
+                dos.writeDouble(node.value)
+            }
+            is BooleanConstant -> {
+                dos.writeByte(TAG_BOOLEAN_CONSTANT)
+                dos.writeBoolean(node.value)
+            }
+            is NullConstant -> {
+                dos.writeByte(TAG_NULL_CONSTANT)
+            }
+            is EnumConstant -> {
+                dos.writeByte(TAG_ENUM_CONSTANT)
+                writeTypeDescriptor(dos, node.enumType)
+                writeString(dos, node.enumName)
+                dos.writeInt(node.constructorArgs.size)
+                node.constructorArgs.forEach { writeAnyValue(dos, it) }
+            }
+            is ResourceValueNode -> {
+                dos.writeByte(TAG_RESOURCE_VALUE_NODE)
+                writeString(dos, node.path)
+                writeString(dos, node.key)
+                writeAnyValue(dos, node.value)
+                writeString(dos, node.format)
+                dos.writeBoolean(node.profile != null)
+                if (node.profile != null) writeString(dos, node.profile)
+            }
         }
     }
 
@@ -788,13 +799,33 @@ class MmapGraphBuilder(
 
     private fun writeAnyValue(dos: DataOutput, value: Any?) {
         when (value) {
-            is Int -> { dos.writeByte(VAL_INT); dos.writeInt(value) }
-            is Long -> { dos.writeByte(VAL_LONG); dos.writeLong(value) }
-            is String -> { dos.writeByte(VAL_STRING); writeString(dos, value) }
-            is Float -> { dos.writeByte(VAL_FLOAT); dos.writeFloat(value) }
-            is Double -> { dos.writeByte(VAL_DOUBLE); dos.writeDouble(value) }
-            is Boolean -> { dos.writeByte(VAL_BOOLEAN); dos.writeBoolean(value) }
-            null -> { dos.writeByte(VAL_NULL) }
+            is Int -> {
+                dos.writeByte(VAL_INT)
+                dos.writeInt(value)
+            }
+            is Long -> {
+                dos.writeByte(VAL_LONG)
+                dos.writeLong(value)
+            }
+            is String -> {
+                dos.writeByte(VAL_STRING)
+                writeString(dos, value)
+            }
+            is Float -> {
+                dos.writeByte(VAL_FLOAT)
+                dos.writeFloat(value)
+            }
+            is Double -> {
+                dos.writeByte(VAL_DOUBLE)
+                dos.writeDouble(value)
+            }
+            is Boolean -> {
+                dos.writeByte(VAL_BOOLEAN)
+                dos.writeBoolean(value)
+            }
+            null -> {
+                dos.writeByte(VAL_NULL)
+            }
             is EnumValueReference -> {
                 dos.writeByte(VAL_ENUM_REF)
                 writeString(dos, value.enumClass)
@@ -805,7 +836,10 @@ class MmapGraphBuilder(
                 dos.writeInt(value.size)
                 value.forEach { writeAnyValue(dos, it) }
             }
-            else -> { dos.writeByte(VAL_STRING); writeString(dos, value.toString()) }
+            else -> {
+                dos.writeByte(VAL_STRING)
+                writeString(dos, value.toString())
+            }
         }
     }
 

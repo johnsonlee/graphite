@@ -7,12 +7,10 @@ import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -25,8 +23,7 @@ private const val BOOLEAN_GETTER_PREFIX_LENGTH = 2
 /**
  * An assumption declares that a specific expression always evaluates to a known constant.
  *
- * Example: `getOption(1001) -> true` means whenever `getOption` is called
- * with argument value 1001, its return value is `true`.
+ * Example: `getOption(1001) -> true` means whenever `getOption` is called with argument value 1001, its return value is `true`.
  */
 data class Assumption(
     val methodPattern: MethodPattern,
@@ -35,9 +32,7 @@ data class Assumption(
     val assumedValue: Any?
 )
 
-/**
- * A dead branch identified by the analysis.
- */
+/** A dead branch identified by the analysis. */
 data class DeadBranch(
     val conditionNodeId: NodeId,
     val deadKind: ControlFlowKind,
@@ -46,9 +41,7 @@ data class DeadBranch(
     val deadCallSites: List<CallSiteNode>
 )
 
-/**
- * Result of dead code analysis.
- */
+/** Result of dead code analysis. */
 data class DeadCodeResult(
     val deadBranches: List<DeadBranch>,
     val deadMethods: Set<MethodDescriptor>,
@@ -67,14 +60,9 @@ data class DeadCodeResult(
  * 4. Collect dead call sites from dead branches
  * 5. Find transitively dead methods (only called from dead branches)
  */
-class BranchReachabilityAnalysis(
-    private val graph: Graph,
-    private val config: AnalysisConfig = AnalysisConfig()
-) {
+class BranchReachabilityAnalysis(private val graph: Graph, private val config: AnalysisConfig = AnalysisConfig()) {
 
-    /**
-     * Analyze dead code given a set of assumptions.
-     */
+    /** Analyze dead code given a set of assumptions. */
     fun analyze(assumptions: List<Assumption>): DeadCodeResult {
         val allDeadBranches = mutableListOf<DeadBranch>()
         val allDeadCallSites = mutableSetOf<CallSiteNode>()
@@ -95,152 +83,61 @@ class BranchReachabilityAnalysis(
             deadMethods = deadMethods,
             deadCallSites = allDeadCallSites,
             unreferencedMethods = emptySet() // filled separately by unreferenced detection
-        )
+            )
     }
 
-    /**
-     * Find fields that are never referenced from outside their declaring class.
-     *
-     * A field is unreferenced if:
-     * 1. No FIELD_LOAD or FIELD_STORE edges connect it to methods outside its declaring class
-     * 2. No external CallSiteNode targets a getter/setter matching JavaBean naming (getXxx/setXxx/isXxx)
-     *
-     * Excludes synthetic fields ($-prefixed, this$, $VALUES).
-     */
-    fun findUnreferencedFields(): Set<FieldDescriptor> {
-        val allFields = graph.nodes(FieldNode::class.java).toList()
-        val referencedFields = mutableSetOf<String>() // key: "class#field"
+    fun findUnreferencedFields(): Set<FieldDescriptor> = FieldReferenceAnalysis(graph).findUnreferenced()
 
-        // Check FIELD_LOAD and FIELD_STORE edges for external references
-        for (field in allFields) {
-            val fieldKey = "${field.descriptor.declaringClass.className}#${field.descriptor.name}"
-            val declaringClass = field.descriptor.declaringClass.className
-
-            // Check outgoing edges (FIELD_LOAD: field -> local in some method)
-            for (edge in graph.outgoing(field.id, DataFlowEdge::class.java)) {
-                if (edge.kind == DataFlowKind.FIELD_LOAD || edge.kind == DataFlowKind.ASSIGN) {
-                    val targetNode = graph.node(edge.to)
-                    if (targetNode is LocalVariable && targetNode.method.declaringClass.className != declaringClass) {
-                        referencedFields.add(fieldKey)
-                        break
-                    }
-                }
-            }
-            if (fieldKey in referencedFields) continue
-
-            // Check incoming edges (FIELD_STORE: local in some method -> field)
-            for (edge in graph.incoming(field.id, DataFlowEdge::class.java)) {
-                if (edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN) {
-                    val sourceNode = graph.node(edge.from)
-                    if (sourceNode is LocalVariable && sourceNode.method.declaringClass.className != declaringClass) {
-                        referencedFields.add(fieldKey)
-                        break
-                    }
-                }
-            }
-        }
-
-        // Check external getter/setter/isXxx calls (Lombok support)
-        for (callSite in graph.nodes(CallSiteNode::class.java)) {
-            val calleeName = callSite.callee.name
-            val calleeClass = callSite.callee.declaringClass.className
-            val callerClass = callSite.caller.declaringClass.className
-            if (callerClass == calleeClass) continue // skip internal calls
-
-            val fieldName = extractFieldNameFromAccessor(calleeName) ?: continue
-            referencedFields.add("$calleeClass#$fieldName")
-        }
-
-        return allFields
-            .filter { !isSyntheticField(it) }
-            .filter { "${it.descriptor.declaringClass.className}#${it.descriptor.name}" !in referencedFields }
-            .map { it.descriptor }
-            .toSet()
-    }
-
-    /**
-     * Find methods that are never referenced in the graph.
-     */
+    /** Find methods that are never referenced in the graph. */
     fun findUnreferencedMethods(): Set<MethodDescriptor> {
         val allMethods = graph.methods(MethodPattern()).toSet()
-        val calledMethods = graph.nodes(CallSiteNode::class.java)
-            .map { it.callee.signature }
-            .toSet()
+        val calledMethods = graph.nodes(CallSiteNode::class.java).map { it.callee.signature }.toSet()
 
-        return allMethods.filter { method ->
-            // A method is unreferenced if no call site targets it
-            // Skip constructors and static initializers
-            method.name != "<init>" && method.name != "<clinit>" &&
-                method.signature !in calledMethods
-        }.toSet()
+        return allMethods
+            .filter { method ->
+                // A method is unreferenced if no call site targets it
+                // Skip constructors and static initializers
+                method.name != "<init>" && method.name != "<clinit>" && method.signature !in calledMethods
+            }
+            .toSet()
     }
 
-    private fun analyzeAssumption(assumption: Assumption): List<DeadBranch> {
-        val deadBranches = mutableListOf<DeadBranch>()
-
-        // Step 1: Find matching call sites
-        val matchingCallSites = graph.callSites(assumption.methodPattern)
-            .filter { callSite ->
-                matchesArgumentConstraint(callSite, assumption)
+    private fun analyzeAssumption(assumption: Assumption): List<DeadBranch> =
+        graph
+            .callSites(assumption.methodPattern)
+            .filter { matchesArgumentConstraint(it, assumption) }
+            .flatMap { callSite ->
+                forwardTraceFromCallSite(callSite).asSequence().flatMap { nodeId ->
+                    graph.branchScopesFor(nodeId).mapNotNull { evaluateBranch(it, assumption.assumedValue) }
+                }
             }
             .toList()
 
-        // Step 2: For each matching call site, forward-trace the return value
-        for (callSite in matchingCallSites) {
-            val reachableNodes = forwardTraceFromCallSite(callSite)
-
-            // Step 3: Check if any reachable node is a branch condition
-            for (nodeId in reachableNodes) {
-                val scopes = graph.branchScopesFor(nodeId)
-                for (scope in scopes) {
-                    val deadBranch = evaluateBranch(scope, assumption.assumedValue)
-                    if (deadBranch != null) {
-                        deadBranches.add(deadBranch)
-                    }
-                }
-            }
+    private fun matchesArgumentConstraint(callSite: CallSiteNode, assumption: Assumption): Boolean =
+        when {
+            assumption.argumentIndex == null || assumption.argumentValue == null -> true
+            assumption.argumentIndex >= callSite.arguments.size -> false
+            else -> matchesArgumentValue(callSite.arguments[assumption.argumentIndex], assumption.argumentValue)
         }
 
-        return deadBranches
+    private fun matchesArgumentValue(nodeId: NodeId, value: Any): Boolean {
+        val node = graph.node(nodeId)
+        return if (node is ConstantNode) {
+            constantEquals(node.value, value)
+        } else {
+            DataFlowAnalysis(graph, config).backwardSlice(nodeId).allConstants().any { constantEquals(it.value, value) }
+        }
     }
 
-    /**
-     * Check if a call site's arguments match the assumption's constraints.
-     */
-    private fun matchesArgumentConstraint(callSite: CallSiteNode, assumption: Assumption): Boolean {
-        if (assumption.argumentIndex == null || assumption.argumentValue == null) {
-            return true // No argument constraint
-        }
-
-        val argIndex = assumption.argumentIndex
-        if (argIndex >= callSite.arguments.size) return false
-
-        val argNodeId = callSite.arguments[argIndex]
-        val argNode = graph.node(argNodeId)
-
-        // Check if the argument is a constant matching the expected value
-        if (argNode is ConstantNode) {
-            return constantEquals(argNode.value, assumption.argumentValue)
-        }
-
-        // Try backward slice to find constants
-        val analysis = DataFlowAnalysis(graph, config)
-        val result = analysis.backwardSlice(argNodeId)
-        return result.allConstants().any { constantEquals(it.value, assumption.argumentValue) }
-    }
-
-    /**
-     * Forward-trace from a call site to find all nodes its return value flows to.
-     */
+    /** Forward-trace from a call site to find all nodes its return value flows to. */
     private fun forwardTraceFromCallSite(callSite: CallSiteNode): Set<NodeId> {
         val visited = mutableSetOf<NodeId>()
         val queue = ArrayDeque<NodeId>()
         queue.add(callSite.id)
 
-        while (queue.isNotEmpty()) {
+        while (queue.isNotEmpty() && visited.size <= config.maxDepth * FORWARD_TRACE_DEPTH_MULTIPLIER) {
             val current = queue.removeFirst()
             if (current in visited) continue
-            if (visited.size > config.maxDepth * FORWARD_TRACE_DEPTH_MULTIPLIER) break // safety limit
             visited.add(current)
 
             // Follow outgoing DataFlowEdges
@@ -254,47 +151,17 @@ class BranchReachabilityAnalysis(
         return visited
     }
 
-    /**
-     * Evaluate whether a branch is dead given the assumed value of the condition.
-     *
-     * The BranchScope tells us:
-     * - conditionNodeId: the operand being tested (e.g., $z0 holding getOption result)
-     * - comparison: operator (EQ/NE/LT/...) + comparand (e.g., constant 0)
-     *
-     * We evaluate: assumedValue `operator` comparandValue → true or false
-     * - If true → JVM condition is true → BRANCH_TRUE path is alive, BRANCH_FALSE is dead
-     * - If false → JVM condition is false → BRANCH_FALSE path is alive, BRANCH_TRUE is dead
-     */
-    private fun evaluateBranch(scope: BranchScope, assumedValue: Any?): DeadBranch? {
-        val comparandNode = graph.node(scope.comparison.comparandNodeId)
-        val comparandValue = when (comparandNode) {
-            is ConstantNode -> comparandNode.value
-            else -> return null // Can't evaluate if comparand isn't a constant
+    private fun evaluateBranch(scope: BranchScope, assumedValue: Any?): DeadBranch? =
+        (graph.node(scope.comparison.comparandNodeId) as? ConstantNode)?.let { comparand ->
+            evaluateComparison(assumedValue, scope.comparison.operator, comparand.value)?.let { conditionIsTrue ->
+                buildDeadBranch(scope, conditionIsTrue)
+            }
         }
 
-        val conditionIsTrue = evaluateComparison(
-            assumedValue,
-            scope.comparison.operator,
-            comparandValue
-        ) ?: return null
-
-        // Determine which branch is dead
-        val deadKind: ControlFlowKind
-        val deadNodeIds: IntOpenHashSet
-
-        if (conditionIsTrue) {
-            // JVM condition is true → true branch alive, false branch dead
-            deadKind = ControlFlowKind.BRANCH_FALSE
-            deadNodeIds = scope.falseBranchNodeIds
-        } else {
-            // JVM condition is false → false branch alive, true branch dead
-            deadKind = ControlFlowKind.BRANCH_TRUE
-            deadNodeIds = scope.trueBranchNodeIds
-        }
-
+    private fun buildDeadBranch(scope: BranchScope, conditionIsTrue: Boolean): DeadBranch? {
+        val deadKind = if (conditionIsTrue) ControlFlowKind.BRANCH_FALSE else ControlFlowKind.BRANCH_TRUE
+        val deadNodeIds = if (conditionIsTrue) scope.falseBranchNodeIds else scope.trueBranchNodeIds
         if (deadNodeIds.isEmpty) return null
-
-        // Collect dead CallSiteNodes
         val deadCallSites = buildList {
             val iter = deadNodeIds.intIterator()
             while (iter.hasNext()) {
@@ -302,14 +169,7 @@ class BranchReachabilityAnalysis(
                 if (node is CallSiteNode) add(node)
             }
         }
-
-        return DeadBranch(
-            conditionNodeId = scope.conditionNodeId,
-            deadKind = deadKind,
-            method = scope.method,
-            deadNodeIds = deadNodeIds,
-            deadCallSites = deadCallSites
-        )
+        return DeadBranch(scope.conditionNodeId, deadKind, scope.method, deadNodeIds, deadCallSites)
     }
 
     /**
@@ -333,16 +193,14 @@ class BranchReachabilityAnalysis(
         }
 
         // Handle null comparisons
-        if (op == ComparisonOp.EQ) return left == right
-        if (op == ComparisonOp.NE) return left != right
-
-        return null // Can't evaluate non-numeric non-null with ordering operators
+        return when (op) {
+            ComparisonOp.EQ -> left == right
+            ComparisonOp.NE -> left != right
+            else -> null
+        } // Can't evaluate non-numeric non-null with ordering operators
     }
 
-    /**
-     * Convert a value to a Long for numeric comparison.
-     * Boolean: true=1, false=0 (matches JVM bytecode convention).
-     */
+    /** Convert a value to a Long for numeric comparison. Boolean: true=1, false=0 (matches JVM bytecode convention). */
     private fun toComparableNumber(value: Any?): Long? {
         return when (value) {
             is Boolean -> if (value) 1L else 0L
@@ -357,22 +215,20 @@ class BranchReachabilityAnalysis(
         }
     }
 
-    /**
-     * Check if two constant values are equal, handling type coercion.
-     */
     private fun constantEquals(a: Any?, b: Any?): Boolean {
-        if (a == b) return true
         val aNum = toComparableNumber(a)
         val bNum = toComparableNumber(b)
-        if (aNum != null && bNum != null) return aNum == bNum
-        return a?.toString() == b?.toString()
+        return when {
+            a == b -> true
+            aNum != null && bNum != null -> aNum == bNum
+            else -> a?.toString() == b?.toString()
+        }
     }
 
     /**
      * Find methods that are only called from dead call sites.
      *
-     * Iterates until convergence: if a method becomes dead, all its call sites
-     * become dead, which may make other methods dead.
+     * Iterates until convergence: if a method becomes dead, all its call sites become dead, which may make other methods dead.
      */
     private fun findTransitivelyDeadMethods(deadCallSites: Set<CallSiteNode>): Set<MethodDescriptor> {
         val deadMethods = mutableSetOf<MethodDescriptor>()
@@ -388,50 +244,86 @@ class BranchReachabilityAnalysis(
 
             for ((signature, callSitesForMethod) in callSitesByCallee) {
                 val method = callSitesForMethod.first().callee
-                if (method in deadMethods) continue
-                if (method.name == "<init>" || method.name == "<clinit>") continue
-
-                val allDead = callSitesForMethod.all { it.id in allDeadCallSiteIds }
+                val eligible = method !in deadMethods && method.name !in setOf("<init>", "<clinit>")
+                val allDead = eligible && callSitesForMethod.all { it.id in allDeadCallSiteIds }
                 if (allDead) {
                     deadMethods.add(method)
                     changed = true
 
                     // All call sites WITHIN this dead method also become dead
-                    allCallSites
-                        .filter { it.caller.signature == signature }
-                        .forEach { allDeadCallSiteIds.add(it.id) }
+                    markDeadMethodCallSites(allCallSites, signature, allDeadCallSiteIds)
                 }
             }
         }
 
         return deadMethods
     }
+
+    private fun markDeadMethodCallSites(callSites: List<CallSiteNode>, signature: String, deadIds: MutableSet<NodeId>) {
+        callSites.filter { it.caller.signature == signature }.forEach { deadIds.add(it.id) }
+    }
 }
 
 /**
- * Extract the field name from a JavaBean accessor method name.
- * Supports getXxx, setXxx, and isXxx patterns.
+ * Extract the field name from a JavaBean accessor method name. Supports getXxx, setXxx, and isXxx patterns.
  *
  * @return the field name (first char lowered) or null if not an accessor
  */
 internal fun extractFieldNameFromAccessor(methodName: String): String? {
-    val prefix = when {
-        methodName.startsWith("get") && methodName.length > GETTER_PREFIX_LENGTH -> "get"
-        methodName.startsWith("set") && methodName.length > GETTER_PREFIX_LENGTH -> "set"
-        methodName.startsWith("is") && methodName.length > BOOLEAN_GETTER_PREFIX_LENGTH -> "is"
-        else -> return null
-    }
+    val prefix =
+        when {
+            methodName.startsWith("get") && methodName.length > GETTER_PREFIX_LENGTH -> "get"
+            methodName.startsWith("set") && methodName.length > GETTER_PREFIX_LENGTH -> "set"
+            methodName.startsWith("is") && methodName.length > BOOLEAN_GETTER_PREFIX_LENGTH -> "is"
+            else -> return null
+        }
     val rest = methodName.removePrefix(prefix)
     return rest.replaceFirstChar { it.lowercase() }
 }
 
-/**
- * Check if a FieldNode is synthetic and should be excluded from unreferenced detection.
- */
+/** Check if a FieldNode is synthetic and should be excluded from unreferenced detection. */
 private fun isSyntheticField(field: FieldNode): Boolean {
     val name = field.descriptor.name
-    return name.startsWith("\$") ||
-        name.startsWith("this\$") ||
-        name == "\$VALUES" ||
-        name == "serialVersionUID"
+    return name.startsWith("\$") || name.startsWith("this\$") || name == "\$VALUES" || name == "serialVersionUID"
+}
+
+/** Finds externally used fields without coupling accessor names to edge traversal state. */
+private class FieldReferenceAnalysis(private val graph: Graph) {
+    fun findUnreferenced(): Set<FieldDescriptor> {
+        val accessorReferences =
+            graph
+                .nodes(CallSiteNode::class.java)
+                .mapNotNull { callSite ->
+                    val calleeClass = callSite.callee.declaringClass.className
+                    if (callSite.caller.declaringClass.className == calleeClass) null
+                    else {
+                        extractFieldNameFromAccessor(callSite.callee.name)?.let { "$calleeClass#$it" }
+                    }
+                }
+                .toSet()
+        return graph
+            .nodes(FieldNode::class.java)
+            .filterNot(::isSyntheticField)
+            .filterNot { "${it.descriptor.declaringClass.className}#${it.descriptor.name}" in accessorReferences }
+            .filterNot(::hasExternalDataFlow)
+            .map { it.descriptor }
+            .toSet()
+    }
+
+    private fun hasExternalDataFlow(field: FieldNode): Boolean {
+        val declaringClass = field.descriptor.declaringClass.className
+        val loaded =
+            graph.outgoing(field.id, DataFlowEdge::class.java).any { edge ->
+                (edge.kind == DataFlowKind.FIELD_LOAD || edge.kind == DataFlowKind.ASSIGN) && externalLocal(edge.to, declaringClass)
+            }
+        return loaded ||
+            graph.incoming(field.id, DataFlowEdge::class.java).any { edge ->
+                (edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN) && externalLocal(edge.from, declaringClass)
+            }
+    }
+
+    private fun externalLocal(nodeId: NodeId, declaringClass: String): Boolean {
+        val node = graph.node(nodeId)
+        return node is LocalVariable && node.method.declaringClass.className != declaringClass
+    }
 }

@@ -9,94 +9,75 @@ internal object C4WireCodec {
     private val gson = GsonBuilder().create()
     private val mapType = object : TypeToken<Map<String, Any?>>() {}.type
 
-    private val elementCoreFields = setOf(
-        WIRE_ID,
-        WIRE_TYPE,
-        WIRE_NAME,
-        WIRE_DESCRIPTION,
-        WIRE_KIND,
-        "architectureType",
-        WIRE_RESPONSIBILITY
-    )
+    private val elementCoreFields =
+        setOf(WIRE_ID, WIRE_TYPE, WIRE_NAME, WIRE_DESCRIPTION, WIRE_KIND, "architectureType", WIRE_RESPONSIBILITY)
 
-    private val relationshipCoreFields = setOf(
-        "from",
-        "to",
-        WIRE_TYPE,
-        WIRE_KIND,
-        WIRE_DESCRIPTION,
-        WIRE_WEIGHT,
-        "evidence"
-    )
+    private val relationshipCoreFields = setOf("from", "to", WIRE_TYPE, WIRE_KIND, WIRE_DESCRIPTION, WIRE_WEIGHT, "evidence")
 
-    private val viewCoreFields = setOf(
-        WIRE_TYPE,
-        WIRE_ELEMENTS,
-        WIRE_RELATIONSHIPS,
-        WIRE_EXTERNAL_DEPENDENCIES,
-        WIRE_SYSTEM_BOUNDARY,
-        WIRE_SKIPPED_REASON
-    )
+    private val viewCoreFields =
+        setOf(WIRE_TYPE, WIRE_ELEMENTS, WIRE_RELATIONSHIPS, WIRE_EXTERNAL_DEPENDENCIES, WIRE_SYSTEM_BOUNDARY, WIRE_SKIPPED_REASON)
 
     fun encode(model: C4ViewModel): Map<String, Any?> =
         WireModel(
-            level = model.level.wireName,
-            availableLevels = model.availableLevels.map { it.wireName },
-            context = model.context?.let(::encode),
-            container = model.container?.let(::encode),
-            component = model.component?.let(::encode),
-            view = model.view?.let(::encode)
-        ).toJsonObject().toWireMap()
+                level = model.level.wireName,
+                availableLevels = model.availableLevels.map { it.wireName },
+                context = model.context?.let(::encode),
+                container = model.container?.let(::encode),
+                component = model.component?.let(::encode),
+                view = model.view?.let(::encode))
+            .toJsonObject()
+            .toWireMap()
 
     fun encode(view: C4View): Map<String, Any?> =
         WireView(
-            type = view.type.wireName,
-            elements = view.elements.map(::encode),
-            relationships = view.relationships.map(::encode),
-            externalDependencies = view.externalDependencies.map(::encode).takeIf { it.isNotEmpty() },
-            systemBoundary = view.systemBoundary,
-            skippedReason = view.skippedReason
-        ).toJsonObject()
+                type = view.type.wireName,
+                elements = view.elements.map(::encode),
+                relationships = view.relationships.map(::encode),
+                externalDependencies = view.externalDependencies.map(::encode).takeIf { it.isNotEmpty() },
+                systemBoundary = view.systemBoundary,
+                skippedReason = view.skippedReason)
+            .toJsonObject()
             .flatten(view.properties)
             .toWireMap()
 
     fun encode(element: C4Element): Map<String, Any?> =
         WireElement(
-            id = element.id,
-            type = element.type.wireName,
-            name = element.name,
-            description = element.description,
-            kind = element.kind?.wireName,
-            architectureType = element.architectureType?.wireName,
-            responsibility = element.responsibility
-        ).toJsonObject()
+                id = element.id,
+                type = element.type.wireName,
+                name = element.name,
+                description = element.description,
+                kind = element.kind?.wireName,
+                architectureType = element.architectureType?.wireName,
+                responsibility = element.responsibility)
+            .toJsonObject()
             .flatten(element.properties)
             .toWireMap()
 
     fun encode(relationship: C4Relationship): Map<String, Any?> =
         WireRelationship(
-            from = relationship.from,
-            to = relationship.to,
-            type = relationship.type.wireName,
-            kind = relationship.kind?.wireName,
-            description = relationship.description,
-            weight = relationship.weight,
-            evidence = relationship.evidence?.let(C4Metadata::toProperties)?.takeIf { it.isNotEmpty() }
-        ).toJsonObject()
+                from = relationship.from,
+                to = relationship.to,
+                type = relationship.type.wireName,
+                kind = relationship.kind?.wireName,
+                description = relationship.description,
+                weight = relationship.weight,
+                evidence = relationship.evidence?.let(C4Metadata::toProperties)?.takeIf { it.isNotEmpty() })
+            .toJsonObject()
             .flatten(relationship.properties)
             .toWireMap()
 
     fun encode(dependency: ExternalDependency): Map<String, Any?> =
         WireDependency(
-            id = dependency.id,
-            name = dependency.name,
-            weight = dependency.weight,
-            source = dependency.source,
-            kind = dependency.kind.wireName,
-            confidence = dependency.confidence,
-            responsibility = dependency.responsibility,
-            artifacts = dependency.artifacts.takeIf { it.isNotEmpty() }
-        ).toJsonObject().toWireMap()
+                id = dependency.id,
+                name = dependency.name,
+                weight = dependency.weight,
+                source = dependency.source,
+                kind = dependency.kind.wireName,
+                confidence = dependency.confidence,
+                responsibility = dependency.responsibility,
+                artifacts = dependency.artifacts.takeIf { it.isNotEmpty() })
+            .toJsonObject()
+            .toWireMap()
 
     fun decodeModel(raw: Map<String, Any?>): C4ViewModel {
         val json = raw.toJsonObject()
@@ -106,8 +87,7 @@ internal object C4WireCodec {
             context = json.obj(WIRE_CONTEXT)?.let { decodeView(it.toWireMap()) },
             container = json.obj("container")?.let { decodeView(it.toWireMap()) },
             component = json.obj("component")?.let { decodeView(it.toWireMap()) },
-            view = json.obj("view")?.let { decodeView(it.toWireMap()) }
-        )
+            view = json.obj("view")?.let { decodeView(it.toWireMap()) })
     }
 
     fun decodeView(raw: Map<String, Any?>): C4View {
@@ -119,8 +99,7 @@ internal object C4WireCodec {
             externalDependencies = json.objectList(WIRE_EXTERNAL_DEPENDENCIES).map { decodeDependency(it.toWireMap()) },
             systemBoundary = json.string(WIRE_SYSTEM_BOUNDARY),
             skippedReason = json.string(WIRE_SKIPPED_REASON),
-            properties = json.without(viewCoreFields)
-        )
+            properties = json.without(viewCoreFields))
     }
 
     fun decodeElement(raw: Map<String, Any?>): C4Element {
@@ -133,8 +112,7 @@ internal object C4WireCodec {
             kind = C4ElementKind.fromWire(json.string(WIRE_KIND)),
             architectureType = C4ArchitectureType.fromWire(json.string("architectureType")),
             responsibility = json.string(WIRE_RESPONSIBILITY),
-            extensionProperties = json.without(elementCoreFields)
-        )
+            extensionProperties = json.without(elementCoreFields))
     }
 
     fun decodeRelationship(raw: Map<String, Any?>): C4Relationship {
@@ -147,8 +125,7 @@ internal object C4WireCodec {
             description = json.string(WIRE_DESCRIPTION),
             weight = json.int(WIRE_WEIGHT),
             evidence = json.obj("evidence")?.toWireMap(),
-            properties = json.without(relationshipCoreFields)
-        )
+            properties = json.without(relationshipCoreFields))
     }
 
     fun decodeDependency(raw: Map<String, Any?>): ExternalDependency {
@@ -161,62 +138,26 @@ internal object C4WireCodec {
             kind = ExternalDependencyKind.fromWire(json.string(WIRE_KIND)),
             confidence = json.string("confidence").orEmpty(),
             responsibility = json.string("responsibility").orEmpty(),
-            artifacts = json.stringList("artifacts")
-        )
+            artifacts = json.stringList("artifacts"))
     }
 
-    private fun Any.toJsonObject(): JsonObject =
-        gson.toJsonTree(this).asJsonObject
+    private fun Any.toJsonObject(): JsonObject = gson.toJsonTree(this).asJsonObject
 
-    private fun JsonObject.flatten(properties: Map<String, Any?>): JsonObject =
-        apply {
-            properties.forEach { (key, value) ->
-                if (value != null) {
-                    add(key, gson.toJsonTree(value))
-                }
+    private fun JsonObject.flatten(properties: Map<String, Any?>): JsonObject = apply {
+        properties.forEach { (key, value) ->
+            if (value != null) {
+                add(key, gson.toJsonTree(value))
             }
         }
+    }
 
-    private fun JsonObject.toWireMap(): Map<String, Any?> =
-        gson.fromJson<Map<String, Any?>>(this, mapType).withoutNullValues()
+    private fun JsonObject.toWireMap(): Map<String, Any?> = gson.fromJson<Map<String, Any?>>(this, mapType).withoutNullValues()
 
     private fun JsonObject.without(keys: Set<String>): Map<String, Any?> {
         val copy = deepCopy()
         keys.forEach(copy::remove)
         return copy.toWireMap()
     }
-
-    private fun Map<String, Any?>.withoutNullValues(): Map<String, Any?> =
-        filterValues { it != null }
-
-    private fun JsonObject.string(name: String): String? =
-        get(name)?.takeUnless(JsonElement::isJsonNull)?.asString
-
-    private fun JsonObject.int(name: String): Int? =
-        get(name)?.takeUnless(JsonElement::isJsonNull)?.let { element ->
-            when {
-                element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> element.asNumber.toInt()
-                element.isJsonPrimitive && element.asJsonPrimitive.isString -> element.asString.toIntOrNull()
-                else -> null
-            }
-        }
-
-    private fun JsonObject.obj(name: String): JsonObject? =
-        get(name)?.takeIf { it.isJsonObject }?.asJsonObject
-
-    private fun JsonObject.objectList(name: String): List<JsonObject> =
-        get(name)
-            ?.takeIf { it.isJsonArray }
-            ?.asJsonArray
-            ?.mapNotNull { it.takeIf(JsonElement::isJsonObject)?.asJsonObject }
-            .orEmpty()
-
-    private fun JsonObject.stringList(name: String): List<String> =
-        get(name)
-            ?.takeIf { it.isJsonArray }
-            ?.asJsonArray
-            ?.mapNotNull { it.takeUnless(JsonElement::isJsonNull)?.asString }
-            .orEmpty()
 
     private data class WireModel(
         val level: String,
@@ -268,18 +209,33 @@ internal object C4WireCodec {
     )
 }
 
-internal fun relationshipFromMap(value: Map<String, Any?>): C4Relationship =
-    C4WireCodec.decodeRelationship(value)
+internal fun relationshipFromMap(value: Map<String, Any?>): C4Relationship = C4WireCodec.decodeRelationship(value)
 
-internal fun externalDependencyFromMap(value: Map<String, Any?>): ExternalDependency =
-    C4WireCodec.decodeDependency(value)
+internal fun externalDependencyFromMap(value: Map<String, Any?>): ExternalDependency = C4WireCodec.decodeDependency(value)
 
 internal fun apiEndpointEvidenceFromMap(value: Map<String, Any?>): ApiEndpointEvidence? {
     val json = GsonBuilder().create().toJsonTree(value).asJsonObject
-    val className = json.get("class")?.takeUnless(JsonElement::isJsonNull)?.asString?.takeIf { it.isNotBlank() }
-        ?: return null
-    return ApiEndpointEvidence(
-        className = className,
-        path = json.get("path")?.takeUnless(JsonElement::isJsonNull)?.asString.orEmpty()
-    )
+    val className = json.get("class")?.takeUnless(JsonElement::isJsonNull)?.asString?.takeIf { it.isNotBlank() } ?: return null
+    return ApiEndpointEvidence(className = className, path = json.get("path")?.takeUnless(JsonElement::isJsonNull)?.asString.orEmpty())
 }
+
+private fun Map<String, Any?>.withoutNullValues(): Map<String, Any?> = filterValues { it != null }
+
+private fun JsonObject.string(name: String): String? = get(name)?.takeUnless(JsonElement::isJsonNull)?.asString
+
+private fun JsonObject.int(name: String): Int? =
+    get(name)?.takeUnless(JsonElement::isJsonNull)?.let { element ->
+        when {
+            element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> element.asNumber.toInt()
+            element.isJsonPrimitive && element.asJsonPrimitive.isString -> element.asString.toIntOrNull()
+            else -> null
+        }
+    }
+
+private fun JsonObject.obj(name: String): JsonObject? = get(name)?.takeIf { it.isJsonObject }?.asJsonObject
+
+private fun JsonObject.objectList(name: String): List<JsonObject> =
+    get(name)?.takeIf { it.isJsonArray }?.asJsonArray?.mapNotNull { it.takeIf(JsonElement::isJsonObject)?.asJsonObject }.orEmpty()
+
+private fun JsonObject.stringList(name: String): List<String> =
+    get(name)?.takeIf { it.isJsonArray }?.asJsonArray?.mapNotNull { it.takeUnless(JsonElement::isJsonNull)?.asString }.orEmpty()

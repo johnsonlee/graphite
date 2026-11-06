@@ -51,6 +51,13 @@ pub struct CancelToken {
     reason: AtomicU64,
     timeout_ms: AtomicU64,
     deadline: Mutex<Option<Instant>>,
+    parent: Option<Arc<CancelToken>>,
+    work: Option<WorkBudget>,
+}
+
+struct WorkBudget {
+    limit: u64,
+    consumed: AtomicU64,
 }
 
 impl CancelToken {
@@ -60,9 +67,71 @@ impl CancelToken {
     pub fn with_timeout(ms: u64) -> Arc<CancelToken> {
         let t = CancelToken::default();
         t.timeout_ms.store(ms, Ordering::Relaxed);
-        *t.deadline.lock() = Some(Instant::now() + std::time::Duration::from_millis(ms));
+        *t.deadline.lock() = Some(
+            Instant::now()
+                .checked_add(std::time::Duration::from_millis(ms))
+                .unwrap_or_else(Instant::now),
+        );
         Arc::new(t)
     }
+    /// A bounded maintenance operation shares its caller's cancellation but starts
+    /// its own deadline and work budget. Ordinary query tokens retain their existing
+    /// deadline and have no new work limit.
+    pub fn child_with_limits(
+        parent: Arc<CancelToken>,
+        ms: u64,
+        work_limit: u64,
+    ) -> Arc<CancelToken> {
+        Arc::new(CancelToken {
+            timeout_ms: AtomicU64::new(ms),
+            deadline: Mutex::new(Some(
+                Instant::now()
+                    .checked_add(std::time::Duration::from_millis(ms))
+                    .unwrap_or_else(Instant::now),
+            )),
+            parent: Some(parent),
+            work: Some(WorkBudget {
+                limit: work_limit,
+                consumed: AtomicU64::new(0),
+            }),
+            ..CancelToken::default()
+        })
+    }
+
+    fn charge_work(&self) -> CypherResult<()> {
+        if let Some(work) = &self.work {
+            // Keep this compatible with toolchains predating AtomicU64::try_update.
+            let mut consumed = work.consumed.load(Ordering::Relaxed);
+            loop {
+                let next = consumed
+                    .checked_add(1)
+                    .ok_or(CypherError::BudgetExceeded(work.limit))?;
+                match work.consumed.compare_exchange_weak(
+                    consumed,
+                    next,
+                    Ordering::Relaxed,
+                    Ordering::Relaxed,
+                ) {
+                    Ok(_) if consumed < work.limit => break,
+                    Ok(_) => return Err(CypherError::BudgetExceeded(work.limit)),
+                    Err(observed) => consumed = observed,
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Count evaluator/scan steps as well as explicit storage-validation checkpoints.
+    /// Enabled only for bounded maintenance tokens; the normal query hot path keeps
+    /// its existing periodic cancellation polling and has no new default limit.
+    fn work_step(&self) -> CypherResult<()> {
+        if self.work.is_some() {
+            self.check_state()?;
+            self.charge_work()?;
+        }
+        Ok(())
+    }
+
     pub fn cancel(&self) {
         if self
             .reason
@@ -94,6 +163,14 @@ impl CancelToken {
     }
     #[inline]
     pub fn check(&self) -> CypherResult<()> {
+        self.check_state()?;
+        self.charge_work()
+    }
+
+    fn check_state(&self) -> CypherResult<()> {
+        if let Some(parent) = &self.parent {
+            parent.check()?;
+        }
         if self.cancelled.load(Ordering::Relaxed) {
             return Err(self.error().unwrap_or(CypherError::Cancelled));
         }
@@ -360,6 +437,7 @@ impl Executor {
     /// Poll cancellation every 1024 calls.
     #[inline]
     pub fn tick(&self) -> CypherResult<()> {
+        self.cancel.work_step()?;
         let c = self.poll.fetch_add(1, Ordering::Relaxed);
         if c & 1023 == 0 {
             self.cancel.check()
@@ -705,6 +783,9 @@ mod call_site_scalar_tests;
 
 #[cfg(test)]
 mod declared_access_tests;
+
+#[cfg(test)]
+mod maintenance_budget_tests;
 
 #[cfg(test)]
 mod property_graph_tests;

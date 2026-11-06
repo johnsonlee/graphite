@@ -1,9 +1,9 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ReturnNode
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
@@ -21,16 +21,19 @@ internal class MappedPropertyTextCandidates(
 ) {
     fun ids(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Sequence<Int> = sequence {
         val declaredKinds = declaredKinds(type, fragments)
-        val matchers = fragments.map { fragment ->
-            val predicate = StringPredicateKey(null, StringMatchMode.CONTAINS, fragment)
-            // A byte per string avoids repeated decompression while capping each cache at 1 MiB.
-            // Larger dictionaries retain the existing small collision cache.
-            if (strings.size() <= DENSE_MATCHER_LIMIT) {
-                BoundedStringMatcher(strings, predicate, DENSE_MATCHER_LIMIT)
-            } else {
-                BoundedStringMatcher(strings, predicate)
-            }
-        }.toTypedArray()
+        val matchers =
+            fragments
+                .map { fragment ->
+                    val predicate = StringPredicateKey(null, StringMatchMode.CONTAINS, fragment)
+                    // A byte per string avoids repeated decompression while capping each cache at 1 MiB.
+                    // Larger dictionaries retain the existing small collision cache.
+                    if (strings.size() <= DENSE_MATCHER_LIMIT) {
+                        BoundedStringMatcher(strings, predicate, DENSE_MATCHER_LIMIT)
+                    } else {
+                        BoundedStringMatcher(strings, predicate)
+                    }
+                }
+                .toTypedArray()
         var inspected = 0
         for (id in types.ids(type)) {
             if ((inspected++ and CANCELLATION_MASK) == 0) {
@@ -39,8 +42,8 @@ internal class MappedPropertyTextCandidates(
             work?.consume()
             val offset = offsets.offset(id).toInt()
             if (declaredKind(data.get(offset + Int.SIZE_BYTES).toInt()) and declaredKinds != 0 ||
-                matchers.all { matcher -> mightMatch(offset, matcher) }
-            ) yield(id)
+                matchers.all { matcher -> mightMatch(offset, matcher) })
+                yield(id)
         }
     }
 
@@ -54,20 +57,22 @@ internal class MappedPropertyTextCandidates(
         return if (kinds != 0 && declaredTextMayMatch(declaredTypes, fragments)) kinds else 0
     }
 
-    private fun declaredKind(tag: Int): Int = when (tag) {
-        NodeSerializer.TAG_FIELD_NODE -> FIELD
-        NodeSerializer.TAG_PARAMETER_NODE -> PARAMETER
-        NodeSerializer.TAG_RETURN_NODE -> RETURN
-        else -> 0
-    }
+    private fun declaredKind(tag: Int): Int =
+        when (tag) {
+            NodeSerializer.TAG_FIELD_NODE -> FIELD
+            NodeSerializer.TAG_PARAMETER_NODE -> PARAMETER
+            NodeSerializer.TAG_RETURN_NODE -> RETURN
+            else -> 0
+        }
 
-    @Suppress("CyclomaticComplexMethod")
     private fun mightMatch(offset: Int, matcher: BoundedStringMatcher): Boolean {
         val fields = offset + NODE_HEADER_BYTES
-        return when (data.get(offset + Int.SIZE_BYTES).toInt()) {
+        val tag = data.get(offset + Int.SIZE_BYTES).toInt()
+        if (isNonStringConstant(tag)) return false
+        return when (tag) {
             NodeSerializer.TAG_STRING_CONSTANT -> matches(fields, matcher)
-            NodeSerializer.TAG_LOCAL_VARIABLE, NodeSerializer.TAG_PARAMETER_NODE ->
-                matchesRange(fields, methodEnd(fields + 2 * Int.SIZE_BYTES), matcher)
+            NodeSerializer.TAG_LOCAL_VARIABLE,
+            NodeSerializer.TAG_PARAMETER_NODE -> matchesRange(fields, methodEnd(fields + 2 * Int.SIZE_BYTES), matcher)
             NodeSerializer.TAG_FIELD_NODE -> matchesRange(fields, fields + FIELD_STRING_BYTES, matcher)
             NodeSerializer.TAG_CALL_SITE_NODE -> matchesRange(fields, methodEnd(methodEnd(fields)), matcher)
             NodeSerializer.TAG_RETURN_NODE -> {
@@ -77,18 +82,18 @@ internal class MappedPropertyTextCandidates(
             NodeSerializer.TAG_RESOURCE_FILE_NODE ->
                 matchesRange(fields, fields + RESOURCE_FILE_STRING_BYTES, matcher) ||
                     optionalStringMatches(fields + RESOURCE_FILE_STRING_BYTES, matcher)
-            NodeSerializer.TAG_INT_CONSTANT, NodeSerializer.TAG_LONG_CONSTANT, NodeSerializer.TAG_FLOAT_CONSTANT,
-            NodeSerializer.TAG_DOUBLE_CONSTANT, NodeSerializer.TAG_BOOLEAN_CONSTANT, NodeSerializer.TAG_NULL_CONSTANT -> false
             // Heterogeneous values and dynamic annotation accessors need their complete semantics.
             else -> true
         }
     }
 
+    private fun isNonStringConstant(tag: Int): Boolean =
+        tag in NodeSerializer.TAG_INT_CONSTANT..NodeSerializer.TAG_NULL_CONSTANT && tag != NodeSerializer.TAG_STRING_CONSTANT
+
     private fun optionalStringMatches(position: Int, matcher: BoundedStringMatcher): Boolean =
         data.get(position).toInt() != 0 && matches(position + 1, matcher)
 
-    private fun methodEnd(position: Int): Int =
-        position + (METHOD_FIXED_INTS + data.getInt(position + 2 * Int.SIZE_BYTES)) * Int.SIZE_BYTES
+    private fun methodEnd(position: Int): Int = position + (METHOD_FIXED_INTS + data.getInt(position + 2 * Int.SIZE_BYTES)) * Int.SIZE_BYTES
 
     private fun matchesRange(start: Int, end: Int, matcher: BoundedStringMatcher): Boolean {
         var position = start

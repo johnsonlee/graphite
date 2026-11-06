@@ -13,17 +13,16 @@ data class DeclaredType(
 
 /** JVM descriptors keep overloads, covariant bridge methods and same-name fields distinct. */
 data class MemberTypeKey(val owner: String, val name: String, val descriptor: String)
+
 data class TypeParameter(val name: String, val scope: String, val bounds: List<Int>)
-data class MethodTypes(
-    val parameterTypes: List<Int>,
-    val returnType: Int,
-    val typeParameters: List<TypeParameter> = emptyList()
-)
+
+data class MethodTypes(val parameterTypes: List<Int>, val returnType: Int, val typeParameters: List<TypeParameter> = emptyList())
+
 data class ClassTypes(val typeParameters: List<TypeParameter>, val superType: Int?, val interfaces: List<Int>)
 
 /**
- * Declaration metadata is independent of erased graph identities. Recursive bounds live on
- * [TypeParameter], so type expressions themselves form an acyclic graph.
+ * Declaration metadata is independent of erased graph identities. Recursive bounds live on [TypeParameter], so type expressions themselves
+ * form an acyclic graph.
  */
 data class DeclaredTypeTable(
     val types: List<DeclaredType>,
@@ -34,9 +33,8 @@ data class DeclaredTypeTable(
     private val validation by lazy { validateExpressions() }
 
     /**
-     * Rendered text and structured projections by type ID, kept only for immutable storage: a
-     * query over a corpus renders the same few thousand types for millions of nodes, and a
-     * mutable table may change between two reads.
+     * Rendered text and structured projections by type ID, kept only for immutable storage: a query over a corpus renders the same few
+     * thousand types for millions of nodes, and a mutable table may change between two reads.
      */
     private val renderedTypes: java.util.concurrent.atomic.AtomicReferenceArray<String>? by lazy {
         if (isImmutable()) java.util.concurrent.atomic.AtomicReferenceArray(types.size) else null
@@ -48,7 +46,9 @@ data class DeclaredTypeTable(
     private fun isImmutable(): Boolean = (types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(this) == true
 
     /** Validate shape, references, nesting and maximum recursive projection expansion once. */
-    fun validate() { validation }
+    fun validate() {
+        validation
+    }
 
     fun render(id: Int): String {
         validate()
@@ -60,10 +60,11 @@ data class DeclaredTypeTable(
         val type = types[id]
         return when (type.kind) {
             "array" -> renderType(requireNotNull(type.component)) + "[]"
-            "wildcard" -> when (type.variance) {
-                "unbounded" -> "?"
-                else -> "? ${type.variance} ${renderType(requireNotNull(type.component))}"
-            }
+            "wildcard" ->
+                when (type.variance) {
+                    "unbounded" -> "?"
+                    else -> "? ${type.variance} ${renderType(requireNotNull(type.component))}"
+                }
             "class" -> {
                 val name = type.owner?.let { renderType(it) + "." + type.name.removePrefix(types[it].name + "\$") } ?: type.name
                 name + if (type.arguments.isEmpty()) "" else type.arguments.joinToString(", ", "<", ">", transform = ::renderType)
@@ -92,35 +93,16 @@ data class DeclaredTypeTable(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod") // Five variants retain the same explicit shape constraints.
-    private fun validShape(access: DeclaredTypeValidationAccess, id: Int): Boolean {
-        fun kind(value: String) = access.textEquals(id, DeclaredTypeTextField.KIND, value)
-        fun empty(field: DeclaredTypeTextField) = access.textIsEmpty(id, field)
-        fun variance(value: String) = access.textEquals(id, DeclaredTypeTextField.VARIANCE, value)
-        return when {
-            kind("class") -> !empty(DeclaredTypeTextField.NAME) && access.component(id) == null &&
-                empty(DeclaredTypeTextField.VARIANCE)
-            kind("primitive") -> setOf("boolean", "byte", "char", "short", "int", "long", "float", "double", "void")
-                .any { access.textEquals(id, DeclaredTypeTextField.NAME, it) } && access.owner(id) == null &&
-                access.component(id) == null && access.argumentCount(id) == 0 && empty(DeclaredTypeTextField.VARIANCE)
-            kind("array") -> access.component(id) != null && access.owner(id) == null &&
-                access.argumentCount(id) == 0 && empty(DeclaredTypeTextField.VARIANCE)
-            kind("variable") -> !empty(DeclaredTypeTextField.NAME) && !empty(DeclaredTypeTextField.SCOPE) &&
-                access.owner(id) == null && access.component(id) == null && access.argumentCount(id) == 0 &&
-                empty(DeclaredTypeTextField.VARIANCE)
-            kind("wildcard") -> access.owner(id) == null && access.argumentCount(id) == 0 && when {
-                variance("extends") || variance("super") -> access.component(id) != null
-                variance("unbounded") -> access.component(id) == null
-                else -> false
-            }
-            else -> false
-        }
-    }
+    private fun validShape(access: DeclaredTypeValidationAccess, id: Int): Boolean = DeclaredTypeShape(access, id).valid()
 
     /** Validate before exposing recursive renderers to persisted references. */
     private fun validateExpressions() {
-        fun reference(id: Int) { require(id in types.indices) { "Invalid graph.types type ID $id" } }
-        fun parameters(values: List<TypeParameter>) { values.forEach { parameter -> parameter.bounds.forEach(::reference) } }
+        fun reference(id: Int) {
+            require(id in types.indices) { "Invalid graph.types type ID $id" }
+        }
+        fun parameters(values: List<TypeParameter>) {
+            values.forEach { parameter -> parameter.bounds.forEach(::reference) }
+        }
         validateMemberReferences(fields, ::reference)
         validateMemberReferences(methods) { method ->
             method.parameterTypes.forEach(::reference)
@@ -175,19 +157,67 @@ data class DeclaredTypeTable(
     }
 
     /** All present IDs have been range-checked before DFS; -1 here denotes an absent optional edge only. */
-    private fun expressionChild(access: DeclaredTypeValidationAccess, id: Int, index: Long, arguments: Int): Int = when {
-        index < arguments -> access.argument(id, index.toInt())
-        index == arguments.toLong() -> access.owner(id) ?: -1
-        else -> access.component(id) ?: -1
-    }
+    private fun expressionChild(access: DeclaredTypeValidationAccess, id: Int, index: Long, arguments: Int): Int =
+        when {
+            index < arguments -> access.argument(id, index.toInt())
+            index == arguments.toLong() -> access.owner(id) ?: -1
+            else -> access.component(id) ?: -1
+        }
 
     private fun <V> validateMemberReferences(values: Map<*, V>, validateValue: (V) -> Unit) {
-        if (values is DeclaredTypeReferences) values.validateTypeReferences(types.size)
-        else values.values.forEach(validateValue)
+        if (values is DeclaredTypeReferences) values.validateTypeReferences(types.size) else values.values.forEach(validateValue)
     }
 
     companion object {
         const val MAX_DEPTH = 256
         val EMPTY = DeclaredTypeTable(emptyList(), emptyMap(), emptyMap(), emptyMap())
     }
+}
+
+/** Each declared-type variant owns its wire-shape constraints. */
+private class DeclaredTypeShape(private val access: DeclaredTypeValidationAccess, private val id: Int) {
+    fun valid(): Boolean =
+        when {
+            text(DeclaredTypeTextField.KIND, "class") -> classShape()
+            text(DeclaredTypeTextField.KIND, "primitive") -> primitiveShape()
+            text(DeclaredTypeTextField.KIND, "array") -> arrayShape()
+            text(DeclaredTypeTextField.KIND, "variable") -> variableShape()
+            text(DeclaredTypeTextField.KIND, "wildcard") -> wildcardShape()
+            else -> false
+        }
+
+    private fun text(field: DeclaredTypeTextField, value: String): Boolean = access.textEquals(id, field, value)
+
+    private fun empty(field: DeclaredTypeTextField): Boolean = access.textIsEmpty(id, field)
+
+    private fun classShape(): Boolean =
+        !empty(DeclaredTypeTextField.NAME) && access.component(id) == null && empty(DeclaredTypeTextField.VARIANCE)
+
+    private fun primitiveShape(): Boolean =
+        setOf("boolean", "byte", "char", "short", "int", "long", "float", "double", "void").any { text(DeclaredTypeTextField.NAME, it) } &&
+            access.owner(id) == null &&
+            access.component(id) == null &&
+            access.argumentCount(id) == 0 &&
+            empty(DeclaredTypeTextField.VARIANCE)
+
+    private fun arrayShape(): Boolean =
+        access.component(id) != null && access.owner(id) == null && access.argumentCount(id) == 0 && empty(DeclaredTypeTextField.VARIANCE)
+
+    private fun variableShape(): Boolean =
+        !empty(DeclaredTypeTextField.NAME) &&
+            !empty(DeclaredTypeTextField.SCOPE) &&
+            access.owner(id) == null &&
+            access.component(id) == null &&
+            access.argumentCount(id) == 0 &&
+            empty(DeclaredTypeTextField.VARIANCE)
+
+    private fun wildcardShape(): Boolean =
+        access.owner(id) == null &&
+            access.argumentCount(id) == 0 &&
+            when {
+                text(DeclaredTypeTextField.VARIANCE, "extends") || text(DeclaredTypeTextField.VARIANCE, "super") ->
+                    access.component(id) != null
+                text(DeclaredTypeTextField.VARIANCE, "unbounded") -> access.component(id) == null
+                else -> false
+            }
 }
