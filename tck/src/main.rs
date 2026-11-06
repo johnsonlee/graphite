@@ -80,7 +80,8 @@ fn record_verified_baseline(
     if !verified {
         return Ok(false);
     }
-    fs::write(path, serde_json::to_string_pretty(signature)? + "\n")?;
+    let sorted: Value = serde_json::from_str(&canonical(signature))?;
+    fs::write(path, serde_json::to_string_pretty(&sorted)? + "\n")?;
     Ok(true)
 }
 
