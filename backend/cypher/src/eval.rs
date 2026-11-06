@@ -5,8 +5,8 @@ use crate::context::GraphContext;
 use crate::error::{CypherError, CypherResult};
 use crate::functions;
 use crate::semantics::{
-    cypher_equals, kotlin_to_string, predicate_order, to_double, utf16_len, value_key,
-    PredicateOrder, Row,
+    compare_values_with, cypher_equals, kotlin_to_string, predicate_order, to_double, utf16_len,
+    value_key, PredicateOrder, Row,
 };
 use crate::value::Value;
 use indexmap::IndexMap;
@@ -566,7 +566,8 @@ impl<'a> Evaluator<'a> {
     }
 
     fn binary(&self, op: BinOp, l: &Value, r: &Value) -> CypherResult<Value> {
-        if op == BinOp::Add {
+        let standard = self.ctx.dialect() == crate::CypherDialect::OpenCypherM23;
+        if op == BinOp::Add && standard {
             match (l, r) {
                 (Value::List(a), Value::List(b)) => {
                     let mut out = a.as_ref().clone();
@@ -609,6 +610,17 @@ impl<'a> Evaluator<'a> {
                 )));
             }
         }
+        if op == BinOp::Add && !standard {
+            if let Value::List(a) = l {
+                let mut out = a.as_ref().clone();
+                if let Value::List(b) = r {
+                    out.extend(b.iter().cloned());
+                } else {
+                    out.push(r.clone());
+                }
+                return Ok(Value::list(out));
+            }
+        }
         if op == BinOp::Pow {
             return Ok(Value::Float(to_double(l).powf(to_double(r))));
         }
@@ -646,7 +658,12 @@ impl<'a> Evaluator<'a> {
             BinOp::Add => Value::Float(a + b),
             BinOp::Sub => Value::Float(a - b),
             BinOp::Mul => Value::Float(a * b),
-            BinOp::Div => Value::Float(a / b),
+            BinOp::Div => {
+                if !standard && b == 0.0 {
+                    return Err(CypherError::Runtime("Division by zero".into()));
+                }
+                Value::Float(a / b)
+            }
             BinOp::Mod => {
                 if b == 0.0 {
                     return Err(CypherError::Runtime("Division by zero".into()));
@@ -671,10 +688,14 @@ impl<'a> Evaluator<'a> {
                 if l.is_null() || r.is_null() {
                     return Value::Null;
                 }
-                let ord = match predicate_order(l, r) {
-                    PredicateOrder::Ordered(order) => order,
-                    PredicateOrder::Unknown => return Value::Null,
-                    PredicateOrder::Unordered => return Value::Bool(false),
+                let ord = if self.ctx.dialect() == crate::CypherDialect::Graphite {
+                    compare_values_with(l, r, self.ctx)
+                } else {
+                    match predicate_order(l, r) {
+                        PredicateOrder::Ordered(order) => order,
+                        PredicateOrder::Unknown => return Value::Null,
+                        PredicateOrder::Unordered => return Value::Bool(false),
+                    }
                 };
                 Value::Bool(match op {
                     CmpOp::Lt => ord.is_lt(),
@@ -851,7 +872,9 @@ impl<'a> Evaluator<'a> {
     }
 
     fn slice(&self, base: &Value, from: Option<&Value>, to: Option<&Value>) -> Value {
-        if from.is_some_and(Value::is_null) || to.is_some_and(Value::is_null) {
+        if self.ctx.dialect() == crate::CypherDialect::OpenCypherM23
+            && (from.is_some_and(Value::is_null) || to.is_some_and(Value::is_null))
+        {
             return Value::Null;
         }
         let items = match base {

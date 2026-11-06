@@ -154,10 +154,9 @@ fn terminal_emission_preserves_where_errors_and_cancellation() {
         "MATCH (m:Method) WHERE false AND size(range(0, 1, $step)) > 0 RETURN m",
         None,
     );
-    let error = result.unwrap_err().diagnostic().unwrap();
     assert_eq!(
-        (error.error_type, error.phase, error.detail),
-        ("ArgumentError", "runtime", "NumberOutOfRange")
+        result.unwrap_err(),
+        CypherError::Runtime("Step cannot be zero in range()".into())
     );
     let Some(ex) = executor() else { return };
     ex.cancel.cancel();

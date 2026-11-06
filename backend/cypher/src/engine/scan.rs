@@ -4420,19 +4420,25 @@ mod tests {
             "any(k IN keys(n) WHERE toString(properties(n)[k] + head(range(0, 1, $step))) CONTAINS 'ZZZAbsent')",
         ] {
             let (direct, fallback) = queries(predicate);
-            let actual = ex.execute(&direct, None).unwrap_err().diagnostic().unwrap();
-            let expected = ex.execute(&fallback, None).unwrap_err().diagnostic().unwrap();
-            assert_eq!((actual.error_type, actual.phase, actual.detail), ("ArgumentError", "runtime", "NumberOutOfRange"));
+            let actual = ex.execute(&direct, None).unwrap_err();
+            let expected = ex.execute(&fallback, None).unwrap_err();
+            assert_eq!(actual, crate::CypherError::Runtime("Step cannot be zero in range()".into()));
             assert_eq!(actual, expected);
         }
-        // Extra arguments are now checked before graph evaluation, independently
-        // from the valid runtime-error cases above.
+        // M23 checks extra arguments before graph evaluation, independently
+        // from Graphite's valid runtime-error cases above.
+        let standard = Executor::new(ex.sources.clone(), false)
+            .with_dialect(crate::CypherDialect::OpenCypherM23);
         for expression in [
             "toString(n[k], 'unused')",
             "toString(n[k], unknownFunction())",
         ] {
             let query = format!("MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE {expression} CONTAINS 'first') RETURN id(n)");
-            let error = ex.execute(&query, None).unwrap_err().diagnostic().unwrap();
+            let error = standard
+                .execute(&query, None)
+                .unwrap_err()
+                .diagnostic()
+                .unwrap();
             assert_eq!(
                 (error.error_type, error.phase, error.detail),
                 ("SyntaxError", "compile time", "InvalidNumberOfArguments")

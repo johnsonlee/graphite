@@ -474,10 +474,10 @@ fn output_contract() -> Option<serde_json::Value> {
         "MATCH (m:Method) WHERE m.graphId = 'absent' AND size(range(0, 1, $step)) > 0 RETURN m",
         "MATCH (m:Method) WHERE size(range(0, 1, $step)) > 0 OR m.graphId = 'absent' RETURN m",
     ] {
-        let error = ex.execute(query, None).unwrap_err().diagnostic().unwrap();
+        let error = ex.execute(query, None).unwrap_err();
         assert_eq!(
-            (error.error_type, error.phase, error.detail),
-            ("ArgumentError", "runtime", "NumberOutOfRange")
+            error,
+            CypherError::Runtime("Step cannot be zero in range()".into())
         );
         snapshots.push(serde_json::json!({"error":format!("{error:?}")}));
     }

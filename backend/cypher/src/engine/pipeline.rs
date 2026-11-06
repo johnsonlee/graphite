@@ -7,7 +7,7 @@ use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem, StrOp};
 use crate::eval::{contains_aggregation, is_aggregation_name, Evaluator};
 use crate::functions::aggregate;
 use crate::ordering::compare_order_values;
-use crate::parser::parse_cached;
+use crate::parser::parse_cached_with_dialect;
 use crate::render::to_cypher_string;
 use crate::semantics::{value_key, Key};
 use crate::value::Value;
@@ -126,7 +126,7 @@ pub(crate) fn merge_provenance(into: &mut Row, from: &Row) {
 impl Executor {
     /// Execute a query; `max_rows` injects/lowers a LIMIT per UNION segment (Kotlin `execute(cypher, maxRows)`).
     pub fn execute(&self, query: &str, max_rows: Option<usize>) -> CypherResult<QueryResult> {
-        let clauses = parse_cached(query)?;
+        let clauses = parse_cached_with_dialect(query, self.dialect)?;
         self.execute_clauses(&clauses, max_rows)
     }
 
@@ -1896,6 +1896,9 @@ fn next_order_by(rest: &[Clause]) -> Option<&[OrderItem]> {
 fn eval_count(ev: &Evaluator, expr: &Expr, first: Option<&Row>) -> CypherResult<i64> {
     let empty = Row::new();
     let v = ev.eval(expr, first.unwrap_or(&empty))?;
+    if ev.context().dialect() == crate::CypherDialect::Graphite {
+        return Ok(crate::semantics::to_int_for_skip_limit(&v));
+    }
     match v {
         Value::Int(n) if n >= 0 => Ok(n),
         Value::Int(_) => Err(CypherError::execution(
@@ -3360,10 +3363,9 @@ mod bounded_order_tests {
                     &mut columns,
                 );
                 if id == 2 {
-                    let error = row.unwrap_err().diagnostic().unwrap();
                     assert_eq!(
-                        (error.error_type, error.phase, error.detail),
-                        ("ArgumentError", "runtime", "NumberOutOfRange")
+                        row.unwrap_err(),
+                        CypherError::Runtime("Step cannot be zero in range()".into())
                     );
                 } else {
                     top.push(row.unwrap());
@@ -3435,10 +3437,9 @@ mod bounded_order_tests {
                 assert_eq!(capacity(&query), Some(limit));
                 let reference = full_sort(&ex, &query).unwrap_err();
                 let actual = ex.execute(&query, None).unwrap_err();
-                let error = actual.diagnostic().unwrap();
                 assert_eq!(
-                    (error.error_type, error.phase, error.detail),
-                    ("ArgumentError", "runtime", "NumberOutOfRange")
+                    actual,
+                    CypherError::Runtime("Step cannot be zero in range()".into())
                 );
                 assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
             }

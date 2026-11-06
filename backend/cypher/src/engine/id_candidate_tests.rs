@@ -722,19 +722,23 @@ fn id_candidates_fallback_errors_parameters_and_deadline_remain_observable() {
         format!("MATCH (n) WHERE id(n) = {wanted} AND size(range(0, 1, $step)) > 0 RETURN n"),
         format!("MATCH (n) WHERE id(n) = {wanted} RETURN head(range(0, 1, $step))"),
     ] {
-        let error = ex.execute(&query, None).unwrap_err().diagnostic().unwrap();
         assert_eq!(
-            (error.error_type, error.phase, error.detail),
-            ("ArgumentError", "runtime", "NumberOutOfRange"),
+            ex.execute(&query, None).unwrap_err(),
+            CypherError::Runtime("Step cannot be zero in range()".into()),
             "{query}"
         );
     }
+    let standard = multi(graph.clone()).with_dialect(crate::CypherDialect::OpenCypherM23);
     for (expression, expected) in [
         ("id(n, unknown())", "InvalidNumberOfArguments"),
         ("unknown()", "UnknownFunction"),
     ] {
         let query = format!("MATCH (n) WHERE id(n) = {wanted} RETURN {expression}");
-        let error = ex.execute(&query, None).unwrap_err().diagnostic().unwrap();
+        let error = standard
+            .execute(&query, None)
+            .unwrap_err()
+            .diagnostic()
+            .unwrap();
         assert_eq!(
             (error.error_type, error.phase, error.detail),
             ("SyntaxError", "compile time", expected)

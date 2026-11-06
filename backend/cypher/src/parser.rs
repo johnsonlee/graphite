@@ -1,7 +1,8 @@
 //! Recursive-descent parser mirroring `CypherParser.g4` + `CypherDslAdapter`.
 //!
-//! Deliberate parity quirks (all verified against the Kotlin adapter):
-//! - Comparison chains left-fold: `1 < 2 < 3` parses as `(1 < 2) < 3`.
+//! Grammar and adapter compatibility:
+//! - Graphite preserves left-folded comparison chains and right-associative powers;
+//!   openCypher M23 uses adjacent comparison conjunctions and left-associative powers.
 //! - String predicates bind tighter than comparisons, looser than `+`/`-`.
 //! - Every keyword is a legal `symbolicName` (variable, label, property, map key).
 //! - `MATCH ... WHERE p` emits `Match` **then** `Where`; `OPTIONAL MATCH` keeps the
@@ -13,6 +14,7 @@
 use crate::ast::*;
 use crate::error::{CypherError, CypherResult};
 use crate::lexer::{tokenize, Keyword as K, Token, TokenKind as T};
+use crate::CypherDialect;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -21,8 +23,14 @@ use std::sync::Arc;
 // Entry points
 // ---------------------------------------------------------------------------
 
-/// Parse a query into a flat clause list.
+/// Parse a query using the openCypher M23 grammar.
+/// Executors select their public profile explicitly with [`parse_with_dialect`].
 pub fn parse(text: &str) -> CypherResult<Vec<Clause>> {
+    parse_with_dialect(text, CypherDialect::OpenCypherM23)
+}
+
+/// Parse using the caller's explicit public compatibility contract.
+pub fn parse_with_dialect(text: &str, dialect: CypherDialect) -> CypherResult<Vec<Clause>> {
     if text.trim().is_empty() {
         return Ok(Vec::new());
     }
@@ -32,15 +40,15 @@ pub fn parse(text: &str) -> CypherResult<Vec<Clause>> {
         if parts.len() > 1 {
             let mut out = Vec::new();
             for p in parts {
-                out.extend(parse_single(p)?);
+                out.extend(parse_single(p, dialect)?);
             }
             return Ok(out);
         }
     }
-    parse_single(text)
+    parse_single(text, dialect)
 }
 
-fn parse_single(text: &str) -> CypherResult<Vec<Clause>> {
+fn parse_single(text: &str, dialect: CypherDialect) -> CypherResult<Vec<Clause>> {
     if text.trim().is_empty() {
         return Ok(Vec::new());
     }
@@ -49,6 +57,7 @@ fn parse_single(text: &str) -> CypherResult<Vec<Clause>> {
         toks: tokens,
         i: 0,
         source: text,
+        dialect,
         parameter_properties_forbidden: true,
     };
     let clauses = p.script()?;
@@ -60,36 +69,45 @@ const PARSE_CACHE_CAPACITY: usize = 1024;
 static PARSE_CACHE: Mutex<Option<LruCache>> = Mutex::new(None);
 
 struct LruCache {
-    map: HashMap<String, Arc<Vec<Clause>>>,
-    order: Vec<String>,
+    map: HashMap<(CypherDialect, String), Arc<Vec<Clause>>>,
+    order: Vec<(CypherDialect, String)>,
 }
 
-/// Parse with a process-wide LRU cache keyed by the exact query text.
+/// Parse the openCypher M23 grammar using a process-wide LRU cache.
 /// Failed parses are never cached.
 pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
+    parse_cached_with_dialect(text, CypherDialect::OpenCypherM23)
+}
+
+/// Cache entries include both dialect and exact source, preventing cross-mode reuse.
+pub fn parse_cached_with_dialect(
+    text: &str,
+    dialect: CypherDialect,
+) -> CypherResult<Arc<Vec<Clause>>> {
+    let key = (dialect, text.to_owned());
     {
         let mut guard = PARSE_CACHE.lock();
         let cache = guard.get_or_insert_with(|| LruCache {
             map: HashMap::new(),
             order: Vec::new(),
         });
-        if let Some(hit) = cache.map.get(text).cloned() {
-            if let Some(pos) = cache.order.iter().position(|k| k == text) {
+        if let Some(hit) = cache.map.get(&key).cloned() {
+            if let Some(pos) = cache.order.iter().position(|k| k == &key) {
                 let k = cache.order.remove(pos);
                 cache.order.push(k);
             }
             return Ok(hit);
         }
     }
-    let parsed = Arc::new(parse(text)?);
+    let parsed = Arc::new(parse_with_dialect(text, dialect)?);
     let mut guard = PARSE_CACHE.lock();
     let cache = guard.get_or_insert_with(|| LruCache {
         map: HashMap::new(),
         order: Vec::new(),
     });
-    if !cache.map.contains_key(text) {
-        cache.map.insert(text.to_string(), parsed.clone());
-        cache.order.push(text.to_string());
+    if !cache.map.contains_key(&key) {
+        cache.map.insert(key.clone(), parsed.clone());
+        cache.order.push(key);
         while cache.order.len() > PARSE_CACHE_CAPACITY {
             let evict = cache.order.remove(0);
             cache.map.remove(&evict);
@@ -103,6 +121,7 @@ pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
 // ---------------------------------------------------------------------------
 
 struct Parser<'a> {
+    dialect: CypherDialect,
     source: &'a str,
     toks: Vec<Token>,
     i: usize,
@@ -857,6 +876,14 @@ impl Parser<'_> {
             };
             self.bump();
             let right = self.string_predicate_expr()?;
+            if self.dialect == CypherDialect::Graphite {
+                left = Expr::Comparison {
+                    op,
+                    left: Box::new(left),
+                    right: Box::new(right),
+                };
+                continue;
+            }
             let comparison = Expr::Comparison {
                 op,
                 left: Box::new(left),
@@ -993,7 +1020,11 @@ impl Parser<'_> {
         let mut left = self.unary_expr()?;
         while self.at(T::Caret) {
             self.bump();
-            let right = self.unary_expr()?;
+            let right = if self.dialect == CypherDialect::Graphite {
+                self.power_expr()?
+            } else {
+                self.unary_expr()?
+            };
             left = Expr::Binary {
                 op: BinOp::Pow,
                 left: Box::new(left),

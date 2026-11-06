@@ -109,6 +109,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             v if v.is_number() => Value::Int(to_double(v) as i64),
             Value::Str(s) => kotlin_parse_long(s)
                 .or_else(|| {
+                    if ctx.dialect() == crate::CypherDialect::Graphite {
+                        return None;
+                    }
                     java_parse_double(s)
                         .filter(|n| {
                             n.is_finite() && *n >= i64::MIN as f64 && *n < -(i64::MIN as f64)
@@ -118,6 +121,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                 .map(Value::Int)
                 .unwrap_or(Value::Null),
             Value::Bool(b) => Value::Int(if *b { 1 } else { 0 }),
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
             _ => return Err(invalid_conversion(name)),
         },
         "tofloat" => match arg(args, 0)? {
@@ -126,6 +130,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             Value::Str(s) => java_parse_double(s)
                 .map(Value::Float)
                 .unwrap_or(Value::Null),
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
             _ => return Err(invalid_conversion(name)),
         },
         "toboolean" => match arg(args, 0)? {
@@ -141,6 +146,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                     Value::Null
                 }
             }
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
             _ => return Err(invalid_conversion(name)),
         },
         "tostring" => match arg(args, 0)? {
@@ -163,7 +169,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
 
         // -- graph shape ---------------------------------------------------
         "properties" => match arg(args, 0)? {
-            value @ Value::Map(_) => value.clone(),
+            value @ Value::Map(_) if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                value.clone()
+            }
             Value::Node(n) => Value::map(ctx.node_properties(*n)),
             Value::Rel(r) if r.property_id.is_some() => ctx
                 .property_graph()
@@ -190,7 +198,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             _ => Value::Null,
         },
         "labels" => match arg(args, 0)? {
-            Value::Null => Value::Null,
+            Value::Null if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => Value::Null,
             Value::Node(n) => {
                 if let Some(graph) = ctx.property_graph() {
                     Value::list(
@@ -379,6 +387,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         },
         "range" => {
             let integer = |index| match arg(args, index)? {
+                value if ctx.dialect() == crate::CypherDialect::Graphite => {
+                    as_number(value).map(|number| number as i64)
+                }
                 Value::Int(value) => Ok(*value),
                 _ => Err(CypherError::execution(
                     "ArgumentError",
@@ -390,6 +401,11 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             let end = integer(1)?;
             let step = if args.len() > 2 { integer(2)? } else { 1 };
             if step == 0 {
+                if ctx.dialect() == crate::CypherDialect::Graphite {
+                    return Err(CypherError::Runtime(
+                        "Step cannot be zero in range()".into(),
+                    ));
+                }
                 return Err(CypherError::execution(
                     "ArgumentError",
                     "NumberOutOfRange",

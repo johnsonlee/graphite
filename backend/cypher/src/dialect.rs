@@ -2,7 +2,7 @@
 use std::{fmt, str::FromStr};
 
 /// Graphite preserves its established query extensions; M23 selects standard contracts.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub enum CypherDialect {
     #[default]
     Graphite,
