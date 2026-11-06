@@ -136,7 +136,7 @@ impl Executor {
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
         if let Some(graph) = &self.property_graph {
-            let mut transaction = graph.begin_transaction();
+            let mut transaction = graph.begin_transaction(|| self.cancel.check())?;
             let result = self.execute_clauses_inner(clauses, max_rows);
             if result.is_ok() {
                 transaction.commit();

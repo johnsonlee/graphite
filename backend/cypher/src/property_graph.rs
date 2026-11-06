@@ -107,14 +107,29 @@ impl PropertyGraph {
             ))
         }
     }
-    pub(crate) fn begin_transaction(&self) -> PropertyTransaction<'_> {
-        let guard = self.transaction.lock();
+    pub(crate) fn begin_transaction(
+        &self,
+        mut check: impl FnMut() -> crate::CypherResult<()>,
+    ) -> crate::CypherResult<PropertyTransaction<'_>> {
+        // A long-running query must not keep queued cancellation/deadlines from
+        // being observed. Keep the same exclusive lock through commit/rollback.
+        let guard = loop {
+            check()?;
+            if let Some(guard) = self
+                .transaction
+                .try_lock_for(std::time::Duration::from_millis(10))
+            {
+                break guard;
+            }
+        };
+        check()?;
         let checkpoint = self.state.read().clone();
-        PropertyTransaction {
+        check()?;
+        Ok(PropertyTransaction {
             graph: self,
             checkpoint: Some(checkpoint),
             _guard: guard,
-        }
+        })
     }
     pub(crate) fn set_property(
         &self,
@@ -419,7 +434,7 @@ mod tests {
     fn transaction_unwind_restores_state_and_releases_the_session() {
         let graph = PropertyGraph::new();
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _transaction = graph.begin_transaction();
+            let _transaction = graph.begin_transaction(|| Ok(())).unwrap();
             graph
                 .create_node(&["Temporary".to_owned()], IndexMap::new())
                 .unwrap();
@@ -427,7 +442,7 @@ mod tests {
         }));
         assert!(result.is_err());
         assert!(graph.snapshot().nodes.is_empty());
-        let mut transaction = graph.begin_transaction();
+        let mut transaction = graph.begin_transaction(|| Ok(())).unwrap();
         let node = graph
             .create_node(&["Committed".to_owned()], IndexMap::new())
             .unwrap();
