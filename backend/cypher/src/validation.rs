@@ -348,10 +348,13 @@ fn expression_context(
     match expr {
         Expr::LabelPredicate { expr, .. } => {
             expression(expr, scope, allow_aggregate, in_aggregate, known)?;
-            if !matches!(infer(expr, scope), Kind::Unknown | Kind::Null | Kind::Node) {
+            if !matches!(
+                infer(expr, scope),
+                Kind::Unknown | Kind::Null | Kind::Node | Kind::Rel
+            ) {
                 return Err(fail(
                     "InvalidArgumentType",
-                    "Label predicate requires a node",
+                    "Label predicate requires a node or relationship",
                 ));
             }
             return Ok(());
@@ -450,7 +453,11 @@ fn expression_context(
             ) || (kind == Kind::Path && ["length", "graphId"].contains(&key.as_str())))
             {
                 return Err(CypherError::compilation(
-                    "TypeError",
+                    if kind == Kind::Path {
+                        "SyntaxError"
+                    } else {
+                        "TypeError"
+                    },
                     "InvalidArgumentType",
                     "Property access requires a node, relationship, map or temporal value",
                 ));
@@ -1206,6 +1213,12 @@ fn resolve_scoped(
             Clause::Skip(expr) | Clause::Limit(expr) => limit(expr, &scope)?,
             Clause::Delete { exprs, .. } => {
                 for expr in exprs {
+                    if matches!(expr, Expr::LabelPredicate { .. }) {
+                        return Err(fail(
+                            "InvalidDelete",
+                            "DELETE cannot remove labels or relationship types",
+                        ));
+                    }
                     expression(expr, &scope, false, false, &[])?;
                     let kind = infer(expr, &scope);
                     if !matches!(
@@ -1452,5 +1465,30 @@ mod tests {
         ex.execute("MATCH () CREATE () WITH * CREATE ()", None)
             .unwrap();
         assert_eq!(graph.snapshot().nodes.len(), 6);
+    }
+    #[test]
+    fn delete_labels_and_invalid_path_properties_have_distinct_diagnostics() {
+        assert_eq!(detail("MATCH(n) DELETE n:Person"), "InvalidDelete");
+        assert_eq!(detail("MATCH()-[r:T]-() DELETE r:T"), "InvalidDelete");
+        let error = validate("MATCH p=()-->() WHERE p.name = 'x' RETURN p")
+            .unwrap_err()
+            .diagnostic()
+            .unwrap();
+        assert_eq!(
+            (error.error_type, error.phase, error.detail),
+            ("SyntaxError", "compile time", "InvalidArgumentType")
+        );
+    }
+    #[test]
+    fn relationship_type_predicates_are_case_sensitive() {
+        let graph = std::sync::Arc::new(crate::property_graph::PropertyGraph::new());
+        let ex = crate::engine::Executor::property_graph(graph);
+        ex.execute("CREATE ()-[:T]->(),()-[:t]->()", None).unwrap();
+        let result = ex
+            .execute("MATCH()-[r]->() RETURN r:T AS match ORDER BY match", None)
+            .unwrap();
+        assert_eq!(result.rows.len(), 2);
+        assert!(matches!(result.rows[0]["match"], crate::Value::Bool(false)));
+        assert!(matches!(result.rows[1]["match"], crate::Value::Bool(true)));
     }
 }

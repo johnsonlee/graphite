@@ -244,10 +244,28 @@ impl<'a> Evaluator<'a> {
                     Value::Method(_) => {
                         Ok(Value::Bool(labels.iter().all(|label| label == "Method")))
                     }
+                    Value::Rel(rel) => {
+                        let type_name = if let Some(id) = rel.property_id {
+                            self.ctx
+                                .property_graph()
+                                .and_then(|graph| graph.relationship(u64::from(id.get())))
+                                .map(|relationship| relationship.type_name)
+                                .ok_or_else(|| {
+                                    CypherError::execution(
+                                        "EntityNotFound",
+                                        "DeletedEntityAccess",
+                                        "The relationship has been deleted",
+                                    )
+                                })?
+                        } else {
+                            self.ctx.rel_type(rel).to_owned()
+                        };
+                        Ok(Value::Bool(labels.iter().all(|label| *label == type_name)))
+                    }
                     _ => Err(CypherError::execution(
                         "TypeError",
                         "InvalidArgumentType",
-                        "A label predicate requires a node",
+                        "A label predicate requires a node or relationship",
                     )),
                 }
             }
