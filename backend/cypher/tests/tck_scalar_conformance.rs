@@ -167,3 +167,30 @@ fn aggregate_order_expressions_use_finalized_values_and_aliases() {
     assert_eq!(format!("{:?}", result.rows[0]["n"]), "Int(1)");
     assert_eq!(format!("{:?}", result.rows[0]["c"]), "Int(2)");
 }
+
+#[test]
+fn union_column_contract_is_checked_before_graph_mutation() {
+    use graphite_cypher::property_graph::PropertyGraph;
+    use std::sync::Arc;
+    for union in ["UNION", "UNION ALL"] {
+        let graph = Arc::new(PropertyGraph::new());
+        let ex = Executor::property_graph(graph.clone());
+        let error = ex
+            .execute(
+                &format!("CREATE (:A) RETURN 1 AS a {union} RETURN 2 AS b"),
+                None,
+            )
+            .unwrap_err();
+        let diagnostic = error.diagnostic().unwrap();
+        assert_eq!(diagnostic.error_type, "SyntaxError");
+        assert_eq!(diagnostic.phase, "compile time");
+        assert_eq!(diagnostic.detail, "DifferentColumnsInUnion");
+        assert!(graph.snapshot().nodes.is_empty());
+    }
+    let result = Executor::new(vec![], false)
+        .execute("RETURN 1 AS a UNION ALL RETURN 2 AS a", None)
+        .unwrap();
+    assert_eq!(result.rows.len(), 2);
+    assert_eq!(format!("{:?}", result.rows[0]["a"]), "Int(1)");
+    assert_eq!(format!("{:?}", result.rows[1]["a"]), "Int(2)");
+}

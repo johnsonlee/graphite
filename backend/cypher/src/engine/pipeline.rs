@@ -162,6 +162,33 @@ impl Executor {
                 segments.last_mut().unwrap().0.push(c.clone());
             }
         }
+        // Explicit UNION projections must agree before either branch executes.
+        // This is a native compile-time contract, not a renderer-side workaround.
+        let mut union_columns: Option<Vec<String>> = None;
+        if segments.len() > 1 {
+            for (segment, _) in &segments {
+                if let Some(Clause::Return {
+                    items: Some(items), ..
+                }) = segment
+                    .iter()
+                    .rev()
+                    .find(|clause| matches!(clause, Clause::Return { .. }))
+                {
+                    let columns = item_names(items);
+                    if union_columns
+                        .as_ref()
+                        .is_some_and(|expected| expected != &columns)
+                    {
+                        return Err(CypherError::Syntax {
+                            position: 0,
+                            message: "All UNION branches must return the same column names".into(),
+                            detail: "DifferentColumnsInUnion",
+                        });
+                    }
+                    union_columns = Some(columns);
+                }
+            }
+        }
         let mut result: Option<QueryResult> = None;
         let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
