@@ -58,7 +58,7 @@ provides a program-graph foundation, persistent storage, and Cypher/MCP access
 in one system.
 
 That foundation also operates at production scale: **120M nodes across 50
-graphs in one process**, with a [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
+graphs in one process on a machine with 16 GB RAM**, with a [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
 containing 19.4 million nodes.
 
 | Question | Information beyond syntax | Graphite's queryable context |
@@ -81,13 +81,14 @@ for the exact versions, query scope and larger-project findings.
 
 ## Production Scale
 
-**120M nodes across 50 graphs, served by one process.**
+**120M nodes across 50 graphs, served by one process on a machine with 16 GB RAM.**
 
 The current production deployment uses `graphite serve` with the Rust backend
 and memory-mapped graphs:
 
 | | |
 |---|---|
+| Machine memory | 16 GB |
 | Graphs served by one process | 50 |
 | Nodes | 120M |
 
