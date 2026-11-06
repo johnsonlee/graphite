@@ -1311,7 +1311,10 @@ fn resolve_scoped(
 mod tests {
     use super::*;
     fn validate(query: &str) -> CypherResult<Vec<Clause>> {
-        resolve(&crate::parser::parse(query)?)
+        resolve(&crate::parser::parse_with_dialect(
+            query,
+            crate::CypherDialect::OpenCypherM23,
+        )?)
     }
     fn detail(query: &str) -> &'static str {
         let error = validate(query).unwrap_err();
@@ -1429,7 +1432,11 @@ mod tests {
     #[test]
     fn fused_scope_proof_respects_comprehension_locals_and_outer_inputs() {
         let expr = |text: &str| {
-            let clauses = crate::parser::parse(&format!("RETURN {text}")).unwrap();
+            let clauses = crate::parser::parse_with_dialect(
+                &format!("RETURN {text}"),
+                crate::CypherDialect::OpenCypherM23,
+            )
+            .unwrap();
             let Clause::Return {
                 items: Some(items), ..
             } = &clauses[0]
@@ -1519,7 +1526,9 @@ mod tests {
         );
         assert_eq!(detail("MATCH(n) MERGE(n)"), "VariableAlreadyBound");
         assert!(validate("MATCH(n) MERGE(n)-[:KNOWS]->(:Person)").is_ok());
-        let parsed = crate::parser::parse("CREATE(n {})").unwrap();
+        let parsed =
+            crate::parser::parse_with_dialect("CREATE(n {})", crate::CypherDialect::OpenCypherM23)
+                .unwrap();
         let Clause::Create(patterns) = &parsed[0] else {
             panic!()
         };

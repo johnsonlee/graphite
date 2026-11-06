@@ -104,9 +104,11 @@ inherit the selected dialect. Mode tests and existing persisted-graph tests cove
 both standard behavior and retained default extensions.
 
 Rust clients supplying parsed clauses should select the same dialect with
-`parser::parse_with_dialect` or `parse_cached_with_dialect`. The plain `parse` and
-`parse_cached` utilities parse M23; executor entry points select their own public
-dialect explicitly. Cache keys include the dialect to prevent cross-mode reuse.
+`parser::parse_with_dialect` or `parse_cached_with_dialect`. The existing `parse`
+and `parse_cached` utilities retain Graphite grammar, including right-associative
+powers and left-folded comparison chains. M23 grammar requires explicit selection
+at parser and executor entry points. Cache keys include the dialect to prevent
+cross-mode reuse.
 
 ## CI and exact baseline
 

@@ -3,7 +3,7 @@ use graphite_cypher::{
     ast::{BinOp, Clause, CmpOp, Expr, Literal},
     engine::{CancelToken, Executor},
     materialize::materialize,
-    parser::{parse_cached_with_dialect, parse_with_dialect},
+    parser::{parse, parse_cached, parse_cached_with_dialect, parse_with_dialect},
     CypherDialect::{self, Graphite, OpenCypherM23},
     CypherError, Value,
 };
@@ -77,10 +77,30 @@ fn powers_and_comparison_chains_keep_dialect_specific_ast_and_cache_entries() {
     let standard = parse_cached_with_dialect("RETURN 2^3^2", OpenCypherM23).unwrap();
     let legacy = parse_cached_with_dialect("RETURN 2^3^2", Graphite).unwrap();
     assert_ne!(standard, legacy);
-    assert_eq!(
-        graphite_cypher::parser::parse("RETURN 2^3^2").unwrap(),
-        *standard
-    );
+    for (query, expected) in [
+        ("RETURN 2^3^2", pow(lit(2), pow(lit(3), lit(2)))),
+        ("RETURN 1<2<3", lt(lt(lit(1), lit(2)), lit(3))),
+    ] {
+        // Existing Rust parser entry points keep Graphite's historical AST even
+        // when a standard-mode cache entry for the same text already exists.
+        let standard = parse_cached_with_dialect(query, OpenCypherM23).unwrap();
+        let default = parse(query).unwrap();
+        let cached_default = parse_cached(query).unwrap();
+        for clauses in [&default, cached_default.as_ref()] {
+            let Clause::Return {
+                items: Some(items), ..
+            } = &clauses[0]
+            else {
+                panic!("missing RETURN: {query}")
+            };
+            assert_eq!(items[0].expr, expected, "{query}");
+        }
+        assert_ne!(*standard, default, "{query}");
+        assert!(std::sync::Arc::ptr_eq(
+            &cached_default,
+            &parse_cached_with_dialect(query, Graphite).unwrap()
+        ));
+    }
 }
 
 #[test]

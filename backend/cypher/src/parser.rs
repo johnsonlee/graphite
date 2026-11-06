@@ -23,10 +23,10 @@ use std::sync::Arc;
 // Entry points
 // ---------------------------------------------------------------------------
 
-/// Parse a query using the openCypher M23 grammar.
-/// Executors select their public profile explicitly with [`parse_with_dialect`].
+/// Parse using Graphite's established grammar. Standard parsing is opt-in via
+/// [`parse_with_dialect`] with [`CypherDialect::OpenCypherM23`].
 pub fn parse(text: &str) -> CypherResult<Vec<Clause>> {
-    parse_with_dialect(text, CypherDialect::OpenCypherM23)
+    parse_with_dialect(text, CypherDialect::Graphite)
 }
 
 /// Parse using the caller's explicit public compatibility contract.
@@ -73,10 +73,11 @@ struct LruCache {
     order: Vec<(CypherDialect, String)>,
 }
 
-/// Parse the openCypher M23 grammar using a process-wide LRU cache.
-/// Failed parses are never cached.
+/// Parse Graphite's established grammar using a process-wide LRU cache.
+/// Standard grammar is opt-in via [`parse_cached_with_dialect`]. Failed parses
+/// are never cached.
 pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
-    parse_cached_with_dialect(text, CypherDialect::OpenCypherM23)
+    parse_cached_with_dialect(text, CypherDialect::Graphite)
 }
 
 /// Cache entries include both dialect and exact source, preventing cross-mode reuse.

@@ -1,7 +1,7 @@
 use graphite_cypher::{
     ast::{BinOp, Clause, CmpOp, Expr, Literal},
     engine::Executor,
-    parser, Value,
+    parser, CypherDialect, Value,
 };
 
 fn standard() -> Executor {
@@ -50,7 +50,9 @@ fn date_arithmetic_uses_complete_elapsed_days_and_duration_scaling_discards_frac
 }
 #[test]
 fn chained_comparisons_compare_adjacent_operands() {
-    let clauses = parser::parse("RETURN 1 < 2 <= 3 AS valid").unwrap();
+    let clauses =
+        parser::parse_with_dialect("RETURN 1 < 2 <= 3 AS valid", CypherDialect::OpenCypherM23)
+            .unwrap();
     let Clause::Return {
         items: Some(items), ..
     } = &clauses[0]
@@ -100,7 +102,8 @@ fn extrema_order_strings_lists_and_mixed_types() {
 }
 #[test]
 fn exponentiation_is_left_associative_in_ast_and_execution() {
-    let clauses = parser::parse("RETURN 2 ^ 3 ^ 2 AS n").unwrap();
+    let clauses =
+        parser::parse_with_dialect("RETURN 2 ^ 3 ^ 2 AS n", CypherDialect::OpenCypherM23).unwrap();
     let Clause::Return {
         items: Some(items), ..
     } = &clauses[0]
@@ -129,7 +132,7 @@ fn signed_minimum_integer_literals_are_valid() {
         "-0o1000000000000000000000",
     ] {
         let query = format!("RETURN {literal}");
-        let clauses = parser::parse(&query).unwrap();
+        let clauses = parser::parse_with_dialect(&query, CypherDialect::OpenCypherM23).unwrap();
         let Clause::Return {
             items: Some(items), ..
         } = &clauses[0]
@@ -259,7 +262,7 @@ fn union_column_contract_is_checked_before_graph_mutation() {
 #[test]
 fn result_headers_preserve_original_expression_spelling_and_unicode_offsets() {
     let query = "WITH '中文' AS text\nRETURN (12 / 4) * (3 - 2 * 4), text";
-    let clauses = parser::parse(query).unwrap();
+    let clauses = parser::parse_with_dialect(query, CypherDialect::OpenCypherM23).unwrap();
     let Clause::Return {
         items: Some(items), ..
     } = clauses.last().unwrap()
