@@ -166,8 +166,17 @@ fn grouped_csr_executor_limit_probe_and_cancellation_keep_existing_contracts() {
     assert!(grouped_call_site_property(&ex, &parse(invalid).unwrap())
         .unwrap()
         .is_none());
-    let actual = ex.execute(invalid, None).unwrap();
-    let expected = ex
+    // The Graphite default preserves its pre-TCK aggregate-expression error.
+    assert_eq!(
+        ex.execute(invalid, None).unwrap_err(),
+        CypherError::Aggregation("count".into())
+    );
+    // M23 permits aggregate ORDER BY expressions and must retain the complete
+    // grouped fallback result, independently of the optimized alias form.
+    let standard =
+        Executor::new(ex.sources.clone(), true).with_dialect(crate::CypherDialect::OpenCypherM23);
+    let actual = standard.execute(invalid, None).unwrap();
+    let expected = standard
         .execute(
             "MATCH (n:CallSite) RETURN n.callee_class AS c, count(*) AS k ORDER BY k DESC LIMIT 1",
             None,
