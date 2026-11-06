@@ -3,7 +3,8 @@
 
 Volatile fields (timestamps, absolute paths) are normalised before comparison.
 """
-import json, os, sys, urllib.request, urllib.error
+import json, os, sys, urllib.request, urllib.error, urllib.parse
+from parity_schema import legacy_schema_pair
 
 KOTLIN = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:18081"
 RUST = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:18080"
@@ -402,17 +403,24 @@ for method, path, body in CASES:
         failed += 1
         failures.append((label, f"status {ks} != {rs}", kb[:300], rb[:300]))
         continue
-    try:
-        kj = strip_placeholder(norm(json.loads(kb)))
-        rj = strip_placeholder(norm(json.loads(rb)))
-        if path in ("/openapi.json", "/swagger.json"):
-            for rust_only in RUST_ONLY_PATHS:
-                rj.get("paths", {}).pop(rust_only, None)
-        same = kj == rj
-        kd, rd = json.dumps(kj, sort_keys=True)[:400], json.dumps(rj, sort_keys=True)[:400]
-    except Exception:
-        same = kb.strip() == rb.strip()
-        kd, rd = kb[:400], rb[:400]
+    if path in ("/openapi.json", "/swagger.json"):
+        try:
+            kj, rj = legacy_schema_pair(kb, rb, RUST_ONLY_PATHS)
+            same = kj == rj
+            kd, rd = json.dumps(kj, sort_keys=True)[:400], json.dumps(rj, sort_keys=True)[:400]
+        except ValueError as error:
+            failed += 1
+            failures.append((label, "invalid reviewed schema additions", "", str(error)))
+            continue
+    else:
+        try:
+            kj = strip_placeholder(norm(json.loads(kb)))
+            rj = strip_placeholder(norm(json.loads(rb)))
+            same = kj == rj
+            kd, rd = json.dumps(kj, sort_keys=True)[:400], json.dumps(rj, sort_keys=True)[:400]
+        except Exception:
+            same = kb.strip() == rb.strip()
+            kd, rd = kb[:400], rb[:400]
     if same:
         passed += 1
     else:
@@ -672,6 +680,85 @@ def check_schema():
             failures.append((f"GET /api/graphs/app/schema: {label}", "differs", "", json.dumps(one)[:300]))
 
 check_schema()
+
+
+# Dialect selection is a Rust-only additive contract. Exercise each of the six URL
+# parameters and three JSON fields separately, including body-over-URL precedence;
+# the Kotlin comparisons above retain every original request unchanged.
+def check_dialect_selection():
+    global passed, failed
+    unset = object()
+    scopes = [
+        ("/api/graphs/app/cypher", {}),
+        ("/api/cypher", {}),
+        ("/api/cypher/graphs", {"graphs": ["app", "app2"]}),
+    ]
+    extension_query = "RETURN toString([1, 2]) AS value"
+    for path, selection in scopes:
+        defaults = {}
+
+        def check(method, query, url_dialect=None, body_dialect=unset, expected_value=unset,
+                  error_contains=None, same_as_default=False):
+            global passed, failed
+            parameters = {}
+            body = None
+            if method == "GET":
+                parameters.update({"query": query})
+                if selection:
+                    parameters["graphs"] = ",".join(selection["graphs"])
+            else:
+                payload = {**selection, "query": query}
+                if body_dialect is not unset:
+                    payload["dialect"] = body_dialect
+                body = json.dumps(payload)
+            if url_dialect is not None:
+                parameters["dialect"] = url_dialect
+            uri = path + ("?" + urllib.parse.urlencode(parameters) if parameters else "")
+            status, raw = fetch(RUST, method, uri, body)
+            label = f"Rust dialect {method} {uri} {body or ''}"
+            try:
+                result = json.loads(raw)
+                content_type = seen_headers.get((RUST, method, uri), {}).get("content-type")
+                if error_contains is not None:
+                    valid = (status == 400 and isinstance(result.get("error"), str)
+                             and error_contains in result["error"])
+                else:
+                    valid = (status == 200 and result.get("columns") == ["value"]
+                             and len(result.get("rows", [])) == 1
+                             and type(result["rows"][0].get("value")) is type(expected_value)
+                             and result["rows"][0].get("value") == expected_value)
+                    if same_as_default:
+                        valid = valid and result == defaults[method]
+                valid = valid and content_type == "application/json"
+            except (ValueError, TypeError, KeyError, AttributeError):
+                valid = False
+            if valid:
+                passed += 1
+                if url_dialect is None and body_dialect is unset:
+                    defaults[method] = result
+            else:
+                failed += 1
+                failures.append((label, "dialect contract differs", str(status), raw))
+
+        for method in ("GET", "POST"):
+            check(method, extension_query, expected_value="[1, 2]")
+            check(method, extension_query, url_dialect="graphite", expected_value="[1, 2]",
+                  same_as_default=True)
+            check(method, extension_query, url_dialect="opencypher-m23", error_contains="toString")
+            check(method, "RETURN 1 AS value", url_dialect="opencypher-m23", expected_value=1)
+            check(method, extension_query, url_dialect="unknown", error_contains="dialect")
+        check("POST", extension_query, url_dialect="opencypher-m23", body_dialect="graphite",
+              expected_value="[1, 2]", same_as_default=True)
+        check("POST", extension_query, url_dialect="graphite", body_dialect="opencypher-m23",
+              error_contains="toString")
+        check("POST", "RETURN 1 AS value", url_dialect="graphite", body_dialect="opencypher-m23",
+              expected_value=1)
+        for invalid in (None, False, 42, "unknown"):
+            check("POST", extension_query, url_dialect="graphite", body_dialect=invalid,
+                  error_contains="dialect")
+
+
+check_dialect_selection()
 
 # Every method and path the OpenAPI document advertises must be exercised above. The
 # document is the server's public contract, so an endpoint it declares and this suite
