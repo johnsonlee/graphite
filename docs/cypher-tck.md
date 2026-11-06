@@ -87,8 +87,10 @@ protocol is an infrastructure failure, never an expected query error or a pass.
 
 ## Public dialect selection
 
-The default `graphite` dialect preserves container formatting, UNWIND rebinding,
-permissive dynamic indexing and legacy hidden-source ordering after DISTINCT.
+The default `graphite` dialect preserves historical expression, conversion,
+aggregation, projection and error behavior, including container formatting,
+UNWIND rebinding and permissive dynamic indexing. Standard fixes use the explicit
+M23 mode so existing callers can retain their results and error contracts.
 The same production executor offers `opencypher-m23` for standard contracts:
 
 - Rust: `Executor::with_dialect(CypherDialect::OpenCypherM23)`.
@@ -101,13 +103,19 @@ Unknown dialects are rejected. Nested comprehensions and existential subqueries
 inherit the selected dialect. Mode tests and existing persisted-graph tests cover
 both standard behavior and retained default extensions.
 
+Rust clients supplying parsed clauses should select the same dialect with
+`parser::parse_with_dialect` or `parse_cached_with_dialect`. The plain `parse` and
+`parse_cached` utilities parse M23; executor entry points select their own public
+dialect explicitly. Cache keys include the dialect to prevent cross-mode reuse.
+
 ## CI and exact baseline
 
 The `cypher-tck` job downloads and verifies the pinned corpus, tests the Rust
 module, executes the full suite and uploads `report.json` and `report.md`.
 A green gate requires **every scenario to execute and pass**, no infrastructure
 errors, and exact equality with the reviewed scenario hashes and outcome hashes in
-`baseline.json`. Missing, added or changed scenarios and changed outcomes fail.
+`baseline.json`. The pin also records the full scenario count and identity digest;
+missing, duplicate, added or changed scenarios and changed outcomes fail.
 
 Failure and unsupported categories remain visible in reports, but cannot be
 accepted by recording a new baseline. `--record-baseline` refuses to write unless

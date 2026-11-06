@@ -257,7 +257,7 @@ impl Executor {
         // Explicit UNION projections must agree before either branch executes.
         // This is a native compile-time contract, not a renderer-side workaround.
         let mut union_columns: Option<Vec<String>> = None;
-        if segments.len() > 1 {
+        if segments.len() > 1 && self.dialect == crate::CypherDialect::OpenCypherM23 {
             for (segment, _) in &segments {
                 if let Some(Clause::Return {
                     items: Some(items), ..
@@ -527,16 +527,33 @@ impl Executor {
                     where_clause,
                 } => {
                     let order = next_order_by(&clauses[i + 1..]);
+                    let standard = self.dialect == crate::CypherDialect::OpenCypherM23;
                     let (cols, projected) = project_filtered(
                         &ev,
                         rows,
                         items.as_deref(),
                         *distinct,
                         order,
-                        where_clause.as_ref(),
+                        if standard {
+                            where_clause.as_ref()
+                        } else {
+                            None
+                        },
                     )?;
                     columns = cols;
                     rows = projected;
+                    if !standard {
+                        if let Some(predicate) = where_clause {
+                            let mut filtered = Vec::with_capacity(rows.len());
+                            for row in rows {
+                                self.tick()?;
+                                if ev.eval(predicate, &row)?.as_bool() == Some(true) {
+                                    filtered.push(row);
+                                }
+                            }
+                            rows = filtered;
+                        }
+                    }
                 }
                 Clause::Return { distinct, items } => {
                     let order = next_order_by(&clauses[i + 1..]);
@@ -1938,6 +1955,13 @@ fn stash_order_values(
         for (i, item) in order.iter().enumerate() {
             let is_col = matches!(&item.expr, Expr::Variable(v) if columns.iter().any(|c| c == v));
             if !is_col {
+                if ev.context().dialect() == crate::CypherDialect::Graphite {
+                    out.insert(
+                        format!("{ORDER_STASH_PREFIX}{i}"),
+                        ev.eval(&item.expr, pre)?,
+                    );
+                    continue;
+                }
                 let scope = scope.get_or_insert_with(|| {
                     let mut scope = pre.clone();
                     for column in columns {

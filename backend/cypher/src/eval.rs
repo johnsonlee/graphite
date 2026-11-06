@@ -34,11 +34,8 @@ pub fn is_aggregation_name(name: &str) -> bool {
     )
 }
 
-/// Whether an expression contains an aggregation, using Kotlin's exact recursion set.
-///
-/// Note the deliberate gaps: `CASE`, list/map literals, `AND`/`OR`/`NOT`, subscripts
-/// and slices are **not** descended into, so `CASE WHEN .. THEN count(x) END` does
-/// not register as an aggregation.
+/// Whether an M23 expression contains an aggregate anywhere in its expression tree.
+/// Graphite retains its historical recursion through `legacy_contains_aggregation`.
 pub fn contains_aggregation(e: &Expr) -> bool {
     match e {
         Expr::CountStar => true,
