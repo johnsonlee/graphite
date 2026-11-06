@@ -244,3 +244,29 @@ fn graphite_nested_collect_slice_keeps_runtime_aggregation_error() {
     };
     assert!(matches!(values.as_slice(), [Value::Int(1)]));
 }
+
+#[test]
+fn graphite_order_by_aggregate_expression_keeps_runtime_error_and_aliases_work() {
+    let query =
+        "UNWIND ['B','A','B'] AS value RETURN value, count(*) ORDER BY count(*) DESC LIMIT 10";
+    let legacy = Executor::new(vec![], false);
+    assert_eq!(
+        legacy.execute(query, None).unwrap_err().to_string(),
+        "Aggregation function 'count' must be used in RETURN or WITH clause"
+    );
+    let standard = Executor::new(vec![], false).with_dialect(CypherDialect::OpenCypherM23);
+    let result = standard.execute(query, None).unwrap();
+    assert_eq!(result.rows.len(), 2);
+    assert_eq!(result.rows[0]["value"].as_str(), Some("B"));
+    assert!(matches!(result.rows[0]["count(*)"], Value::Int(2)));
+    assert_eq!(result.rows[1]["value"].as_str(), Some("A"));
+    assert!(matches!(result.rows[1]["count(*)"], Value::Int(1)));
+    let result = legacy
+        .execute(
+            "UNWIND ['B','A','B'] AS value RETURN value, count(*) AS count ORDER BY count DESC",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows[0]["value"].as_str(), Some("B"));
+    assert!(matches!(result.rows[0]["count"], Value::Int(2)));
+}

@@ -2196,7 +2196,11 @@ impl AggPlan {
             order
                 .iter()
                 .map(|item| OrderItem {
-                    expr: rewrite_aggs(&item.expr, &mut aggs),
+                    expr: if dialect == crate::CypherDialect::OpenCypherM23 {
+                        rewrite_aggs(&item.expr, &mut aggs)
+                    } else {
+                        item.expr.clone()
+                    },
                     descending: item.descending,
                 })
                 .collect()
