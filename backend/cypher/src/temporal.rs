@@ -1091,11 +1091,18 @@ fn shift_date(date: NaiveDate, months: i64, days: i64) -> CypherResult<NaiveDate
         .ok_or_else(|| error("Calendar day shift out of range"))
 }
 fn shift(value: &Temporal, d: &duration::Duration) -> CypherResult<Temporal> {
+    let date_days = || {
+        let elapsed_days = (i128::from(d.seconds) * 1_000_000_000 + i128::from(d.nanos))
+            / (86_400 * 1_000_000_000i128);
+        d.days
+            .checked_add(elapsed_days as i64)
+            .ok_or_else(|| error("Calendar day shift out of range"))
+    };
     let elapsed = chrono::Duration::try_seconds(d.seconds)
         .and_then(|v| v.checked_add(&chrono::Duration::nanoseconds(i64::from(d.nanos))))
         .ok_or_else(|| error("Temporal arithmetic out of range"))?;
     Ok(match value {
-        Temporal::Date(date) => Temporal::Date(shift_date(*date, d.months, d.days)?),
+        Temporal::Date(date) => Temporal::Date(shift_date(*date, d.months, date_days()?)?),
         Temporal::LocalTime(time) => Temporal::LocalTime(time.overflowing_add_signed(elapsed).0),
         Temporal::Time { time, offset } => Temporal::Time {
             time: time.overflowing_add_signed(elapsed).0,
@@ -1139,7 +1146,7 @@ fn shift(value: &Temporal, d: &duration::Duration) -> CypherResult<Temporal> {
             }
         }
         Temporal::Duration(a) => Temporal::Duration(a.add(d, 1)?),
-        Temporal::ExtendedDate(date) => Temporal::ExtendedDate(date.shift(d.months, d.days)?),
+        Temporal::ExtendedDate(date) => Temporal::ExtendedDate(date.shift(d.months, date_days()?)?),
         Temporal::ExtendedLocalDateTime(date, time) => {
             let shifted = date.shift(d.months, d.days)?;
             let (time, overflow) = time.overflowing_add_signed(elapsed);

@@ -30,12 +30,22 @@ fn bounded(n: f64) -> CypherResult<i64> {
 }
 impl Duration {
     fn from_parts(months: f64, days: f64, seconds: f64, nanos: f64) -> CypherResult<Self> {
+        Self::from_parts_with_rounding(months, days, seconds, nanos, true)
+    }
+    fn from_parts_with_rounding(
+        months: f64,
+        days: f64,
+        seconds: f64,
+        nanos: f64,
+        round_nanos: bool,
+    ) -> CypherResult<Self> {
         let m = bounded(months.trunc())?;
         let days = days + months.fract() * MONTH_DAYS;
         let d = bounded(days.trunc())?;
         let seconds = seconds + days.fract() * 86400.0;
         let s = bounded(seconds.trunc())?;
-        let ns = bounded((nanos + seconds.fract() * 1_000_000_000.0).round())?;
+        let ns = nanos + seconds.fract() * 1_000_000_000.0;
+        let ns = bounded(if round_nanos { ns.round() } else { ns.trunc() })?;
         let s = s
             .checked_add(ns.div_euclid(1_000_000_000))
             .ok_or_else(|| error("Duration seconds out of range"))?;
@@ -118,11 +128,12 @@ impl Duration {
         })
     }
     pub fn scale(&self, scale: f64) -> CypherResult<Self> {
-        Self::from_parts(
+        Self::from_parts_with_rounding(
             self.months as f64 * scale,
             self.days as f64 * scale,
             self.seconds as f64 * scale,
             f64::from(self.nanos) * scale,
+            false,
         )
     }
     pub fn property(&self, key: &str) -> Value {

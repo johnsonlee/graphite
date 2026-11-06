@@ -18,6 +18,33 @@ fn same(query: &str, expected: Value) {
     );
 }
 #[test]
+fn date_arithmetic_uses_complete_elapsed_days_and_duration_scaling_discards_fractional_nanos() {
+    same(
+        "RETURN toString(date('2000-01-01') + duration({hours: 25}))",
+        Value::str("2000-01-02"),
+    );
+    same(
+        "RETURN toString(date('2000-01-01') - duration({hours: 25}))",
+        Value::str("1999-12-31"),
+    );
+    same(
+        "RETURN toString(date('2000-01-01') + duration({seconds: -86400, nanoseconds: 1}))",
+        Value::str("2000-01-01"),
+    );
+    same(
+        "RETURN toString(duration({nanoseconds: 1}) / 2)",
+        Value::str("PT0S"),
+    );
+    same(
+        "RETURN toString(duration({nanoseconds: 3}) / 2)",
+        Value::str("PT0.000000001S"),
+    );
+    same(
+        "RETURN toString(duration({nanoseconds: 1}) * 2)",
+        Value::str("PT0.000000002S"),
+    );
+}
+#[test]
 fn chained_comparisons_compare_adjacent_operands() {
     let clauses = parser::parse("RETURN 1 < 2 <= 3 AS valid").unwrap();
     let Clause::Return {
@@ -287,3 +314,4 @@ fn integer_sum_retains_exact_integer_type_and_promotes_only_floating_inputs() {
     assert_eq!(diagnostic.error_type, "ArithmeticError");
     assert_eq!(diagnostic.detail, "IntegerOverflow");
 }
+
