@@ -158,3 +158,40 @@ fn self_loop_path_orientation_is_recorded_even_when_endpoints_are_equal() {
         );
     }
 }
+
+#[test]
+fn invalid_recursive_or_mixed_properties_are_rejected_transactionally() {
+    let (graph, ex) = session();
+    for query in [
+        "CREATE (a:A) CREATE (:B {recursive:a})",
+        "CREATE (:A {map:{x:1}})",
+        "CREATE (:A {nested:[[1]]})",
+        "CREATE (:A {mixed:[true, 1]})",
+        "CREATE (:A {nulls:[1, null]})",
+    ] {
+        assert!(
+            ex.execute(query, None)
+                .unwrap_err()
+                .to_string()
+                .contains("Property values"),
+            "{query}"
+        );
+        assert!(graph.snapshot().nodes.is_empty(), "{query}");
+        assert!(graph.snapshot().relationships.is_empty(), "{query}");
+    }
+    ex.execute(
+        "CREATE (:A {names:['a','b'], numbers:[1,2], present:true, absent:null})",
+        None,
+    )
+    .unwrap();
+    let snapshot = graph.snapshot();
+    assert_eq!(snapshot.nodes.len(), 1);
+    assert_eq!(
+        snapshot.nodes[0].properties["names"]
+            .as_list()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert!(!snapshot.nodes[0].properties.contains_key("absent"));
+}

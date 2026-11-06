@@ -87,6 +87,9 @@ impl PropertyGraph {
         labels: &[String],
         mut properties: IndexMap<String, Value>,
     ) -> crate::CypherResult<NodeRef> {
+        for value in properties.values() {
+            validate_property(value)?;
+        }
         properties.retain(|_, v| !v.is_null());
         let mut state = self.state.write();
         let id = state.next_node;
@@ -116,6 +119,9 @@ impl PropertyGraph {
         type_name: &str,
         mut properties: IndexMap<String, Value>,
     ) -> crate::CypherResult<EdgeRef> {
+        for value in properties.values() {
+            validate_property(value)?;
+        }
         properties.retain(|_, v| !v.is_null());
         let mut state = self.state.write();
         if !state.nodes.contains_key(&from) || !state.nodes.contains_key(&to) {
@@ -161,6 +167,41 @@ impl Drop for PropertyTransaction<'_> {
         if let Some(state) = self.checkpoint.take() {
             *self.graph.state.write() = state;
         }
+    }
+}
+
+/// Property values never contain graph references or recursively nested containers.
+/// Besides matching property graph semantics, this prevents graph rendering from
+/// recursively following a node property back to the same node.
+pub(crate) fn validate_property(value: &Value) -> crate::CypherResult<()> {
+    let invalid = || {
+        crate::CypherError::runtime("Property values must be primitive values or homogeneous lists")
+    };
+    match value {
+        Value::Map(_) | Value::Node(_) | Value::Rel(_) | Value::Path(_) | Value::Method(_) => {
+            Err(invalid())
+        }
+        Value::List(values) => {
+            let mut family = None;
+            for value in values.iter() {
+                if matches!(value, Value::Null | Value::List(_)) {
+                    return Err(invalid());
+                }
+                validate_property(value)?;
+                let current = match value {
+                    Value::Bool(_) => 1,
+                    Value::Int(_) | Value::Float(_) | Value::Float32(_) => 2,
+                    Value::Str(_) => 3,
+                    _ => 4,
+                };
+                if family.is_some_and(|previous| previous != current) {
+                    return Err(invalid());
+                }
+                family = Some(current);
+            }
+            Ok(())
+        }
+        _ => Ok(()),
     }
 }
 
