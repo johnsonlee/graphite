@@ -135,7 +135,8 @@ Graphite uses a **read-oriented Cypher subset** for querying. The `graphite` bin
 runs the Rust engine in `backend/cypher` for `query`, `serve`, and `mcp`; the Kotlin
 API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. A
 differential harness (`backend/bench`) checks the two implementations against each
-other.
+other. The [official openCypher TCK integration](docs/cypher-tck.md) separately
+records standard scenario passes, failures and adapter coverage gaps.
 
 ## Frontend Support
 

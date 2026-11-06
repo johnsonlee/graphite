@@ -1,0 +1,22 @@
+[package]
+name = "graphite-tck"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+default-run = "graphite-tck"
+
+[dependencies]
+graphite-cypher = { path = "../backend/cypher" }
+indexmap.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+regex.workspace = true
+gherkin = "0.16"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+flate2 = "1"
+tar = "0.4"
+tempfile = "3"
+walkdir = "2"

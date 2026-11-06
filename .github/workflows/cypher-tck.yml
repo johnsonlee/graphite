@@ -1,0 +1,35 @@
+name: Cypher TCK
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '**' ]
+
+permissions:
+  contents: read
+
+jobs:
+  cypher-tck:
+    name: cypher-tck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the Rust TCK runner and production-engine probe
+        run: cargo build --release --locked -p graphite-tck --bins
+      - name: Download and verify the pinned official TCK
+        run: target/release/graphite-tck --prepare-only
+      - name: Test the TCK runner and adapter
+        run: cargo test --locked -p graphite-tck
+      - name: Execute pinned official scenarios and check the reviewed baseline
+        run: target/release/graphite-tck --probe target/release/tck_probe --output tck-results
+      - name: Preserve complete scenario results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cypher-tck-results
+          path: tck-results/
+          if-no-files-found: warn
