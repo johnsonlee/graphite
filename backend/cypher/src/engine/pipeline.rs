@@ -9,7 +9,7 @@ use crate::functions::aggregate;
 use crate::ordering::compare_order_values;
 use crate::parser::parse_cached;
 use crate::render::to_cypher_string;
-use crate::semantics::{to_int_for_skip_limit, value_key, Key};
+use crate::semantics::{value_key, Key};
 use crate::value::Value;
 use crate::{CypherError, CypherResult};
 use graphite_storage::node::TAG_CALL_SITE_NODE;
@@ -1781,7 +1781,19 @@ fn next_order_by(rest: &[Clause]) -> Option<&[OrderItem]> {
 fn eval_count(ev: &Evaluator, expr: &Expr, first: Option<&Row>) -> CypherResult<i64> {
     let empty = Row::new();
     let v = ev.eval(expr, first.unwrap_or(&empty))?;
-    Ok(to_int_for_skip_limit(&v))
+    match v {
+        Value::Int(n) if n >= 0 => Ok(n),
+        Value::Int(_) => Err(CypherError::execution(
+            "SyntaxError",
+            "NegativeIntegerArgument",
+            "SKIP/LIMIT cannot be negative",
+        )),
+        _ => Err(CypherError::execution(
+            "SyntaxError",
+            "InvalidArgumentType",
+            "SKIP/LIMIT requires an integer",
+        )),
+    }
 }
 
 // ---------------------------------------------------------------------------

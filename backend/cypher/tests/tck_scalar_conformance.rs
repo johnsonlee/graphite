@@ -378,3 +378,58 @@ fn order_by_expressions_resolve_projected_aliases_before_shadowed_input_bindings
         vec!["Int(2)", "Int(1)", "Int(1)"]
     );
 }
+
+#[test]
+fn range_is_integer_only_checked_at_boundaries_and_cancellable() {
+    same(
+        "RETURN range(9223372036854775806,9223372036854775807)",
+        Value::list(vec![Value::Int(i64::MAX - 1), Value::Int(i64::MAX)]),
+    );
+    same(
+        "RETURN range(-9223372036854775807,-9223372036854775808,-1)",
+        Value::list(vec![Value::Int(i64::MIN + 1), Value::Int(i64::MIN)]),
+    );
+    for value in ["true", "0.0", "'1'", "[1]", "{}"] {
+        let err = Executor::new(vec![], false)
+            .execute(&format!("RETURN range({value},2)"), None)
+            .unwrap_err();
+        let d = err.diagnostic().unwrap();
+        assert_eq!(
+            (d.error_type, d.phase, d.detail),
+            ("ArgumentError", "runtime", "InvalidArgumentType")
+        );
+    }
+    let err = Executor::new(vec![], false)
+        .execute("RETURN range(0,1,0)", None)
+        .unwrap_err();
+    assert_eq!(err.diagnostic().unwrap().detail, "NumberOutOfRange");
+    let cancel = graphite_cypher::engine::CancelToken::new();
+    cancel.cancel();
+    let ex = Executor::new(vec![], false).with_cancel(cancel);
+    assert!(matches!(
+        graphite_cypher::functions::call("range", &[Value::Int(0), Value::Int(1000)], &ex),
+        Err(graphite_cypher::CypherError::Cancelled)
+    ));
+}
+
+#[test]
+fn skip_limit_parameters_require_nonnegative_integer_values() {
+    for (value, detail) in [
+        (Value::Int(-1), "NegativeIntegerArgument"),
+        (Value::Float(0.0), "InvalidArgumentType"),
+        (Value::str("1"), "InvalidArgumentType"),
+    ] {
+        for clause in ["SKIP", "LIMIT"] {
+            let ex = Executor::new(vec![], false)
+                .with_params(indexmap::IndexMap::from([("n".into(), value.clone())]));
+            let err = ex
+                .execute(&format!("RETURN 1 {clause} $n"), None)
+                .unwrap_err();
+            let d = err.diagnostic().unwrap();
+            assert_eq!(
+                (d.error_type, d.phase, d.detail),
+                ("SyntaxError", "runtime", detail)
+            );
+        }
+    }
+}

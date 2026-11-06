@@ -341,30 +341,33 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             None => Value::Null,
         },
         "range" => {
-            let start = as_number(arg(args, 0)?)? as i64;
-            let end = as_number(arg(args, 1)?)? as i64;
-            let step = if args.len() > 2 {
-                as_number(arg(args, 2)?)? as i64
-            } else {
-                1
+            let integer = |index| match arg(args, index)? {
+                Value::Int(value) => Ok(*value),
+                _ => Err(CypherError::execution(
+                    "ArgumentError",
+                    "InvalidArgumentType",
+                    "range() arguments must be integers",
+                )),
             };
+            let start = integer(0)?;
+            let end = integer(1)?;
+            let step = if args.len() > 2 { integer(2)? } else { 1 };
             if step == 0 {
-                return Err(CypherError::Runtime(
-                    "Step cannot be zero in range()".into(),
+                return Err(CypherError::execution(
+                    "ArgumentError",
+                    "NumberOutOfRange",
+                    "Step cannot be zero in range()",
                 ));
             }
             let mut out = Vec::new();
             let mut i = start;
-            if step > 0 {
-                while i <= end {
-                    out.push(Value::Int(i));
-                    i += step;
-                }
-            } else {
-                while i >= end {
-                    out.push(Value::Int(i));
-                    i += step;
-                }
+            while if step > 0 { i <= end } else { i >= end } {
+                ctx.check_cancelled()?;
+                out.push(Value::Int(i));
+                let Some(next) = i.checked_add(step) else {
+                    break;
+                };
+                i = next;
             }
             Value::list(out)
         }
