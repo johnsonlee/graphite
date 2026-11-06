@@ -499,15 +499,16 @@ impl Parser<'_> {
                     .map(char::len_utf8)
                     .sum::<usize>()
         };
-        let source_text = if matches!(expr, Expr::Variable(_)) {
-            None
-        } else {
-            Some(self.source[byte_offset(first)..byte_offset(last) + last.text.len()].to_owned())
-        };
+        let source_span = byte_offset(first)..byte_offset(last) + last.text.len();
         let alias = if self.eat_kw(K::As) {
             Some(self.variable()?)
         } else {
             None
+        };
+        let source_text = if alias.is_some() || matches!(expr, Expr::Variable(_)) {
+            None
+        } else {
+            Some(self.source[source_span].to_owned())
         };
         Ok(ReturnItem {
             expr,

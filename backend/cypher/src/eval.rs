@@ -232,6 +232,7 @@ impl<'a> Evaluator<'a> {
                     Value::Null => Ok(Value::Null),
                     Value::Node(node) => {
                         let matches = if let Some(graph) = self.ctx.property_graph() {
+                            graph.ensure_live_entity(&Value::Node(node))?;
                             graph.node(node.id).is_some_and(|node| {
                                 labels.iter().all(|label| node.labels.contains(label))
                             })

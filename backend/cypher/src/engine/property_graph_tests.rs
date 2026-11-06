@@ -463,6 +463,7 @@ fn deleted_node_and_relationship_reads_have_native_diagnostics_with_no_side_effe
     for (setup, query) in [
         ("CREATE (:A {num:1})", "MATCH(n) DELETE n RETURN n.num"),
         ("CREATE (:A {num:1})", "MATCH(n) DELETE n RETURN labels(n)"),
+        ("CREATE (:A {num:1})", "MATCH(n) DELETE n RETURN n:A"),
         (
             "CREATE ()-[:T {num:1}]->()",
             "MATCH()-[r]->() DELETE r RETURN r.num",
