@@ -73,7 +73,9 @@ pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
                         .to_owned(),
                 )
             }
-            "the result should be, in any order:" | "the result should be, in order:" => {
+            "the result should be, in any order:"
+            | "the result should be, in order:"
+            | "the result should be (ignoring element order for lists):" => {
                 let rows = table(step)?;
                 let columns = rows.first().ok_or("result table missing header")?;
                 let rows = rows
@@ -86,14 +88,24 @@ pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
                     })
                     .collect::<Result<Vec<_>, String>>()?;
                 expected = Some(json!({"columns":columns,"rows":rows}));
+                if text == "the result should be (ignoring element order for lists):" {
+                    expected.as_mut().unwrap()["ignoreListOrder"] = json!(true);
+                }
                 ordered = text.ends_with("in order:");
             }
             "the result should be empty" => expected = Some(json!({"empty":true})),
             "no side effects" => side_effects = true,
+            _ if expected_error(text).is_some() => {
+                expected = Some(json!({"error": expected_error(text).unwrap()}))
+            }
             _ => return Err(format!("step adapter missing: {text}")),
         }
     }
-    if !graph || query.is_none() || expected.is_none() || !side_effects {
+    if !graph
+        || query.is_none()
+        || expected.is_none()
+        || (!side_effects && expected.as_ref().unwrap()["error"].is_null())
+    {
         return Err(
             "scenario lacks supported graph/query/result/no-side-effects contract".to_owned(),
         );
@@ -104,6 +116,36 @@ pub fn prepare(scenario: &Value) -> Result<Prepared, String> {
         expected: expected.unwrap(),
         ordered,
     })
+}
+
+fn expected_error(text: &str) -> Option<Value> {
+    let rest = text.strip_prefix("a ")?;
+    let (error_type, rest) = rest.split_once(" should be raised at ")?;
+    let (phase, detail) = rest.split_once(": ")?;
+    if !matches!(phase, "compile time" | "runtime" | "any time")
+        || error_type.is_empty()
+        || detail.is_empty()
+    {
+        return None;
+    }
+    Some(json!({"type": error_type, "phase": phase, "detail": detail}))
+}
+
+fn normalize_lists(value: &Value) -> Value {
+    match value {
+        Value::Array(values) => {
+            let mut values: Vec<_> = values.iter().map(normalize_lists).collect();
+            values.sort_by_key(crate::canonical);
+            Value::Array(values)
+        }
+        Value::Object(values) => Value::Object(
+            values
+                .iter()
+                .map(|(k, v)| (k.clone(), normalize_lists(v)))
+                .collect(),
+        ),
+        _ => value.clone(),
+    }
 }
 
 fn multiset(rows: &[Value]) -> BTreeMap<String, usize> {
@@ -121,6 +163,26 @@ pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String
             display(&actual["adapterError"])
         ));
     }
+    if !expected["error"].is_null() {
+        if actual["error"].is_null() {
+            return Some("expected an engine error, query succeeded".into());
+        }
+        let observed = &actual["diagnostic"];
+        if !observed.is_object() {
+            return Some("engine error lacks a structured diagnostic".into());
+        }
+        let wanted = &expected["error"];
+        let phase_matches = wanted["phase"] == observed["phase"]
+            || (wanted["phase"] == "any time"
+                && matches!(observed["phase"].as_str(), Some("compile time" | "runtime")));
+        let detail_matches = wanted["detail"] == observed["detail"]
+            || (wanted["detail"] == "*" && observed["detail"].is_string());
+        return if wanted["type"] == observed["type"] && phase_matches && detail_matches {
+            None
+        } else {
+            Some("structured error type/phase/detail mismatch".into())
+        };
+    }
     if !actual["error"].is_null() {
         return Some(format!("engine error: {}", display(&actual["error"])));
     }
@@ -137,6 +199,15 @@ pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String
     if actual["columns"] != expected["columns"] {
         return Some("column names/order mismatch".to_owned());
     }
+    let normalized_actual;
+    let normalized_expected;
+    let (actual, expected) = if expected["ignoreListOrder"] == true {
+        normalized_actual = json!({"rows": actual["rows"].as_array().unwrap().iter().map(|row| Value::Array(row.as_array().unwrap().iter().map(normalize_lists).collect())).collect::<Vec<_>>()});
+        normalized_expected = json!({"rows": expected["rows"].as_array().unwrap().iter().map(|row| Value::Array(row.as_array().unwrap().iter().map(normalize_lists).collect())).collect::<Vec<_>>()});
+        (&normalized_actual, &normalized_expected)
+    } else {
+        (actual, expected)
+    };
     let equal = if ordered {
         crate::canonical(&actual["rows"]) == crate::canonical(&expected["rows"])
     } else {
@@ -378,6 +449,71 @@ pub fn baseline_changes(expected: &Value, actual: &Value) -> Vec<Value> {
 mod tests {
     use super::*;
     #[test]
+    fn expected_errors_require_native_type_phase_and_detail() {
+        let expected = json!({"error":{"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"}});
+        let actual = json!({"columns":[],"rows":[],"error":"bad grammar","diagnostic":{"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"}});
+        assert_eq!(compare(&actual, &expected, false), None);
+        for (key, value) in [
+            ("type", "TypeError"),
+            ("phase", "runtime"),
+            ("detail", "UndefinedVariable"),
+        ] {
+            let mut wrong = actual.clone();
+            wrong["diagnostic"][key] = json!(value);
+            assert!(compare(&wrong, &expected, false).is_some());
+        }
+        assert!(compare(
+            &json!({"columns":[],"rows":[],"error":"bad grammar"}),
+            &expected,
+            false
+        )
+        .is_some());
+        assert!(compare(
+            &json!({"columns":[],"rows":[],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+    }
+
+    #[test]
+    fn native_error_scenarios_do_not_require_a_success_result_or_no_side_effects_step() {
+        let scenario = json!({"steps":[{"text":"an empty graph"},{"text":"executing query:","argument":{"docString":{"content":"RETURN ("}}},{"text":"a SyntaxError should be raised at compile time: UnexpectedSyntax"}]});
+        let prepared = prepare(&scenario).unwrap();
+        assert_eq!(prepared.query, "RETURN (");
+        assert_eq!(
+            prepared.expected["error"],
+            json!({"type":"SyntaxError","phase":"compile time","detail":"UnexpectedSyntax"})
+        );
+    }
+
+    #[test]
+    fn list_order_ignoring_is_explicit_recursive_and_preserves_multiplicity() {
+        let expected = json!({"columns":["v"],"rows":[[[1,2,2]]],"ignoreListOrder":true});
+        assert_eq!(
+            compare(
+                &json!({"columns":["v"],"rows":[[[2,1,2]]],"error":null}),
+                &expected,
+                false
+            ),
+            None
+        );
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[1,2]]],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+        let strict = json!({"columns":["v"],"rows":[[[1,2,2]]]});
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[2,1,2]]],"error":null}),
+            &strict,
+            false
+        )
+        .is_some());
+    }
+
+    #[test]
     fn unordered_comparison_preserves_multiplicity_and_types() {
         let expected = json!({"columns":["v"],"rows":[[null],[1],[1]]});
         assert_eq!(
@@ -423,14 +559,9 @@ mod tests {
             false
         )
         .is_some());
-        for text in [
-            "having executed:",
-            "a SyntaxError should be raised at compile time: InvalidSyntax",
-        ] {
-            assert!(prepare(&json!({"steps":[{"text":text}]}))
-                .unwrap_err()
-                .contains("step adapter missing"));
-        }
+        assert!(prepare(&json!({"steps":[{"text":"having executed:"}]}))
+            .unwrap_err()
+            .contains("step adapter missing"));
     }
     #[test]
     fn baseline_rejects_removal_new_pass_and_changed_failure() {

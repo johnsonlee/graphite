@@ -61,7 +61,7 @@ fn value_to_json(value: &Value) -> Result<Json, String> {
 
 fn error_kind(error: &CypherError) -> &'static str {
     match error {
-        CypherError::Parse { .. } => "parse",
+        CypherError::Parse { .. } | CypherError::Syntax { .. } => "parse",
         CypherError::Runtime(_) => "runtime",
         CypherError::Aggregation(_) => "aggregation",
         CypherError::NotImplemented(_) => "not_implemented",
@@ -102,9 +102,13 @@ fn execute(request: &Json) -> Result<Json, String> {
                 .collect::<Result<Vec<_>, String>>()?;
             Ok(json!({"columns":result.columns,"rows":rows,"error":null}))
         }
-        Err(error) => Ok(
-            json!({"columns":[],"rows":[],"error":error.to_string(),"errorKind":error_kind(&error)}),
-        ),
+        Err(error) => {
+            let mut result = json!({"columns":[],"rows":[],"error":error.to_string(),"errorKind":error_kind(&error)});
+            if let Some(diagnostic) = error.diagnostic() {
+                result["diagnostic"] = json!({"type":diagnostic.error_type,"phase":diagnostic.phase,"detail":diagnostic.detail});
+            }
+            Ok(result)
+        }
     }
 }
 

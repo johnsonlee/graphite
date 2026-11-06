@@ -302,9 +302,10 @@ impl Lexer {
 
     fn error(&self, start: usize, col: usize) -> CypherError {
         let text: String = self.chars[start..self.i].iter().collect();
-        CypherError::Parse {
+        CypherError::Syntax {
             position: col,
             message: format!("token recognition error at: '{text}'"),
+            detail: "UnexpectedSyntax",
         }
     }
 
@@ -565,7 +566,9 @@ mod tests {
 
     fn err(text: &str) -> (usize, String) {
         match tokenize(text) {
-            Err(CypherError::Parse { position, message }) => (position, message),
+            Err(CypherError::Syntax {
+                position, message, ..
+            }) => (position, message),
             other => panic!("expected lexer error, got {other:?}"),
         }
     }

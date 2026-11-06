@@ -150,9 +150,10 @@ impl Parser {
     }
 
     fn err<S: Into<String>>(&self, msg: S) -> CypherError {
-        CypherError::Parse {
+        CypherError::Syntax {
             position: self.peek().col,
             message: msg.into(),
+            detail: "UnexpectedSyntax",
         }
     }
 
