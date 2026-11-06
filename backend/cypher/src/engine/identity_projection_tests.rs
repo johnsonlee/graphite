@@ -7,6 +7,7 @@ use std::sync::atomic::Ordering as AtomicOrdering;
 
 fn item(name: &str) -> ReturnItem {
     ReturnItem {
+        source_text: None,
         expr: Expr::Variable(name.into()),
         alias: None,
     }
@@ -152,6 +153,7 @@ fn identity_projection_checks_actual_columns_for_quoted_unicode_and_empty_rows()
         assert_eq!(columns, [name]);
         assert!(matches!(actual[0][name], Value::Int(23)));
         let aliased = [ReturnItem {
+            source_text: None,
             expr: Expr::Variable(name.into()),
             alias: Some(name.into()),
         }];
@@ -198,6 +200,7 @@ fn identity_projection_falls_back_for_missing_extra_reordered_and_renamed_keys()
     assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
     assert!(matches!(actual[1]["c"], Value::Null));
     let renamed = [ReturnItem {
+        source_text: None,
         expr: Expr::Variable("c".into()),
         alias: Some("renamed".into()),
     }];
@@ -349,6 +352,7 @@ fn real_identity_projection_matches_generic_rows_provenance_probe_and_scan_work(
     assert_eq!(
         items,
         &[ReturnItem {
+            source_text: None,
             expr: Expr::Property {
                 expr: Box::new(Expr::Variable("n".into())),
                 key: "callee_class".into()

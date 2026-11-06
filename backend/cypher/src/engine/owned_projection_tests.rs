@@ -27,6 +27,7 @@ fn owned_projection_preserves_preprojection_order_keys_and_distinct_metadata() {
         })
         .collect();
     let items = [ReturnItem {
+        source_text: None,
         expr: property("text"),
         // Deliberately shadow the pre-projection map used by ORDER BY.
         alias: Some("c".into()),
@@ -105,6 +106,7 @@ fn owned_projection_keeps_late_expression_and_order_errors_and_drops_all_values(
             })
             .collect();
         let mut items = vec![ReturnItem {
+            source_text: None,
             expr: Expr::Variable("payload".into()),
             alias: Some("retained".into()),
         }];
@@ -114,6 +116,7 @@ fn owned_projection_keeps_late_expression_and_order_errors_and_drops_all_values(
         }];
         if !error_in_order {
             items.push(ReturnItem {
+                source_text: None,
                 expr: late_error.clone(),
                 alias: Some("checked".into()),
             });

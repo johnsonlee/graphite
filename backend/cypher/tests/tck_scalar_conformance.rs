@@ -194,3 +194,31 @@ fn union_column_contract_is_checked_before_graph_mutation() {
     assert_eq!(format!("{:?}", result.rows[0]["a"]), "Int(1)");
     assert_eq!(format!("{:?}", result.rows[1]["a"]), "Int(2)");
 }
+
+#[test]
+fn result_headers_preserve_original_expression_spelling_and_unicode_offsets() {
+    let query = "WITH '中文' AS text\nRETURN (12 / 4) * (3 - 2 * 4), text";
+    let clauses = parser::parse(query).unwrap();
+    let Clause::Return {
+        items: Some(items), ..
+    } = clauses.last().unwrap()
+    else {
+        panic!("RETURN")
+    };
+    assert_eq!(
+        items[0].source_text.as_deref(),
+        Some("(12 / 4) * (3 - 2 * 4)")
+    );
+    assert_eq!(items[1].source_text, None);
+    let result = Executor::new(vec![], false).execute(query, None).unwrap();
+    assert_eq!(result.columns, vec!["(12 / 4) * (3 - 2 * 4)", "text"]);
+    assert_eq!(
+        format!("{:?}", result.rows[0]["(12 / 4) * (3 - 2 * 4)"]),
+        "Int(-15)"
+    );
+    assert_eq!(format!("{:?}", result.rows[0]["text"]), "Str(\"中文\")");
+    let result = Executor::new(vec![], false)
+        .execute("WITH 1 AS `x` RETURN `x`", None)
+        .unwrap();
+    assert_eq!(result.columns, vec!["x"]);
+}

@@ -3,8 +3,8 @@
 pub mod ast;
 pub mod context;
 pub mod error;
-pub mod temporal;
 pub mod property_graph;
+pub mod temporal;
 pub mod value;
 
 pub use semantics::{java_double_to_string, java_float_to_string};

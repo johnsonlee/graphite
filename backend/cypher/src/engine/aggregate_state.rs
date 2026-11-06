@@ -406,6 +406,7 @@ mod tests {
                 })
                 .collect();
             let item = ReturnItem {
+                source_text: None,
                 alias: Some("result".into()),
                 expr: Expr::FunctionCall {
                     name: name.into(),

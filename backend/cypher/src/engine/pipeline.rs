@@ -1825,14 +1825,7 @@ fn simple_property_keys(items: &[ReturnItem], variable: &str) -> Option<Vec<Stri
 /// it does not depend on the row -- doing it inside the row loop cost a `LIMIT 200`
 /// query a thousand redundant renderings.
 pub(super) fn item_names(items: &[ReturnItem]) -> Vec<String> {
-    items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect()
+    items.iter().map(|it| it.column_name()).collect()
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -2251,14 +2244,7 @@ fn finalize_groups(
     items: &[ReturnItem],
     groups: IndexMap<Vec<Key>, GroupAcc>,
 ) -> CypherResult<Vec<Row>> {
-    let columns: Vec<String> = items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect();
+    let columns: Vec<String> = items.iter().map(|it| it.column_name()).collect();
     let mut out = Vec::with_capacity(groups.len());
     let compute = |acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
@@ -2350,6 +2336,7 @@ fn project(
                     r.keys()
                         .filter(|k| !is_internal_key(k))
                         .map(|k| ReturnItem {
+                            source_text: None,
                             expr: Expr::Variable(k.clone()),
                             alias: None,
                         })
@@ -2364,14 +2351,7 @@ fn project(
         Some(i) => Some(i),
     };
     let items = items.unwrap();
-    let columns: Vec<String> = items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect();
+    let columns: Vec<String> = items.iter().map(|it| it.column_name()).collect();
     if explicit_items
         && !distinct
         && order.is_none()

@@ -173,6 +173,16 @@ impl Pattern {
 pub struct ReturnItem {
     pub expr: Expr,
     pub alias: Option<String>,
+    /// Original expression spelling for unaliased result headers.
+    pub source_text: Option<String>,
+}
+impl ReturnItem {
+    pub fn column_name(&self) -> String {
+        self.alias
+            .clone()
+            .or_else(|| self.source_text.clone())
+            .unwrap_or_else(|| crate::render::to_cypher_string(&self.expr))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

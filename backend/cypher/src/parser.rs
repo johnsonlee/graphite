@@ -45,7 +45,11 @@ fn parse_single(text: &str) -> CypherResult<Vec<Clause>> {
         return Ok(Vec::new());
     }
     let tokens = tokenize(text)?;
-    let mut p = Parser { toks: tokens, i: 0 };
+    let mut p = Parser {
+        toks: tokens,
+        i: 0,
+        source: text,
+    };
     let clauses = p.script()?;
     Ok(clauses)
 }
@@ -97,12 +101,13 @@ pub fn parse_cached(text: &str) -> CypherResult<Arc<Vec<Clause>>> {
 // Parser
 // ---------------------------------------------------------------------------
 
-struct Parser {
+struct Parser<'a> {
+    source: &'a str,
     toks: Vec<Token>,
     i: usize,
 }
 
-impl Parser {
+impl Parser<'_> {
     #[inline]
     fn peek(&self) -> &Token {
         &self.toks[self.i.min(self.toks.len() - 1)]
@@ -420,13 +425,39 @@ impl Parser {
     }
 
     fn return_item(&mut self) -> CypherResult<ReturnItem> {
+        let start = self.i;
         let expr = self.expression()?;
+        let last = &self.toks[self.i - 1];
+        let first = &self.toks[start];
+        let byte_offset = |token: &Token| -> usize {
+            let line_start = self
+                .source
+                .split_inclusive('\n')
+                .take(token.line - 1)
+                .map(str::len)
+                .sum::<usize>();
+            line_start
+                + self.source[line_start..]
+                    .chars()
+                    .take(token.col)
+                    .map(char::len_utf8)
+                    .sum::<usize>()
+        };
+        let source_text = if matches!(expr, Expr::Variable(_)) {
+            None
+        } else {
+            Some(self.source[byte_offset(first)..byte_offset(last) + last.text.len()].to_owned())
+        };
         let alias = if self.eat_kw(K::As) {
             Some(self.variable()?)
         } else {
             None
         };
-        Ok(ReturnItem { expr, alias })
+        Ok(ReturnItem {
+            expr,
+            alias,
+            source_text,
+        })
     }
 
     fn set_items(&mut self) -> CypherResult<Vec<SetItem>> {
