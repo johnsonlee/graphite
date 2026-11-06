@@ -223,6 +223,9 @@ impl<'a> Evaluator<'a> {
             Expr::Parameter(name) => Ok(self.params.get(name).cloned().unwrap_or(Value::Null)),
             Expr::Property { expr, key } => {
                 let base = self.eval(expr, row)?;
+                if let Some(graph) = self.ctx.property_graph() {
+                    graph.ensure_live_entity(&base)?;
+                }
                 Ok(self.property(&base, key))
             }
             Expr::CountStar => Err(CypherError::Aggregation("count".into())),
@@ -384,6 +387,9 @@ impl<'a> Evaluator<'a> {
             } => self.predicate_function(name, variable, list, predicate.as_deref(), row),
             Expr::Subscript { expr, index } => {
                 let base = self.eval(expr, row)?;
+                if let Some(graph) = self.ctx.property_graph() {
+                    graph.ensure_live_entity(&base)?;
+                }
                 let idx = self.eval(index, row)?;
                 self.subscript(&base, &idx)
             }
@@ -422,6 +428,9 @@ impl<'a> Evaluator<'a> {
     fn eval_is_null(&self, expr: &Expr, row: &Row) -> CypherResult<bool> {
         if let Expr::Property { expr, key } = expr {
             let base = self.eval(expr, row)?;
+            if let Some(graph) = self.ctx.property_graph() {
+                graph.ensure_live_entity(&base)?;
+            }
             return Ok(match base {
                 Value::Node(node) => self.ctx.node_property_is_null(node, key),
                 Value::Method(method) => self.ctx.method_property_is_null(method, key),

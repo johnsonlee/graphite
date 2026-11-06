@@ -22,11 +22,35 @@ pub struct EdgeRef {
 }
 
 /// Identity and traversal orientation of relationships in a property-store path.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone)]
 pub struct PropertyPathData {
     pub relationship_ids: Vec<std::num::NonZeroU32>,
     /// +1 follows the stored relationship, -1 traverses it backwards.
     pub directions: Vec<i8>,
+}
+
+// Traversal directions are rendering evidence, not path identity. In particular
+// traversing the same self-loop backwards does not create a different path.
+impl PartialEq for PropertyPathData {
+    fn eq(&self, other: &Self) -> bool {
+        self.relationship_ids == other.relationship_ids
+    }
+}
+impl Eq for PropertyPathData {}
+impl std::hash::Hash for PropertyPathData {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.relationship_ids.hash(state);
+    }
+}
+impl PartialOrd for PropertyPathData {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for PropertyPathData {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.relationship_ids.cmp(&other.relationship_ids)
+    }
 }
 
 /// A virtual `Method` node backed by metadata.

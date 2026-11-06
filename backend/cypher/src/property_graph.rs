@@ -48,6 +48,7 @@ pub struct PropertySnapshot {
 pub(crate) struct State {
     nodes: IndexMap<NodeId, PropertyNode>,
     relationships: IndexMap<u64, PropertyRelationship>,
+    deleted_relationship_types: IndexMap<u64, String>,
     next_node: NodeId,
     next_relationship: u64,
 }
@@ -72,6 +73,39 @@ impl PropertyGraph {
     }
     pub fn relationship(&self, id: u64) -> Option<PropertyRelationship> {
         self.state.read().relationships.get(&id).cloned()
+    }
+    /// Relationship type is identity metadata and remains available after DELETE;
+    /// deleted property payloads are never retained or exposed as live data.
+    pub fn relationship_type(&self, id: u64) -> Option<String> {
+        let state = self.state.read();
+        state
+            .relationships
+            .get(&id)
+            .map(|r| r.type_name.clone())
+            .or_else(|| state.deleted_relationship_types.get(&id).cloned())
+    }
+
+    pub fn ensure_live_entity(&self, value: &Value) -> crate::CypherResult<()> {
+        let state = self.state.read();
+        let live = match value {
+            Value::Node(node) => node.source == 0 && state.nodes.contains_key(&node.id),
+            Value::Rel(rel) => {
+                rel.source == 0
+                    && rel
+                        .property_id
+                        .is_some_and(|id| state.relationships.contains_key(&u64::from(id.get())))
+            }
+            _ => true,
+        };
+        if live {
+            Ok(())
+        } else {
+            Err(crate::CypherError::execution(
+                "EntityNotFound",
+                "DeletedEntityAccess",
+                "Graph entity has been deleted or belongs to another graph",
+            ))
+        }
     }
     pub(crate) fn begin_transaction(&self) -> PropertyTransaction<'_> {
         let guard = self.transaction.lock();
@@ -218,7 +252,11 @@ impl PropertyGraph {
             }
         }
         for id in relationships {
-            state.relationships.shift_remove(&id);
+            if let Some(relationship) = state.relationships.shift_remove(&id) {
+                state
+                    .deleted_relationship_types
+                    .insert(id, relationship.type_name);
+            }
         }
         for id in nodes {
             state.nodes.shift_remove(&id);

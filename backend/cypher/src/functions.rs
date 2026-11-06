@@ -43,6 +43,11 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         return result;
     }
     let lower = name.to_ascii_lowercase();
+    if matches!(lower.as_str(), "properties" | "keys" | "labels") {
+        if let (Some(graph), Some(value)) = (ctx.property_graph(), args.first()) {
+            graph.ensure_live_entity(value)?;
+        }
+    }
     Ok(match lower.as_str() {
         // -- identity ------------------------------------------------------
         "id" => match arg(args, 0)? {
@@ -191,8 +196,8 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         "type" => match arg(args, 0)? {
             Value::Rel(r) if r.property_id.is_some() => ctx
                 .property_graph()
-                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
-                .map(|r| Value::str(r.type_name))
+                .and_then(|g| g.relationship_type(u64::from(r.property_id.unwrap().get())))
+                .map(Value::str)
                 .unwrap_or(Value::Null),
             Value::Rel(r) => Value::str(ctx.rel_type(*r)),
             _ => Value::Null,

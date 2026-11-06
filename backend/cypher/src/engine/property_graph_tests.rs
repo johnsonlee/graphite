@@ -384,3 +384,117 @@ fn property_failures_emit_native_runtime_diagnostics_and_rollback() {
         assert!(graph.snapshot().relationships.is_empty());
     }
 }
+
+#[test]
+fn relationship_direction_is_rendering_metadata_not_path_identity() {
+    let (_, ex) = session();
+    ex.execute("CREATE (a:A)-[:R]->(a)", None).unwrap();
+    let result = ex
+        .execute(
+            "MATCH p1=(:A)-->() MATCH p2=(:A)<--() RETURN p1=p2 AS same, p1,p2",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows.len(), 1);
+    assert!(matches!(result.rows[0]["same"], Value::Bool(true)));
+    let p1 = &result.rows[0]["p1"];
+    let p2 = &result.rows[0]["p2"];
+    assert_eq!(value_key(p1), value_key(p2));
+    assert_eq!(
+        crate::ordering::compare_order_values(p1, p2),
+        std::cmp::Ordering::Equal
+    );
+    let (Value::Path(p1), Value::Path(p2)) = (p1, p2) else {
+        panic!("paths")
+    };
+    assert_ne!(
+        p1.property_path.as_ref().unwrap().directions,
+        p2.property_path.as_ref().unwrap().directions
+    );
+}
+
+#[test]
+fn deleted_relationship_type_metadata_survives_without_resurrecting_properties() {
+    let (graph, ex) = session();
+    ex.execute("CREATE ()-[:T {secret:42}]->()", None).unwrap();
+    let id = graph.snapshot().relationships[0].id;
+    let result = ex
+        .execute("MATCH ()-[r]->() DELETE r RETURN type(r) AS t", None)
+        .unwrap();
+    assert_eq!(result.rows.len(), 1);
+    assert_eq!(result.rows[0]["t"].as_str(), Some("T"));
+    assert!(graph.relationship(id).is_none());
+    assert!(graph.snapshot().relationships.is_empty());
+    assert_eq!(graph.relationship_type(id).as_deref(), Some("T"));
+}
+
+#[test]
+fn deleted_entity_property_reads_fail_and_rollback_instead_of_exposing_tombstones() {
+    let (graph, ex) = session();
+    ex.execute("CREATE ()-[:T {secret:42}]->()", None).unwrap();
+    for expression in [
+        "r.secret",
+        "r['secret']",
+        "r.secret IS NULL",
+        "properties(r)",
+        "keys(r)",
+    ] {
+        let error = ex
+            .execute(
+                &format!("MATCH ()-[r]->() DELETE r RETURN {expression}"),
+                None,
+            )
+            .unwrap_err();
+        assert!(error.to_string().contains("deleted"), "{expression}");
+        assert_eq!(
+            graph.snapshot().relationships.len(),
+            1,
+            "failed transaction rolls back"
+        );
+        assert!(matches!(
+            graph.snapshot().relationships[0].properties["secret"],
+            Value::Int(42)
+        ));
+    }
+}
+
+#[test]
+fn deleted_node_and_relationship_reads_have_native_diagnostics_with_no_side_effects() {
+    for (setup, query) in [
+        ("CREATE (:A {num:1})", "MATCH(n) DELETE n RETURN n.num"),
+        ("CREATE (:A {num:1})", "MATCH(n) DELETE n RETURN labels(n)"),
+        (
+            "CREATE ()-[:T {num:1}]->()",
+            "MATCH()-[r]->() DELETE r RETURN r.num",
+        ),
+    ] {
+        let (graph, ex) = session();
+        ex.execute(setup, None).unwrap();
+        let before = graph.snapshot();
+        let error = ex.execute(query, None).unwrap_err();
+        assert_eq!(
+            error.diagnostic(),
+            Some(crate::error::CypherDiagnostic {
+                error_type: "EntityNotFound",
+                phase: "runtime",
+                detail: "DeletedEntityAccess"
+            }),
+            "{query}"
+        );
+        let after = graph.snapshot();
+        assert_eq!(after.nodes.len(), before.nodes.len());
+        assert_eq!(after.relationships.len(), before.relationships.len());
+        assert_eq!(
+            after
+                .nodes
+                .iter()
+                .map(|n| value_key(&Value::map(n.properties.clone())))
+                .collect::<Vec<_>>(),
+            before
+                .nodes
+                .iter()
+                .map(|n| value_key(&Value::map(n.properties.clone())))
+                .collect::<Vec<_>>()
+        );
+    }
+}
