@@ -204,15 +204,22 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                 }
             }
             Value::Method(_) => Value::list(vec![Value::str("Method")]),
+            _ if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                return Err(invalid_conversion(name))
+            }
             _ => Value::list(vec![]),
         },
         "type" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             Value::Rel(r) if r.property_id.is_some() => ctx
                 .property_graph()
                 .and_then(|g| g.relationship_type(u64::from(r.property_id.unwrap().get())))
                 .map(Value::str)
                 .unwrap_or(Value::Null),
             Value::Rel(r) => Value::str(ctx.rel_type(*r)),
+            _ if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                return Err(invalid_conversion(name))
+            }
             _ => Value::Null,
         },
         "startnode" | "endnode" => match arg(args, 0)? {

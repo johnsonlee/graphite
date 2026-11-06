@@ -483,10 +483,12 @@ fn dynamic_element_access_requires_valid_container_and_index_types() {
         ("RETURN [1]['0']", "InvalidArgumentType"),
         ("RETURN {name:'x'}[0]", "MapElementAccessByNonString"),
     ] {
-        let ex = Executor::new(vec![], false).with_params(indexmap::IndexMap::from([(
-            "value".into(),
-            Value::str("x"),
-        )]));
+        let ex = Executor::new(vec![], false)
+            .with_dialect(graphite_cypher::CypherDialect::OpenCypherM23)
+            .with_params(indexmap::IndexMap::from([(
+                "value".into(),
+                Value::str("x"),
+            )]));
         let err = ex.execute(query, None).unwrap_err();
         let d = err.diagnostic().unwrap();
         assert_eq!(

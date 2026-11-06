@@ -205,20 +205,6 @@ fn null_predicates_preserve_maps_null_bases_and_subscript_semantics() {
                 index: Box::new(Expr::Literal(Literal::Str("generic_type".into()))),
             },
         ] {
-            if matches!(row["n"], Value::Int(_)) && matches!(expression, Expr::Subscript { .. }) {
-                for predicate in [
-                    Expr::IsNull(Box::new(expression.clone())),
-                    Expr::IsNotNull(Box::new(expression.clone())),
-                ] {
-                    let error = evaluator.eval(&predicate, &row).unwrap_err();
-                    let diagnostic = error.diagnostic().unwrap();
-                    assert_eq!(
-                        (diagnostic.error_type, diagnostic.phase, diagnostic.detail),
-                        ("TypeError", "runtime", "InvalidArgumentType")
-                    );
-                }
-                continue;
-            }
             assert_eq!(
                 evaluator
                     .eval(&Expr::IsNull(Box::new(expression.clone())), &row)

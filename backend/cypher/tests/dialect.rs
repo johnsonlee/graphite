@@ -108,3 +108,24 @@ fn graphite_dynamic_indexing_extensions_remain_available() {
         assert_eq!(error.diagnostic().unwrap().error_type, "TypeError");
     }
 }
+
+#[test]
+fn graph_functions_check_runtime_types_in_standard_mode_and_preserve_legacy_fallbacks() {
+    for query in ["RETURN labels(1)", "RETURN type({})"] {
+        let standard = Executor::new(vec![], false).with_dialect(CypherDialect::OpenCypherM23);
+        let err = standard.execute(query, None).unwrap_err();
+        let d = err.diagnostic().unwrap();
+        assert_eq!(
+            (d.error_type, d.phase, d.detail),
+            ("TypeError", "runtime", "InvalidArgumentValue")
+        );
+        assert!(Executor::new(vec![], false).execute(query, None).is_ok());
+    }
+    for query in ["RETURN labels(null)", "RETURN type(null)"] {
+        let result = Executor::new(vec![], false)
+            .with_dialect(CypherDialect::OpenCypherM23)
+            .execute(query, None)
+            .unwrap();
+        assert!(result.rows[0][&result.columns[0]].is_null());
+    }
+}
