@@ -211,19 +211,71 @@ fn expected_error(text: &str) -> Option<Value> {
     Some(json!({"type": error_type, "phase": phase, "detail": detail}))
 }
 
+// Official CypherFloat is a Double-valued case class: signed floating zeroes
+// compare equal, while CypherInteger and CypherBoolean remain distinct types.
+// Keep this key separate from raw response serialization and evidence hashes.
+fn comparison_key(value: &Value) -> String {
+    fn normalized(value: &Value) -> Value {
+        match value {
+            Value::Number(number) if number.is_f64() && number.as_f64() == Some(0.0) => json!(0.0),
+            Value::Array(values) => Value::Array(values.iter().map(normalized).collect()),
+            Value::Object(values) => Value::Object(
+                values
+                    .iter()
+                    .map(|(key, value)| (key.clone(), normalized(value)))
+                    .collect(),
+            ),
+            _ => value.clone(),
+        }
+    }
+    crate::canonical(&normalized(value))
+}
+
+fn normalize_map_values(value: &Value) -> Value {
+    match value.as_object() {
+        Some(values) => Value::Object(
+            values
+                .iter()
+                .map(|(key, value)| (key.clone(), normalize_lists(value)))
+                .collect(),
+        ),
+        None => value.clone(),
+    }
+}
+
 fn normalize_lists(value: &Value) -> Value {
     match value {
         Value::Array(values) => {
             let mut values: Vec<_> = values.iter().map(normalize_lists).collect();
-            values.sort_by_key(crate::canonical);
+            values.sort_by_key(comparison_key);
             Value::Array(values)
         }
-        Value::Object(values) => Value::Object(
-            values
-                .iter()
-                .map(|(k, v)| (k.clone(), normalize_lists(v)))
-                .collect(),
-        ),
+        Value::Object(values)
+            if values.len() == 1 && values.get("$tck").is_some_and(Value::is_array) =>
+        {
+            let parts = values["$tck"].as_array().unwrap();
+            // These arrays encode graph structure, not Cypher list values. Keep
+            // node/path ordering and relationship directions intact; normalize
+            // only actual values held in graph properties or escaped maps.
+            let mut normalized = parts.clone();
+            match parts.first().and_then(Value::as_str) {
+                Some("node" | "relationship") if parts.len() == 3 => {
+                    normalized[2] = normalize_map_values(&parts[2])
+                }
+                Some("path") if parts.len() == 5 => {
+                    for index in [1, 2] {
+                        if let Some(items) = parts[index].as_array() {
+                            normalized[index] =
+                                Value::Array(items.iter().map(normalize_lists).collect());
+                        }
+                    }
+                }
+                Some("map") if parts.len() == 2 => normalized[1] = normalize_map_values(&parts[1]),
+                _ => {}
+            }
+            json!({"$tck":normalized})
+        }
+        Value::Object(_) => normalize_map_values(value),
         _ => value.clone(),
     }
 }
@@ -231,7 +283,7 @@ fn normalize_lists(value: &Value) -> Value {
 fn multiset(rows: &[Value]) -> BTreeMap<String, usize> {
     let mut result = BTreeMap::new();
     for row in rows {
-        *result.entry(crate::canonical(row)).or_insert(0) += 1;
+        *result.entry(comparison_key(row)).or_insert(0) += 1;
     }
     result
 }
@@ -295,7 +347,7 @@ pub fn compare(actual: &Value, expected: &Value, ordered: bool) -> Option<String
         (actual, expected)
     };
     let equal = if ordered {
-        crate::canonical(&actual["rows"]) == crate::canonical(&expected["rows"])
+        comparison_key(&actual["rows"]) == comparison_key(&expected["rows"])
     } else {
         multiset(actual["rows"].as_array().unwrap())
             == multiset(expected["rows"].as_array().unwrap())
@@ -575,6 +627,61 @@ pub fn baseline_changes(expected: &Value, actual: &Value) -> Vec<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn official_float_zero_equality_is_comparison_only_and_type_preserving() {
+        let actual = json!({"columns":["v"],"rows":[[-0.0]],"error":null});
+        let expected = json!({"columns":["v"],"rows":[[0.0]]});
+        let raw_digest = crate::digest(&actual);
+        assert_ne!(
+            crate::canonical(&actual["rows"]),
+            crate::canonical(&expected["rows"])
+        );
+        for ordered in [false, true] {
+            assert!(compare(&actual, &expected, ordered).is_none());
+        }
+        assert_eq!(crate::digest(&actual), raw_digest);
+        assert!(actual["rows"][0][0].as_f64().unwrap().is_sign_negative());
+        for different in [json!(0), json!(false), json!(1.0e-300)] {
+            let expected = json!({"columns":["v"],"rows":[[different]]});
+            for ordered in [false, true] {
+                assert!(compare(&actual, &expected, ordered).is_some());
+            }
+        }
+        let expected = json!({"columns":["v"],"rows":[[0.0],[0.0]]});
+        assert!(compare(&actual, &expected, false).is_some());
+        assert_ne!(
+            comparison_key(&json!(1.0000000000000002)),
+            comparison_key(&json!(1.0))
+        );
+        let expected = json!({"columns":["v"],"rows":[[[0.0,0]]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["v"],"rows":[[[0,-0.0]]],"error":null}),
+            &expected,
+            false
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn list_order_ignoring_preserves_graph_path_order_and_escapes_literal_maps() {
+        let node_a = json!({"$tck":["node",["A"],{}]});
+        let node_b = json!({"$tck":["node",["B"],{}]});
+        let rel = json!({"$tck":["relationship","R",{}]});
+        let forward = json!({"$tck":["path",[node_a,node_b],[rel],[1]]});
+        let reversed = json!({"$tck":["path",[node_b,node_a],[rel],[1]]});
+        let expected = json!({"columns":["p"],"rows":[[forward]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["p"],"rows":[[reversed]],"error":null}),
+            &expected,
+            false
+        )
+        .is_some());
+        let expected = json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["a","b"]}]}]],"ignoreListOrder":true});
+        let actual =
+            json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["b","a"]}]}]],"error":null});
+        assert!(compare(&actual, &expected, false).is_none());
+    }
+
     #[test]
     fn prepares_setup_procedures_effects_and_control_queries_without_replacing_primary_expectation()
     {
