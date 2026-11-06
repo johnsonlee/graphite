@@ -30,6 +30,7 @@ fn method(name: &str) -> Pattern {
     Pattern {
         path_variable: None,
         nodes: vec![NodePattern {
+            properties_present: false,
             variable: Some(name.into()),
             labels: vec!["Method".into()],
             properties: vec![],
@@ -148,13 +149,14 @@ fn final_pattern_propagates_consumer_error_without_more_candidates() {
 #[test]
 fn terminal_emission_preserves_where_errors_and_cancellation() {
     let Some(ex) = executor() else { return };
+    let ex = ex.with_params([("step".into(), Value::Int(0))].into());
     let result = ex.execute(
-        "MATCH (m:Method) WHERE false AND unknownFunction() RETURN m",
+        "MATCH (m:Method) WHERE false AND size(range(0, 1, $step)) > 0 RETURN m",
         None,
     );
-    assert!(
-        matches!(result, Err(CypherError::Runtime(ref s)) if s == "Unknown function: unknownFunction"),
-        "{result:?}"
+    assert_eq!(
+        result.unwrap_err(),
+        CypherError::Runtime("Step cannot be zero in range()".into())
     );
     let Some(ex) = executor() else { return };
     ex.cancel.cancel();
@@ -205,11 +207,13 @@ fn shared_start_paths_use_distinct_edges_and_restore_state_after_stop() {
         path_variable: Some(path.into()),
         nodes: vec![
             NodePattern {
+                properties_present: false,
                 variable: Some("start".into()),
                 labels: vec![],
                 properties: vec![],
             },
             NodePattern {
+                properties_present: false,
                 variable: Some(target.into()),
                 labels: vec![],
                 properties: vec![],
@@ -257,6 +261,7 @@ fn shared_start_paths_use_distinct_edges_and_restore_state_after_stop() {
             assert_eq!(
                 path.as_ref(),
                 &PathValue {
+                    property_path: None,
                     source: 0,
                     nodes: vec![start, edge.to],
                     edges: vec![edge]

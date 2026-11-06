@@ -7,9 +7,9 @@ use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem, StrOp};
 use crate::eval::{contains_aggregation, is_aggregation_name, Evaluator};
 use crate::functions::aggregate;
 use crate::ordering::compare_order_values;
-use crate::parser::parse_cached;
+use crate::parser::parse_cached_with_dialect;
 use crate::render::to_cypher_string;
-use crate::semantics::{to_int_for_skip_limit, value_key, Key};
+use crate::semantics::{value_key, Key};
 use crate::value::Value;
 use crate::{CypherError, CypherResult};
 use graphite_storage::node::TAG_CALL_SITE_NODE;
@@ -126,7 +126,7 @@ pub(crate) fn merge_provenance(into: &mut Row, from: &Row) {
 impl Executor {
     /// Execute a query; `max_rows` injects/lowers a LIMIT per UNION segment (Kotlin `execute(cypher, maxRows)`).
     pub fn execute(&self, query: &str, max_rows: Option<usize>) -> CypherResult<QueryResult> {
-        let clauses = parse_cached(query)?;
+        let clauses = parse_cached_with_dialect(query, self.dialect)?;
         self.execute_clauses(&clauses, max_rows)
     }
 
@@ -135,7 +135,116 @@ impl Executor {
         clauses: &[Clause],
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
+        if let Some(graph) = &self.property_graph {
+            let mut transaction = graph.begin_transaction(|| self.cancel.check())?;
+            let result = self.execute_clauses_inner(clauses, max_rows);
+            if result.is_ok() {
+                transaction.commit();
+            }
+            result
+        } else {
+            self.execute_clauses_inner(clauses, max_rows)
+        }
+    }
+
+    fn execute_clauses_inner(
+        &self,
+        clauses: &[Clause],
+        max_rows: Option<usize>,
+    ) -> CypherResult<QueryResult> {
+        self.execute_clauses_seeded(clauses, max_rows, None)
+    }
+
+    /// Execute a read-only existential subquery over one correlated input row.
+    /// It shares the production pipeline and cancellation budget; it does not
+    /// start a nested write transaction or invent a second query interpreter.
+    pub fn execute_correlated(&self, clauses: &[Clause], row: &Row) -> CypherResult<QueryResult> {
+        if clauses.iter().any(|clause| {
+            matches!(
+                clause,
+                Clause::Create(_)
+                    | Clause::Merge { .. }
+                    | Clause::Set(_)
+                    | Clause::Remove(_)
+                    | Clause::Delete { .. }
+            )
+        }) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidClauseComposition",
+                "Existential subqueries cannot update the graph",
+            ));
+        }
+        let mut clauses = clauses.to_vec();
+        // The concise EXISTS form has an implicit projection of matched rows.
+        if !clauses
+            .iter()
+            .any(|clause| matches!(clause, Clause::Return { .. }))
+        {
+            clauses.push(Clause::Return {
+                distinct: false,
+                items: Some(vec![ReturnItem {
+                    expr: Expr::Literal(crate::ast::Literal::Int(1)),
+                    alias: Some("__exists".into()),
+                    source_text: None,
+                }]),
+            });
+        }
+        self.execute_clauses_seeded(&clauses, None, Some(row))
+    }
+
+    fn execute_clauses_seeded(
+        &self,
+        clauses: &[Clause],
+        max_rows: Option<usize>,
+        seed: Option<&Row>,
+    ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
+        if self.property_graph.is_none() {
+            if let Some(name) = clauses.iter().find_map(|clause| match clause {
+                Clause::Create(_) => Some("CREATE"),
+                Clause::Merge { .. } => Some("MERGE"),
+                Clause::Delete { .. } => Some("DELETE"),
+                Clause::Set(_) => Some("SET"),
+                Clause::Remove(_) => Some("REMOVE"),
+                _ => None,
+            }) {
+                return Err(CypherError::NotImplemented(format!(
+                    "{name} is not supported — graph is immutable"
+                )));
+            }
+        }
+        self.validate_procedure_calls(clauses)?;
+        let seed_names = seed
+            .map(|row| row.keys().cloned().collect::<Vec<_>>())
+            .unwrap_or_default();
+        // Graphite's established queries are dynamically bound. Static M23
+        // admission would change their errors, empty-input behavior and scope.
+        let validated = if self.dialect == crate::CypherDialect::Graphite {
+            let mut legacy = clauses.to_vec();
+            for clause in &mut legacy {
+                if let Clause::Return {
+                    items: Some(items), ..
+                }
+                | Clause::With {
+                    items: Some(items), ..
+                } = clause
+                {
+                    for item in items {
+                        item.source_text = None;
+                    }
+                }
+            }
+            legacy
+        } else {
+            crate::validation::resolve_with_bindings_and_dialect(
+                clauses,
+                self.procedures.as_deref(),
+                &seed_names,
+                self.dialect,
+            )?
+        };
+        let clauses = validated.as_slice();
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
         for c in clauses {
@@ -143,6 +252,33 @@ impl Executor {
                 segments.push((Vec::new(), *all));
             } else {
                 segments.last_mut().unwrap().0.push(c.clone());
+            }
+        }
+        // Explicit UNION projections must agree before either branch executes.
+        // This is a native compile-time contract, not a renderer-side workaround.
+        let mut union_columns: Option<Vec<String>> = None;
+        if segments.len() > 1 && self.dialect == crate::CypherDialect::OpenCypherM23 {
+            for (segment, _) in &segments {
+                if let Some(Clause::Return {
+                    items: Some(items), ..
+                }) = segment
+                    .iter()
+                    .rev()
+                    .find(|clause| matches!(clause, Clause::Return { .. }))
+                {
+                    let columns = item_names(items);
+                    if union_columns
+                        .as_ref()
+                        .is_some_and(|expected| expected != &columns)
+                    {
+                        return Err(CypherError::Syntax {
+                            position: 0,
+                            message: "All UNION branches must return the same column names".into(),
+                            detail: "DifferentColumnsInUnion",
+                        });
+                    }
+                    union_columns = Some(columns);
+                }
             }
         }
         let mut result: Option<QueryResult> = None;
@@ -157,7 +293,11 @@ impl Executor {
             } else {
                 None
             };
-            let mut r = self.run_segment(&seg)?;
+            let mut r = if let Some(row) = seed {
+                self.run_segment_seeded(&seg, vec![row.clone()])?
+            } else {
+                self.run_segment(&seg)?
+            };
             if let Some(n) = keep {
                 more |= trim_probe(&mut r, n);
             }
@@ -220,8 +360,20 @@ impl Executor {
     }
 
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
+        self.run_segment_seeded(clauses, vec![Row::new()])
+    }
+
+    fn run_segment_seeded(
+        &self,
+        clauses: &[Clause],
+        mut rows: Vec<Row>,
+    ) -> CypherResult<QueryResult> {
         // Index-only shapes are answered before any row work begins.
-        if !super::optimizations_disabled() {
+        if rows.len() == 1
+            && rows[0].is_empty()
+            && self.property_graph.is_none()
+            && !super::optimizations_disabled()
+        {
             if let Some(result) = grouped_with::try_execute(self, clauses)? {
                 return Ok(result);
             }
@@ -242,18 +394,30 @@ impl Executor {
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };
-        let mut rows: Vec<Row> = vec![Row::new()];
         let mut columns: Vec<String> = Vec::new();
         let mut i = 0;
         while i < clauses.len() {
             self.cancel.check()?;
             match &clauses[i] {
+                Clause::Call(call) => {
+                    let (fields, output) = self.execute_procedure(
+                        rows,
+                        call,
+                        super::procedure_calls::standalone(clauses),
+                    )?;
+                    columns = fields;
+                    rows = output;
+                }
                 Clause::Match {
                     patterns,
                     optional,
                     where_clause,
                 } => {
-                    if !*optional && rows.len() == 1 && rows[0].is_empty() {
+                    if self.property_graph.is_none()
+                        && !*optional
+                        && rows.len() == 1
+                        && rows[0].is_empty()
+                    {
                         // An aggregation whose expressions read no more of a node than
                         // its type or a few string columns runs once per partition of
                         // such nodes, weighted, and the clauses after the match run
@@ -264,7 +428,7 @@ impl Executor {
                             continue;
                         }
                     }
-                    if !*optional {
+                    if self.property_graph.is_none() && !*optional {
                         if let Some(plan) =
                             super::with_stream::WithStreamPlan::build(&clauses[i..], &rows)
                         {
@@ -363,18 +527,32 @@ impl Executor {
                     where_clause,
                 } => {
                     let order = next_order_by(&clauses[i + 1..]);
-                    let (cols, projected) = project(&ev, rows, items.as_deref(), *distinct, order)?;
+                    let standard = self.dialect == crate::CypherDialect::OpenCypherM23;
+                    let (cols, projected) = project_filtered(
+                        &ev,
+                        rows,
+                        items.as_deref(),
+                        *distinct,
+                        order,
+                        if standard {
+                            where_clause.as_ref()
+                        } else {
+                            None
+                        },
+                    )?;
                     columns = cols;
                     rows = projected;
-                    if let Some(w) = where_clause {
-                        let mut out = Vec::with_capacity(rows.len());
-                        for r in rows {
-                            self.tick()?;
-                            if ev.eval(w, &r)?.as_bool() == Some(true) {
-                                out.push(r);
+                    if !standard {
+                        if let Some(predicate) = where_clause {
+                            let mut filtered = Vec::with_capacity(rows.len());
+                            for row in rows {
+                                self.tick()?;
+                                if ev.eval(predicate, &row)?.as_bool() == Some(true) {
+                                    filtered.push(row);
+                                }
                             }
+                            rows = filtered;
                         }
-                        rows = out;
                     }
                 }
                 Clause::Return { distinct, items } => {
@@ -404,22 +582,47 @@ impl Executor {
                     }
                     rows.truncate(n as usize);
                 }
+                Clause::Create(patterns) if self.property_graph.is_some() => {
+                    rows = super::property_matching::create(self, rows, patterns)?;
+                }
                 Clause::Create(_) => {
                     return Err(CypherError::NotImplemented(
                         "CREATE is not supported — graph is immutable".into(),
                     ))
+                }
+                Clause::Merge {
+                    pattern,
+                    on_create,
+                    on_match,
+                } if self.property_graph.is_some() => {
+                    rows =
+                        super::property_updates::merge(self, rows, pattern, on_create, on_match)?;
+                }
+                Clause::Merge { .. } => {
+                    return Err(CypherError::NotImplemented(
+                        "MERGE is not supported — graph is immutable".into(),
+                    ))
+                }
+                Clause::Delete { detach, exprs } if self.property_graph.is_some() => {
+                    super::property_updates::delete(self, &rows, exprs, *detach)?;
                 }
                 Clause::Delete { .. } => {
                     return Err(CypherError::NotImplemented(
                         "DELETE is not supported — graph is immutable".into(),
                     ))
                 }
-                Clause::Set => {
+                Clause::Set(items) if self.property_graph.is_some() => {
+                    super::property_updates::set(self, &rows, items)?;
+                }
+                Clause::Set(_) => {
                     return Err(CypherError::NotImplemented(
                         "SET is not supported — graph is immutable".into(),
                     ))
                 }
-                Clause::Remove => {
+                Clause::Remove(items) if self.property_graph.is_some() => {
+                    super::property_updates::remove(self, &rows, items)?;
+                }
+                Clause::Remove(_) => {
                     return Err(CypherError::NotImplemented(
                         "REMOVE is not supported — graph is immutable".into(),
                     ))
@@ -431,6 +634,12 @@ impl Executor {
                 }
             }
             i += 1;
+        }
+        if self.property_graph.is_some()
+            && !clauses.iter().any(|c| matches!(c, Clause::Return { .. }))
+            && !super::procedure_calls::standalone(clauses)
+        {
+            return Ok(QueryResult::default());
         }
         if columns.is_empty() {
             if let Some(first) = rows.first() {
@@ -467,7 +676,7 @@ impl Executor {
         early_limit: Option<usize>,
     ) -> CypherResult<Vec<Row>> {
         let mut out: Vec<Row> = Vec::new();
-        if has_unknown_label(patterns) && !optional {
+        if self.property_graph.is_none() && has_unknown_label(patterns) && !optional {
             return Ok(out);
         }
         for r in rows {
@@ -490,7 +699,7 @@ impl Executor {
                     }
                     Ok(true)
                 };
-                if !(has_unknown_label(patterns)) {
+                if self.property_graph.is_some() || !(has_unknown_label(patterns)) {
                     matcher.match_patterns(&r, patterns, &mut emit)?;
                 }
             }
@@ -551,7 +760,9 @@ impl Executor {
             (None, Some(l)) => Some(l as usize),
         };
         let aggregated = match &shape.items {
-            Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
+            Some(items) => items
+                .iter()
+                .any(|it| aggregation_in_mode(&it.expr, self.dialect)),
             None => false,
         };
         let items = shape.items.as_deref();
@@ -661,7 +872,9 @@ impl Executor {
             );
         }
         let aggregated = match &shape.items {
-            Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
+            Some(items) => items
+                .iter()
+                .any(|it| aggregation_in_mode(&it.expr, self.dialect)),
             None => false,
         };
         if projected_filter.is_none() {
@@ -729,7 +942,7 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
-            let mut plan = AggPlan::new(items)?;
+            let mut plan = AggPlan::new(items, shape.order.as_deref(), self.dialect)?;
             plan.prefix_caps = prefix_caps.to_vec();
             let columns = item_names(items);
             let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
@@ -769,7 +982,7 @@ impl Executor {
                     &mut consume,
                 )?;
             }
-            let out = finalize_groups(ev, &plan, items, groups, shape.order.as_deref())?;
+            let out = finalize_groups(ev, &plan, items, groups)?;
             return Ok((columns, out));
         }
 
@@ -1378,6 +1591,14 @@ impl FusedShape {
             }) => (*distinct, items.clone(), where_clause.as_ref()),
             _ => return None,
         };
+        // A fused projection releases its input row. Predicates needing a dropped
+        // binding must use the ordinary projection/filter boundary instead.
+        if let (Some(predicate), Some(items)) = (with_where, items.as_deref()) {
+            let names = item_names(items).into_iter().collect();
+            if !crate::validation::references_only(predicate, &names) {
+                return None;
+            }
+        }
         i += 1;
         let order = next_order_by(&clauses[i..]).map(|o| o.to_vec());
         Some((
@@ -1692,7 +1913,22 @@ fn next_order_by(rest: &[Clause]) -> Option<&[OrderItem]> {
 fn eval_count(ev: &Evaluator, expr: &Expr, first: Option<&Row>) -> CypherResult<i64> {
     let empty = Row::new();
     let v = ev.eval(expr, first.unwrap_or(&empty))?;
-    Ok(to_int_for_skip_limit(&v))
+    if ev.context().dialect() == crate::CypherDialect::Graphite {
+        return Ok(crate::semantics::to_int_for_skip_limit(&v));
+    }
+    match v {
+        Value::Int(n) if n >= 0 => Ok(n),
+        Value::Int(_) => Err(CypherError::execution(
+            "SyntaxError",
+            "NegativeIntegerArgument",
+            "SKIP/LIMIT cannot be negative",
+        )),
+        _ => Err(CypherError::execution(
+            "SyntaxError",
+            "InvalidArgumentType",
+            "SKIP/LIMIT requires an integer",
+        )),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1715,10 +1951,27 @@ fn stash_order_values(
     columns: &[String],
 ) -> CypherResult<()> {
     if let Some(order) = order {
+        let mut scope: Option<Row> = None;
         for (i, item) in order.iter().enumerate() {
             let is_col = matches!(&item.expr, Expr::Variable(v) if columns.iter().any(|c| c == v));
             if !is_col {
-                let v = ev.eval(&item.expr, pre)?;
+                if ev.context().dialect() == crate::CypherDialect::Graphite {
+                    out.insert(
+                        format!("{ORDER_STASH_PREFIX}{i}"),
+                        ev.eval(&item.expr, pre)?,
+                    );
+                    continue;
+                }
+                let scope = scope.get_or_insert_with(|| {
+                    let mut scope = pre.clone();
+                    for column in columns {
+                        if let Some(value) = out.get(column) {
+                            scope.insert(column.clone(), value.clone());
+                        }
+                    }
+                    scope
+                });
+                let v = ev.eval(&item.expr, scope)?;
                 out.insert(format!("{ORDER_STASH_PREFIX}{i}"), v);
             }
         }
@@ -1747,14 +2000,7 @@ fn simple_property_keys(items: &[ReturnItem], variable: &str) -> Option<Vec<Stri
 /// it does not depend on the row -- doing it inside the row loop cost a `LIMIT 200`
 /// query a thousand redundant renderings.
 pub(super) fn item_names(items: &[ReturnItem]) -> Vec<String> {
-    items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect()
+    items.iter().map(|it| it.column_name()).collect()
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1797,6 +2043,22 @@ pub(super) fn project_row(
     }
     if !distinct || order_before_distinct {
         stash_order_values(ev, row, &mut out, order, columns)?;
+    } else if let (crate::CypherDialect::OpenCypherM23, Some(order), Some(items)) =
+        (ev.context().dialect(), order, items)
+    {
+        // DISTINCT removes input bindings, but the same projected expression
+        // still denotes its output value, even when ORDER BY uses its old spelling.
+        for (i, key) in order.iter().enumerate() {
+            if let Some((_, name)) = items
+                .iter()
+                .zip(names)
+                .find(|(item, _)| item.expr == key.expr)
+            {
+                if let Some(value) = out.get(name).cloned() {
+                    out.insert(format!("{ORDER_STASH_PREFIX}{i}"), value);
+                }
+            }
+        }
     }
     Ok(out)
 }
@@ -1805,6 +2067,7 @@ struct AggCall {
     name: String,
     distinct: bool,
     arg: Option<Expr>,
+    percentile: Option<Expr>,
 }
 
 /// A collect used exclusively through literal, bounded positive slices needs only
@@ -1900,12 +2163,21 @@ fn collect_prefix_caps(shape: &FusedShape, rest: &[Clause]) -> Vec<Option<usize>
         .collect()
 }
 
+fn aggregation_in_mode(expr: &Expr, dialect: crate::CypherDialect) -> bool {
+    match dialect {
+        crate::CypherDialect::Graphite => crate::eval::legacy_contains_aggregation(expr),
+        crate::CypherDialect::OpenCypherM23 => contains_aggregation(expr),
+    }
+}
+
 struct AggPlan {
+    dialect: crate::CypherDialect,
     /// Rewritten items with aggregation calls replaced by placeholders.
     rewritten: Vec<Expr>,
     aggs: Vec<AggCall>,
     group_exprs: Vec<Expr>,
     prefix_caps: Vec<Option<usize>>,
+    rewritten_order: Option<Vec<OrderItem>>,
 }
 
 impl AggPlan {
@@ -1913,23 +2185,30 @@ impl AggPlan {
         self.aggs
             .iter()
             .enumerate()
-            .map(|(i, agg)| AggregateState::new(agg, self.prefix_caps.get(i).copied().flatten()))
+            .map(|(i, agg)| {
+                AggregateState::with_dialect(
+                    agg,
+                    self.prefix_caps.get(i).copied().flatten(),
+                    self.dialect,
+                )
+            })
             .collect()
     }
 
-    fn new(items: &[ReturnItem]) -> CypherResult<AggPlan> {
+    fn new(
+        items: &[ReturnItem],
+        order: Option<&[OrderItem]>,
+        dialect: crate::CypherDialect,
+    ) -> CypherResult<AggPlan> {
         let mut aggs = Vec::new();
         let mut rewritten = Vec::new();
         let mut group_exprs = Vec::new();
         for it in items {
-            if contains_aggregation(&it.expr) {
-                // An aggregate is only a projection when it *is* the projected
-                // expression. Nested inside a larger one — `count(*) * 2` — the
-                // baseline evaluates the outer expression generically, and the
-                // evaluator refuses the aggregate it finds there. Substituting the
-                // aggregate's value instead would answer a query the baseline rejects.
-                if let Some(name) = nested_aggregation_name(&it.expr) {
-                    return Err(CypherError::Aggregation(name));
+            if aggregation_in_mode(&it.expr, dialect) {
+                if dialect == crate::CypherDialect::Graphite {
+                    if let Some(name) = legacy_nested_aggregation_name(&it.expr) {
+                        return Err(CypherError::Aggregation(name));
+                    }
                 }
                 rewritten.push(rewrite_aggs(&it.expr, &mut aggs));
             } else {
@@ -1937,46 +2216,59 @@ impl AggPlan {
                 group_exprs.push(it.expr.clone());
             }
         }
+        let rewritten_order = order.map(|order| {
+            order
+                .iter()
+                .map(|item| OrderItem {
+                    expr: if dialect == crate::CypherDialect::OpenCypherM23 {
+                        rewrite_aggs(&item.expr, &mut aggs)
+                    } else {
+                        item.expr.clone()
+                    },
+                    descending: item.descending,
+                })
+                .collect()
+        });
         Ok(AggPlan {
+            dialect,
             rewritten,
             aggs,
             group_exprs,
             prefix_caps: Vec::new(),
+            rewritten_order,
         })
     }
 }
 
-/// The aggregate that would reach the generic evaluator, if this expression carries one
-/// anywhere other than at its root.
-fn nested_aggregation_name(e: &Expr) -> Option<String> {
+fn legacy_nested_aggregation_name(e: &Expr) -> Option<String> {
     match e {
         // At the root an aggregate is a projection, not an error.
         Expr::CountStar => None,
         Expr::FunctionCall { name, .. } if is_aggregation_name(name) => None,
-        other => first_aggregation_name(other),
+        other => legacy_first_aggregation_name(other),
     }
 }
 
-fn first_aggregation_name(e: &Expr) -> Option<String> {
+fn legacy_first_aggregation_name(e: &Expr) -> Option<String> {
     match e {
         Expr::CountStar => Some("count".to_string()),
         Expr::FunctionCall { name, args, .. } => {
             if is_aggregation_name(name) {
                 Some(name.to_ascii_lowercase())
             } else {
-                args.iter().find_map(first_aggregation_name)
+                args.iter().find_map(legacy_first_aggregation_name)
             }
         }
-        Expr::Property { expr, .. } => first_aggregation_name(expr),
+        Expr::Property { expr, .. } => legacy_first_aggregation_name(expr),
         Expr::Binary { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
         }
-        Expr::Unary { expr, .. } => first_aggregation_name(expr),
+        Expr::Unary { expr, .. } => legacy_first_aggregation_name(expr),
         Expr::Comparison { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
         }
         Expr::StringOp { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
         }
         _ => None,
     }
@@ -1989,6 +2281,7 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
                 name: "count".into(),
                 distinct: false,
                 arg: None,
+                percentile: None,
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
@@ -2007,6 +2300,13 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
                 name: name.clone(),
                 distinct: d,
                 arg,
+                percentile: if name.eq_ignore_ascii_case("percentilecont")
+                    || name.eq_ignore_ascii_case("percentiledisc")
+                {
+                    args.get(1).cloned()
+                } else {
+                    None
+                },
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
@@ -2044,6 +2344,77 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
             variable: variable.clone(),
             list: Box::new(rewrite_aggs(list, aggs)),
             predicate: predicate.as_ref().map(|p| Box::new(rewrite_aggs(p, aggs))),
+        },
+        Expr::Unary { negate, expr } => Expr::Unary {
+            negate: *negate,
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+        },
+        Expr::StringOp { op, left, right } => Expr::StringOp {
+            op: *op,
+            left: Box::new(rewrite_aggs(left, aggs)),
+            right: Box::new(rewrite_aggs(right, aggs)),
+        },
+        Expr::In { left, right } => Expr::In {
+            left: Box::new(rewrite_aggs(left, aggs)),
+            right: Box::new(rewrite_aggs(right, aggs)),
+        },
+        Expr::IsNull(e) => Expr::IsNull(Box::new(rewrite_aggs(e, aggs))),
+        Expr::IsNotNull(e) => Expr::IsNotNull(Box::new(rewrite_aggs(e, aggs))),
+        Expr::Not(e) => Expr::Not(Box::new(rewrite_aggs(e, aggs))),
+        Expr::And(a, b) => Expr::And(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::Or(a, b) => Expr::Or(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::Xor(a, b) => Expr::Xor(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::ListLiteral(items) => {
+            Expr::ListLiteral(items.iter().map(|e| rewrite_aggs(e, aggs)).collect())
+        }
+        Expr::MapLiteral(items) => Expr::MapLiteral(
+            items
+                .iter()
+                .map(|(k, e)| (k.clone(), rewrite_aggs(e, aggs)))
+                .collect(),
+        ),
+        Expr::Case {
+            test,
+            whens,
+            else_expr,
+        } => Expr::Case {
+            test: test.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            whens: whens
+                .iter()
+                .map(|(a, b)| (rewrite_aggs(a, aggs), rewrite_aggs(b, aggs)))
+                .collect(),
+            else_expr: else_expr
+                .as_deref()
+                .map(|e| Box::new(rewrite_aggs(e, aggs))),
+        },
+        Expr::ListComprehension {
+            variable,
+            list,
+            filter,
+            map,
+        } => Expr::ListComprehension {
+            variable: variable.clone(),
+            list: Box::new(rewrite_aggs(list, aggs)),
+            filter: filter.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            map: map.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+        },
+        Expr::Subscript { expr, index } => Expr::Subscript {
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+            index: Box::new(rewrite_aggs(index, aggs)),
+        },
+        Expr::Slice { expr, from, to } => Expr::Slice {
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+            from: from.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            to: to.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
         },
         other => other.clone(),
     }
@@ -2091,7 +2462,7 @@ const EXACT_SUM_MAGNITUDE: i128 = 1 << 53;
 fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherResult<Value> {
     let lower = name.to_ascii_lowercase();
     let live = || values.iter().zip(weights).filter(|(v, _)| !v.is_null());
-    let exact_total = || -> CypherResult<f64> {
+    let exact_total = || -> CypherResult<i128> {
         let (mut total, mut magnitude) = (0i128, 0i128);
         for (v, w) in live() {
             let Value::Int(i) = v else {
@@ -2099,25 +2470,45 @@ fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherRe
                     "Aggregation {name} over weighted rows needs integer inputs, found {v:?}"
                 )));
             };
-            total += *i as i128 * *w as i128;
-            magnitude += i.unsigned_abs() as i128 * *w as i128;
+            total = total.checked_add(*i as i128 * *w as i128).ok_or_else(|| {
+                CypherError::execution(
+                    "ArithmeticError",
+                    "IntegerOverflow",
+                    "Integer sum exceeds signed 64-bit range",
+                )
+            })?;
+            magnitude = magnitude
+                .checked_add(i.unsigned_abs() as i128 * *w as i128)
+                .ok_or_else(|| {
+                    CypherError::execution(
+                        "ArithmeticError",
+                        "IntegerOverflow",
+                        "Integer sum exceeds signed 64-bit range",
+                    )
+                })?;
         }
-        if magnitude > EXACT_SUM_MAGNITUDE {
+        if lower == "avg" && magnitude > EXACT_SUM_MAGNITUDE {
             return Err(CypherError::Runtime(format!(
                 "Aggregation {name} over weighted rows exceeds the exact floating range"
             )));
         }
-        Ok(total as f64)
+        Ok(total)
     };
     Ok(match lower.as_str() {
         "count" => Value::Int(live().map(|(_, w)| *w).sum()),
-        "sum" => Value::Float(exact_total()?),
+        "sum" => Value::Int(i64::try_from(exact_total()?).map_err(|_| {
+            CypherError::execution(
+                "ArithmeticError",
+                "IntegerOverflow",
+                "Integer sum exceeds signed 64-bit range",
+            )
+        })?),
         "avg" => {
             let n: i64 = live().map(|(_, w)| *w).sum();
             if n == 0 {
                 Value::Null
             } else {
-                Value::Float(exact_total()? / n as f64)
+                Value::Float(exact_total()? as f64 / n as f64)
             }
         }
         "min" | "max" => aggregate(name, values)?,
@@ -2134,27 +2525,24 @@ fn finalize_groups(
     plan: &AggPlan,
     items: &[ReturnItem],
     groups: IndexMap<Vec<Key>, GroupAcc>,
-    order: Option<&[OrderItem]>,
 ) -> CypherResult<Vec<Row>> {
-    let columns: Vec<String> = items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect();
+    let columns: Vec<String> = items.iter().map(|it| it.column_name()).collect();
     let mut out = Vec::with_capacity(groups.len());
     let compute = |acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
         for (ai, (agg, state)) in plan.aggs.iter().zip(acc.agg_states).enumerate() {
-            let value = state.finish(agg)?;
+            let percentile = agg
+                .percentile
+                .as_ref()
+                .map(|expr| ev.eval(expr, &acc.first_row))
+                .transpose()?;
+            let value = state.finish(agg, percentile.as_ref())?;
             tmp.insert(format!("{AGG_PLACEHOLDER_PREFIX}{ai}"), value);
         }
         let mut row = Row::new();
         let mut gi = 0;
         for (idx, it) in items.iter().enumerate() {
-            let v = if contains_aggregation(&it.expr) {
+            let v = if aggregation_in_mode(&it.expr, plan.dialect) {
                 ev.eval(&plan.rewritten[idx], &tmp)?
             } else {
                 let v = acc.group_values[gi].clone();
@@ -2166,7 +2554,14 @@ fn finalize_groups(
         if let Some(p) = acc.first_row.get(INTERNAL_PROVENANCE_KEY) {
             row.insert(INTERNAL_PROVENANCE_KEY.to_string(), p.clone());
         }
-        stash_order_values(ev, &acc.first_row, &mut row, order, &columns)?;
+        tmp.extend(row.iter().map(|(key, value)| (key.clone(), value.clone())));
+        stash_order_values(
+            ev,
+            &tmp,
+            &mut row,
+            plan.rewritten_order.as_deref(),
+            &columns,
+        )?;
         Ok(row)
     };
     if groups.is_empty() && plan.group_exprs.is_empty() {
@@ -2217,6 +2612,17 @@ fn project(
     distinct: bool,
     order: Option<&[OrderItem]>,
 ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+    project_filtered(ev, rows, items, distinct, order, None)
+}
+
+fn project_filtered(
+    ev: &Evaluator,
+    rows: Vec<Row>,
+    items: Option<&[ReturnItem]>,
+    distinct: bool,
+    order: Option<&[OrderItem]>,
+    predicate: Option<&Expr>,
+) -> CypherResult<(Vec<String>, Vec<Row>)> {
     let explicit_items = items.is_some();
     // RETURN * expansion.
     let expanded: Vec<ReturnItem>;
@@ -2228,6 +2634,7 @@ fn project(
                     r.keys()
                         .filter(|k| !is_internal_key(k))
                         .map(|k| ReturnItem {
+                            source_text: None,
                             expr: Expr::Variable(k.clone()),
                             alias: None,
                         })
@@ -2242,25 +2649,21 @@ fn project(
         Some(i) => Some(i),
     };
     let items = items.unwrap();
-    let columns: Vec<String> = items
-        .iter()
-        .map(|it| {
-            it.alias
-                .clone()
-                .unwrap_or_else(|| to_cypher_string(&it.expr))
-        })
-        .collect();
+    let columns: Vec<String> = items.iter().map(|it| it.column_name()).collect();
     if explicit_items
         && !distinct
         && order.is_none()
+        && predicate.is_none()
         && is_identity_projection(items, &columns, &rows)
     {
         return Ok((columns, rows));
     }
-    let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
+    let aggregated = items
+        .iter()
+        .any(|it| aggregation_in_mode(&it.expr, ev.context().dialect()));
     let mut out: Vec<Row>;
     if aggregated {
-        let plan = AggPlan::new(items)?;
+        let plan = AggPlan::new(items, order, ev.context().dialect())?;
         let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
         for row in rows {
             let mut keyv = Vec::with_capacity(plan.group_exprs.len());
@@ -2285,14 +2688,14 @@ fn project(
             }
             merge_provenance(&mut acc.first_row, &row);
         }
-        out = finalize_groups(ev, &plan, items, groups, order)?;
+        out = finalize_groups(ev, &plan, items, groups)?;
     } else {
         out = Vec::with_capacity(rows.len());
         let names = item_names(items);
         let mut cols = columns.clone();
         // Release each input row after its projection and order keys are owned by out.
         for row in rows {
-            out.push(project_row(
+            let projected = project_row(
                 ev,
                 &row,
                 Some(items),
@@ -2301,7 +2704,30 @@ fn project(
                 distinct,
                 false,
                 &mut cols,
-            )?);
+            )?;
+            if let Some(predicate) = predicate {
+                let mut scope = row;
+                scope.extend(columns.iter().filter_map(|name| {
+                    projected
+                        .get(name)
+                        .map(|value| (name.clone(), value.clone()))
+                }));
+                if ev.eval(predicate, &scope)?.as_bool() != Some(true) {
+                    continue;
+                }
+            }
+            out.push(projected);
+        }
+    }
+    if aggregated {
+        if let Some(predicate) = predicate {
+            let mut filtered = Vec::with_capacity(out.len());
+            for row in out {
+                if ev.eval(predicate, &row)?.as_bool() == Some(true) {
+                    filtered.push(row);
+                }
+            }
+            out = filtered;
         }
     }
     if distinct {
@@ -2942,8 +3368,8 @@ mod bounded_order_tests {
 
     #[test]
     fn losing_and_zero_limit_rows_still_evaluate_every_projection_expression() {
-        let (_, shape) = query_shape("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = 2 THEN missing_function(n.id) ELSE n.id END AS payload ORDER BY id LIMIT 1");
-        let ex = Executor::new(vec![], false);
+        let (_, shape) = query_shape("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = 2 THEN head(range(0, n.id, $step)) ELSE n.id END AS payload ORDER BY id LIMIT 1");
+        let ex = Executor::new(vec![], false).with_params([("step".into(), Value::Int(0))].into());
         let ev = Evaluator::new(&ex, &ex.params);
         let names = item_names(shape.items.as_deref().unwrap());
         for limit in [0, 1] {
@@ -2965,8 +3391,10 @@ mod bounded_order_tests {
                     &mut columns,
                 );
                 if id == 2 {
-                    let error = row.unwrap_err().to_string();
-                    assert!(error.contains("missing_function"), "{error}");
+                    assert_eq!(
+                        row.unwrap_err(),
+                        CypherError::Runtime("Step cannot be zero in range()".into())
+                    );
                 } else {
                     top.push(row.unwrap());
                 }
@@ -3009,7 +3437,8 @@ mod bounded_order_tests {
     #[test]
     fn real_executor_preserves_late_losing_expression_errors_even_with_limit_zero() {
         let Some(graph) = real_graph() else { return };
-        let ex = Executor::single("real", graph);
+        let ex =
+            Executor::single("real", graph).with_params([("step".into(), Value::Int(0))].into());
         let all = ex
             .execute("MATCH (n:CallSiteNode) RETURN n.id AS id", None)
             .unwrap();
@@ -3032,11 +3461,14 @@ mod bounded_order_tests {
         );
         for limit in [0, 1] {
             for (key, order) in [("n.id", "key"), ("'same'", "key"), ("'same'", "n.id")] {
-                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN head(range(0, n.id, $step)) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
                 assert_eq!(capacity(&query), Some(limit));
                 let reference = full_sort(&ex, &query).unwrap_err();
                 let actual = ex.execute(&query, None).unwrap_err();
-                assert!(actual.to_string().contains("missing_function"));
+                assert_eq!(
+                    actual,
+                    CypherError::Runtime("Step cannot be zero in range()".into())
+                );
                 assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
             }
         }

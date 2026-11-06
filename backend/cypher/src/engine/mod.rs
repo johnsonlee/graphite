@@ -8,6 +8,9 @@ mod method_source_guard;
 mod ordered_property;
 pub mod partition;
 pub mod pipeline;
+mod procedure_calls;
+mod property_matching;
+mod property_updates;
 pub mod props;
 pub mod scan;
 mod string_seed;
@@ -185,6 +188,10 @@ impl CancelToken {
 static EPOCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 pub struct Executor {
+    dialect: crate::CypherDialect,
+    pub procedures: Option<Arc<crate::procedures::ProcedureRegistry>>,
+    pub property_graph: Option<Arc<crate::property_graph::PropertyGraph>>,
+    temporal_clock: chrono::DateTime<chrono::Utc>,
     pub sources: Vec<Source>,
     /// Cross-graph (qualified) mode.
     pub cross: bool,
@@ -212,6 +219,24 @@ pub struct Executor {
 }
 
 impl Executor {
+    /// Select the query compatibility mode explicitly. The default is Graphite.
+    pub fn with_dialect(mut self, dialect: crate::CypherDialect) -> Self {
+        self.dialect = dialect;
+        self
+    }
+    pub fn with_procedures(
+        mut self,
+        procedures: Arc<crate::procedures::ProcedureRegistry>,
+    ) -> Self {
+        self.procedures = Some(procedures);
+        self
+    }
+    /// Opt into a mutable property store; ordinary program graph executors stay immutable.
+    pub fn property_graph(graph: Arc<crate::property_graph::PropertyGraph>) -> Self {
+        let mut ex = Self::new(Vec::new(), false);
+        ex.property_graph = Some(graph);
+        ex
+    }
     pub fn single(id: impl Into<Arc<str>>, graph: Arc<Graph>) -> Executor {
         Executor::new(
             vec![Source {
@@ -224,6 +249,10 @@ impl Executor {
 
     pub fn new(sources: Vec<Source>, cross: bool) -> Executor {
         Executor {
+            dialect: crate::CypherDialect::default(),
+            property_graph: None,
+            temporal_clock: chrono::Utc::now(),
+            procedures: None,
             sources,
             cross,
             params: IndexMap::new(),
@@ -255,6 +284,9 @@ impl Executor {
     /// Notes a result value whose rendering will read a declared table that cannot be read:
     /// a field, parameter or return node, or a method, of such a graph, at any nesting.
     pub(super) fn note_declared_result_value(&self, value: &Value) {
+        if self.property_graph.is_some() {
+            return;
+        }
         // Rendering such a value reads the table, so reading the state here, for exactly these
         // values, costs nothing the caller would not pay; any other value leaves it unread.
         match value {
@@ -432,16 +464,74 @@ impl Executor {
 }
 
 impl GraphContext for Executor {
+    fn pattern_rows(
+        &self,
+        pattern: &crate::ast::Pattern,
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<Vec<IndexMap<String, Value>>> {
+        let ev = crate::eval::Evaluator::new(self, &self.params);
+        let matcher = matching::Matcher { ex: self, ev: &ev };
+        let mut rows = Vec::new();
+        matcher.match_patterns(row, std::slice::from_ref(pattern), &mut |row| {
+            rows.push(row);
+            Ok(true)
+        })?;
+        Ok(rows)
+    }
+    fn subquery_rows(
+        &self,
+        clauses: &[crate::ast::Clause],
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<Vec<IndexMap<String, Value>>> {
+        Ok(self.execute_correlated(clauses, row)?.rows)
+    }
+    fn pattern_exists(
+        &self,
+        pattern: &crate::ast::Pattern,
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<bool> {
+        let ev = crate::eval::Evaluator::new(self, &self.params);
+        let matcher = matching::Matcher { ex: self, ev: &ev };
+        let mut exists = false;
+        matcher.match_patterns(row, std::slice::from_ref(pattern), &mut |_| {
+            exists = true;
+            Ok(false)
+        })?;
+        Ok(exists)
+    }
+    fn dialect(&self) -> crate::CypherDialect {
+        self.dialect
+    }
+    fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
+        self.property_graph.as_deref()
+    }
+    fn temporal_clock(&self) -> chrono::DateTime<chrono::Utc> {
+        self.temporal_clock
+    }
     fn source_count(&self) -> usize {
-        self.sources.len()
+        if self.property_graph.is_some() {
+            1
+        } else {
+            self.sources.len()
+        }
     }
     fn is_cross_graph(&self) -> bool {
         self.cross
     }
     fn graph_id(&self, source: SourceIdx) -> &str {
-        &self.sources[source as usize].id
+        if self.property_graph.is_some() {
+            "property"
+        } else {
+            &self.sources[source as usize].id
+        }
     }
     fn node_property(&self, node: NodeRef, key: &str) -> Value {
+        if let Some(graph) = &self.property_graph {
+            return graph
+                .node(node.id)
+                .and_then(|n| n.properties.get(key).cloned())
+                .unwrap_or(Value::Null);
+        }
         // The id is the reference itself: no record to decode, but a reference that
         // no record backs (a phantom type-index entry) has no properties at all.
         if key == "id" {
@@ -491,6 +581,12 @@ impl GraphContext for Executor {
         }
     }
     fn node_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
+        if let Some(graph) = &self.property_graph {
+            return graph
+                .node(node.id)
+                .map(|n| n.properties)
+                .unwrap_or_default();
+        }
         let mut m = match self.node(node) {
             Some(n) => {
                 let g = self.graph(node.source);
@@ -511,6 +607,9 @@ impl GraphContext for Executor {
         m
     }
     fn node_property_is_null(&self, node: NodeRef, key: &str) -> bool {
+        if self.property_graph.is_some() {
+            return self.node_property(node, key).is_null();
+        }
         if matches!(key, "generic_type" | "type_info") {
             return self.node(node).is_none_or(|n| {
                 let g = self.graph(node.source);
@@ -524,6 +623,12 @@ impl GraphContext for Executor {
         self.node_property(node, key).is_null()
     }
     fn node_keys(&self, node: NodeRef) -> Vec<String> {
+        if let Some(graph) = &self.property_graph {
+            return graph
+                .node(node.id)
+                .map(|n| n.properties.into_keys().collect())
+                .unwrap_or_default();
+        }
         let mut keys = self.node(node).map_or_else(Vec::new, |n| {
             let g = self.graph(node.source);
             let keys = props::node_keys(g, &n);
@@ -538,11 +643,23 @@ impl GraphContext for Executor {
         keys
     }
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
+        if let Some(graph) = &self.property_graph {
+            return graph
+                .node(node.id)
+                .map(|n| n.properties)
+                .unwrap_or_default();
+        }
         let mut m = self.node_display_properties(node);
         m.retain(|_, v| !v.is_null());
         m
     }
     fn node_display_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
+        if let Some(graph) = &self.property_graph {
+            return graph
+                .node(node.id)
+                .map(|n| n.properties)
+                .unwrap_or_default();
+        }
         let mut m = match self.node(node) {
             Some(n) => {
                 let g = self.graph(node.source);
@@ -563,23 +680,38 @@ impl GraphContext for Executor {
         m
     }
     fn edge_comparison(&self, rel: EdgeRef) -> Option<(String, u32)> {
+        if rel.property_id.is_some() {
+            return None;
+        }
         self.graph(rel.source)
             .comparison(&rel.edge)
             .map(|c| (format!("{:?}", c.op), c.comparand))
     }
     fn node_labels(&self, node: NodeRef) -> Vec<&'static str> {
+        if self.property_graph.is_some() {
+            return Vec::new();
+        }
         match self.graph(node.source).node_tag(node.id) {
             Some(t) => props::node_labels(t),
             None => vec![],
         }
     }
     fn node_type_name(&self, node: NodeRef) -> &'static str {
+        if self.property_graph.is_some() {
+            return "Node";
+        }
         match self.graph(node.source).node_tag(node.id) {
             Some(t) => graphite_storage::node::tag_type_name(t),
             None => "Node",
         }
     }
     fn rel_property(&self, rel: EdgeRef, key: &str) -> Value {
+        if let (Some(graph), Some(id)) = (&self.property_graph, rel.property_id) {
+            return graph
+                .relationship(u64::from(id.get()))
+                .and_then(|r| r.properties.get(key).cloned())
+                .unwrap_or(Value::Null);
+        }
         props::rel_property(
             self.graph(rel.source),
             rel,
@@ -654,3 +786,6 @@ mod declared_access_tests;
 
 #[cfg(test)]
 mod maintenance_budget_tests;
+
+#[cfg(test)]
+mod property_graph_tests;

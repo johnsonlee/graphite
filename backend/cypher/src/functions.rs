@@ -29,13 +29,32 @@ fn as_number(v: &Value) -> CypherResult<f64> {
     })
 }
 
+fn invalid_conversion(name: &str) -> CypherError {
+    CypherError::execution(
+        "TypeError",
+        "InvalidArgumentValue",
+        format!("Unsupported value type for {name}()"),
+    )
+}
+
 /// Call a non-aggregation function. Unknown names produce `Unknown function: <name>`.
 pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<Value> {
+    if let Some(result) = crate::temporal::call(name, args, ctx) {
+        return result;
+    }
     let lower = name.to_ascii_lowercase();
+    if matches!(lower.as_str(), "properties" | "keys" | "labels") {
+        if let (Some(graph), Some(value)) = (ctx.property_graph(), args.first()) {
+            graph.ensure_live_entity(value)?;
+        }
+    }
     Ok(match lower.as_str() {
         // -- identity ------------------------------------------------------
         "id" => match arg(args, 0)? {
             Value::Node(n) => Value::Int(n.id as i64),
+            Value::Rel(r) if r.property_id.is_some() => {
+                Value::Int(i64::from(r.property_id.unwrap().get()))
+            }
             _ => Value::Null,
         },
         "elementid" | "qualifiedid" => match arg(args, 0)? {
@@ -85,19 +104,37 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
 
         // -- conversion ----------------------------------------------------
         "tointeger" | "toint" => match arg(args, 0)? {
+            Value::Null => Value::Null,
+            Value::Int(value) => Value::Int(*value),
             v if v.is_number() => Value::Int(to_double(v) as i64),
-            Value::Str(s) => kotlin_parse_long(s).map(Value::Int).unwrap_or(Value::Null),
+            Value::Str(s) => kotlin_parse_long(s)
+                .or_else(|| {
+                    if ctx.dialect() == crate::CypherDialect::Graphite {
+                        return None;
+                    }
+                    java_parse_double(s)
+                        .filter(|n| {
+                            n.is_finite() && *n >= i64::MIN as f64 && *n < -(i64::MIN as f64)
+                        })
+                        .map(|n| n as i64)
+                })
+                .map(Value::Int)
+                .unwrap_or(Value::Null),
             Value::Bool(b) => Value::Int(if *b { 1 } else { 0 }),
-            _ => Value::Null,
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "tofloat" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             v if v.is_number() => Value::Float(to_double(v)),
             Value::Str(s) => java_parse_double(s)
                 .map(Value::Float)
                 .unwrap_or(Value::Null),
-            _ => Value::Null,
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "toboolean" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             Value::Bool(b) => Value::Bool(*b),
             Value::Str(s) => {
                 let l = s.to_ascii_lowercase();
@@ -109,16 +146,38 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                     Value::Null
                 }
             }
-            _ => Value::Null,
+            _ if ctx.dialect() == crate::CypherDialect::Graphite => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "tostring" => match arg(args, 0)? {
             Value::Null => Value::Null,
+            v if ctx.dialect() == crate::CypherDialect::OpenCypherM23
+                && !matches!(
+                    v,
+                    Value::Bool(_)
+                        | Value::Int(_)
+                        | Value::Float(_)
+                        | Value::Float32(_)
+                        | Value::Str(_)
+                        | Value::Temporal(_)
+                ) =>
+            {
+                return Err(invalid_conversion("toString"));
+            }
             v => Value::str(kotlin_to_string(v, ctx)),
         },
 
         // -- graph shape ---------------------------------------------------
         "properties" => match arg(args, 0)? {
+            value @ Value::Map(_) if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                value.clone()
+            }
             Value::Node(n) => Value::map(ctx.node_properties(*n)),
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+                .map(|r| Value::map(r.properties))
+                .unwrap_or(Value::Null),
             Value::Method(m) => Value::map(ctx.method_properties(*m)),
             _ => Value::Null,
         },
@@ -130,18 +189,56 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                     .map(|k| Value::str(k.as_str()))
                     .collect(),
             ),
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+                .map(|r| Value::list(r.properties.into_keys().map(Value::str).collect()))
+                .unwrap_or(Value::Null),
             Value::Map(m) => Value::list(m.keys().map(|k| Value::str(k.as_str())).collect()),
             _ => Value::Null,
         },
         "labels" => match arg(args, 0)? {
+            Value::Null if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => Value::Null,
             Value::Node(n) => {
-                Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect())
+                if let Some(graph) = ctx.property_graph() {
+                    Value::list(
+                        graph
+                            .node(n.id)
+                            .map(|n| n.labels.into_iter().map(Value::str).collect())
+                            .unwrap_or_default(),
+                    )
+                } else {
+                    Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect())
+                }
             }
             Value::Method(_) => Value::list(vec![Value::str("Method")]),
+            _ if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                return Err(invalid_conversion(name))
+            }
             _ => Value::list(vec![]),
         },
         "type" => match arg(args, 0)? {
+            Value::Null => Value::Null,
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship_type(u64::from(r.property_id.unwrap().get())))
+                .map(Value::str)
+                .unwrap_or(Value::Null),
             Value::Rel(r) => Value::str(ctx.rel_type(*r)),
+            _ if ctx.dialect() == crate::CypherDialect::OpenCypherM23 => {
+                return Err(invalid_conversion(name))
+            }
+            _ => Value::Null,
+        },
+        "startnode" | "endnode" => match arg(args, 0)? {
+            Value::Rel(r) => Value::Node(crate::value::NodeRef {
+                source: r.source,
+                id: if lower == "startnode" {
+                    r.edge.from
+                } else {
+                    r.edge.to
+                },
+            }),
             _ => Value::Null,
         },
         "nodes" => match arg(args, 0)? {
@@ -168,12 +265,8 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             Value::Path(p) => Value::list(
                 p.edges
                     .iter()
-                    .map(|e| {
-                        Value::Rel(crate::value::EdgeRef {
-                            source: p.source,
-                            edge: *e,
-                        })
-                    })
+                    .enumerate()
+                    .map(|(i, _)| Value::Rel(p.relationship(i)))
                     .collect(),
             ),
             Value::List(l) => Value::list(
@@ -293,30 +386,41 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             None => Value::Null,
         },
         "range" => {
-            let start = as_number(arg(args, 0)?)? as i64;
-            let end = as_number(arg(args, 1)?)? as i64;
-            let step = if args.len() > 2 {
-                as_number(arg(args, 2)?)? as i64
-            } else {
-                1
+            let integer = |index| match arg(args, index)? {
+                value if ctx.dialect() == crate::CypherDialect::Graphite => {
+                    as_number(value).map(|number| number as i64)
+                }
+                Value::Int(value) => Ok(*value),
+                _ => Err(CypherError::execution(
+                    "ArgumentError",
+                    "InvalidArgumentType",
+                    "range() arguments must be integers",
+                )),
             };
+            let start = integer(0)?;
+            let end = integer(1)?;
+            let step = if args.len() > 2 { integer(2)? } else { 1 };
             if step == 0 {
-                return Err(CypherError::Runtime(
-                    "Step cannot be zero in range()".into(),
+                if ctx.dialect() == crate::CypherDialect::Graphite {
+                    return Err(CypherError::Runtime(
+                        "Step cannot be zero in range()".into(),
+                    ));
+                }
+                return Err(CypherError::execution(
+                    "ArgumentError",
+                    "NumberOutOfRange",
+                    "Step cannot be zero in range()",
                 ));
             }
             let mut out = Vec::new();
             let mut i = start;
-            if step > 0 {
-                while i <= end {
-                    out.push(Value::Int(i));
-                    i += step;
-                }
-            } else {
-                while i >= end {
-                    out.push(Value::Int(i));
-                    i += step;
-                }
+            while if step > 0 { i <= end } else { i >= end } {
+                ctx.check_cancelled()?;
+                out.push(Value::Int(i));
+                let Some(next) = i.checked_add(step) else {
+                    break;
+                };
+                i = next;
             }
             Value::list(out)
         }
@@ -393,7 +497,26 @@ pub fn aggregate(name: &str, values: &[Value]) -> CypherResult<Value> {
     let non_null: Vec<&Value> = values.iter().filter(|v| !v.is_null()).collect();
     Ok(match lower.as_str() {
         "count" => Value::Int(non_null.len() as i64),
-        "sum" => Value::Float(non_null.iter().map(|v| to_double(v)).sum::<f64>()),
+        "sum" => {
+            if non_null.iter().all(|value| matches!(value, Value::Int(_))) {
+                let total = non_null
+                    .iter()
+                    .map(|value| match value {
+                        Value::Int(n) => *n as i128,
+                        _ => unreachable!(),
+                    })
+                    .sum::<i128>();
+                Value::Int(i64::try_from(total).map_err(|_| {
+                    CypherError::execution(
+                        "ArithmeticError",
+                        "IntegerOverflow",
+                        "Integer sum exceeds signed 64-bit range",
+                    )
+                })?)
+            } else {
+                Value::Float(non_null.iter().map(|v| to_double(v)).sum::<f64>())
+            }
+        }
         "avg" => {
             if non_null.is_empty() {
                 Value::Null
@@ -403,7 +526,7 @@ pub fn aggregate(name: &str, values: &[Value]) -> CypherResult<Value> {
                 )
             }
         }
-        // min/max compare by toDouble() and return the ORIGINAL value; NaN sorts greatest.
+        // Min/max use Cypher value ordering and retain the original value type.
         "min" => pick_extreme(&non_null, true),
         "max" => pick_extreme(&non_null, false),
         "collect" => Value::list(non_null.into_iter().cloned().collect()),
@@ -420,37 +543,46 @@ pub fn count_star(rows: usize) -> Value {
     Value::Int(rows as i64)
 }
 
-fn pick_extreme(values: &[&Value], min: bool) -> Value {
-    let mut best: Option<(&Value, f64)> = None;
-    for v in values {
-        let d = to_double(v);
-        best = Some(match best {
-            None => (v, d),
-            Some((bv, bd)) => {
-                // NaN is greatest, matching the Kotlin comparator.
-                let replace = if min {
-                    nan_aware_lt(d, bd)
-                } else {
-                    nan_aware_lt(bd, d)
-                };
-                if replace {
-                    (v, d)
-                } else {
-                    (bv, bd)
-                }
-            }
-        });
+/// Graphite retains its historical numeric coercion and first-seen ties.
+pub(crate) fn prefer_extreme(
+    value: &Value,
+    previous: &Value,
+    min: bool,
+    dialect: crate::CypherDialect,
+) -> bool {
+    if dialect == crate::CypherDialect::Graphite {
+        let (a, b) = if min {
+            (to_double(value), to_double(previous))
+        } else {
+            (to_double(previous), to_double(value))
+        };
+        !a.is_nan() && (b.is_nan() || a < b)
+    } else {
+        let order = crate::ordering::compare_order_values(value, previous);
+        if min {
+            order.is_lt()
+        } else {
+            order.is_gt()
+        }
     }
-    best.map(|(v, _)| (*v).clone()).unwrap_or(Value::Null)
 }
 
-fn nan_aware_lt(a: f64, b: f64) -> bool {
-    match (a.is_nan(), b.is_nan()) {
-        (true, true) => false,
-        (true, false) => false,
-        (false, true) => true,
-        (false, false) => a < b,
+fn pick_extreme(values: &[&Value], min: bool) -> Value {
+    let mut best: Option<&Value> = None;
+    for value in values {
+        let replace = best.is_none_or(|previous| {
+            let order = crate::ordering::compare_order_values(value, previous);
+            if min {
+                order.is_lt()
+            } else {
+                order.is_gt()
+            }
+        });
+        if replace {
+            best = Some(value);
+        }
     }
+    best.cloned().unwrap_or(Value::Null)
 }
 
 fn sorted_doubles(values: &[&Value]) -> Vec<f64> {
@@ -483,6 +615,32 @@ fn percentile_disc(values: &[&Value], p: f64) -> Value {
     }
     let idx = ((p * nums.len() as f64).ceil() as usize).saturating_sub(1);
     Value::Float(nums[idx.min(nums.len() - 1)])
+}
+
+pub(crate) fn percentile(name: &str, values: &[Value], parameter: &Value) -> CypherResult<Value> {
+    if parameter.is_null() {
+        return Ok(Value::Null);
+    }
+    let p = parameter.as_f64().ok_or_else(|| {
+        CypherError::execution(
+            "TypeError",
+            "InvalidArgumentValue",
+            "Percentile must be numeric",
+        )
+    })?;
+    if !(0.0..=1.0).contains(&p) {
+        return Err(CypherError::execution(
+            "ArgumentError",
+            "NumberOutOfRange",
+            "Percentile must be between zero and one",
+        ));
+    }
+    let values: Vec<_> = values.iter().filter(|v| !v.is_null()).collect();
+    Ok(if name.eq_ignore_ascii_case("percentilecont") {
+        percentile_cont(&values, p)
+    } else {
+        percentile_disc(&values, p)
+    })
 }
 
 fn std_dev(values: &[&Value], sample: bool) -> Value {

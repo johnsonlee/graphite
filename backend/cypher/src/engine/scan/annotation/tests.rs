@@ -550,7 +550,7 @@ fn coalesce_pushdown_preserves_safe_empty_fallbacks_and_rejects_matching_alterna
             false,
             vec![0, 1],
         ),
-        ("coalesce() CONTAINS 'Marker'", false, vec![]),
+        ("coalesce(null) CONTAINS 'Marker'", false, vec![]),
     ];
     for (filter, pushed, ids) in cases {
         let query =

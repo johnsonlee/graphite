@@ -2,7 +2,11 @@
 
 pub mod ast;
 pub mod context;
+pub mod dialect;
 pub mod error;
+pub mod property_graph;
+pub mod temporal;
+pub mod validation;
 pub mod value;
 
 pub use semantics::{java_double_to_string, java_float_to_string};
@@ -10,6 +14,7 @@ pub use semantics::{java_double_to_string, java_float_to_string};
 // Parser (lexer + parser + AST rendering)
 pub mod lexer;
 pub mod parser;
+pub mod procedures;
 pub mod render;
 
 // Evaluation
@@ -24,5 +29,6 @@ pub mod tostring;
 // Execution
 pub mod engine;
 
+pub use dialect::CypherDialect;
 pub use error::{CypherError, CypherResult};
 pub use value::Value;

@@ -9,6 +9,7 @@ use serde_json::{Map, Number, Value as J};
 pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
     match v {
         Value::Null => J::Null,
+        Value::Temporal(t) => J::String(t.to_string()),
         Value::Bool(b) => J::Bool(*b),
         Value::Int(i) => J::Number(Number::from(*i)),
         Value::Float(f) => number(*f),
@@ -29,6 +30,15 @@ pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
             }
             J::Object(out)
         }
+        Value::Node(n) if ctx.property_graph().is_some() => {
+            let node = ctx.property_graph().unwrap().node(n.id);
+            match node {
+                Some(node) => {
+                    serde_json::json!({"id":node.id,"labels":node.labels,"properties":materialize(&Value::map(node.properties),ctx)})
+                }
+                None => J::Null,
+            }
+        }
         Value::Node(n) => {
             let mut out = Map::new();
             out.insert("id".into(), J::Number(Number::from(n.id as i64)));
@@ -41,6 +51,17 @@ pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
                 out.insert(k, materialize(&val, ctx));
             }
             J::Object(out)
+        }
+        Value::Rel(r) if r.property_id.is_some() => {
+            match ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+            {
+                Some(rel) => {
+                    serde_json::json!({"id":rel.id,"from":rel.from,"to":rel.to,"type":rel.type_name,"properties":materialize(&Value::map(rel.properties),ctx)})
+                }
+                None => J::Null,
+            }
         }
         Value::Rel(r) => {
             let mut out = Map::new();
@@ -90,15 +111,8 @@ pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
             let rels: Vec<J> = p
                 .edges
                 .iter()
-                .map(|e| {
-                    materialize(
-                        &Value::Rel(crate::value::EdgeRef {
-                            source: p.source,
-                            edge: *e,
-                        }),
-                        ctx,
-                    )
-                })
+                .enumerate()
+                .map(|(i, _)| materialize(&Value::Rel(p.relationship(i)), ctx))
                 .collect();
             if ctx.is_cross_graph() {
                 let mut out = Map::new();

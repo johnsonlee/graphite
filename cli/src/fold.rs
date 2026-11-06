@@ -548,6 +548,7 @@ fn describe(value: &Value) -> String {
         Value::Rel(_) => "a relationship".to_string(),
         Value::Path(_) => "a path".to_string(),
         Value::Method(_) => "a method".to_string(),
+        Value::Temporal(_) => "a temporal value".to_string(),
     }
 }
 

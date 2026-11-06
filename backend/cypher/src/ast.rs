@@ -52,6 +52,17 @@ pub enum Expr {
         distinct: bool,
         args: Vec<Expr>,
     },
+    LabelPredicate {
+        expr: Box<Expr>,
+        labels: Vec<String>,
+    },
+    PatternPredicate(Box<Pattern>),
+    PatternComprehension {
+        pattern: Box<Pattern>,
+        filter: Option<Box<Expr>>,
+        map: Box<Expr>,
+    },
+    ExistsSubquery(Vec<Clause>),
     CountStar,
     /// `DISTINCT expr` used as an atom.
     Distinct(Box<Expr>),
@@ -124,6 +135,8 @@ pub enum Direction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NodePattern {
+    /// The source contained an explicit property map, including an empty one.
+    pub properties_present: bool,
     pub variable: Option<String>,
     pub labels: Vec<String>,
     pub properties: Vec<(String, Expr)>,
@@ -173,6 +186,16 @@ impl Pattern {
 pub struct ReturnItem {
     pub expr: Expr,
     pub alias: Option<String>,
+    /// Original expression spelling for unaliased result headers.
+    pub source_text: Option<String>,
+}
+impl ReturnItem {
+    pub fn column_name(&self) -> String {
+        self.alias
+            .clone()
+            .or_else(|| self.source_text.clone())
+            .unwrap_or_else(|| crate::render::to_cypher_string(&self.expr))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -182,7 +205,46 @@ pub struct OrderItem {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum SetItem {
+    Property {
+        variable: String,
+        key: String,
+        value: Expr,
+    },
+    Map {
+        variable: String,
+        value: Expr,
+        merge: bool,
+    },
+    Labels {
+        variable: String,
+        labels: Vec<String>,
+    },
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum RemoveItem {
+    Property {
+        variable: String,
+        key: String,
+    },
+    Labels {
+        variable: String,
+        labels: Vec<String>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProcedureCall {
+    pub name: String,
+    /// None is the standalone implicit named-parameter form.
+    pub arguments: Option<Vec<Expr>>,
+    pub yields: Option<Vec<(String, String)>>,
+    pub yield_all: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Clause {
+    Call(ProcedureCall),
     Match {
         patterns: Vec<Pattern>,
         optional: bool,
@@ -213,8 +275,13 @@ pub enum Clause {
         detach: bool,
         exprs: Vec<Expr>,
     },
-    Set,
-    Remove,
+    Set(Vec<SetItem>),
+    Remove(Vec<RemoveItem>),
+    Merge {
+        pattern: Pattern,
+        on_create: Vec<SetItem>,
+        on_match: Vec<SetItem>,
+    },
     /// UNION marker between clause runs; `all` = UNION ALL.
     Union {
         all: bool,
