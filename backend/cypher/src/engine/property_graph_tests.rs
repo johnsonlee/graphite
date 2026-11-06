@@ -195,3 +195,127 @@ fn invalid_recursive_or_mixed_properties_are_rejected_transactionally() {
     );
     assert!(!snapshot.nodes[0].properties.contains_key("absent"));
 }
+
+#[test]
+fn native_set_remove_and_map_replacement_preserve_snapshot_values() {
+    let (graph, ex) = session();
+    ex.execute("CREATE (a:A {x:1, keep:'old'})-[r:R {x:1}]->(b:B)", None)
+        .unwrap();
+    let result=ex.execute("MATCH (a:A)-[r:R]->(b:B) SET a.x=2, a += {added:true, keep:null}, a:C:D, r.x=3 RETURN a.x AS x, a.added AS added, a.keep AS removed, r.x AS rx",None).unwrap();
+    assert!(matches!(result.rows[0]["x"], Value::Int(2)));
+    assert!(matches!(result.rows[0]["rx"], Value::Int(3)));
+    assert!(matches!(result.rows[0]["added"], Value::Bool(true)));
+    assert!(result.rows[0]["removed"].is_null());
+    assert_eq!(graph.snapshot().nodes[0].labels, vec!["A", "C", "D"]);
+    ex.execute(
+        "MATCH (a:A) REMOVE a.x, a:C:D SET a = {name:'new', dropped:null}",
+        None,
+    )
+    .unwrap();
+    let snapshot = graph.snapshot();
+    assert_eq!(snapshot.nodes[0].labels, vec!["A"]);
+    assert_eq!(snapshot.nodes[0].properties.len(), 1);
+    assert_eq!(snapshot.nodes[0].properties["name"].as_str(), Some("new"));
+    assert!(ex
+        .execute("MATCH (a:A) SET a.name='broken', a.recursive=a", None)
+        .is_err());
+    assert_eq!(
+        graph.snapshot().nodes[0].properties["name"].as_str(),
+        Some("new")
+    );
+    ex.execute(
+        "OPTIONAL MATCH (n:Missing) SET n.x=1, n += {y:2}, n:A REMOVE n.x, n:A",
+        None,
+    )
+    .unwrap();
+    assert_eq!(graph.snapshot().nodes.len(), 2);
+}
+
+#[test]
+fn native_merge_matches_whole_patterns_and_chooses_actions_per_row() {
+    let (graph, ex) = session();
+    let result=ex.execute("UNWIND [1,1,2] AS id MERGE (n:Person {id:id}) ON CREATE SET n.created=true, n.seen=1 ON MATCH SET n.seen=n.seen+1 RETURN n.id AS id, n.seen AS seen ORDER BY id",None).unwrap();
+    assert_eq!(result.rows.len(), 3);
+    let snapshot = graph.snapshot();
+    assert_eq!(snapshot.nodes.len(), 2);
+    assert!(matches!(
+        snapshot.nodes[0].properties["seen"],
+        Value::Int(2)
+    ));
+    assert!(matches!(
+        snapshot.nodes[1].properties["seen"],
+        Value::Int(1)
+    ));
+    assert!(matches!(
+        snapshot.nodes[0].properties["created"],
+        Value::Bool(true)
+    ));
+    ex.execute("MATCH (a:Person {id:1}) MERGE (a)-[r:R {name:'known'}]->(b:Target {id:4}) ON CREATE SET r.created=true",None).unwrap();
+    ex.execute("MATCH (a:Person {id:1}) MERGE (a)-[r:R {name:'known'}]->(b:Target {id:4}) ON MATCH SET r.matched=true",None).unwrap();
+    let snapshot = graph.snapshot();
+    assert_eq!(snapshot.nodes.len(), 3);
+    assert_eq!(snapshot.relationships.len(), 1);
+    assert!(matches!(
+        snapshot.relationships[0].properties["created"],
+        Value::Bool(true)
+    ));
+    assert!(matches!(
+        snapshot.relationships[0].properties["matched"],
+        Value::Bool(true)
+    ));
+    assert!(ex.execute("MERGE (:Person {id:null})", None).is_err());
+    assert_eq!(graph.snapshot().nodes.len(), 3);
+}
+
+#[test]
+fn native_delete_validates_whole_clause_and_detach_deletes_incident_edges() {
+    let (graph, ex) = session();
+    ex.execute("CREATE (a:A {x:1})-[r:R {x:2}]->(b:B)", None)
+        .unwrap();
+    assert!(ex
+        .execute("MATCH(a:A) SET a.x=9 DELETE a", None)
+        .unwrap_err()
+        .to_string()
+        .contains("relationships"));
+    assert_eq!(graph.snapshot().nodes.len(), 2);
+    assert!(matches!(
+        graph.snapshot().nodes[0].properties["x"],
+        Value::Int(1)
+    ));
+    // Validate all targets before deletion, so node-before-relationship syntax is safe.
+    ex.execute("MATCH(a:A)-[r:R]->(b:B) DELETE a,r", None)
+        .unwrap();
+    assert_eq!(graph.snapshot().nodes.len(), 1);
+    assert!(graph.snapshot().relationships.is_empty());
+    ex.execute("CREATE (a:A)-[:R]->(b:C)", None).unwrap();
+    ex.execute("MATCH(a:A) DETACH DELETE a", None).unwrap();
+    assert_eq!(graph.snapshot().nodes.len(), 2);
+    assert!(graph.snapshot().relationships.is_empty());
+    ex.execute("OPTIONAL MATCH(n:Missing) DELETE n RETURN n", None)
+        .unwrap();
+    let before = graph.snapshot();
+    assert!(ex.execute("DELETE 42", None).is_err());
+    assert_eq!(graph.snapshot().nodes.len(), before.nodes.len());
+    ex.execute("MATCH(n) DELETE n", None).unwrap();
+    assert!(graph.snapshot().nodes.is_empty());
+}
+
+#[test]
+fn all_mutations_remain_rejected_by_default_program_graph_execution() {
+    let ex = Executor::new(vec![], false);
+    for query in [
+        "MERGE (:A)",
+        "SET n.x=1",
+        "REMOVE n.x",
+        "DELETE null",
+        "DETACH DELETE null",
+    ] {
+        assert!(
+            ex.execute(query, None)
+                .unwrap_err()
+                .to_string()
+                .contains("graph is immutable"),
+            "{query}"
+        );
+    }
+}

@@ -82,6 +82,134 @@ impl PropertyGraph {
             _guard: guard,
         }
     }
+    pub(crate) fn set_property(
+        &self,
+        target: &Value,
+        key: &str,
+        value: Value,
+    ) -> crate::CypherResult<()> {
+        if target.is_null() {
+            return Ok(());
+        }
+        validate_property(&value)?;
+        let mut state = self.state.write();
+        let properties = entity_properties(&mut state, target)?;
+        if value.is_null() {
+            properties.shift_remove(key);
+        } else {
+            properties.insert(key.to_owned(), value);
+        }
+        Ok(())
+    }
+    pub(crate) fn set_properties(
+        &self,
+        target: &Value,
+        values: Value,
+        merge: bool,
+    ) -> crate::CypherResult<()> {
+        if target.is_null() {
+            return Ok(());
+        }
+        let Value::Map(values) = values else {
+            return Err(crate::CypherError::runtime(
+                "SET map assignment requires a map",
+            ));
+        };
+        for value in values.values() {
+            validate_property(value)?;
+        }
+        let mut state = self.state.write();
+        let properties = entity_properties(&mut state, target)?;
+        if !merge {
+            properties.clear();
+        }
+        for (key, value) in values.iter() {
+            if value.is_null() {
+                properties.shift_remove(key);
+            } else {
+                properties.insert(key.clone(), value.clone());
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn update_labels(
+        &self,
+        target: &Value,
+        labels: &[String],
+        remove: bool,
+    ) -> crate::CypherResult<()> {
+        if target.is_null() {
+            return Ok(());
+        }
+        let Value::Node(node) = target else {
+            return Err(crate::CypherError::runtime(
+                "Labels can only be updated on nodes",
+            ));
+        };
+        let mut state = self.state.write();
+        let node = state
+            .nodes
+            .get_mut(&node.id)
+            .ok_or_else(|| crate::CypherError::runtime("Graph entity has been deleted"))?;
+        for label in labels {
+            if remove {
+                node.labels.retain(|old| old != label);
+            } else if !node.labels.contains(label) {
+                node.labels.push(label.clone());
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn delete(&self, targets: &[Value], detach: bool) -> crate::CypherResult<()> {
+        let mut nodes = std::collections::HashSet::new();
+        let mut relationships = std::collections::HashSet::new();
+        for target in targets {
+            match target {
+                Value::Null => {}
+                Value::Node(node) => {
+                    nodes.insert(node.id);
+                }
+                Value::Rel(rel) if rel.property_id.is_some() => {
+                    relationships.insert(u64::from(rel.property_id.unwrap().get()));
+                }
+                Value::Path(path) if path.property_path.is_some() => {
+                    nodes.extend(path.nodes.iter().copied());
+                    relationships.extend(
+                        path.property_path
+                            .as_ref()
+                            .unwrap()
+                            .relationship_ids
+                            .iter()
+                            .map(|id| u64::from(id.get())),
+                    );
+                }
+                _ => {
+                    return Err(crate::CypherError::runtime(
+                        "DELETE requires a node, relationship or path",
+                    ))
+                }
+            }
+        }
+        let mut state = self.state.write();
+        for rel in state.relationships.values() {
+            if nodes.contains(&rel.from) || nodes.contains(&rel.to) {
+                if detach {
+                    relationships.insert(rel.id);
+                } else if !relationships.contains(&rel.id) {
+                    return Err(crate::CypherError::runtime(
+                        "Cannot delete node, because it still has relationships",
+                    ));
+                }
+            }
+        }
+        for id in relationships {
+            state.relationships.shift_remove(&id);
+        }
+        for id in nodes {
+            state.nodes.shift_remove(&id);
+        }
+        Ok(())
+    }
     pub(crate) fn create_node(
         &self,
         labels: &[String],
@@ -168,6 +296,28 @@ impl Drop for PropertyTransaction<'_> {
             *self.graph.state.write() = state;
         }
     }
+}
+
+fn entity_properties<'a>(
+    state: &'a mut State,
+    target: &Value,
+) -> crate::CypherResult<&'a mut IndexMap<String, Value>> {
+    match target {
+        Value::Node(node) => state
+            .nodes
+            .get_mut(&node.id)
+            .map(|node| &mut node.properties),
+        Value::Rel(rel) if rel.property_id.is_some() => state
+            .relationships
+            .get_mut(&u64::from(rel.property_id.unwrap().get()))
+            .map(|rel| &mut rel.properties),
+        _ => {
+            return Err(crate::CypherError::runtime(
+                "Properties can only be updated on nodes or relationships",
+            ))
+        }
+    }
+    .ok_or_else(|| crate::CypherError::runtime("Graph entity has been deleted"))
 }
 
 /// Property values never contain graph references or recursively nested containers.

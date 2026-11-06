@@ -7,7 +7,7 @@
 //! - `MATCH ... WHERE p` emits `Match` **then** `Where`; `OPTIONAL MATCH` keeps the
 //!   predicate inside `Match.where_clause` (it drives null-filling).
 //! - `RETURN`/`WITH` are flattened into `Return`/`With` + `OrderBy` + `Skip` + `Limit`.
-//! - `MERGE p` lowers to `Create`; `UNION` becomes a marker clause.
+//! - Mutation clauses retain their operands; `UNION` becomes a marker clause.
 //! - A query containing `;` is split, parsed per part, and the clause lists concatenated.
 
 use crate::ast::*;
@@ -257,8 +257,32 @@ impl Parser {
             }
             T::Keyword(K::Merge) => {
                 self.bump();
-                let p = self.pattern_part()?;
-                out.push(Clause::Create(vec![p]));
+                let pattern = self.pattern_part()?;
+                let mut on_create = Vec::new();
+                let mut on_match = Vec::new();
+                while self.eat_kw(K::On) {
+                    let create = if self.eat_kw(K::Create) {
+                        true
+                    } else if self.eat_kw(K::Match) {
+                        false
+                    } else {
+                        return Err(self.mismatched("CREATE or MATCH"));
+                    };
+                    if !self.eat_kw(K::Set) {
+                        return Err(self.mismatched("SET"));
+                    }
+                    let items = self.set_items()?;
+                    if create {
+                        on_create.extend(items);
+                    } else {
+                        on_match.extend(items);
+                    }
+                }
+                out.push(Clause::Merge {
+                    pattern,
+                    on_create,
+                    on_match,
+                });
                 Ok(())
             }
             T::Keyword(K::Detach) | T::Keyword(K::Delete) => {
@@ -275,14 +299,12 @@ impl Parser {
             }
             T::Keyword(K::Set) => {
                 self.bump();
-                self.set_items()?;
-                out.push(Clause::Set);
+                out.push(Clause::Set(self.set_items()?));
                 Ok(())
             }
             T::Keyword(K::Remove) => {
                 self.bump();
-                self.remove_items()?;
-                out.push(Clause::Remove);
+                out.push(Clause::Remove(self.remove_items()?));
                 Ok(())
             }
             _ => Err(self.mismatched("a clause")),
@@ -407,37 +429,64 @@ impl Parser {
         Ok(ReturnItem { expr, alias })
     }
 
-    // SET / REMOVE are parsed (for error parity) but discarded.
-    fn set_items(&mut self) -> CypherResult<()> {
+    fn set_items(&mut self) -> CypherResult<Vec<SetItem>> {
+        let mut items = Vec::new();
         loop {
-            let _ = self.variable()?;
-            if self.eat(T::Dot) {
-                let _ = self.symbolic_name()?;
+            let variable = self.variable()?;
+            let item = if self.eat(T::Dot) {
+                let key = self.symbolic_name()?;
                 self.expect(T::Assign, "'='")?;
-                let _ = self.expression()?;
-            } else if self.eat(T::AddAssign) || self.eat(T::Assign) {
-                let _ = self.expression()?;
+                SetItem::Property {
+                    variable,
+                    key,
+                    value: self.expression()?,
+                }
+            } else if self.at(T::AddAssign) || self.at(T::Assign) {
+                let merge = self.eat(T::AddAssign);
+                if !merge {
+                    self.expect(T::Assign, "'='")?;
+                }
+                SetItem::Map {
+                    variable,
+                    value: self.expression()?,
+                    merge,
+                }
             } else if self.eat(T::Colon) {
-                let _ = self.symbolic_name()?;
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                SetItem::Labels { variable, labels }
             } else {
                 return Err(self.mismatched("{'.', '=', '+=', ':'}"));
-            }
+            };
+            items.push(item);
             if !self.eat(T::Comma) {
-                return Ok(());
+                return Ok(items);
             }
         }
     }
-
-    fn remove_items(&mut self) -> CypherResult<()> {
+    fn remove_items(&mut self) -> CypherResult<Vec<RemoveItem>> {
+        let mut items = Vec::new();
         loop {
-            let _ = self.variable()?;
-            if self.eat(T::Dot) || self.eat(T::Colon) {
-                let _ = self.symbolic_name()?;
+            let variable = self.variable()?;
+            let item = if self.eat(T::Dot) {
+                RemoveItem::Property {
+                    variable,
+                    key: self.symbolic_name()?,
+                }
+            } else if self.eat(T::Colon) {
+                let mut labels = vec![self.symbolic_name()?];
+                while self.eat(T::Colon) {
+                    labels.push(self.symbolic_name()?);
+                }
+                RemoveItem::Labels { variable, labels }
             } else {
                 return Err(self.mismatched("{'.', ':'}"));
-            }
+            };
+            items.push(item);
             if !self.eat(T::Comma) {
-                return Ok(());
+                return Ok(items);
             }
         }
     }
@@ -1235,4 +1284,49 @@ pub fn decode_string_literal(raw: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod mutation_tests {
+    use super::*;
+    #[test]
+    fn retains_set_remove_and_merge_actions_in_the_production_ast() {
+        let clauses=parse("MERGE (n:A {id:1}) ON CREATE SET n.x=2, n:B:C ON MATCH SET n += {seen:true} REMOVE n.x, n:B:C RETURN n").unwrap();
+        let Clause::Merge {
+            pattern,
+            on_create,
+            on_match,
+        } = &clauses[0]
+        else {
+            panic!("merge")
+        };
+        assert_eq!(pattern.nodes[0].labels, vec!["A"]);
+        assert_eq!(
+            pattern.nodes[0].properties,
+            vec![("id".into(), Expr::Literal(Literal::Int(1)))]
+        );
+        assert!(
+            matches!(&on_create[0],SetItem::Property{variable,key,value:Expr::Literal(Literal::Int(2))} if variable=="n" && key=="x")
+        );
+        assert!(
+            matches!(&on_create[1],SetItem::Labels{variable,labels} if variable=="n" && labels==&["B","C"])
+        );
+        assert!(matches!(&on_match[0],SetItem::Map{variable,merge:true,..} if variable=="n"));
+        let Clause::Remove(items) = &clauses[1] else {
+            panic!("remove")
+        };
+        assert_eq!(
+            items,
+            &vec![
+                RemoveItem::Property {
+                    variable: "n".into(),
+                    key: "x".into()
+                },
+                RemoveItem::Labels {
+                    variable: "n".into(),
+                    labels: vec!["B".into(), "C".into()]
+                }
+            ]
+        );
+    }
 }

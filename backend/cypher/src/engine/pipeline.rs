@@ -460,17 +460,39 @@ impl Executor {
                         "CREATE is not supported — graph is immutable".into(),
                     ))
                 }
+                Clause::Merge {
+                    pattern,
+                    on_create,
+                    on_match,
+                } if self.property_graph.is_some() => {
+                    rows =
+                        super::property_updates::merge(self, rows, pattern, on_create, on_match)?;
+                }
+                Clause::Merge { .. } => {
+                    return Err(CypherError::NotImplemented(
+                        "MERGE is not supported — graph is immutable".into(),
+                    ))
+                }
+                Clause::Delete { detach, exprs } if self.property_graph.is_some() => {
+                    super::property_updates::delete(self, &rows, exprs, *detach)?;
+                }
                 Clause::Delete { .. } => {
                     return Err(CypherError::NotImplemented(
                         "DELETE is not supported — graph is immutable".into(),
                     ))
                 }
-                Clause::Set => {
+                Clause::Set(items) if self.property_graph.is_some() => {
+                    super::property_updates::set(self, &rows, items)?;
+                }
+                Clause::Set(_) => {
                     return Err(CypherError::NotImplemented(
                         "SET is not supported — graph is immutable".into(),
                     ))
                 }
-                Clause::Remove => {
+                Clause::Remove(items) if self.property_graph.is_some() => {
+                    super::property_updates::remove(self, &rows, items)?;
+                }
+                Clause::Remove(_) => {
                     return Err(CypherError::NotImplemented(
                         "REMOVE is not supported — graph is immutable".into(),
                     ))

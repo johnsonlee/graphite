@@ -9,6 +9,7 @@ mod ordered_property;
 pub mod partition;
 pub mod pipeline;
 mod property_matching;
+mod property_updates;
 pub mod props;
 pub mod scan;
 mod string_seed;

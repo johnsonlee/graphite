@@ -182,6 +182,35 @@ pub struct OrderItem {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum SetItem {
+    Property {
+        variable: String,
+        key: String,
+        value: Expr,
+    },
+    Map {
+        variable: String,
+        value: Expr,
+        merge: bool,
+    },
+    Labels {
+        variable: String,
+        labels: Vec<String>,
+    },
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum RemoveItem {
+    Property {
+        variable: String,
+        key: String,
+    },
+    Labels {
+        variable: String,
+        labels: Vec<String>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Clause {
     Match {
         patterns: Vec<Pattern>,
@@ -213,8 +242,13 @@ pub enum Clause {
         detach: bool,
         exprs: Vec<Expr>,
     },
-    Set,
-    Remove,
+    Set(Vec<SetItem>),
+    Remove(Vec<RemoveItem>),
+    Merge {
+        pattern: Pattern,
+        on_create: Vec<SetItem>,
+        on_match: Vec<SetItem>,
+    },
     /// UNION marker between clause runs; `all` = UNION ALL.
     Union {
         all: bool,
