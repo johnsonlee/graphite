@@ -690,6 +690,9 @@ impl<'a> Evaluator<'a> {
     }
 
     fn slice(&self, base: &Value, from: Option<&Value>, to: Option<&Value>) -> Value {
+        if from.is_some_and(Value::is_null) || to.is_some_and(Value::is_null) {
+            return Value::Null;
+        }
         let items = match base {
             Value::List(l) => l,
             Value::Str(s) => {

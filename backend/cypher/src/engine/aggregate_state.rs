@@ -173,6 +173,22 @@ impl AggregateState {
         match self.kind {
             Kind::Count(count) => Ok(Value::Int(count.finish())),
             Kind::Number(state) => {
+                if !state.average && state.non_integer.is_none() {
+                    if state.overflow {
+                        return Err(CypherError::execution(
+                            "ArithmeticError",
+                            "IntegerOverflow",
+                            "Integer sum exceeds signed 64-bit range",
+                        ));
+                    }
+                    return i64::try_from(state.total).map(Value::Int).map_err(|_| {
+                        CypherError::execution(
+                            "ArithmeticError",
+                            "IntegerOverflow",
+                            "Integer sum exceeds signed 64-bit range",
+                        )
+                    });
+                }
                 let weighted_count = if state.weighted && state.average {
                     let count = state.weighted_count.finish();
                     if count == 0 {

@@ -2200,7 +2200,7 @@ const EXACT_SUM_MAGNITUDE: i128 = 1 << 53;
 fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherResult<Value> {
     let lower = name.to_ascii_lowercase();
     let live = || values.iter().zip(weights).filter(|(v, _)| !v.is_null());
-    let exact_total = || -> CypherResult<f64> {
+    let exact_total = || -> CypherResult<i128> {
         let (mut total, mut magnitude) = (0i128, 0i128);
         for (v, w) in live() {
             let Value::Int(i) = v else {
@@ -2208,25 +2208,45 @@ fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherRe
                     "Aggregation {name} over weighted rows needs integer inputs, found {v:?}"
                 )));
             };
-            total += *i as i128 * *w as i128;
-            magnitude += i.unsigned_abs() as i128 * *w as i128;
+            total = total.checked_add(*i as i128 * *w as i128).ok_or_else(|| {
+                CypherError::execution(
+                    "ArithmeticError",
+                    "IntegerOverflow",
+                    "Integer sum exceeds signed 64-bit range",
+                )
+            })?;
+            magnitude = magnitude
+                .checked_add(i.unsigned_abs() as i128 * *w as i128)
+                .ok_or_else(|| {
+                    CypherError::execution(
+                        "ArithmeticError",
+                        "IntegerOverflow",
+                        "Integer sum exceeds signed 64-bit range",
+                    )
+                })?;
         }
-        if magnitude > EXACT_SUM_MAGNITUDE {
+        if lower == "avg" && magnitude > EXACT_SUM_MAGNITUDE {
             return Err(CypherError::Runtime(format!(
                 "Aggregation {name} over weighted rows exceeds the exact floating range"
             )));
         }
-        Ok(total as f64)
+        Ok(total)
     };
     Ok(match lower.as_str() {
         "count" => Value::Int(live().map(|(_, w)| *w).sum()),
-        "sum" => Value::Float(exact_total()?),
+        "sum" => Value::Int(i64::try_from(exact_total()?).map_err(|_| {
+            CypherError::execution(
+                "ArithmeticError",
+                "IntegerOverflow",
+                "Integer sum exceeds signed 64-bit range",
+            )
+        })?),
         "avg" => {
             let n: i64 = live().map(|(_, w)| *w).sum();
             if n == 0 {
                 Value::Null
             } else {
-                Value::Float(exact_total()? / n as f64)
+                Value::Float(exact_total()? as f64 / n as f64)
             }
         }
         "min" | "max" => aggregate(name, values)?,

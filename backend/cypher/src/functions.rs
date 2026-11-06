@@ -133,6 +133,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
 
         // -- graph shape ---------------------------------------------------
         "properties" => match arg(args, 0)? {
+            value @ Value::Map(_) => value.clone(),
             Value::Node(n) => Value::map(ctx.node_properties(*n)),
             Value::Rel(r) if r.property_id.is_some() => ctx
                 .property_graph()
@@ -159,6 +160,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             _ => Value::Null,
         },
         "labels" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             Value::Node(n) => {
                 if let Some(graph) = ctx.property_graph() {
                     Value::list(
@@ -439,7 +441,26 @@ pub fn aggregate(name: &str, values: &[Value]) -> CypherResult<Value> {
     let non_null: Vec<&Value> = values.iter().filter(|v| !v.is_null()).collect();
     Ok(match lower.as_str() {
         "count" => Value::Int(non_null.len() as i64),
-        "sum" => Value::Float(non_null.iter().map(|v| to_double(v)).sum::<f64>()),
+        "sum" => {
+            if non_null.iter().all(|value| matches!(value, Value::Int(_))) {
+                let total = non_null
+                    .iter()
+                    .map(|value| match value {
+                        Value::Int(n) => *n as i128,
+                        _ => unreachable!(),
+                    })
+                    .sum::<i128>();
+                Value::Int(i64::try_from(total).map_err(|_| {
+                    CypherError::execution(
+                        "ArithmeticError",
+                        "IntegerOverflow",
+                        "Integer sum exceeds signed 64-bit range",
+                    )
+                })?)
+            } else {
+                Value::Float(non_null.iter().map(|v| to_double(v)).sum::<f64>())
+            }
+        }
         "avg" => {
             if non_null.is_empty() {
                 Value::Null

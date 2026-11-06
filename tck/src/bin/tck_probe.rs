@@ -184,6 +184,7 @@ fn error_kind(error: &CypherError) -> &'static str {
     match error {
         CypherError::Parse { .. } | CypherError::Syntax { .. } => "parse",
         CypherError::Runtime(_) => "runtime",
+        CypherError::Standard { .. } => "standard",
         CypherError::Aggregation(_) => "aggregation",
         CypherError::NotImplemented(_) => "not_implemented",
         CypherError::Cancelled => "cancelled",

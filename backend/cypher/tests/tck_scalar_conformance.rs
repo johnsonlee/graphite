@@ -222,3 +222,37 @@ fn result_headers_preserve_original_expression_spelling_and_unicode_offsets() {
         .unwrap();
     assert_eq!(result.columns, vec!["x"]);
 }
+
+#[test]
+fn null_slices_and_graph_functions_preserve_null_and_map_values() {
+    for slice in ["null..null", "1..null", "null..3", "..null", "null.."] {
+        same(&format!("RETURN [1,2,3][{slice}]"), Value::Null);
+    }
+    same(
+        "RETURN [1,2,3][1..]",
+        Value::list(vec![Value::Int(2), Value::Int(3)]),
+    );
+    same("RETURN labels(null)", Value::Null);
+    same(
+        "RETURN properties({name:'Popeye',level:9001})",
+        Value::map(indexmap::IndexMap::from([
+            ("name".into(), Value::str("Popeye")),
+            ("level".into(), Value::Int(9001)),
+        ])),
+    );
+}
+#[test]
+fn integer_sum_retains_exact_integer_type_and_promotes_only_floating_inputs() {
+    same(
+        "UNWIND [1000000000,1000000001,1000000002] AS n RETURN sum(n)",
+        Value::Int(3000000003),
+    );
+    same("MATCH (n) RETURN sum(n.value)", Value::Int(0));
+    same("UNWIND [1,2.5] AS n RETURN sum(n)", Value::Float(3.5));
+    let error = Executor::new(vec![], false)
+        .execute("UNWIND [9223372036854775807,1] AS n RETURN sum(n)", None)
+        .unwrap_err();
+    let diagnostic = error.diagnostic().unwrap();
+    assert_eq!(diagnostic.error_type, "ArithmeticError");
+    assert_eq!(diagnostic.detail, "IntegerOverflow");
+}
