@@ -222,6 +222,19 @@
               "type": "integer",
               "minimum": 1
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ]
       },
@@ -275,6 +288,19 @@
               "type": "integer",
               "minimum": 1
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ],
         "requestBody": {
@@ -292,6 +318,14 @@
                     "type": "integer",
                     "description": "Positive client timeout in milliseconds, capped by the server maximum",
                     "minimum": 1
+                  },
+                  "dialect": {
+                    "type": "string",
+                    "enum": [
+                      "graphite",
+                      "opencypher-m23"
+                    ],
+                    "default": "graphite"
                   }
                 },
                 "required": [
@@ -399,6 +433,19 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ]
       },
@@ -461,6 +508,19 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ],
         "requestBody": {
@@ -505,6 +565,14 @@
                     "type": "integer",
                     "description": "Positive client timeout in milliseconds, capped by the server maximum",
                     "minimum": 1
+                  },
+                  "dialect": {
+                    "type": "string",
+                    "enum": [
+                      "graphite",
+                      "opencypher-m23"
+                    ],
+                    "default": "graphite"
                   }
                 },
                 "required": [
@@ -787,6 +855,19 @@
               "type": "integer",
               "minimum": 1
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ]
       },
@@ -828,6 +909,19 @@
               "type": "integer",
               "minimum": 1
             }
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "description": "Query compatibility mode. Graphite preserves established formatting and UNWIND rebinding extensions; opencypher-m23 selects M23 contracts. A JSON dialect field takes precedence.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "graphite",
+                "opencypher-m23"
+              ],
+              "default": "graphite"
+            }
           }
         ],
         "requestBody": {
@@ -845,6 +939,14 @@
                     "type": "integer",
                     "description": "Positive client timeout in milliseconds, capped by the server maximum",
                     "minimum": 1
+                  },
+                  "dialect": {
+                    "type": "string",
+                    "enum": [
+                      "graphite",
+                      "opencypher-m23"
+                    ],
+                    "default": "graphite"
                   }
                 },
                 "required": [

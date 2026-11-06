@@ -1057,6 +1057,13 @@ accepted, loopback origins are accepted, any other origin is refused with 403 un
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
 all). The REST API is unaffected.
 
+Cypher queries default to Graphite compatibility. To select standard M23 behavior,
+pass `--dialect opencypher-m23` to `graphite query`, `"dialect": "opencypher-m23"`
+to the MCP `cypher` tool, or the same JSON field / `dialect` URL parameter to any
+Cypher REST route, including selected-graph cross queries and fanout. Invalid
+modes are rejected before execution. See [query compatibility modes](docs/cypher-tck.md#query-compatibility-mode)
+for the preserved Graphite extensions and TCK scope.
+
 Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
 unchanged, and every protocol revision the npm package negotiated (`2024-11-05` through
 `2025-11-25`) is still accepted; replace the `command`/`args` with `graphite mcp` and the

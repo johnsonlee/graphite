@@ -103,6 +103,7 @@ pub fn tools() -> Vec<ToolDef> {
             input_schema: schema(
                 json!({
                     "query": {"type": "string", "description": "Cypher query string"},
+                    "dialect": {"type": "string", "enum": ["graphite", "opencypher-m23"], "default": "graphite", "description": "Query compatibility mode"},
                     "graph_id": graph_id_property("Explicit single graph id; mutually exclusive with graphs and all_graphs"),
                     "all_graphs": {"type": "boolean", "default": false, "description": "Explicitly select all loaded graphs for /api/cypher/graphs"},
                     "graphs": {"type": "array", "items": {"type": "string"}, "description": "Explicit graph ids for /api/cypher/graphs"},
@@ -599,6 +600,10 @@ pub fn plan(tool: &str, args: &Map<String, Value>) -> Result<ApiCall, String> {
 
 fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
     let query = a.required_string("query")?;
+    let dialect = a.string("dialect")?;
+    if let Some(dialect) = &dialect {
+        dialect.parse::<graphite_cypher::CypherDialect>()?;
+    }
     let graph_id = a.string("graph_id")?;
     let all_graphs = a.bool("all_graphs")?;
     let selected: Option<Vec<String>> = a
@@ -629,6 +634,9 @@ fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
     }
 
     let with_params = |mut call: ApiCall| {
+        if let Some(dialect) = &dialect {
+            call = call.param("dialect", dialect.clone());
+        }
         if let Some(limit) = &limit {
             call = call.param("limit", number_text(limit));
         }
@@ -1216,6 +1224,31 @@ mod tests {
             .iter()
             .map(|(k, v)| (k.to_string(), v.clone()))
             .collect()
+    }
+
+    #[test]
+    fn cypher_dialect_is_validated_and_forwarded_for_every_graph_scope() {
+        for scope in [
+            vec![],
+            vec![("graph_id", json!("one"))],
+            vec![("graphs", json!(["a", "b"]))],
+            vec![("all_graphs", json!(true)), ("mode", json!("fanout"))],
+        ] {
+            let mut values = vec![
+                ("query", json!("RETURN 1")),
+                ("dialect", json!("opencypher-m23")),
+            ];
+            values.extend(scope);
+            let call = plan("cypher", &args(&values)).unwrap();
+            assert!(call.uri().contains("dialect=opencypher-m23"));
+        }
+        for value in [json!("unknown"), json!(false)] {
+            assert!(plan(
+                "cypher",
+                &args(&[("query", json!("RETURN 1")), ("dialect", value)])
+            )
+            .is_err());
+        }
     }
 
     #[test]

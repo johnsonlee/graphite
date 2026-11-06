@@ -5,6 +5,24 @@ production Rust Cypher executor. This is a correctness suite, not a performance
 benchmark. The full pinned scenario inventory is reported, including failures and
 scenarios for which the adapter does not yet implement the required contract.
 
+## Query compatibility mode
+
+The TCK probe explicitly selects the public `opencypher-m23` dialect on the same
+production executor used by the CLI and server. Reports identify that dialect;
+passing these scenarios describes M23 mode. Graphite's default `graphite` mode
+preserves existing query extensions, including `toString()` formatting of lists,
+maps and graph entities, UNWIND variable rebinding, and hidden input variables in
+nonaggregating DISTINCT ORDER BY. M23 mode rejects those nonstandard uses with
+native diagnostics. Scalar, temporal and null `toString()` inputs work in both modes.
+
+Choose the mode with `graphite query graph.graphite 'RETURN toString(42)' --dialect
+opencypher-m23`, or `Executor::with_dialect(CypherDialect::OpenCypherM23)` in Rust.
+All three Cypher HTTP routes accept `dialect=opencypher-m23` as a URL parameter or
+`"dialect": "opencypher-m23"` in a JSON request; the JSON field takes precedence.
+This includes both cross-graph and fanout queries at `/api/cypher/graphs`. The MCP
+`cypher` tool exposes the same optional `dialect` argument. Omission selects
+`graphite`; invalid dialects are rejected before execution (HTTP 400).
+
 ## Reproduce
 
 ```sh

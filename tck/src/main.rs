@@ -113,7 +113,7 @@ fn execute(args: Args) -> Result<bool> {
         output.join("report.json"),
         serde_json::to_string_pretty(&report)? + "\n",
     )?;
-    let mut markdown = format!("# openCypher TCK compatibility inventory\n\nTotal: {}; {}\n\nGate checks the exact reviewed inventory, statuses and outcomes. Known failures and unsupported scenarios remain visible; this is not full compliance.\n\n| Feature | Passed | Failed | Unsupported | Not run |\n|---|---:|---:|---:|---:|\n", run.results.len(), counts.iter().map(|(k,v)| format!("{k}: {v}")).collect::<Vec<_>>().join("; "));
+    let mut markdown = format!("# openCypher TCK compatibility inventory\n\nDialect: `opencypher-m23` (production executor).\n\nTotal: {}; {}\n\nGate checks the exact reviewed inventory, statuses and outcomes. Known failures and unsupported scenarios remain visible; this is not full compliance.\n\n| Feature | Passed | Failed | Unsupported | Not run |\n|---|---:|---:|---:|---:|\n", run.results.len(), counts.iter().map(|(k,v)| format!("{k}: {v}")).collect::<Vec<_>>().join("; "));
     let mut features: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
     for r in &run.results {
         *features
