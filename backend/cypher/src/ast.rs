@@ -221,7 +221,17 @@ pub enum RemoveItem {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct ProcedureCall {
+    pub name: String,
+    /// None is the standalone implicit named-parameter form.
+    pub arguments: Option<Vec<Expr>>,
+    pub yields: Option<Vec<(String, String)>>,
+    pub yield_all: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Clause {
+    Call(ProcedureCall),
     Match {
         patterns: Vec<Pattern>,
         optional: bool,

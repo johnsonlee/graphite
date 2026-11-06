@@ -8,6 +8,7 @@ mod method_source_guard;
 mod ordered_property;
 pub mod partition;
 pub mod pipeline;
+mod procedure_calls;
 mod property_matching;
 mod property_updates;
 pub mod props;
@@ -110,6 +111,7 @@ impl CancelToken {
 static EPOCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 pub struct Executor {
+    pub procedures: Option<Arc<crate::procedures::ProcedureRegistry>>,
     pub property_graph: Option<Arc<crate::property_graph::PropertyGraph>>,
     temporal_clock: chrono::DateTime<chrono::Utc>,
     pub sources: Vec<Source>,
@@ -139,6 +141,13 @@ pub struct Executor {
 }
 
 impl Executor {
+    pub fn with_procedures(
+        mut self,
+        procedures: Arc<crate::procedures::ProcedureRegistry>,
+    ) -> Self {
+        self.procedures = Some(procedures);
+        self
+    }
     /// Opt into a mutable property store; ordinary program graph executors stay immutable.
     pub fn property_graph(graph: Arc<crate::property_graph::PropertyGraph>) -> Self {
         let mut ex = Self::new(Vec::new(), false);
@@ -159,6 +168,7 @@ impl Executor {
         Executor {
             property_graph: None,
             temporal_clock: chrono::Utc::now(),
+            procedures: None,
             sources,
             cross,
             params: IndexMap::new(),

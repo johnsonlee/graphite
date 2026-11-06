@@ -12,6 +12,7 @@ pub use semantics::{java_double_to_string, java_float_to_string};
 // Parser (lexer + parser + AST rendering)
 pub mod lexer;
 pub mod parser;
+pub mod procedures;
 pub mod render;
 
 // Evaluation

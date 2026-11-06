@@ -4,6 +4,9 @@
 //! setup is intentionally handled as unsupported by the runner, never emulated with
 //! Graphite program nodes. Errors expose native categories, not guessed TCK codes.
 use graphite_cypher::engine::{CancelToken, Executor};
+use graphite_cypher::procedures::{
+    ProcedureField, ProcedureRegistry, ProcedureSignature, ProcedureType,
+};
 use graphite_cypher::property_graph::{PropertyGraph, PropertyRelationship, PropertySnapshot};
 use graphite_cypher::{CypherError, Value};
 use indexmap::IndexMap;
@@ -191,6 +194,7 @@ fn error_kind(error: &CypherError) -> &'static str {
         CypherError::Timeout(_) => "timeout",
         CypherError::BudgetExceeded(_) => "budget_exceeded",
         CypherError::Other(_) => "other",
+        CypherError::Standard { .. } => "standard",
     }
 }
 
@@ -210,6 +214,23 @@ fn parameters(request: &Json) -> Result<IndexMap<String, Value>, String> {
     }
 }
 
+fn snapshot_key(value: &Json) -> String {
+    fn normalized(value: &Json) -> Json {
+        match value {
+            Json::Number(number) if number.is_f64() && number.as_f64() == Some(0.0) => json!(0.0),
+            Json::Array(values) => Json::Array(values.iter().map(normalized).collect()),
+            Json::Object(values) => Json::Object(
+                values
+                    .iter()
+                    .map(|(k, v)| (k.clone(), normalized(v)))
+                    .collect(),
+            ),
+            _ => value.clone(),
+        }
+    }
+    serde_json::to_string(&normalized(value)).unwrap()
+}
+
 #[derive(Default)]
 struct State {
     nodes: BTreeSet<u64>,
@@ -226,14 +247,11 @@ impl State {
             for (key, value) in &node.properties {
                 *result
                     .properties
-                    .entry(
-                        serde_json::to_string(&json!([
-                            node.id,
-                            key,
-                            render(value, Some(graph), 0)?
-                        ]))
-                        .unwrap(),
-                    )
+                    .entry(snapshot_key(&json!([
+                        node.id,
+                        key,
+                        render(value, Some(graph), 0)?
+                    ])))
                     .or_default() += 1;
             }
         }
@@ -242,14 +260,11 @@ impl State {
             for (key, value) in &rel.properties {
                 *result
                     .properties
-                    .entry(
-                        serde_json::to_string(&json!([
-                            rel.id,
-                            key,
-                            render(value, Some(graph), 0)?
-                        ]))
-                        .unwrap(),
-                    )
+                    .entry(snapshot_key(&json!([
+                        rel.id,
+                        key,
+                        render(value, Some(graph), 0)?
+                    ])))
                     .or_default() += 1;
             }
         }
@@ -270,12 +285,120 @@ impl State {
     }
 }
 
+fn procedure_fields(text: &str) -> Result<Vec<ProcedureField>, String> {
+    if text.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+    text.split(',')
+        .map(|part| {
+            let (name, kind) = part.split_once("::").ok_or("invalid procedure field")?;
+            let kind = kind.trim();
+            let nullable = kind.ends_with('?');
+            let kind = kind.trim_end_matches('?').trim();
+            let value_type = match kind {
+                "INTEGER" => ProcedureType::Integer,
+                "FLOAT" => ProcedureType::Float,
+                "NUMBER" => ProcedureType::Number,
+                "STRING" => ProcedureType::String,
+                "BOOLEAN" => ProcedureType::Boolean,
+                "ANY" => ProcedureType::Any,
+                _ => {
+                    return Err(format!(
+                        "unsupported registered procedure field type: {kind}"
+                    ))
+                }
+            };
+            Ok(ProcedureField {
+                name: name.trim().into(),
+                value_type,
+                nullable,
+            })
+        })
+        .collect()
+}
+
+fn procedure_registry(request: &Json) -> Result<Arc<ProcedureRegistry>, String> {
+    let mut registry = ProcedureRegistry::new();
+    let Some(procedures) = request["procedures"].as_array() else {
+        return Ok(Arc::new(registry));
+    };
+    let signature_pattern = regex::Regex::new(r"^(.+?)\((.*?)\)\s*::\s*\((.*?)\)$").unwrap();
+    for procedure in procedures {
+        let signature = procedure["signature"]
+            .as_str()
+            .ok_or("procedure signature must be a string")?;
+        let captured = signature_pattern
+            .captures(signature)
+            .ok_or("invalid procedure signature")?;
+        let signature = ProcedureSignature {
+            name: captured[1].trim().into(),
+            inputs: procedure_fields(&captured[2])?,
+            outputs: procedure_fields(&captured[3])?,
+        };
+        let columns = procedure["columns"]
+            .as_array()
+            .ok_or("procedure columns must be a list")?;
+        let indices = |fields: &[ProcedureField]| -> Result<Vec<usize>, String> {
+            fields
+                .iter()
+                .map(|field| {
+                    columns
+                        .iter()
+                        .position(|column| column.as_str() == Some(&field.name))
+                        .ok_or_else(|| format!("procedure data column missing: {}", field.name))
+                })
+                .collect()
+        };
+        let input_indices = indices(&signature.inputs)?;
+        let output_indices = indices(&signature.outputs)?;
+        let rows = procedure["rows"]
+            .as_array()
+            .ok_or("procedure rows must be a list")?
+            .iter()
+            .map(|row| {
+                let row = row.as_array().ok_or("procedure row must be a list")?;
+                if row.len() != columns.len() {
+                    return Err("procedure row width mismatch".into());
+                }
+                row.iter()
+                    .map(value_from_json)
+                    .collect::<Result<Vec<_>, String>>()
+            })
+            .collect::<Result<Vec<_>, String>>()?;
+        // This is a normal registered provider: its data describes procedure I/O,
+        // while parsing, argument evaluation, YIELD and scope remain engine work.
+        registry
+            .register(signature, move |arguments| {
+                Ok(rows
+                    .iter()
+                    .filter(|row| {
+                        input_indices.iter().zip(arguments).all(|(index, value)| {
+                            (row[*index].is_null() && value.is_null())
+                                || graphite_cypher::semantics::cypher_equals(&row[*index], value)
+                                    == Some(true)
+                        })
+                    })
+                    .map(|row| {
+                        output_indices
+                            .iter()
+                            .map(|index| row[*index].clone())
+                            .collect()
+                    })
+                    .collect())
+            })
+            .map_err(|error| error.to_string())?;
+    }
+    Ok(Arc::new(registry))
+}
+
 fn execute_query(
     graph: &Arc<PropertyGraph>,
+    procedures: &Arc<ProcedureRegistry>,
     query: &str,
     parameters: IndexMap<String, Value>,
 ) -> Result<Json, String> {
     let executor = Executor::property_graph(graph.clone())
+        .with_procedures(procedures.clone())
         .with_params(parameters)
         .with_cancel(CancelToken::with_timeout(2_000));
     match executor.execute(query, None) {
@@ -321,18 +444,14 @@ fn execute_query(
 
 fn execute(request: &Json) -> Result<Json, String> {
     let query = request["query"].as_str().ok_or("query must be a string")?;
-    if request["procedures"]
-        .as_array()
-        .is_some_and(|p| !p.is_empty())
-    {
-        return Err("production procedure registry adapter is not implemented".into());
-    }
+    let procedures = procedure_registry(request)?;
     let graph = Arc::new(PropertyGraph::new());
     let parameters = parameters(request)?;
     if let Some(setup) = request["setup"].as_array() {
         for query in setup {
             let mut result = execute_query(
                 &graph,
+                &procedures,
                 query.as_str().ok_or("setup query must be a string")?,
                 parameters.clone(),
             )?;
@@ -343,7 +462,7 @@ fn execute(request: &Json) -> Result<Json, String> {
         }
     }
     let before = State::from_snapshot(&graph.snapshot(), &graph)?;
-    let mut result = execute_query(&graph, query, parameters)?;
+    let mut result = execute_query(&graph, &procedures, query, parameters)?;
     result["sideEffects"] = before.difference(&State::from_snapshot(&graph.snapshot(), &graph)?);
     if result["error"].is_null() {
         let mut controls = Vec::new();
@@ -351,6 +470,7 @@ fn execute(request: &Json) -> Result<Json, String> {
             for control in queries {
                 controls.push(execute_query(
                     &graph,
+                    &procedures,
                     control["query"]
                         .as_str()
                         .ok_or("control query must be a string")?,
@@ -383,6 +503,50 @@ fn main() -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn registered_procedure_data_flows_through_native_argument_evaluation_and_yield() {
+        let procedures = json!([{"signature":"app.lookup(input :: INTEGER?) :: (output :: STRING?)","columns":["input","output"],"rows":[[1,"first"],[2,"second"]]}]);
+        let result=execute(&json!({"procedures":procedures,"query":"UNWIND [2,1] AS n CALL app.lookup(n) YIELD output AS text RETURN text"})).unwrap();
+        assert_eq!(result["rows"], json!([["second"], ["first"]]));
+        assert_eq!(result["sideEffects"], zero_effects());
+        let rejected =
+            execute(&json!({"procedures":procedures,"query":"CALL app.lookup(true)"})).unwrap();
+        assert_eq!(
+            rejected["diagnostic"],
+            json!({"type":"SyntaxError","phase":"compile time","detail":"InvalidArgumentType"})
+        );
+    }
+
+    #[test]
+    fn snapshot_property_equality_uses_official_float_zero_rule_without_losing_types() {
+        assert_eq!(
+            snapshot_key(&json!([1, "p", -0.0])),
+            snapshot_key(&json!([1, "p", 0.0]))
+        );
+        assert_ne!(
+            snapshot_key(&json!([1, "p", 0])),
+            snapshot_key(&json!([1, "p", 0.0]))
+        );
+        assert_ne!(
+            snapshot_key(&json!([1, "p", true])),
+            snapshot_key(&json!([1, "p", 1]))
+        );
+        let before = State {
+            properties: BTreeMap::from([(snapshot_key(&json!([1, "p", -0.0])), 1)]),
+            ..State::default()
+        };
+        let after = State {
+            properties: BTreeMap::from([(snapshot_key(&json!([1, "p", 0.0])), 1)]),
+            ..State::default()
+        };
+        assert_eq!(before.difference(&after), zero_effects());
+        assert!(value_to_json(&Value::Float(-0.0))
+            .unwrap()
+            .as_f64()
+            .unwrap()
+            .is_sign_negative());
+    }
 
     #[test]
     fn official_setup_runs_on_production_store_and_requests_are_isolated() {

@@ -225,7 +225,8 @@ impl Parser<'_> {
     fn starts_clause(&self) -> bool {
         matches!(
             self.kind(),
-            T::Keyword(K::Match)
+            T::Keyword(K::Call)
+                | T::Keyword(K::Match)
                 | T::Keyword(K::Optional)
                 | T::Keyword(K::Unwind)
                 | T::Keyword(K::With)
@@ -239,8 +240,63 @@ impl Parser<'_> {
         )
     }
 
+    fn call_st(&mut self, out: &mut Vec<Clause>) -> CypherResult<()> {
+        self.bump();
+        let mut name = self.symbolic_name()?;
+        while self.eat(T::Dot) {
+            name.push('.');
+            name.push_str(&self.symbolic_name()?);
+        }
+        let arguments = if self.eat(T::LParen) {
+            let mut values = Vec::new();
+            if !self.eat(T::RParen) {
+                values.push(self.expression()?);
+                while self.eat(T::Comma) {
+                    values.push(self.expression()?);
+                }
+                self.expect(T::RParen, "')'")?;
+            }
+            Some(values)
+        } else {
+            None
+        };
+        let mut yields = None;
+        let mut yield_all = false;
+        if self.eat_kw(K::Yield) {
+            if self.eat(T::Mult) {
+                yield_all = true;
+            } else {
+                let mut fields = Vec::new();
+                loop {
+                    let source = self.symbolic_name()?;
+                    let alias = if self.eat_kw(K::As) {
+                        self.symbolic_name()?
+                    } else {
+                        source.clone()
+                    };
+                    fields.push((source, alias));
+                    if !self.eat(T::Comma) {
+                        break;
+                    }
+                }
+                yields = Some(fields);
+            }
+        }
+        out.push(Clause::Call(ProcedureCall {
+            name,
+            arguments,
+            yields,
+            yield_all,
+        }));
+        if self.eat_kw(K::Where) {
+            out.push(Clause::Where(self.expression()?));
+        }
+        Ok(())
+    }
+
     fn clause(&mut self, out: &mut Vec<Clause>) -> CypherResult<()> {
         match self.kind() {
+            T::Keyword(K::Call) => self.call_st(out),
             T::Keyword(K::Optional) | T::Keyword(K::Match) => self.match_st(out),
             T::Keyword(K::Unwind) => {
                 self.bump();

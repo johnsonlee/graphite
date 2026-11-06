@@ -153,6 +153,7 @@ impl Executor {
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
+        self.validate_procedure_calls(clauses)?;
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
         for c in clauses {
@@ -292,6 +293,15 @@ impl Executor {
         while i < clauses.len() {
             self.cancel.check()?;
             match &clauses[i] {
+                Clause::Call(call) => {
+                    let (fields, output) = self.execute_procedure(
+                        rows,
+                        call,
+                        super::procedure_calls::standalone(clauses),
+                    )?;
+                    columns = fields;
+                    rows = output;
+                }
                 Clause::Match {
                     patterns,
                     optional,
@@ -507,6 +517,7 @@ impl Executor {
         }
         if self.property_graph.is_some()
             && !clauses.iter().any(|c| matches!(c, Clause::Return { .. }))
+            && !super::procedure_calls::standalone(clauses)
         {
             return Ok(QueryResult::default());
         }
