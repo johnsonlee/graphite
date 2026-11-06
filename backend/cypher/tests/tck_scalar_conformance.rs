@@ -1,5 +1,5 @@
 use graphite_cypher::{
-    ast::{BinOp, Clause, Expr, Literal},
+    ast::{BinOp, Clause, CmpOp, Expr, Literal},
     engine::Executor,
     parser, Value,
 };
@@ -16,6 +16,37 @@ fn same(query: &str, expected: Value) {
         format!("{expected:?}"),
         "{query}"
     );
+}
+#[test]
+fn chained_comparisons_compare_adjacent_operands() {
+    let clauses = parser::parse("RETURN 1 < 2 <= 3 AS valid").unwrap();
+    let Clause::Return {
+        items: Some(items), ..
+    } = &clauses[0]
+    else {
+        panic!("missing RETURN")
+    };
+    assert_eq!(
+        items[0].expr,
+        Expr::And(
+            Box::new(Expr::Comparison {
+                op: CmpOp::Lt,
+                left: Box::new(Expr::Literal(Literal::Int(1))),
+                right: Box::new(Expr::Literal(Literal::Int(2))),
+            }),
+            Box::new(Expr::Comparison {
+                op: CmpOp::Le,
+                left: Box::new(Expr::Literal(Literal::Int(2))),
+                right: Box::new(Expr::Literal(Literal::Int(3))),
+            }),
+        )
+    );
+    same("RETURN 1 < 2 <= 3", Value::Bool(true));
+    same("RETURN 1 < 3 < 2", Value::Bool(false));
+    same("RETURN 'a' < 'b' <= 'c'", Value::Bool(true));
+    same("RETURN 1 < 2 < null", Value::Null);
+    // Explicit parentheses retain their boolean operand.
+    same("RETURN (1 < 2) = true", Value::Bool(true));
 }
 #[test]
 fn extrema_order_strings_lists_and_mixed_types() {

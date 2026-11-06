@@ -796,6 +796,7 @@ impl Parser<'_> {
 
     fn comparison_expr(&mut self) -> CypherResult<Expr> {
         let mut left = self.string_predicate_expr()?;
+        let mut comparisons: Option<Expr> = None;
         loop {
             let op = match self.kind() {
                 T::Assign => CmpOp::Eq,
@@ -808,13 +809,18 @@ impl Parser<'_> {
             };
             self.bump();
             let right = self.string_predicate_expr()?;
-            left = Expr::Comparison {
+            let comparison = Expr::Comparison {
                 op,
                 left: Box::new(left),
-                right: Box::new(right),
+                right: Box::new(right.clone()),
             };
+            comparisons = Some(match comparisons {
+                Some(previous) => Expr::And(Box::new(previous), Box::new(comparison)),
+                None => comparison,
+            });
+            left = right;
         }
-        Ok(left)
+        Ok(comparisons.unwrap_or(left))
     }
 
     fn string_predicate_expr(&mut self) -> CypherResult<Expr> {
