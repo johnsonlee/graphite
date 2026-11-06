@@ -2,6 +2,7 @@
 
 pub mod ast;
 pub mod context;
+pub mod dialect;
 pub mod error;
 pub mod property_graph;
 pub mod temporal;
@@ -28,5 +29,6 @@ pub mod tostring;
 // Execution
 pub mod engine;
 
+pub use dialect::CypherDialect;
 pub use error::{CypherError, CypherResult};
 pub use value::Value;

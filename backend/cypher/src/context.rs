@@ -34,6 +34,10 @@ pub trait GraphContext {
             "pattern predicates require a graph executor".into(),
         ))
     }
+    /// Query compatibility mode; external contexts preserve Graphite extensions by default.
+    fn dialect(&self) -> crate::CypherDialect {
+        crate::CypherDialect::Graphite
+    }
     fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
         None
     }

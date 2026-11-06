@@ -106,7 +106,7 @@ fn execute(args: Args) -> Result<bool> {
         runner::baseline_changes(&expected, &signature)
     };
     let passed = changes.is_empty() && run.infrastructure_errors.is_empty();
-    let report = json!({"upstream":upstream,"counts":counts,"total":run.results.len(),"baselineChanges":changes,"gatePassed":passed,"infrastructureErrors":run.infrastructure_errors,"scenarios":run.results,"scope":"official TCK scenarios; empty/any graph and supported scalar/list/map contracts only; unsupported is never pass"});
+    let report = json!({"upstream":upstream,"counts":counts,"total":run.results.len(),"baselineChanges":changes,"gatePassed":passed,"infrastructureErrors":run.infrastructure_errors,"scenarios":run.results,"dialect":"opencypher-m23","scope":"official openCypher M23 scenarios executed by the production engine in opencypher-m23 mode; unsupported is never pass"});
     let output = args.output.unwrap();
     fs::create_dir_all(&output)?;
     fs::write(

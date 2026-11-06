@@ -417,7 +417,12 @@ fn expression_context(
                     "Existential subqueries cannot update the graph",
                 ));
             }
-            resolve_scoped(clauses, None, scope.clone())?;
+            resolve_scoped(
+                clauses,
+                None,
+                scope.clone(),
+                crate::CypherDialect::OpenCypherM23,
+            )?;
             return Ok(());
         }
         _ => {}
@@ -985,12 +990,37 @@ pub fn resolve_with_procedures(
     clauses: &[Clause],
     procedures: Option<&crate::procedures::ProcedureRegistry>,
 ) -> CypherResult<Vec<Clause>> {
-    resolve_scoped(clauses, procedures, Scope::new())
+    resolve_scoped(
+        clauses,
+        procedures,
+        Scope::new(),
+        crate::CypherDialect::OpenCypherM23,
+    )
 }
 pub fn resolve_with_bindings(
     clauses: &[Clause],
     procedures: Option<&crate::procedures::ProcedureRegistry>,
     bindings: &[String],
+) -> CypherResult<Vec<Clause>> {
+    resolve_with_bindings_and_dialect(
+        clauses,
+        procedures,
+        bindings,
+        crate::CypherDialect::OpenCypherM23,
+    )
+}
+pub fn resolve_with_dialect(
+    clauses: &[Clause],
+    procedures: Option<&crate::procedures::ProcedureRegistry>,
+    dialect: crate::CypherDialect,
+) -> CypherResult<Vec<Clause>> {
+    resolve_with_bindings_and_dialect(clauses, procedures, &[], dialect)
+}
+pub fn resolve_with_bindings_and_dialect(
+    clauses: &[Clause],
+    procedures: Option<&crate::procedures::ProcedureRegistry>,
+    bindings: &[String],
+    dialect: crate::CypherDialect,
 ) -> CypherResult<Vec<Clause>> {
     resolve_scoped(
         clauses,
@@ -999,12 +1029,14 @@ pub fn resolve_with_bindings(
             .iter()
             .map(|name| (name.clone(), Kind::Unknown))
             .collect(),
+        dialect,
     )
 }
 fn resolve_scoped(
     clauses: &[Clause],
     procedures: Option<&crate::procedures::ProcedureRegistry>,
     mut scope: Scope,
+    dialect: crate::CypherDialect,
 ) -> CypherResult<Vec<Clause>> {
     let union_modes: HashSet<_> = clauses
         .iter()
@@ -1142,7 +1174,7 @@ fn resolve_scoped(
             Clause::Where(expr) => predicate(expr, &scope, false, false, &[])?,
             Clause::Unwind { expr, variable } => {
                 expression(expr, &scope, false, false, &[])?;
-                if scope.contains_key(variable) {
+                if dialect == crate::CypherDialect::OpenCypherM23 && scope.contains_key(variable) {
                     return Err(fail(
                         "VariableAlreadyBound",
                         format!("UNWIND variable {variable} is already bound"),

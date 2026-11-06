@@ -145,6 +145,19 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         },
         "tostring" => match arg(args, 0)? {
             Value::Null => Value::Null,
+            v if ctx.dialect() == crate::CypherDialect::OpenCypherM23
+                && !matches!(
+                    v,
+                    Value::Bool(_)
+                        | Value::Int(_)
+                        | Value::Float(_)
+                        | Value::Float32(_)
+                        | Value::Str(_)
+                        | Value::Temporal(_)
+                ) =>
+            {
+                return Err(invalid_conversion("toString"));
+            }
             v => Value::str(kotlin_to_string(v, ctx)),
         },
 

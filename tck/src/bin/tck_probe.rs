@@ -397,6 +397,7 @@ fn execute_query(
     parameters: IndexMap<String, Value>,
 ) -> Result<Json, String> {
     let executor = Executor::property_graph(graph.clone())
+        .with_dialect(graphite_cypher::CypherDialect::OpenCypherM23)
         .with_procedures(procedures.clone())
         .with_params(parameters)
         .with_cancel(CancelToken::with_timeout(2_000));

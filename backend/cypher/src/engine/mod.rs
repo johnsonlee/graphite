@@ -111,6 +111,7 @@ impl CancelToken {
 static EPOCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 pub struct Executor {
+    dialect: crate::CypherDialect,
     pub procedures: Option<Arc<crate::procedures::ProcedureRegistry>>,
     pub property_graph: Option<Arc<crate::property_graph::PropertyGraph>>,
     temporal_clock: chrono::DateTime<chrono::Utc>,
@@ -141,6 +142,11 @@ pub struct Executor {
 }
 
 impl Executor {
+    /// Select the query compatibility mode explicitly. The default is Graphite.
+    pub fn with_dialect(mut self, dialect: crate::CypherDialect) -> Self {
+        self.dialect = dialect;
+        self
+    }
     pub fn with_procedures(
         mut self,
         procedures: Arc<crate::procedures::ProcedureRegistry>,
@@ -166,6 +172,7 @@ impl Executor {
 
     pub fn new(sources: Vec<Source>, cross: bool) -> Executor {
         Executor {
+            dialect: crate::CypherDialect::default(),
             property_graph: None,
             temporal_clock: chrono::Utc::now(),
             procedures: None,
@@ -413,6 +420,9 @@ impl GraphContext for Executor {
             Ok(false)
         })?;
         Ok(exists)
+    }
+    fn dialect(&self) -> crate::CypherDialect {
+        self.dialect
     }
     fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
         self.property_graph.as_deref()

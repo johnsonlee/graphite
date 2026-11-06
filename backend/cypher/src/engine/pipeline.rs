@@ -218,10 +218,11 @@ impl Executor {
         let seed_names = seed
             .map(|row| row.keys().cloned().collect::<Vec<_>>())
             .unwrap_or_default();
-        let validated = crate::validation::resolve_with_bindings(
+        let validated = crate::validation::resolve_with_bindings_and_dialect(
             clauses,
             self.procedures.as_deref(),
             &seed_names,
+            self.dialect,
         )?;
         let clauses = validated.as_slice();
         // Split on UNION markers.
