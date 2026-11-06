@@ -152,6 +152,49 @@ impl Executor {
         clauses: &[Clause],
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
+        self.execute_clauses_seeded(clauses, max_rows, None)
+    }
+
+    /// Execute a read-only existential subquery over one correlated input row.
+    /// It shares the production pipeline and cancellation budget; it does not
+    /// start a nested write transaction or invent a second query interpreter.
+    pub fn execute_correlated(&self, clauses: &[Clause], row: &Row) -> CypherResult<QueryResult> {
+        if clauses.iter().any(|clause| {
+            matches!(
+                clause,
+                Clause::Create(_)
+                    | Clause::Merge { .. }
+                    | Clause::Set(_)
+                    | Clause::Remove(_)
+                    | Clause::Delete { .. }
+            )
+        }) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidClauseComposition",
+                "Existential subqueries cannot update the graph",
+            ));
+        }
+        let mut clauses = clauses.to_vec();
+        // The concise EXISTS form has an implicit projection of matched rows.
+        if !clauses
+            .iter()
+            .any(|clause| matches!(clause, Clause::Return { .. }))
+        {
+            clauses.push(Clause::Return {
+                distinct: false,
+                items: None,
+            });
+        }
+        self.execute_clauses_seeded(&clauses, None, Some(row))
+    }
+
+    fn execute_clauses_seeded(
+        &self,
+        clauses: &[Clause],
+        max_rows: Option<usize>,
+        seed: Option<&Row>,
+    ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
         if self.property_graph.is_none() {
             if let Some(name) = clauses.iter().find_map(|clause| match clause {
@@ -219,7 +262,11 @@ impl Executor {
             } else {
                 None
             };
-            let mut r = self.run_segment(&seg)?;
+            let mut r = if let Some(row) = seed {
+                self.run_segment_seeded(&seg, vec![row.clone()])?
+            } else {
+                self.run_segment(&seg)?
+            };
             if let Some(n) = keep {
                 more |= trim_probe(&mut r, n);
             }
@@ -282,8 +329,20 @@ impl Executor {
     }
 
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
+        self.run_segment_seeded(clauses, vec![Row::new()])
+    }
+
+    fn run_segment_seeded(
+        &self,
+        clauses: &[Clause],
+        mut rows: Vec<Row>,
+    ) -> CypherResult<QueryResult> {
         // Index-only shapes are answered before any row work begins.
-        if self.property_graph.is_none() && !super::optimizations_disabled() {
+        if rows.len() == 1
+            && rows[0].is_empty()
+            && self.property_graph.is_none()
+            && !super::optimizations_disabled()
+        {
             if let Some(result) = grouped_with::try_execute(self, clauses)? {
                 return Ok(result);
             }
@@ -304,7 +363,6 @@ impl Executor {
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };
-        let mut rows: Vec<Row> = vec![Row::new()];
         let mut columns: Vec<String> = Vec::new();
         let mut i = 0;
         while i < clauses.len() {

@@ -90,6 +90,7 @@ pub fn contains_aggregation(e: &Expr) -> bool {
                 || from.as_deref().is_some_and(contains_aggregation)
                 || to.as_deref().is_some_and(contains_aggregation)
         }
+        Expr::ExistsSubquery(_) | Expr::PatternComprehension { .. } => false,
         Expr::PatternPredicate(pattern) => pattern
             .nodes
             .iter()
@@ -250,6 +251,31 @@ impl<'a> Evaluator<'a> {
                     )),
                 }
             }
+            Expr::PatternComprehension {
+                pattern,
+                filter,
+                map,
+            } => {
+                for variable in pattern.nodes.iter().filter_map(|n| n.variable.as_ref()) {
+                    if row.get(variable).is_some_and(Value::is_null) {
+                        return Ok(Value::Null);
+                    }
+                }
+                let mut result = Vec::new();
+                for binding in self.ctx.pattern_rows(pattern, row)? {
+                    self.ctx.check_cancelled()?;
+                    if let Some(filter) = filter {
+                        if self.eval(filter, &binding)?.as_bool() != Some(true) {
+                            continue;
+                        }
+                    }
+                    result.push(self.eval(map, &binding)?);
+                }
+                Ok(Value::list(result))
+            }
+            Expr::ExistsSubquery(clauses) => Ok(Value::Bool(
+                !self.ctx.subquery_rows(clauses, row)?.is_empty(),
+            )),
             Expr::PatternPredicate(pattern) => {
                 // A null bound endpoint makes the predicate unknown, rather than
                 // pretending that the graph simply contains no matching path.

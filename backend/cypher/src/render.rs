@@ -51,6 +51,26 @@ fn write(out: &mut String, e: &Expr) {
             }
         }
         Expr::PatternPredicate(pattern) => out.push_str(&pattern_to_string(pattern)),
+        Expr::PatternComprehension {
+            pattern,
+            filter,
+            map,
+        } => {
+            out.push('[');
+            out.push_str(&pattern_to_string(pattern));
+            if let Some(filter) = filter {
+                out.push_str(" WHERE ");
+                write(out, filter);
+            }
+            out.push_str(" | ");
+            write(out, map);
+            out.push(']');
+        }
+        Expr::ExistsSubquery(clauses) => {
+            out.push_str("exists { ");
+            out.push_str(&clauses_to_string(clauses));
+            out.push_str(" }");
+        }
         Expr::CountStar => out.push_str("count(*)"),
         Expr::Distinct(inner) => {
             out.push_str("DISTINCT ");
@@ -310,6 +330,164 @@ pub fn pattern_to_string(pattern: &Pattern) -> String {
         text.push_str(&node(&pattern.nodes[index + 1]));
     }
     text
+}
+
+fn set_items_to_string(items: &[SetItem]) -> String {
+    items
+        .iter()
+        .map(|item| match item {
+            SetItem::Property {
+                variable,
+                key,
+                value,
+            } => format!("{variable}.{key} = {}", to_cypher_string(value)),
+            SetItem::Map {
+                variable,
+                value,
+                merge,
+            } => format!(
+                "{variable} {} {}",
+                if *merge { "+=" } else { "=" },
+                to_cypher_string(value)
+            ),
+            SetItem::Labels { variable, labels } => format!("{variable}:{}", labels.join(":")),
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+fn projection_to_string(items: &Option<Vec<ReturnItem>>, distinct: bool) -> String {
+    let body = items
+        .as_ref()
+        .map(|items| {
+            items
+                .iter()
+                .map(|item| {
+                    let mut text = to_cypher_string(&item.expr);
+                    if let Some(alias) = &item.alias {
+                        text.push_str(" AS ");
+                        text.push_str(alias);
+                    }
+                    text
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_else(|| "*".to_owned());
+    format!("{}{body}", if distinct { "DISTINCT " } else { "" })
+}
+pub fn clauses_to_string(clauses: &[Clause]) -> String {
+    clauses
+        .iter()
+        .map(|clause| match clause {
+            Clause::Match {
+                patterns,
+                optional,
+                where_clause,
+            } => {
+                let mut text = format!(
+                    "{}MATCH {}",
+                    if *optional { "OPTIONAL " } else { "" },
+                    patterns
+                        .iter()
+                        .map(pattern_to_string)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+                if let Some(predicate) = where_clause {
+                    text.push_str(" WHERE ");
+                    text.push_str(&to_cypher_string(predicate));
+                }
+                text
+            }
+            Clause::Where(expr) => format!("WHERE {}", to_cypher_string(expr)),
+            Clause::Unwind { expr, variable } => {
+                format!("UNWIND {} AS {variable}", to_cypher_string(expr))
+            }
+            Clause::With {
+                items,
+                distinct,
+                where_clause,
+            } => {
+                let mut text = format!("WITH {}", projection_to_string(items, *distinct));
+                if let Some(predicate) = where_clause {
+                    text.push_str(" WHERE ");
+                    text.push_str(&to_cypher_string(predicate));
+                }
+                text
+            }
+            Clause::Return { items, distinct } => {
+                format!("RETURN {}", projection_to_string(items, *distinct))
+            }
+            Clause::OrderBy(items) => format!(
+                "ORDER BY {}",
+                items
+                    .iter()
+                    .map(|item| format!(
+                        "{}{}",
+                        to_cypher_string(&item.expr),
+                        if item.descending { " DESC" } else { "" }
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Clause::Skip(expr) => format!("SKIP {}", to_cypher_string(expr)),
+            Clause::Limit(expr) => format!("LIMIT {}", to_cypher_string(expr)),
+            Clause::Union { all } => {
+                if *all {
+                    "UNION ALL".to_owned()
+                } else {
+                    "UNION".to_owned()
+                }
+            }
+            Clause::Create(patterns) => format!(
+                "CREATE {}",
+                patterns
+                    .iter()
+                    .map(pattern_to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Clause::Merge {
+                pattern,
+                on_create,
+                on_match,
+            } => {
+                let mut text = format!("MERGE {}", pattern_to_string(pattern));
+                if !on_create.is_empty() {
+                    text.push_str(" ON CREATE SET ");
+                    text.push_str(&set_items_to_string(on_create));
+                }
+                if !on_match.is_empty() {
+                    text.push_str(" ON MATCH SET ");
+                    text.push_str(&set_items_to_string(on_match));
+                }
+                text
+            }
+            Clause::Set(items) => format!("SET {}", set_items_to_string(items)),
+            Clause::Remove(items) => format!(
+                "REMOVE {}",
+                items
+                    .iter()
+                    .map(|item| match item {
+                        RemoveItem::Property { variable, key } => format!("{variable}.{key}"),
+                        RemoveItem::Labels { variable, labels } =>
+                            format!("{variable}:{}", labels.join(":")),
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Clause::Delete { detach, exprs } => format!(
+                "{}DELETE {}",
+                if *detach { "DETACH " } else { "" },
+                exprs
+                    .iter()
+                    .map(to_cypher_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 #[cfg(test)]

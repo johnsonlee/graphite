@@ -1067,6 +1067,31 @@ impl Parser<'_> {
             {
                 self.predicate_function()
             }
+            T::Keyword(K::Exists) if self.peek_at(1) == T::LBrace => {
+                self.bump();
+                self.bump();
+                let mut clauses = Vec::new();
+                if self.at(T::LParen) {
+                    let patterns = self.pattern_list()?;
+                    clauses.push(Clause::Match {
+                        patterns,
+                        optional: false,
+                        where_clause: None,
+                    });
+                    if self.eat_kw(K::Where) {
+                        clauses.push(Clause::Where(self.expression()?));
+                    }
+                } else {
+                    while !self.at(T::RBrace) && !self.at(T::Eof) {
+                        self.clause(&mut clauses)?;
+                    }
+                }
+                if clauses.is_empty() {
+                    return Err(self.mismatched("a subquery"));
+                }
+                self.expect(T::RBrace, "'}'")?;
+                Ok(Expr::ExistsSubquery(clauses))
+            }
             T::Keyword(K::Exists) if self.peek_at(1) == T::LParen => {
                 self.bump();
                 self.bump();
@@ -1225,6 +1250,29 @@ impl Parser<'_> {
 
     fn list_or_comprehension(&mut self) -> CypherResult<Expr> {
         self.expect(T::LBrack, "'['")?;
+        // Pattern comprehensions introduce their own node/relationship/path locals.
+        let saved = self.i;
+        if self.at(T::LParen) || (self.kind().is_symbolic_name() && self.peek_at(1) == T::Assign) {
+            if let Ok(pattern) = self.pattern_part() {
+                if !pattern.rels.is_empty() {
+                    let filter = if self.eat_kw(K::Where) {
+                        Some(Box::new(self.expression()?))
+                    } else {
+                        None
+                    };
+                    if self.eat(T::Stick) {
+                        let map = Box::new(self.expression()?);
+                        self.expect(T::RBrack, "']'")?;
+                        return Ok(Expr::PatternComprehension {
+                            pattern: Box::new(pattern),
+                            filter,
+                            map,
+                        });
+                    }
+                }
+            }
+        }
+        self.i = saved;
         // `[x IN list WHERE p | m]`
         if self.kind().is_symbolic_name() && self.peek_at(1) == T::Keyword(K::In) {
             let variable = self.variable()?;
@@ -1479,5 +1527,46 @@ mod graph_predicate_tests {
         assert!(
             matches!(&clauses[2],Clause::Return{items:Some(items),..} if matches!(items[0].expr,Expr::Binary{op:BinOp::Sub,..}))
         );
+    }
+}
+
+#[cfg(test)]
+mod correlated_expression_tests {
+    use super::*;
+    #[test]
+    fn pattern_comprehension_and_exists_keep_patterns_filters_maps_and_native_clauses() {
+        let clauses =
+            parse("MATCH(a) RETURN [p=(a)-[:R]->(b) WHERE b.x=1 | length(p)] AS paths").unwrap();
+        let Clause::Return {
+            items: Some(items), ..
+        } = &clauses[1]
+        else {
+            panic!("return")
+        };
+        let Expr::PatternComprehension {
+            pattern,
+            filter,
+            map,
+        } = &items[0].expr
+        else {
+            panic!("comprehension")
+        };
+        assert_eq!(pattern.path_variable.as_deref(), Some("p"));
+        assert_eq!(pattern.rels[0].types, vec!["R"]);
+        assert!(matches!(
+            filter.as_deref(),
+            Some(Expr::Comparison { op: CmpOp::Eq, .. })
+        ));
+        assert!(
+            matches!(map.as_ref(),Expr::FunctionCall{name,args,..} if name=="length" && matches!(&args[0],Expr::Variable(v) if v=="p"))
+        );
+        let clauses = parse("MATCH(a) WHERE EXISTS { (a)-->(b) WHERE b.x=1 } RETURN a").unwrap();
+        let Clause::Where(Expr::ExistsSubquery(inside)) = &clauses[1] else {
+            panic!("exists")
+        };
+        assert!(
+            matches!(&inside[0],Clause::Match{patterns,..} if patterns[0].nodes[1].variable.as_deref()==Some("b"))
+        );
+        assert!(matches!(&inside[1], Clause::Where(Expr::Comparison { .. })));
     }
 }

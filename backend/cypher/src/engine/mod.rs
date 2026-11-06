@@ -379,6 +379,27 @@ impl Executor {
 }
 
 impl GraphContext for Executor {
+    fn pattern_rows(
+        &self,
+        pattern: &crate::ast::Pattern,
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<Vec<IndexMap<String, Value>>> {
+        let ev = crate::eval::Evaluator::new(self, &self.params);
+        let matcher = matching::Matcher { ex: self, ev: &ev };
+        let mut rows = Vec::new();
+        matcher.match_patterns(row, std::slice::from_ref(pattern), &mut |row| {
+            rows.push(row);
+            Ok(true)
+        })?;
+        Ok(rows)
+    }
+    fn subquery_rows(
+        &self,
+        clauses: &[crate::ast::Clause],
+        row: &IndexMap<String, Value>,
+    ) -> CypherResult<Vec<IndexMap<String, Value>>> {
+        Ok(self.execute_correlated(clauses, row)?.rows)
+    }
     fn pattern_exists(
         &self,
         pattern: &crate::ast::Pattern,

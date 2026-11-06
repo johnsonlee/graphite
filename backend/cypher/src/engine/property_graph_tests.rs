@@ -562,3 +562,92 @@ fn correlated_predicate_nulls_are_unknown_and_case_sensitive_labels_stay_distinc
             == 1
     );
 }
+
+#[test]
+fn pattern_comprehensions_capture_outer_bindings_and_keep_local_scopes() {
+    let (_, ex) = session();
+    ex.execute("CREATE (a:A {name:'a'})-[:R {rank:1}]->(b:B {name:'b'}), (a)-[:R {rank:2}]->(c:B {name:'c'}), (:A {name:'empty'})",None).unwrap();
+    let result=ex.execute("MATCH(a:A) RETURN a.name AS name, [(a)-[r:R]->(b) WHERE r.rank=2 | b.name] AS names ORDER BY name",None).unwrap();
+    assert_eq!(result.rows.len(), 2);
+    assert_eq!(result.rows[0]["name"].as_str(), Some("a"));
+    assert_eq!(
+        result.rows[0]["names"].as_list().unwrap()[0].as_str(),
+        Some("c")
+    );
+    assert!(result.rows[1]["names"].as_list().unwrap().is_empty());
+    let result = ex
+        .execute(
+            "MATCH(a:A {name:'a'}) RETURN [p=(a)-[:R]->(:B) | length(p)] AS lengths",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows[0]["lengths"].as_list().unwrap().len(), 2);
+    assert!(result.rows[0]["lengths"]
+        .as_list()
+        .unwrap()
+        .iter()
+        .all(|n| matches!(n, Value::Int(1))));
+    let result = ex
+        .execute(
+            "MATCH(a:A {name:'a'}) RETURN [x IN [1,2] | size([(a)-[:R]->() | x])] AS sizes",
+            None,
+        )
+        .unwrap();
+    assert_eq!(
+        result.rows[0]["sizes"]
+            .as_list()
+            .unwrap()
+            .iter()
+            .map(|n| match n {
+                Value::Int(n) => *n,
+                _ => panic!("size"),
+            })
+            .collect::<Vec<_>>(),
+        vec![2, 2]
+    );
+}
+
+#[test]
+fn existential_subqueries_share_native_matching_aggregation_and_correlated_scope() {
+    let (graph, ex) = session();
+    ex.execute(
+        "CREATE (a:A {id:1})-[:R]->(b:B {id:2}), (a)-[:R]->(c:C {id:3}), (:A {id:4})",
+        None,
+    )
+    .unwrap();
+    for query in [
+        "MATCH(a:A) WHERE exists { (a)-[:R]->() } RETURN a.id AS id",
+        "MATCH(a:A) WHERE exists { MATCH (a)-[:R]->(b) WITH a,count(*) AS c WHERE c=2 RETURN true } RETURN a.id AS id",
+        "MATCH(a:A) WHERE exists { MATCH(b) WHERE exists { (a)-[:R]->(b) WHERE b.id=2 } RETURN true } RETURN a.id AS id",
+    ] {
+        let result=ex.execute(query,None).unwrap();
+        assert_eq!(result.rows.len(),1,"{query}");
+        assert!(matches!(result.rows[0]["id"],Value::Int(1)),"{query}");
+    }
+    let result = ex
+        .execute(
+            "MATCH(a:A) WHERE exists { (a)-[:Missing]->() } RETURN a",
+            None,
+        )
+        .unwrap();
+    assert!(result.rows.is_empty());
+    let error = ex
+        .execute(
+            "MATCH(a:A) WHERE exists { MATCH(a)-[:R]->(b) SET b.id=99 } RETURN a",
+            None,
+        )
+        .unwrap_err();
+    assert_eq!(
+        error.diagnostic(),
+        Some(crate::error::CypherDiagnostic {
+            error_type: "SyntaxError",
+            phase: "compile time",
+            detail: "InvalidClauseComposition"
+        })
+    );
+    assert!(graph
+        .snapshot()
+        .nodes
+        .iter()
+        .all(|node| !matches!(node.properties.get("id"), Some(Value::Int(99)))));
+}

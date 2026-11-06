@@ -57,6 +57,12 @@ pub enum Expr {
         labels: Vec<String>,
     },
     PatternPredicate(Box<Pattern>),
+    PatternComprehension {
+        pattern: Box<Pattern>,
+        filter: Option<Box<Expr>>,
+        map: Box<Expr>,
+    },
+    ExistsSubquery(Vec<Clause>),
     CountStar,
     /// `DISTINCT expr` used as an atom.
     Distinct(Box<Expr>),
