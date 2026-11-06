@@ -3251,8 +3251,8 @@ mod bounded_order_tests {
 
     #[test]
     fn losing_and_zero_limit_rows_still_evaluate_every_projection_expression() {
-        let (_, shape) = query_shape("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = 2 THEN missing_function(n.id) ELSE n.id END AS payload ORDER BY id LIMIT 1");
-        let ex = Executor::new(vec![], false);
+        let (_, shape) = query_shape("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = 2 THEN head(range(0, n.id, $step)) ELSE n.id END AS payload ORDER BY id LIMIT 1");
+        let ex = Executor::new(vec![], false).with_params([("step".into(), Value::Int(0))].into());
         let ev = Evaluator::new(&ex, &ex.params);
         let names = item_names(shape.items.as_deref().unwrap());
         for limit in [0, 1] {
@@ -3274,8 +3274,11 @@ mod bounded_order_tests {
                     &mut columns,
                 );
                 if id == 2 {
-                    let error = row.unwrap_err().to_string();
-                    assert!(error.contains("missing_function"), "{error}");
+                    let error = row.unwrap_err().diagnostic().unwrap();
+                    assert_eq!(
+                        (error.error_type, error.phase, error.detail),
+                        ("ArgumentError", "runtime", "NumberOutOfRange")
+                    );
                 } else {
                     top.push(row.unwrap());
                 }
@@ -3318,7 +3321,8 @@ mod bounded_order_tests {
     #[test]
     fn real_executor_preserves_late_losing_expression_errors_even_with_limit_zero() {
         let Some(graph) = real_graph() else { return };
-        let ex = Executor::single("real", graph);
+        let ex =
+            Executor::single("real", graph).with_params([("step".into(), Value::Int(0))].into());
         let all = ex
             .execute("MATCH (n:CallSiteNode) RETURN n.id AS id", None)
             .unwrap();
@@ -3341,11 +3345,15 @@ mod bounded_order_tests {
         );
         for limit in [0, 1] {
             for (key, order) in [("n.id", "key"), ("'same'", "key"), ("'same'", "n.id")] {
-                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN head(range(0, n.id, $step)) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
                 assert_eq!(capacity(&query), Some(limit));
                 let reference = full_sort(&ex, &query).unwrap_err();
                 let actual = ex.execute(&query, None).unwrap_err();
-                assert!(actual.to_string().contains("missing_function"));
+                let error = actual.diagnostic().unwrap();
+                assert_eq!(
+                    (error.error_type, error.phase, error.detail),
+                    ("ArgumentError", "runtime", "NumberOutOfRange")
+                );
                 assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
             }
         }

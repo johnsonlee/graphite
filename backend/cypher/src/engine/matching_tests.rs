@@ -149,13 +149,15 @@ fn final_pattern_propagates_consumer_error_without_more_candidates() {
 #[test]
 fn terminal_emission_preserves_where_errors_and_cancellation() {
     let Some(ex) = executor() else { return };
+    let ex = ex.with_params([("step".into(), Value::Int(0))].into());
     let result = ex.execute(
-        "MATCH (m:Method) WHERE false AND unknownFunction() RETURN m",
+        "MATCH (m:Method) WHERE false AND size(range(0, 1, $step)) > 0 RETURN m",
         None,
     );
-    assert!(
-        matches!(result, Err(CypherError::Runtime(ref s)) if s == "Unknown function: unknownFunction"),
-        "{result:?}"
+    let error = result.unwrap_err().diagnostic().unwrap();
+    assert_eq!(
+        (error.error_type, error.phase, error.detail),
+        ("ArgumentError", "runtime", "NumberOutOfRange")
     );
     let Some(ex) = executor() else { return };
     ex.cancel.cancel();
