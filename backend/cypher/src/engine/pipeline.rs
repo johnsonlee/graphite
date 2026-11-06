@@ -1923,6 +1923,20 @@ pub(super) fn project_row(
     }
     if !distinct || order_before_distinct {
         stash_order_values(ev, row, &mut out, order, columns)?;
+    } else if let (Some(order), Some(items)) = (order, items) {
+        // DISTINCT removes input bindings, but the same projected expression
+        // still denotes its output value, even when ORDER BY uses its old spelling.
+        for (i, key) in order.iter().enumerate() {
+            if let Some((_, name)) = items
+                .iter()
+                .zip(names)
+                .find(|(item, _)| item.expr == key.expr)
+            {
+                if let Some(value) = out.get(name).cloned() {
+                    out.insert(format!("{ORDER_STASH_PREFIX}{i}"), value);
+                }
+            }
+        }
     }
     Ok(out)
 }

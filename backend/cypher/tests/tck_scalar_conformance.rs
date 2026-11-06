@@ -520,3 +520,13 @@ fn conversion_functions_preserve_null_and_reject_unsupported_runtime_types() {
     same("RETURN toInteger('invalid')", Value::Null);
     same("RETURN toString(1)", Value::str("1"));
 }
+
+#[test]
+fn distinct_projection_keeps_order_keys_for_equivalent_projected_expressions() {
+    for (direction, expected) in [("ASC", "A"), ("DESC", "C")] {
+        let result=Executor::new(vec![],false).execute(&format!("UNWIND [{{name:'A'}},{{name:'A'}},{{name:'B'}},{{name:'C'}},{{name:'C'}}] AS a WITH DISTINCT a.name AS name ORDER BY a.name {direction} LIMIT 1 RETURN name"),None).unwrap();
+        assert_eq!(result.columns, vec!["name"]);
+        assert_eq!(result.rows.len(), 1);
+        assert_eq!(result.rows[0]["name"].as_str(), Some(expected));
+    }
+}
