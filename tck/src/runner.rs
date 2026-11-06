@@ -262,7 +262,7 @@ fn normalize_lists(value: &Value) -> Value {
                 Some("node" | "relationship") if parts.len() == 3 => {
                     normalized[2] = normalize_map_values(&parts[2])
                 }
-                Some("path") if parts.len() == 5 => {
+                Some("path") if parts.len() == 4 => {
                     for index in [1, 2] {
                         if let Some(items) = parts[index].as_array() {
                             normalized[index] =
@@ -688,6 +688,16 @@ mod tests {
             false
         )
         .is_some());
+        let property_path_a = json!({"$tck":["path",[{"$tck":["node",[],{"items":[1,2]}]}],[],[]]});
+        let property_path_b = json!({"$tck":["path",[{"$tck":["node",[],{"items":[2,1]}]}],[],[]]});
+        let expected_path =
+            json!({"columns":["p"],"rows":[[property_path_a]],"ignoreListOrder":true});
+        assert!(compare(
+            &json!({"columns":["p"],"rows":[[property_path_b]],"error":null}),
+            &expected_path,
+            false
+        )
+        .is_none());
         let expected = json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["a","b"]}]}]],"ignoreListOrder":true});
         let actual =
             json!({"columns":["p"],"rows":[[{"$tck":["map",{"$tck":["b","a"]}]}]],"error":null});
