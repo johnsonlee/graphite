@@ -257,6 +257,7 @@ fn shared_start_paths_use_distinct_edges_and_restore_state_after_stop() {
             assert_eq!(
                 path.as_ref(),
                 &PathValue {
+                    property_path: None,
                     source: 0,
                     nodes: vec![start, edge.to],
                     edges: vec![edge]

@@ -54,12 +54,14 @@ fn identity_projection_transfers_owned_rows_and_all_typed_values_in_order() {
             index: 3,
         }),
         Value::Path(Arc::new(PathValue {
+            property_path: None,
             source: 1,
             nodes: vec![2, 4],
             edges: vec![],
         })),
         Value::Str(text.clone()),
         Value::Rel(EdgeRef {
+            property_id: None,
             source: 1,
             edge: graphite_storage::Edge {
                 from: 2,

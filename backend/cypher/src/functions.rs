@@ -39,6 +39,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         // -- identity ------------------------------------------------------
         "id" => match arg(args, 0)? {
             Value::Node(n) => Value::Int(n.id as i64),
+            Value::Rel(r) if r.property_id.is_some() => {
+                Value::Int(i64::from(r.property_id.unwrap().get()))
+            }
             _ => Value::Null,
         },
         "elementid" | "qualifiedid" => match arg(args, 0)? {
@@ -131,6 +134,11 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         // -- graph shape ---------------------------------------------------
         "properties" => match arg(args, 0)? {
             Value::Node(n) => Value::map(ctx.node_properties(*n)),
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+                .map(|r| Value::map(r.properties))
+                .unwrap_or(Value::Null),
             Value::Method(m) => Value::map(ctx.method_properties(*m)),
             _ => Value::Null,
         },
@@ -142,18 +150,48 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                     .map(|k| Value::str(k.as_str()))
                     .collect(),
             ),
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+                .map(|r| Value::list(r.properties.into_keys().map(Value::str).collect()))
+                .unwrap_or(Value::Null),
             Value::Map(m) => Value::list(m.keys().map(|k| Value::str(k.as_str())).collect()),
             _ => Value::Null,
         },
         "labels" => match arg(args, 0)? {
             Value::Node(n) => {
-                Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect())
+                if let Some(graph) = ctx.property_graph() {
+                    Value::list(
+                        graph
+                            .node(n.id)
+                            .map(|n| n.labels.into_iter().map(Value::str).collect())
+                            .unwrap_or_default(),
+                    )
+                } else {
+                    Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect())
+                }
             }
             Value::Method(_) => Value::list(vec![Value::str("Method")]),
             _ => Value::list(vec![]),
         },
         "type" => match arg(args, 0)? {
+            Value::Rel(r) if r.property_id.is_some() => ctx
+                .property_graph()
+                .and_then(|g| g.relationship(u64::from(r.property_id.unwrap().get())))
+                .map(|r| Value::str(r.type_name))
+                .unwrap_or(Value::Null),
             Value::Rel(r) => Value::str(ctx.rel_type(*r)),
+            _ => Value::Null,
+        },
+        "startnode" | "endnode" => match arg(args, 0)? {
+            Value::Rel(r) => Value::Node(crate::value::NodeRef {
+                source: r.source,
+                id: if lower == "startnode" {
+                    r.edge.from
+                } else {
+                    r.edge.to
+                },
+            }),
             _ => Value::Null,
         },
         "nodes" => match arg(args, 0)? {
@@ -180,12 +218,8 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             Value::Path(p) => Value::list(
                 p.edges
                     .iter()
-                    .map(|e| {
-                        Value::Rel(crate::value::EdgeRef {
-                            source: p.source,
-                            edge: *e,
-                        })
-                    })
+                    .enumerate()
+                    .map(|(i, _)| Value::Rel(p.relationship(i)))
                     .collect(),
             ),
             Value::List(l) => Value::list(

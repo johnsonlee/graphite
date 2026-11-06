@@ -90,7 +90,8 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
             .cmp(&y.source)
             .then(x.edge.from.cmp(&y.edge.from))
             .then(x.edge.to.cmp(&y.edge.to))
-            .then(x.edge.rest_type().cmp(y.edge.rest_type())),
+            .then(x.edge.rest_type().cmp(y.edge.rest_type()))
+            .then(x.property_id.cmp(&y.property_id)),
         (Value::Path(x), Value::Path(y)) => {
             for (nx, ny) in x.nodes.iter().zip(y.nodes.iter()) {
                 let c = nx.cmp(ny);
@@ -98,7 +99,10 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
                     return c;
                 }
             }
-            x.nodes.len().cmp(&y.nodes.len())
+            x.nodes
+                .len()
+                .cmp(&y.nodes.len())
+                .then(x.property_path.cmp(&y.property_path))
         }
         _ => Ordering::Equal,
     }

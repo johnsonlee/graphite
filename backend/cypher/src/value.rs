@@ -15,8 +15,18 @@ pub struct NodeRef {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct EdgeRef {
+    /// Stable identity in an opt-in property graph; None for persisted edges.
+    pub property_id: Option<std::num::NonZeroU32>,
     pub source: SourceIdx,
     pub edge: Edge,
+}
+
+/// Identity and traversal orientation of relationships in a property-store path.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct PropertyPathData {
+    pub relationship_ids: Vec<std::num::NonZeroU32>,
+    /// +1 follows the stored relationship, -1 traverses it backwards.
+    pub directions: Vec<i8>,
 }
 
 /// A virtual `Method` node backed by metadata.
@@ -28,6 +38,7 @@ pub struct MethodRef {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PathValue {
+    pub property_path: Option<Arc<crate::value::PropertyPathData>>,
     pub source: SourceIdx,
     pub nodes: Vec<NodeId>,
     pub edges: Vec<Edge>,
@@ -126,5 +137,18 @@ impl From<bool> for Value {
 impl From<f64> for Value {
     fn from(f: f64) -> Value {
         Value::Float(f)
+    }
+}
+
+impl PathValue {
+    pub fn relationship(&self, index: usize) -> EdgeRef {
+        EdgeRef {
+            source: self.source,
+            edge: self.edges[index],
+            property_id: self
+                .property_path
+                .as_ref()
+                .map(|path| path.relationship_ids[index]),
+        }
     }
 }

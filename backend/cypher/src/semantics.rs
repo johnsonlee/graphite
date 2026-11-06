@@ -481,7 +481,12 @@ pub enum Key {
     Map(Vec<(String, Key)>),
     Node(NodeRef),
     Rel(EdgeRef),
-    Path(u32, Vec<NodeId>, Vec<Edge>),
+    Path(
+        u32,
+        Vec<NodeId>,
+        Vec<Edge>,
+        Option<Arc<crate::value::PropertyPathData>>,
+    ),
     Method(MethodRef),
 }
 
@@ -513,7 +518,12 @@ pub fn value_key(value: &Value) -> Key {
         }
         Value::Node(n) => Key::Node(*n),
         Value::Rel(r) => Key::Rel(*r),
-        Value::Path(p) => Key::Path(p.source, p.nodes.clone(), p.edges.clone()),
+        Value::Path(p) => Key::Path(
+            p.source,
+            p.nodes.clone(),
+            p.edges.clone(),
+            p.property_path.clone(),
+        ),
         Value::Method(m) => Key::Method(*m),
     }
 }
@@ -796,12 +806,8 @@ fn write_path_string(out: &mut String, p: &PathValue, ctx: Option<&dyn GraphCont
     let edges = Value::list(
         p.edges
             .iter()
-            .map(|e| {
-                Value::Rel(EdgeRef {
-                    source: p.source,
-                    edge: *e,
-                })
-            })
+            .enumerate()
+            .map(|(i, _)| Value::Rel(p.relationship(i)))
             .collect(),
     );
     write_kotlin_string(out, &edges, ctx);

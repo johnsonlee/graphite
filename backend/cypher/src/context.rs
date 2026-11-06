@@ -6,6 +6,9 @@ use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use indexmap::IndexMap;
 
 pub trait GraphContext {
+    fn property_graph(&self) -> Option<&crate::property_graph::PropertyGraph> {
+        None
+    }
     /// Number of graph sources (1 for a single-graph executor).
     fn source_count(&self) -> usize;
     /// True when the executor runs in cross-graph mode (values become "qualified":

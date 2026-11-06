@@ -188,11 +188,8 @@ fn path_elements(p: &crate::value::PathValue, _ctx: &dyn GraphContext) -> Vec<Va
             source: p.source,
             id: *id,
         }));
-        if let Some(e) = p.edges.get(i) {
-            out.push(Value::Rel(crate::value::EdgeRef {
-                source: p.source,
-                edge: *e,
-            }));
+        if i < p.edges.len() {
+            out.push(Value::Rel(p.relationship(i)));
         }
     }
     out

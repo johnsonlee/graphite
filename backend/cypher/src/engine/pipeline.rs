@@ -135,6 +135,23 @@ impl Executor {
         clauses: &[Clause],
         max_rows: Option<usize>,
     ) -> CypherResult<QueryResult> {
+        if let Some(graph) = &self.property_graph {
+            let mut transaction = graph.begin_transaction();
+            let result = self.execute_clauses_inner(clauses, max_rows);
+            if result.is_ok() {
+                transaction.commit();
+            }
+            result
+        } else {
+            self.execute_clauses_inner(clauses, max_rows)
+        }
+    }
+
+    fn execute_clauses_inner(
+        &self,
+        clauses: &[Clause],
+        max_rows: Option<usize>,
+    ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
@@ -221,7 +238,7 @@ impl Executor {
 
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
         // Index-only shapes are answered before any row work begins.
-        if !super::optimizations_disabled() {
+        if self.property_graph.is_none() && !super::optimizations_disabled() {
             if let Some(result) = grouped_with::try_execute(self, clauses)? {
                 return Ok(result);
             }
@@ -253,7 +270,11 @@ impl Executor {
                     optional,
                     where_clause,
                 } => {
-                    if !*optional && rows.len() == 1 && rows[0].is_empty() {
+                    if self.property_graph.is_none()
+                        && !*optional
+                        && rows.len() == 1
+                        && rows[0].is_empty()
+                    {
                         // An aggregation whose expressions read no more of a node than
                         // its type or a few string columns runs once per partition of
                         // such nodes, weighted, and the clauses after the match run
@@ -264,7 +285,7 @@ impl Executor {
                             continue;
                         }
                     }
-                    if !*optional {
+                    if self.property_graph.is_none() && !*optional {
                         if let Some(plan) =
                             super::with_stream::WithStreamPlan::build(&clauses[i..], &rows)
                         {
@@ -404,6 +425,9 @@ impl Executor {
                     }
                     rows.truncate(n as usize);
                 }
+                Clause::Create(patterns) if self.property_graph.is_some() => {
+                    rows = super::property_matching::create(self, rows, patterns)?;
+                }
                 Clause::Create(_) => {
                     return Err(CypherError::NotImplemented(
                         "CREATE is not supported — graph is immutable".into(),
@@ -431,6 +455,11 @@ impl Executor {
                 }
             }
             i += 1;
+        }
+        if self.property_graph.is_some()
+            && !clauses.iter().any(|c| matches!(c, Clause::Return { .. }))
+        {
+            return Ok(QueryResult::default());
         }
         if columns.is_empty() {
             if let Some(first) = rows.first() {
@@ -467,7 +496,7 @@ impl Executor {
         early_limit: Option<usize>,
     ) -> CypherResult<Vec<Row>> {
         let mut out: Vec<Row> = Vec::new();
-        if has_unknown_label(patterns) && !optional {
+        if self.property_graph.is_none() && has_unknown_label(patterns) && !optional {
             return Ok(out);
         }
         for r in rows {
@@ -490,7 +519,7 @@ impl Executor {
                     }
                     Ok(true)
                 };
-                if !(has_unknown_label(patterns)) {
+                if self.property_graph.is_some() || !(has_unknown_label(patterns)) {
                     matcher.match_patterns(&r, patterns, &mut emit)?;
                 }
             }

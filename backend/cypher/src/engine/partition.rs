@@ -1061,7 +1061,14 @@ impl PartitionPlan {
                             row.insert(a.to_string(), Value::Node(NodeRef { source, id }));
                         }
                         if let Some(r) = r {
-                            row.insert(r.to_string(), Value::Rel(EdgeRef { source, edge }));
+                            row.insert(
+                                r.to_string(),
+                                Value::Rel(EdgeRef {
+                                    property_id: None,
+                                    source,
+                                    edge,
+                                }),
+                            );
                         }
                         if let Some(b) = b {
                             row.insert(b.to_string(), Value::Node(NodeRef { source, id: other }));
