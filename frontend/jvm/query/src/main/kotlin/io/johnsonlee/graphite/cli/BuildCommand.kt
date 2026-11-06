@@ -55,6 +55,44 @@ class BuildCommand : Callable<Int> {
     var libFilters: List<String> = emptyList()
 
     @Option(
+        names = ["--dependency-artifacts"],
+        description = [
+            "Library JARs (glob patterns on the file name, comma-separated) whose method bodies are analysed although",
+            "they are not application code: needs --include-libs. A library outside this scope resolves types only."
+        ],
+        split = ","
+    )
+    var dependencyArtifacts: List<String> = emptyList()
+
+    @Option(
+        names = ["--dependency-packages"],
+        description = ["Library class prefixes (comma-separated) whose method bodies are analysed; needs --include-libs"],
+        split = ","
+    )
+    var dependencyPackages: List<String> = emptyList()
+
+    @Option(
+        names = ["--dependency-reachable"],
+        paramLabel = "N",
+        description = [
+            "Analyse the library classes the application's calls reach, and the classes those reach, up to N",
+            "classes (needs --include-libs; not with --dependency-artifacts/--dependency-packages). A class",
+            "reached past the budget is NOT_EXPANDED in the completeness evidence."
+        ]
+    )
+    var dependencyReachable: Int? = null
+
+    @Option(
+        names = ["--dependency-roots"],
+        description = [
+            "Application class prefixes (comma-separated) whose calls seed --dependency-reachable, followed through the",
+            "application methods they reach; all of them when omitted"
+        ],
+        split = ","
+    )
+    var dependencyRoots: List<String> = emptyList()
+
+    @Option(
         names = ["--fold"],
         description = [
             "JSON or YAML file of call-site patterns to fold to constants while the graph is built",
@@ -101,6 +139,7 @@ class BuildCommand : Callable<Int> {
                 libraryFilters = libFilters,
                 androidSdk = androidSdk,
                 interproceduralDataflow = interprocedural,
+                dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages, dependencyReachable, dependencyRoots),
                 folding = folds.takeIf { it.isNotEmpty() }?.let { FoldPlan(it) { report -> foldReport = report } },
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )

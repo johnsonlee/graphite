@@ -464,6 +464,17 @@ itself a fold file (`--fold graph.folds.json` reads the rules and drops the rest
 no rule touches go through the frontend's default passes unchanged, so a fold changes only
 the methods that call a folded method. See `docs/constant-folding.md` for what the passes do.
 
+`--dependency-artifacts` and `--dependency-packages` (with `--include-libs`) name the library
+jars and packages whose method bodies the graph holds beside the application's, without making
+them application code; a nested jar the scope names is loaded even when no application package
+is in it. `--dependency-reachable N` instead loads every library and reads only the classes the
+application's calls reach, and the classes those reach, up to N classes; a class reached past the
+budget is `NOT_EXPANDED`. Every build records what it did with each class and method as `graph.completeness`,
+read back through `Graph.analysisCompleteness()` and `Graph.analysisStatus(callee)`: a callee is
+`ANALYZED`, `ABSTRACT`, `NATIVE`, `INCOMPLETE`, `EXCLUDED_BY_SCOPE`, `EXTERNAL` and so on, so a proof
+over the graph can tell a body with no effect from a body that was never read. See
+[docs/analysis-completeness.md](docs/analysis-completeness.md).
+
 ## Kotlin API
 
 ### Build & Query

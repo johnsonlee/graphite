@@ -34,11 +34,20 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.AnalysisCompleteness
+import io.johnsonlee.graphite.graph.AnalysisStatus
+import io.johnsonlee.graphite.graph.ArtifactEvidence
+import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
+import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.input.AnalysisIdentity
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
+import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -50,6 +59,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import java.util.BitSet
+import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.Locale
 import java.util.ResourceBundle
@@ -114,6 +124,7 @@ import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootMethod
+import sootup.core.signatures.FieldSignature
 import sootup.core.signatures.MethodSubSignature
 import sootup.core.signatures.MethodSignature
 import sootup.core.util.Modifiers
@@ -146,6 +157,7 @@ private const val JAVA_LANG_OBJECT = "java.lang.Object"
 private const val CALLABLE_REFERENCE_RECEIVER_FIELD = "receiver"
 private const val VALUE_OF_METHOD = "valueOf"
 private const val CLASS_FILE_SUFFIX = ".class"
+private const val MULTI_RELEASE_PREFIX = "META-INF/versions/"
 private const val PROPERTIES_FILE_SUFFIX = ".properties"
 private const val CONST_NODE_PREFIX = "const"
 private const val RESOURCE_SOURCE = "resource"
@@ -265,7 +277,11 @@ class SootUpAdapter(
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val declarationWarning: (String) -> Unit = {},
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
+    /** The role of each source of [inputLocationSources], by name; a source without one is the application's. */
+    private val artifactRoles: Map<String, ArtifactRole> = emptyMap(),
     private val singleArtifactSource: String? = null,
+    /** The sources in the order the runtime loads them (`BOOT-INF/classpath.idx`), when the input says; the listing order otherwise. */
+    private val artifactOrder: List<String> = emptyList(),
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
@@ -342,6 +358,14 @@ class SootUpAdapter(
     private val flowTo = IntArrayList()
     private val slotAdapters = Int2ObjectOpenHashMap<MutableList<SlotAdapter>>()
     private val slotCalls = Int2ObjectLinkedOpenHashMap<MutableList<PendingDispatch>>()
+    /** After the fixpoint, the slots a value with no known origin in the scope may reach, see [computeOpenSlots]. */
+    private var openSlots: BitSet? = null
+    /** After the fixpoint, the slots a saturated slot flows into, see [computeOpenSlots]. */
+    private var lostSlots: BitSet? = null
+    /** The slots seeded from a saturated holder: the targets never arrived, see [seedSlot]. */
+    private val lostSeeds = BitSet()
+    /** The signature each static field reference resolved to, see [resolvedFieldSignature]. */
+    private val resolvedFields = HashMap<FieldSignature, FieldSignature>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -392,6 +416,55 @@ class SootUpAdapter(
     private val fieldGenericTypesByClass = mutableMapOf<String, Map<String, TypeDescriptor>>()
     private val classOriginsByName = mutableMapOf<String, String>()
     private val classOriginSourceCounts = mutableMapOf<String, Int>()
+
+    // The completeness evidence (Graph.analysisCompleteness): what the build did with every class
+    // of the view and with every method it did not analyse completely, the duplicate class
+    // definitions of a multi-artifact input, and the archives that carry versioned class copies.
+    private val classEvidence = HashMap<String, ClassEvidence>()
+    private val methodEvidence = HashMap<String, MethodEvidence>()
+    private val duplicateClasses = LinkedHashMap<String, MutableList<String>>()
+    private val multiReleaseArtifacts = HashSet<String>()
+    private var classEntrySources = HashMap<String, String>()
+    private var resolutionFailures = 0
+    private val callSiteGaps = HashMap<Int, CallSiteGap>()
+    /** Under a reachable scope, the callees of every followed call site read so far, drained by the expansion. */
+    private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
+    private val reachedCallees = ArrayList<MethodDescriptor>()
+    private val reachedVirtually = ArrayList<Boolean>()
+    /** Under a reachable scope, the classes followed static field accesses initialise, which the JVM does on first access. */
+    private val reachedClasses = ArrayList<String>()
+    private val notedClasses = HashSet<String>()
+    /** Every callee followed by the expansion, by identity (descriptors are canonical per signature), and whether virtually. */
+    private val notedCallees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
+    private val reachableFrontier = ReachableFrontier()
+    private var reachableBudget = reachableExpansion?.maxClasses ?: 0
+    private var reachableRead = 0
+    private var reachablePastBudget = 0
+    /**
+     * Under a reachable scope, the classes every call of which the expansion follows: the roots
+     * (every application class without roots) and the library classes the expansion reads.
+     */
+    private val seededClasses = HashSet<String>()
+    /** The application methods a followed call, override or initialisation reaches, whose own calls are followed too. */
+    private val seededMethods: MutableSet<MethodDescriptor> = Collections.newSetFromMap(IdentityHashMap())
+    /** The notes of the application methods nothing followed has reached yet, released when something does. */
+    private val heldNotes = HashMap<MethodDescriptor, HeldNotes>()
+
+    /** The classes pass 2 read as the application's (by package, whatever artifact holds them). */
+    private val applicationClasses = HashSet<String>()
+    /** Calls on function values that no slot tracks (cross-method tracking off): their gaps are read from here. */
+    private val untrackedDispatches = ArrayList<UntrackedDispatch>()
+    /**
+     * With cross-method tracking off, the locals (by [localKey]) holding a value their method
+     * did not produce: a parameter, a field, a call's result, an element of an array one of
+     * those holds, or a copy of such a local. A call on one dispatches to what the method
+     * assigned it, and to a value the method cannot name.
+     */
+    private val openLocals = HashSet<LocalKey>()
+    /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
+    private var activeControlFlowTruncated = false
+    /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
+    private var activeClassResolutionFailed = false
     private val artifactDependenciesByArtifact = mutableMapOf<String, MutableMap<String, Int>>()
     private val resourceFilesByPath = mutableMapOf<String, MutableList<ResourceFileNode>>()
     private val configurationResourcePaths = linkedSetOf<String>()
@@ -506,16 +579,32 @@ class SootUpAdapter(
             logger = ::log,
             resources = resourceAccessor
         )
-        classes.asSequence()
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-                pass2Count++
-                if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
-                    log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
-                }
-                processClassWithMethodCache(sootClass, extensionContext)
+        classes.forEach { sootClass ->
+            val className = sootClass.type.fullyQualifiedName
+            val origin = evidenceOrigin(sootClass)
+            val application = shouldIncludeClass(sootClass)
+            if (!application && !(isLibraryOrigin(origin) && config.dependencyBodies.covers(className, origin))) {
+                classEvidence[className] = ClassEvidence(origin, AnalysisStatus.EXCLUDED_BY_SCOPE)
+                return@forEach
             }
+            pass2Count++
+            if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
+                log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
+            }
+            processDependencyOrApplicationClass(sootClass, extensionContext, application)
+        }
+        reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
 
+        // Pass 2B: Resolve cross-method functional interface dispatch
+        if (trackCrossMethodFunctionalDispatch) {
+            resolveFunctionalDispatch()
+        }
+        // A library body reached only through a resolved function value is read now; what it
+        // passes on as a function value is not resolved further, and reads as a gap.
+        val classesBeforeDispatchExpansion = reachableRead
+        reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
+        // Finalize only after the last class expansion: callback-only dependencies can
+        // contribute synthetic methods and classes after functional dispatch resolves.
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
             graphBuilder.addSyntheticIdentity(member, fingerprint)
         }
@@ -523,10 +612,9 @@ class SootUpAdapter(
             log { "Skipped ${syntheticIdentities.skipped} synthetic member(s) whose identity could not be rendered" }
         }
 
-        // Pass 2B: Resolve cross-method functional interface dispatch
-        if (trackCrossMethodFunctionalDispatch) {
-            resolveFunctionalDispatch()
-        }
+        val lateClassesRead = reachableRead > classesBeforeDispatchExpansion
+        finalizeDispatchEvidence(lateClassesRead)
+        collectDispatchGaps(lateClassesRead)
 
         interprocedural?.let { calls ->
             val edges = calls.link(::overridesOf) { graphBuilder.addEdge(it) }
@@ -551,12 +639,378 @@ class SootUpAdapter(
         log("Starting graphBuilder.build()")
         graphBuilder.setDeclaredTypes(buildDeclaredTypes(classes))
         graphBuilder.setResources(resourceAccessor)
+        graphBuilder.setAnalysisCompleteness(analysisCompleteness())
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
         }
     }
 
-    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext) {
+    /** Read a pass-2 class and record what the build did with it. */
+    private fun processDependencyOrApplicationClass(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
+        val className = sootClass.type.fullyQualifiedName
+        activeClassResolutionFailed = false
+        if (application) applicationClasses += className
+        if (reachableExpansion != null && (!application || reachableExpansion.seeds(className))) {
+            seededClasses += className
+            initializationPrerequisites(className).forEach(::noteFollowedClass)
+        }
+        processClassWithMethodCache(sootClass, extensionContext, application)
+        val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
+        classEvidence[className] = ClassEvidence(evidenceOrigin(sootClass), status)
+    }
+
+    /**
+     * The source the evidence names for [sootClass]: the indexed origin for a multi-artifact
+     * input; for a single-artifact input, the input location the class was read from when the
+     * view holds more than one (an APK beside its platform jar: the platform's classes are the
+     * platform's, not the APK's, whatever the graph's own origin index says), else the artifact.
+     */
+    private fun evidenceOrigin(sootClass: SootClass): String? =
+        classOriginsByName[sootClass.type.fullyQualifiedName]
+            ?: (sootClass as? JavaSootClass)?.let(::sourceForClass)
+            ?: singleArtifactSource
+
+    /**
+     * Read the library classes the application reaches, see [DependencyBodyScope.Reachable]:
+     * the class of each call's declared callee, of each override the view knows for a virtual
+     * callee, and so on through the calls those bodies make, until nothing new is reached or
+     * [scope]'s budget is spent; the classes reached past it are [AnalysisStatus.NOT_EXPANDED].
+     * Only library classes are reached: an application class the configuration excluded stays
+     * excluded. Each class is read once, so the expansion terminates on any call graph; the
+     * budget and the frontier persist across calls, so the pass after the dispatch fixpoint
+     * continues where this one stopped.
+     */
+    private fun expandReachableClasses(scope: DependencyBodyScope.Reachable, extensionContext: GraphiteContext) {
+        val frontier = reachableFrontier
+        while (true) {
+            drainReachedCallees(frontier)
+            val className = frontier.queue.removeFirstOrNull() ?: break
+            val sootClass = classesByNameCache?.get(className) ?: continue
+            if (reachableBudget == 0) {
+                classEvidence[className] = ClassEvidence(classEvidence[className]?.origin, AnalysisStatus.NOT_EXPANDED)
+                reachablePastBudget++
+                continue
+            }
+            reachableBudget--
+            reachableRead++
+            processDependencyOrApplicationClass(sootClass, extensionContext, application = false)
+        }
+        log { "Reachable expansion read $reachableRead dependency class(es), $reachablePastBudget past the budget of ${scope.maxClasses}" }
+    }
+
+    /** The classes the expansion has reached and not yet read, each queued once. */
+    private class ReachableFrontier {
+        val queue = ArrayDeque<String>()
+        val reached = HashSet<String>()
+        var drained = 0
+        var drainedClasses = 0
+    }
+
+    /**
+     * Follow the callees noted since the last drain (the declared callee and, for a virtual
+     * callee, its overrides) and the classes followed static field accesses initialise, whose
+     * initialisers run on first access without any call. Following may seed an application
+     * method, which releases its held notes onto the same lists, so the loop runs until both
+     * are drained.
+     */
+    private fun drainReachedCallees(frontier: ReachableFrontier) {
+        while (frontier.drained < reachedCallees.size || frontier.drainedClasses < reachedClasses.size) {
+            while (frontier.drained < reachedCallees.size) {
+                val index = frontier.drained++
+                follow(frontier, reachedCallees[index], reachedVirtually[index])
+            }
+            while (frontier.drainedClasses < reachedClasses.size) {
+                reach(frontier, reachedClasses[frontier.drainedClasses++])
+            }
+        }
+    }
+
+    /**
+     * Follow a call: the class [callee] initialises, the method itself when it is the
+     * application's, and the overrides a [virtual] call reaches.
+     */
+    private fun follow(frontier: ReachableFrontier, callee: MethodDescriptor, virtual: Boolean) {
+        reach(frontier, callee.declaringClass.className)
+        seedMethod(callee)
+        if (virtual) {
+            overridesOf(callee).forEach { override ->
+                reach(frontier, override.declaringClass.className)
+                seedMethod(override)
+            }
+        }
+    }
+
+    /**
+     * Reach [className], once: the classes the JVM initialises before it first (JVMS 5.5),
+     * whatever their status, then the class itself. A library class the scope left out is
+     * queued to be read; an application class is already read, so its initialiser is seeded
+     * ([seedMethod]) and the walk goes on to its own prerequisites, which may be a library's
+     * again. An application class excluded by configuration is neither.
+     */
+    private fun reach(frontier: ReachableFrontier, className: String) {
+        if (!frontier.reached.add(className)) return
+        initializationPrerequisites(className).forEach { reach(frontier, it) }
+        if (className in applicationClasses) {
+            seedMethod(classInitializerOf(className))
+        } else {
+            val evidence = classEvidence[className] ?: return
+            if (evidence.status == AnalysisStatus.EXCLUDED_BY_SCOPE && isLibraryOrigin(evidence.origin)) frontier.queue += className
+        }
+    }
+
+    /**
+     * Seed an application method a followed call reached: its own calls are followed from now
+     * on, and the notes it held while nothing reached it are released. A root's methods and a
+     * library class's are seeded with their class.
+     */
+    private fun seedMethod(method: MethodDescriptor) {
+        val className = method.declaringClass.className
+        if (className !in applicationClasses || className in seededClasses || !seededMethods.add(method)) return
+        heldNotes.remove(method)?.let { held ->
+            held.callees.forEach { (callee, virtual) -> noteFollowedCallee(callee, virtual) }
+            held.classes.forEach(::noteFollowedClass)
+        }
+    }
+
+    /** The descriptor of [className]'s initialiser, canonical with the one its body was read under. */
+    private fun classInitializerOf(className: String): MethodDescriptor {
+        val factory = view.identifierFactory
+        return toMethodDescriptor(factory.getMethodSignature(factory.getClassType(className), "<clinit>", "void", emptyList()))
+    }
+
+    /** Whether the calls [caller] makes are followed by the expansion: its class is seeded, or it was reached itself. */
+    private fun isSeeded(caller: MethodDescriptor): Boolean =
+        caller.declaringClass.className in seededClasses || caller in seededMethods
+
+    /**
+     * Under a reachable scope, note that [caller] initialises [className]: the class that
+     * declares the field a static field access resolves to (`getstatic Child.value` on a field
+     * `Base` declares initialises `Base`, not `Child`). Followed at once when [caller]'s calls
+     * are followed, held with the caller until something reaches it otherwise.
+     */
+    private fun noteClassInitialized(className: String, caller: MethodDescriptor) {
+        if (reachableExpansion == null) return
+        if (isSeeded(caller)) noteFollowedClass(className) else heldNotes.getOrPut(caller) { HeldNotes() }.classes += className
+    }
+
+    /** Queue [className] for the expansion to reach, once. */
+    private fun noteFollowedClass(className: String) {
+        if (notedClasses.add(className)) reachedClasses += className
+    }
+
+    /** Held by an application method nothing followed has reached: its callees (whether virtually) and the classes it initialises. */
+    private class HeldNotes {
+        val callees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
+        val classes = LinkedHashSet<String>()
+    }
+
+    /**
+     * The classes the JVM initialises before [className] (JVMS 5.5): its superclass, and every
+     * superinterface, direct or indirect, that declares a non-abstract, non-static method (a
+     * default method); an interface's superinterfaces are not initialised with it. Only classes
+     * the view holds; a superinterface outside it initialises nothing the graph could read.
+     */
+    private fun initializationPrerequisites(className: String): List<String> {
+        val sootClass = resolveClassByName(className)?.takeIf { !it.isInterface }
+        val result = LinkedHashSet<String>()
+        if (sootClass != null) {
+            sootClass.superclass.orElse(null)?.let { result += it.fullyQualifiedName }
+            sootClass.interfaces.forEach { collectDefaultBearingInterfaces(it.fullyQualifiedName, HashSet(), result) }
+        }
+        return result.toList()
+    }
+
+    /** Add [type] to [result] when it declares a default method, and visit its superinterfaces, each once. */
+    private fun collectDefaultBearingInterfaces(type: String, visited: MutableSet<String>, result: MutableSet<String>) {
+        val iface = if (visited.add(type)) resolveClassByName(type) else null
+        if (iface != null) {
+            if (iface.methods.any { !it.isAbstract && !it.isStatic }) result += type
+            iface.interfaces.forEach { collectDefaultBearingInterfaces(it.fullyQualifiedName, visited, result) }
+        }
+    }
+
+    /**
+     * The signature a field reference resolves to: the field of the class that declares it, by
+     * the JVM's field resolution ([lookupField]), or the reference itself when nothing the view
+     * holds declares it. For a static field this is the identity the graph gives the field, so
+     * the store in the declaring class's initialiser and a read spelled through a subclass or
+     * an implementing class (`getstatic Child.value`) meet on one node; for an instance field
+     * the graph keeps the class the reference spells (see [getOrCreateField]), and the
+     * resolution keys the dispatch slot only, so the function value `Base.install` stores in
+     * `this.callback` is what `child.callback.get()` dispatches on. Cached per reference.
+     */
+    private fun resolvedFieldSignature(fieldRef: JFieldRef): FieldSignature = resolvedFieldSignature(fieldRef.fieldSignature)
+
+    private fun resolvedFieldSignature(fieldSig: FieldSignature): FieldSignature = resolvedFields.getOrPut(fieldSig) {
+        val declaring = lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
+        if (declaring == null || declaring == fieldSig.declClassType.fullyQualifiedName) {
+            fieldSig
+        } else {
+            FieldSignature(view.identifierFactory.getClassType(declaring), fieldSig.subSignature)
+        }
+    }
+
+    /** The key of the slot a function value stored in or loaded from [fieldRef] lives in, see [resolvedFieldSignature]. */
+    private fun fieldSlotKey(fieldRef: JFieldRef): String = resolvedFieldSignature(fieldRef).toString()
+
+    /**
+     * The class that declares the field [fieldName] of type [type] a reference through
+     * [className] resolves to, by the JVM's field resolution (JVMS 5.4.3.2): the class itself,
+     * then its direct superinterfaces, recursively, then its superclass the same way; null when
+     * nothing the view holds declares it.
+     */
+    private fun lookupField(className: String, fieldName: String, type: Type, visited: MutableSet<String>): String? {
+        val sootClass = if (visited.add(className)) resolveClassByName(className) else null
+        return when {
+            sootClass == null -> null
+            sootClass.fields.any { it.name == fieldName && it.type == type } -> className
+            else -> sootClass.interfaces.asSequence()
+                .map { lookupField(it.fullyQualifiedName, fieldName, type, visited) }
+                .firstOrNull { it != null }
+                ?: sootClass.superclass.orElse(null)?.let { lookupField(it.fullyQualifiedName, fieldName, type, visited) }
+        }
+    }
+
+    /** Whether a class read from [origin] is a library's (or the platform's), not the application's. */
+    private fun isLibraryOrigin(origin: String?): Boolean =
+        origin != null && (artifactRoles[origin] ?: ArtifactRole.APPLICATION) != ArtifactRole.APPLICATION
+
+    /**
+     * Under a reachable scope, note a call [caller] makes on [callee] for the expansion to
+     * follow. Whether it is followed is the caller's: a root's method, a library method the
+     * expansion read, or an application method something followed has reached (by the
+     * classification pass 2 gave the class, whatever artifact holds it; a call resolved after
+     * class processing is attributed to its own caller, never to the class that happened to
+     * be processed last); any other application method holds the note until it is reached.
+     */
+    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean, caller: MethodDescriptor) {
+        if (reachableExpansion == null) return
+        if (isSeeded(caller)) {
+            noteFollowedCallee(callee, virtual)
+        } else {
+            heldNotes.getOrPut(caller) { HeldNotes() }.callees.merge(callee, virtual, Boolean::or)
+        }
+    }
+
+    /**
+     * Queue [callee] for the expansion to follow: once per callee, and once more when a virtual
+     * call follows a non-virtual one on the same callee (`super.value()` before
+     * `receiver.value()`), since only the virtual call reaches the overrides and the first note
+     * may already have been drained.
+     */
+    private fun noteFollowedCallee(callee: MethodDescriptor, virtual: Boolean) {
+        val noted = notedCallees[callee]
+        if (noted == null || (virtual && !noted)) {
+            notedCallees[callee] = virtual || noted == true
+            reachedCallees += callee
+            reachedVirtually += virtual
+        }
+    }
+
+    /**
+     * After the dispatch fixpoint, every call on a function value that resolved to no body, with
+     * the reason: the receiver's holder saturated, or nothing is known to reach it.
+     */
+    private fun collectDispatchGaps(lateClassesRead: Boolean) {
+        for (entry in slotCalls.int2ObjectEntrySet()) {
+            val lost = slotTargets[entry.intKey] === SATURATED_TARGETS || lostSlots?.get(entry.intKey) == true
+            for (pending in entry.value) {
+                val unexpanded = lateClassesRead && slotTargets[entry.intKey]?.any { it !in pending.resolved } == true
+                val gap = dispatchGap(pending, lost, open = openSlots?.get(entry.intKey) == true || unexpanded) ?: continue
+                callSiteGaps[pending.callSite.id.value] = gap
+            }
+        }
+        for (untracked in untrackedDispatches) {
+            val gap = dispatchGap(untracked.pending, untracked.lost, untracked.open) ?: continue
+            callSiteGaps[untracked.pending.callSite.id.value] = gap
+        }
+        untrackedDispatches.clear()
+    }
+
+    /**
+     * The gap of a call on a function value, or null when every alternative resolved: [lost]
+     * when a saturated holder reaches the receiver (its targets were lost: the call is saturated
+     * when nothing resolved, partial when something did), [open] when a value with no known
+     * origin reaches it (partial when something resolved).
+     */
+    private fun dispatchGap(pending: PendingDispatch, lost: Boolean, open: Boolean): CallSiteGap? = when {
+        lost && pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_SATURATED
+        pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_UNRESOLVED
+        lost || open -> CallSiteGap.DISPATCH_PARTIAL
+        else -> null
+    }
+
+    /**
+     * The evidence of this build: every source in its role, every class of the view with what
+     * the build did with it, the methods not analysed completely, and the duplicate definitions.
+     * The scope is the config's; the platform jar an APK build reads is named by its SDK root
+     * only, so its digest is not part of it (the CLI's fold provenance carries that).
+     */
+    private fun analysisCompleteness(): AnalysisCompleteness {
+        val names = LinkedHashSet(inputLocationSources.values)
+        singleArtifactSource?.let(names::add)
+        val artifacts = names.associateWith { name ->
+            val role = artifactRoles[name] ?: if (name == singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
+            ArtifactEvidence(role, name in multiReleaseArtifacts)
+        }
+        return AnalysisCompleteness(
+            AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, orderedDuplicates(), callSiteGaps
+        )
+    }
+
+    /**
+     * The duplicate definitions with their sources in the runtime's order: the application's
+     * own sources first, as the loader places them, then the libraries in the order the input
+     * declares ([artifactOrder], which names the libraries only), then the libraries it does not
+     * name in listing order. Every listed archive is ranked, loaded or not: an archive the build
+     * did not load has no role, and is a library all the same (the application's sources are
+     * always loaded). The first source is the one the runtime would load; the view's choice is
+     * the class's origin.
+     */
+    private fun orderedDuplicates(): Map<String, List<String>> {
+        if (artifactOrder.isEmpty()) return duplicateClasses
+        val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
+        fun precedence(source: String): Int =
+            if (artifactRoles[source] == ArtifactRole.APPLICATION) -1 else rank[source] ?: Int.MAX_VALUE
+        return duplicateClasses.mapValues { (_, sources) -> sources.sortedBy(::precedence) }
+    }
+
+    /**
+     * Record [status] for [method]: a method the build analysed completely has no record, so
+     * the evidence holds only the exceptions; a record an earlier resolution of the same method
+     * left (a `<clinit>` the enum pass could not read) is dropped when the method pass reads it.
+     */
+    private fun recordMethodEvidence(method: MethodDescriptor, status: AnalysisStatus, message: String?) {
+        when (status) {
+            // Only a resolution failure can precede a later, successful read of the same method,
+            // so only then is an identity spelled on the hot path.
+            AnalysisStatus.ANALYZED -> if (resolutionFailures > 0) methodEvidence.remove(method.identity)
+            AnalysisStatus.RESOLUTION_FAILED -> {
+                resolutionFailures++
+                methodEvidence[method.identity] = MethodEvidence(status, message)
+            }
+            else -> methodEvidence[method.identity] = MethodEvidence(status, message)
+        }
+    }
+
+    /** A method whose body the frontend could not resolve, named by its class, name and JVM descriptor. */
+    private fun recordResolutionFailure(declaringClass: ClassType, name: String, desc: String, message: String?) {
+        val factory = view.identifierFactory
+        val signature = factory.getMethodSignature(
+            declaringClass,
+            name,
+            factory.getType(AsmType.getReturnType(desc).className),
+            AsmType.getArgumentTypes(desc).map { factory.getType(it.className) }
+        )
+        recordMethodEvidence(toMethodDescriptor(signature), AnalysisStatus.RESOLUTION_FAILED, message)
+    }
+
+    /**
+     * Process a class of pass 2: its methods, their bodies and annotations, its fields, and, for
+     * an [application] class, the extensions (endpoints and the like). A library class the
+     * dependency body scope covers gets its bodies and nothing that would make it an entry point.
+     */
+    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
         methodCacheOwner = sootClass as? JavaSootClass
         try {
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
@@ -579,7 +1033,7 @@ class SootUpAdapter(
             }
 
             visitFieldsForClass(sootClass)
-            extensions.forEach { it.visit(sootClass, extensionContext) }
+            if (application) extensions.forEach { it.visit(sootClass, extensionContext) }
         } finally {
             bytecodeMethodsCache.clear()
             streamingSourcesCache.clear()
@@ -847,11 +1301,21 @@ class SootUpAdapter(
         activeLocalKeysByName = mutableMapOf()
         activeMethodParameters = mutableListOf()
         activeParameterBindingsByIndex = mutableMapOf()
+        activeControlFlowTruncated = false
+        var status = AnalysisStatus.ANALYZED
+        var failure: String? = null
 
         try {
             // Process method body if available
             if (method.hasBody()) {
                 processMethodBody(method, methodDescriptor)
+                if (activeControlFlowTruncated) status = AnalysisStatus.ANALYZED_WITHOUT_CONTROL_FLOW
+            } else {
+                status = when {
+                    method.isAbstract -> AnalysisStatus.ABSTRACT
+                    method.isNative -> AnalysisStatus.NATIVE
+                    else -> AnalysisStatus.NO_BODY
+                }
             }
             // Rendered here, while the body is materialised, rather than in a pass of its own:
             // streamed methods are rebuilt on every enumeration.
@@ -862,10 +1326,14 @@ class SootUpAdapter(
         } catch (oom: OutOfMemoryError) {
             // Android/large corpus can contain a few pathological methods whose CFG
             // materialization explodes heap. Skip the offending method so graph build
-            // can continue instead of failing the entire load.
+            // can continue instead of failing the entire load; the method's nodes exist, so
+            // the evidence says its body is incomplete.
             log { "Skipping method due to OOM while building ${methodDescriptor.signature}: ${oom.message}" }
+            status = AnalysisStatus.INCOMPLETE
+            failure = oom.message ?: oom.javaClass.name
             System.gc()
         } finally {
+            recordMethodEvidence(methodDescriptor, status, failure)
             clearMethodState(methodDescriptor)
             releaseConversionState(method)
         }
@@ -909,6 +1377,7 @@ class SootUpAdapter(
         if (stmtCount <= MAX_CONTROL_FLOW_STATEMENTS) {
             processControlFlow(branchStatements ?: emptyList(), stmtGraph, statements, methodDescriptor)
         } else {
+            activeControlFlowTruncated = true
             log {
                 "Skipping control-flow extraction for ${methodDescriptor.signature}: " +
                     "$stmtCount statements exceed $MAX_CONTROL_FLOW_STATEMENTS"
@@ -1045,7 +1514,7 @@ class SootUpAdapter(
         val rightOp = stmt.rightOp
         // Track function values stored to fields: `this.callback = fn`
         if (leftOp is JFieldRef && rightOp is Local) {
-            trackFlow(method, rightOp, DispatchSlot.Field(leftOp.fieldSignature.toString()))
+            trackFlow(method, rightOp, DispatchSlot.Field(fieldSlotKey(leftOp)))
         }
 
         // Track function values stored into array elements (varargs): `fns[0] = fn`
@@ -1056,6 +1525,7 @@ class SootUpAdapter(
                 arrayDynamicTargets[arrayKey] = mergeTargets(arrayDynamicTargets[arrayKey], targets)
             }
             trackFlow(method, rightOp, slotOf(method, base))
+            inheritOpenness(method, from = rightOp, to = base)
         }
 
         if (leftOp is Local && targetNode is LocalVariable) {
@@ -1070,11 +1540,13 @@ class SootUpAdapter(
             is JArrayRef -> {
                 val arrayKey = localKey(method, rightOp.base.name)
                 arrayDynamicTargets[arrayKey]?.let { targets -> mergeLocalTargets(method, leftOp, targets) }
-                trackSlotFlow(slotOf(method, rightOp.base), method, leftOp)
+                trackSlotFlow(seededSlotOf(method, rightOp.base), method, leftOp)
+                inheritOpenness(method, from = rightOp.base, to = leftOp)
             }
             // Field loads: `fn = this.callback`, including Kotlin's `Lambda.INSTANCE` singletons
             is JFieldRef -> {
-                trackSlotFlow(DispatchSlot.Field(rightOp.fieldSignature.toString()), method, leftOp)
+                trackSlotFlow(DispatchSlot.Field(fieldSlotKey(rightOp)), method, leftOp)
+                markOpenLocal(method, leftOp, open = true)
                 val fieldClass = rightOp.fieldSignature.declClassType.fullyQualifiedName
                 if (rightOp is JStaticFieldRef && toTypeDescriptor(rightOp.type).className == fieldClass) {
                     trackFunctionObject(method, leftOp, fieldClass, targetNode.id, stmt)
@@ -1118,6 +1590,8 @@ class SootUpAdapter(
             if (trackCrossMethodFunctionalDispatch) {
                 val localKey = localKey(method, leftOp.name)
                 localToParamIndex[localKey] = parameterBinding(method, paramIndex)
+            } else {
+                markOpenLocal(method, leftOp, open = true)
             }
         }
     }
@@ -1212,6 +1686,7 @@ class SootUpAdapter(
         }
         val virtual = invokeExpr is AbstractInstanceInvokeExpr && invokeExpr !is JSpecialInvokeExpr
         interprocedural?.call(callee, virtual, argNodeIds, resultNode?.id)
+        noteReachedCallee(callee, virtual, caller)
         val resourceRelevantCall = isResourceRelevantCall(calleeSignature)
         if (resourceRelevantCall) {
             linkResourceReads(callSite, calleeSignature, invokeExpr)
@@ -1237,8 +1712,17 @@ class SootUpAdapter(
             dynamicTargets[localKey(caller, receiverLocal.name)].orEmpty()
                 .filter(pending.resolved::add)
                 .forEach { emitResolvedDispatch(pending, it) }
-            if (trackCrossMethodFunctionalDispatch && mayHoldFunction(receiverNode.type)) {
-                callsOn(slotId(slotOf(caller, receiverLocal))).add(pending)
+            if (mayHoldFunction(receiverNode.type)) {
+                if (trackCrossMethodFunctionalDispatch) {
+                    callsOn(slotId(seededSlotOf(caller, receiverLocal))).add(pending)
+                } else {
+                    val receiverKey = localKey(caller, receiverLocal.name)
+                    untrackedDispatches += UntrackedDispatch(
+                        pending,
+                        lost = dynamicTargets[receiverKey] === SATURATED_TARGETS,
+                        open = receiverKey in openLocals
+                    )
+                }
             }
         }
         if (invokeExpr is JSpecialInvokeExpr && callee.name == INIT_METHOD && caller.name == INIT_METHOD) {
@@ -1298,6 +1782,8 @@ class SootUpAdapter(
             extractBundleControlSpec(caller, calleeSignature, invokeExpr)?.let { bundleControlSpecsByLocal[resultKey] = it }
             if (trackCrossMethodFunctionalDispatch && mayHoldFunction(resultNode.type)) {
                 flowSlot(DispatchSlot.Return(callee), DispatchSlot.Local(caller, resultNode.name))
+            } else if (!trackCrossMethodFunctionalDispatch && mayHoldFunction(resultNode.type)) {
+                openLocals.add(resultKey)
             }
         }
     }
@@ -1336,7 +1822,7 @@ class SootUpAdapter(
         val leftOp = (stmt as? JAssignStmt)?.leftOp
         val resultLocal = (leftOp as? Local)?.name ?: (resultNode as? LocalVariable)?.name
         val resultSlot = when {
-            leftOp is JFieldRef -> DispatchSlot.Field(leftOp.fieldSignature.toString())
+            leftOp is JFieldRef -> DispatchSlot.Field(fieldSlotKey(leftOp))
             resultLocal != null -> DispatchSlot.Local(caller, resultLocal)
             else -> null
         }
@@ -1358,6 +1844,7 @@ class SootUpAdapter(
             if (stmt != null) {
                 recordStmtNode(stmt, callSite.id)
             }
+            noteReachedCallee(target, virtual = false, caller)
 
             // Add call edge (marked as dynamic)
             graphBuilder.addEdge(
@@ -1413,7 +1900,7 @@ class SootUpAdapter(
         // Track dynamic targets flowing directly to a field store:
         // e.g., this.mapper = invokedynamic(...) where resultNode is a FieldNode
         if (trackCrossMethodFunctionalDispatch && leftOp is JFieldRef && targets.isNotEmpty()) {
-            seedSlot(DispatchSlot.Field(leftOp.fieldSignature.toString()), targets)
+            seedSlot(DispatchSlot.Field(fieldSlotKey(leftOp)), targets)
         }
 
         // If no method handles found, fall back to creating a call site with the synthetic method
@@ -1923,6 +2410,9 @@ class SootUpAdapter(
         nestedDispatches.clear()
         dynamicTargets.clear()
         arrayDynamicTargets.clear()
+        openLocals.clear()
+        lostSeeds.clear()
+        resolvedFields.clear()
         functionObjectClasses.clear()
         mayHoldFunctionByType.clear()
         transitiveSubtypesByClass.clear()
@@ -1959,7 +2449,93 @@ class SootUpAdapter(
         do {
             propagateSlotTargets(propagation)
         } while (emitPendingDispatches())
+    }
+
+    /**
+     * Include flows and targets added by the post-dispatch dependency expansion in the
+     * completeness evidence. Propagate them without emitting further calls: newly discovered
+     * alternatives remain gaps, as the bounded expansion contract requires. Retain the
+     * existing flow graph so late writes can invalidate an earlier call's completeness too.
+     */
+    private fun finalizeDispatchEvidence(lateClassesRead: Boolean) {
+        val propagation = propagation ?: return
+        if (lateClassesRead) {
+            for (id in slotTargets.indices) {
+                if (slotTargets[id] != null) propagation.pending.set(id)
+            }
+            propagateSlotTargets(propagation)
+        }
+        computeOpenSlots(propagation)
         this.propagation = null
+    }
+
+    /**
+     * The slots a value with no known origin in the analysed scope may reach: a slot nothing
+     * flows into and nothing seeds (a parameter no known caller passes a value to, the result
+     * of a method outside the scope, a field nothing in the scope assigns) holds such a value,
+     * and so does every slot it flows into, through the flows recorded while methods were read,
+     * the flows resolution added and the adapters. A call on such a slot that also resolved to
+     * bodies is partial: the bodies are in the graph, and an alternative the scope cannot name
+     * may run too. A saturated slot lost its targets rather than never having any, and so did
+     * every slot it flows into and every slot it seeded ([lostSeeds]): a call on one of those
+     * that resolved bodies is partial as well, and one that resolved none is saturated, not
+     * unresolved. One pass over the final flow graph, after the fixpoint.
+     */
+    private fun computeOpenSlots(propagation: SlotPropagation) {
+        val count = slots.size
+        val hasIncoming = BitSet(count)
+        for (id in 0 until count) {
+            propagation.forEachFlow(id) { next -> hasIncoming.set(next) }
+            slotAdapters.get(id)?.forEach { hasIncoming.set(slotId(it.sink)) }
+        }
+        val open = BitSet(count)
+        val lost = BitSet(count)
+        lost.or(lostSeeds)
+        for (id in 0 until count) {
+            val targets = slotTargets[id]
+            when {
+                targets === SATURATED_TARGETS -> lost.set(id)
+                !hasIncoming.get(id) && targets.isNullOrEmpty() -> open.set(id)
+            }
+        }
+        openSlots = closeOverFlows(open, propagation)
+        lostSlots = closeOverFlows(lost, propagation)
+    }
+
+    /** Record the flows the override boundaries of slot [id] imply, once per slot, see [overrideFlows]. */
+    private fun expandOverrideFlows(id: Int, propagation: SlotPropagation) {
+        if (!propagation.expanded.get(id)) {
+            propagation.expanded.set(id)
+            overrideFlows(slots[id]).forEach { propagation.addFlow(id, slotId(it)) }
+        }
+    }
+
+    /**
+     * [seeds] and every slot one of them flows into, through the recorded flows, the override
+     * boundaries (an interface parameter nothing known reaches still reaches every
+     * implementation's parameter, so the flows the fixpoint never needed are derived here) and
+     * the adapters.
+     */
+    private fun closeOverFlows(seeds: BitSet, propagation: SlotPropagation): BitSet {
+        val queue = IntArrayList()
+        var seed = seeds.nextSetBit(0)
+        while (seed >= 0) {
+            queue.add(seed)
+            seed = seeds.nextSetBit(seed + 1)
+        }
+        fun mark(next: Int) {
+            if (!seeds.get(next)) {
+                seeds.set(next)
+                queue.add(next)
+            }
+        }
+        while (!queue.isEmpty) {
+            val id = queue.popInt()
+            expandOverrideFlows(id, propagation)
+            propagation.forEachFlow(id, ::mark)
+            slotAdapters.get(id)?.forEach { mark(slotId(it.sink)) }
+        }
+        return seeds
     }
 
     /**
@@ -1997,10 +2573,7 @@ class SootUpAdapter(
      */
     private fun propagateSlot(id: Int, propagation: SlotPropagation): Boolean {
         val targets = slotTargets[id]?.takeIf { it.isNotEmpty() } ?: return false
-        if (!propagation.expanded.get(id)) {
-            propagation.expanded.set(id)
-            overrideFlows(slots[id]).forEach { propagation.addFlow(id, slotId(it)) }
-        }
+        expandOverrideFlows(id, propagation)
         var backward = false
         fun deliver(next: Int, incoming: Set<DispatchTarget>) {
             if (addTargets(next, incoming)) {
@@ -2071,6 +2644,7 @@ class SootUpAdapter(
         )
         graphBuilder.addNode(resolvedCallSite)
         interprocedural?.call(resolved.method, false, resolved.arguments, result)
+        noteReachedCallee(resolved.method, virtual = false, callSite.caller)
         // Both the call on the function value and the resolved call are dynamic dispatch
         graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
         graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))
@@ -2437,9 +3011,10 @@ class SootUpAdapter(
      * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver
      * to the stdlib base constructor (`FunctionReferenceImpl(arity, receiver, owner, name,
      * signature, flags)`), which stores it in `CallableReference.receiver`; the reference's
-     * `invoke` reads it back through the subclass's own field reference. The stdlib is outside
-     * the view, so the store is recorded here: every argument that may hold a function value
-     * flows to the subclass's `receiver` field.
+     * `invoke` reads it back through the subclass's own field reference. The stdlib may be
+     * outside the view, so the store is recorded here: every argument that may hold a function
+     * value flows to the slot of the subclass's `receiver` field reference, resolved as the
+     * read's is ([resolvedFieldSignature]).
      */
     private fun trackCallableReferenceReceiver(caller: MethodDescriptor, superInit: MethodDescriptor, args: List<Value>) {
         if (!trackCrossMethodFunctionalDispatch || !isKotlinCallableReferenceBaseClass(superInit.declaringClass.className)) return
@@ -2447,8 +3022,9 @@ class SootUpAdapter(
             CALLABLE_REFERENCE_RECEIVER_FIELD,
             view.identifierFactory.getClassType(caller.declaringClass.className),
             JAVA_LANG_OBJECT
-        ).toString()
-        args.filterIsInstance<Local>().forEach { trackFlow(caller, it, DispatchSlot.Field(receiverField)) }
+        )
+        val slot = DispatchSlot.Field(resolvedFieldSignature(receiverField).toString())
+        args.filterIsInstance<Local>().forEach { trackFlow(caller, it, slot) }
     }
 
     private fun handleKind(handle: MethodHandle): HandleKind = when (handle.kind) {
@@ -2469,7 +3045,26 @@ class SootUpAdapter(
         arrayDynamicTargets[sourceKey]?.let { arrayDynamicTargets[targetKey] = mergeTargets(arrayDynamicTargets[targetKey], it) }
         if (trackCrossMethodFunctionalDispatch) {
             localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
-            trackSlotFlow(slotOf(method, source), method, target)
+            trackSlotFlow(seededSlotOf(method, source), method, target)
+        } else {
+            inheritOpenness(method, from = source, to = target)
+        }
+    }
+
+    /** With cross-method tracking off, record that [local] holds a value its method cannot name when [open]. */
+    private fun markOpenLocal(method: MethodDescriptor, local: Local, open: Boolean) {
+        if (!trackCrossMethodFunctionalDispatch && open && mayHoldFunction(toTypeDescriptor(local.type))) {
+            openLocals.add(localKey(method, local.name))
+        }
+    }
+
+    /**
+     * With cross-method tracking off, [to] holds what [from] holds (a copy, an element stored
+     * into an array, an element loaded from one): open when [from] is, whatever its type says.
+     */
+    private fun inheritOpenness(method: MethodDescriptor, from: Local, to: Local) {
+        if (!trackCrossMethodFunctionalDispatch && localKey(method, from.name) in openLocals) {
+            openLocals.add(localKey(method, to.name))
         }
     }
 
@@ -2492,7 +3087,7 @@ class SootUpAdapter(
         val key = localKey(method, local.name)
         (dynamicTargets[key] ?: arrayDynamicTargets[key])?.let { seedSlot(sink, it) }
         if (mayHoldFunction(toTypeDescriptor(local.type))) {
-            flowSlot(slotOf(method, local), sink)
+            flowSlot(seededSlotOf(method, local), sink)
         }
     }
 
@@ -2503,8 +3098,31 @@ class SootUpAdapter(
         }
     }
 
+    /**
+     * [slotOf] [local], holding the function values this method knows [local] holds when the
+     * slot is the local's own: a slot a flow leaves, or a call dispatches on, must carry what
+     * its local carries, or it reads as a value from nowhere (see [computeOpenSlots]) although
+     * the local was assigned a lambda two statements earlier. A local that aliases a parameter
+     * is not seeded: the parameter's slot is every caller's, and what this method assigned the
+     * local is not what the callers pass.
+     */
+    private fun seededSlotOf(method: MethodDescriptor, local: Local): DispatchSlot {
+        val slot = slotOf(method, local)
+        if (slot is DispatchSlot.Local) {
+            val key = localKey(method, local.name)
+            (dynamicTargets[key] ?: arrayDynamicTargets[key])?.let { seedSlot(slot, it) }
+        }
+        return slot
+    }
+
+    /**
+     * [slot] holds [targets] as well. A saturated holder ([SATURATED_TARGETS]) has lost what
+     * it held, so [slot] gets nothing from it and is recorded as a slot targets were lost to.
+     */
     private fun seedSlot(slot: DispatchSlot, targets: Collection<DispatchTarget>) {
-        if (targets.isNotEmpty()) {
+        if (targets === SATURATED_TARGETS) {
+            lostSeeds.set(slotId(slot))
+        } else if (targets.isNotEmpty()) {
             addTargets(slotId(slot), targets as? Set<DispatchTarget> ?: LinkedHashSet(targets))
         }
     }
@@ -2658,10 +3276,12 @@ class SootUpAdapter(
                 }
             } catch (oom: OutOfMemoryError) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
                 System.gc()
                 null
             } catch (e: Exception) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, e.message ?: e.javaClass.name)
                 null
             } finally {
                 // Run even for non-matches, and before a caller can stop after its first match.
@@ -2680,9 +3300,11 @@ class SootUpAdapter(
                     yield(detached(method))
                 } catch (oom: OutOfMemoryError) {
                     log { "Skipping method ${method.signature}: OOM during streaming resolution" }
+                    recordMethodEvidence(toMethodDescriptor(method), AnalysisStatus.RESOLUTION_FAILED, oom.message ?: oom.javaClass.name)
                     System.gc()
                 } catch (e: Exception) {
                     log { "Skipping method ${method.signature}: ${e.message}" }
+                    recordMethodEvidence(toMethodDescriptor(method), AnalysisStatus.RESOLUTION_FAILED, e.message ?: e.javaClass.name)
                 } finally {
                     releaseConversionState(method.bodySource)
                 }
@@ -2709,9 +3331,11 @@ class SootUpAdapter(
                 yield(source.asStreamingMethod(sootClass.type))
             } catch (oom: OutOfMemoryError) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
                 System.gc()
             } catch (e: Exception) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, e.message ?: e.javaClass.name)
             } finally {
                 releaseConversionState(source)
             }
@@ -2829,6 +3453,7 @@ class SootUpAdapter(
     private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<SootMethod> = try {
         sootClass.methods
     } catch (failure: Throwable) {
+        if (sootClass === methodCacheOwner) activeClassResolutionFailed = true
         when (failure) {
             is OutOfMemoryError -> {
                 log { "Skipping methods for ${sootClass.type}: OOM during method resolution" }
@@ -2844,7 +3469,7 @@ class SootUpAdapter(
         return when (value) {
             is Local -> getOrCreateLocal(value, method)
             is SootConstant -> getOrCreateConstant(value)
-            is JFieldRef -> getOrCreateField(value)
+            is JFieldRef -> getOrCreateField(value, method)
             is JArrayRef -> {
                 // For array references like $r1[0], return the base array's node
                 // This creates edges from array elements to the array itself,
@@ -2928,8 +3553,15 @@ class SootUpAdapter(
         }
     }
 
-    private fun getOrCreateField(fieldRef: JFieldRef): FieldNode {
-        val fieldSig = fieldRef.fieldSignature
+    /**
+     * The node of the field [fieldRef] names, read by [caller]: a static field is the one of the
+     * class that declares it ([resolvedFieldSignature]); an instance field keeps the class the
+     * reference spells, since javac spells every inherited instance field through the subclass
+     * and resolving them is an identity change on a large share of every graph's field nodes.
+     */
+    private fun getOrCreateField(fieldRef: JFieldRef, caller: MethodDescriptor): FieldNode {
+        val fieldSig = if (fieldRef is JStaticFieldRef) resolvedFieldSignature(fieldRef) else fieldRef.fieldSignature
+        if (fieldRef is JStaticFieldRef) noteClassInitialized(fieldSig.declClassType.fullyQualifiedName, caller)
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
             val declaringClassName = fieldSig.declClassType.fullyQualifiedName
@@ -2988,8 +3620,10 @@ class SootUpAdapter(
 
     private fun indexResourceValues(loadedClassSources: Set<String>): List<ResourceEntry> {
         val classEntries = mutableListOf<ResourceEntry>()
+        classEntrySources = HashMap()
         resourceAccessor.list("**").forEach { entry ->
             if (entry.path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) {
+                noteClassEntry(entry)
                 if (entry.source in loadedClassSources) {
                     return@forEach
                 }
@@ -3015,6 +3649,7 @@ class SootUpAdapter(
                 configurationResourcePaths += entry.path
             }
         }
+        classEntrySources = HashMap()
         return classEntries
     }
 
@@ -3142,6 +3777,30 @@ class SootUpAdapter(
 
     private fun artifactKey(origin: String): String? =
         origin.trim().trimEnd('/').substringAfterLast('/').removeSuffix(".jar").takeIf { it.isNotBlank() }
+
+    /**
+     * What a class entry tells the evidence: a copy under `META-INF/versions/` marks its archive
+     * multi-release (this frontend reads the base version, as SootUp does); any other entry of a
+     * multi-artifact input is a definition of its class, duplicate or not.
+     */
+    private fun noteClassEntry(entry: ResourceEntry) {
+        if (entry.path.startsWith(MULTI_RELEASE_PREFIX)) {
+            multiReleaseArtifacts += entry.source
+        } else if (singleArtifactSource == null) {
+            classResourcePathToName(entry.path)?.let { recordClassEntry(it, entry.source) }
+        }
+    }
+
+    /**
+     * Note that [source] defines [className]; the second and later sources that do are the class's
+     * duplicate definitions, in the order the input lists them. The view holds the first one's.
+     */
+    private fun recordClassEntry(className: String, source: String) {
+        val first = classEntrySources.putIfAbsent(className, source) ?: return
+        if (first == source) return
+        val sources = duplicateClasses.getOrPut(className) { mutableListOf(first) }
+        if (source !in sources) sources += source
+    }
 
     private fun classResourcePathToName(path: String): String? {
         if (!path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) return null

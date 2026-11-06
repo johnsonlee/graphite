@@ -63,13 +63,7 @@ internal object SelectionProvenance {
     fun of(input: Path, config: LoaderConfig = LoaderConfig()): FoldProvenance = FoldProvenance(
         InputDigest.sha256(input),
         GraphiteVersionProvider().version.single().removePrefix("graphite "),
-        AnalysisIdentity(
-            includePackages = config.includePackages.sorted(),
-            excludePackages = config.excludePackages.sorted(),
-            includeLibraries = config.includeLibraries,
-            libraryFilters = config.libraryFilters.sorted(),
-            androidPlatformSha256 = androidPlatformJar(input, config)?.let(InputDigest::sha256)
-        )
+        AnalysisIdentity.of(config, androidPlatformJar(input, config)?.let(InputDigest::sha256))
     )
 
     /**

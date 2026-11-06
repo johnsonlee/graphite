@@ -108,6 +108,13 @@ class ArchiveResourceAccessor private constructor(
                     )
                     collectNestedJars(zip, JavaArchiveLayout.WEB_INF_LIB).appendTo(sources, closers, tempDirs)
                 }
+                // The loader reads a .zip as a plain class archive (never a Spring Boot layout),
+                // so its entries are listed the same way: an archive the build reads but never
+                // listed would report no multi-release copies and no duplicate definitions.
+                path.extension.lowercase() == "zip" -> {
+                    val zip = ZipFile(path.toFile())
+                    sources.addManaged(ZipSource(zip, path.fileName.toString()), zip, closers)
+                }
             }
             return ArchiveResourceAccessor(sources, closers, tempDirs, path, dexApi)
         }

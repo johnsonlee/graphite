@@ -345,8 +345,77 @@ class ConstantFoldTest {
         )
         assertEquals(listOf("frontend 1.2.3 vs 2.0.0"), plain.differences(FoldProvenance(sha, "2.0.0")))
         assertEquals(emptyList(), filtered.differences(filtered))
+
+        // The dependency body scope decides which bodies, and so which calls, a build holds.
+        val scoped = AnalysisIdentity(
+            dependencyArtifacts = listOf("kotlin-stdlib-*.jar", "acme-*.jar"), dependencyPackages = listOf("kotlin.")
+        )
+        assertEquals(
+            mapOf(
+                "include" to emptyList<String>(), "exclude" to emptyList<String>(), "include_libs" to false,
+                "lib_filter" to emptyList<String>(), "dependency_artifacts" to listOf("acme-*.jar", "kotlin-stdlib-*.jar"),
+                "dependency_packages" to listOf("kotlin.")
+            ),
+            scoped.toDocument(),
+            "the scope keys appear only when given, so a plan written before they existed reads the same"
+        )
+        assertEquals(scoped, AnalysisIdentity.parse(scoped.toDocument(), "p"), "round trip")
+        assertEquals(
+            listOf("dependency_artifacts [] vs [acme-*.jar, kotlin-stdlib-*.jar]", "dependency_packages [] vs [kotlin.]"),
+            AnalysisIdentity().differences(scoped)
+        )
+        assertEquals(
+            "p.dependency_artifacts must be a list of strings, got integer 1",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_artifacts" to 1), "p") }.message
+        )
+        val config = LoaderConfig(
+            includePackages = listOf("b", "a"), excludePackages = listOf("a.x"), includeLibraries = true, libraryFilters = listOf("*.jar"),
+            dependencyBodies = DependencyBodyScope.Declared(listOf("kotlin-stdlib-*.jar"), listOf("kotlin."))
+        )
+        assertEquals(
+            AnalysisIdentity(
+                listOf("a", "b"), listOf("a.x"), true, listOf("*.jar"), "ab".repeat(32), listOf("kotlin-stdlib-*.jar"), listOf("kotlin.")
+            ),
+            AnalysisIdentity.of(config, "ab".repeat(32))
+        )
+        assertEquals(AnalysisIdentity(), AnalysisIdentity.of(LoaderConfig()))
+
+        // A reachable scope is identified by its class budget: another budget may read other bodies.
+        val reachable = AnalysisIdentity.of(
+            LoaderConfig(includeLibraries = true, dependencyBodies = DependencyBodyScope.Reachable(500))
+        )
+        assertEquals(500, reachable.dependencyReachable)
+        assertEquals(
+            mapOf("include_libs" to true, "dependency_reachable" to 500),
+            reachable.toDocument() - setOf("include", "exclude", "lib_filter")
+        )
+        assertEquals(reachable, AnalysisIdentity.parse(reachable.toDocument(), "p"), "round trip")
+        val fromJson = AnalysisIdentity.parse(mapOf("include_libs" to true, "dependency_reachable" to 500.0), "p")
+        assertEquals(reachable, fromJson, "a JSON number")
+        assertEquals(listOf("dependency_reachable none vs 500"), AnalysisIdentity(includeLibraries = true).differences(reachable))
+        assertEquals(
+            "p.dependency_reachable must be an integer, got string '5'",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to "5"), "p") }.message
+        )
+        assertEquals(
+            "p.dependency_reachable must be an integer, got number 5.5",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to 5.5), "p") }.message
+        )
+        assertEquals(
+            "p.dependency_reachable must be positive, got 0",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to 0), "p") }.message
+        )
+        val rooted = AnalysisIdentity.of(
+            LoaderConfig(includeLibraries = true, dependencyBodies = DependencyBodyScope.Reachable(500, listOf("b.", "a.")))
+        )
+        assertEquals(listOf("a.", "b."), rooted.dependencyRoots)
+        assertEquals(listOf("a.", "b."), rooted.toDocument()["dependency_roots"])
+        assertEquals(rooted, AnalysisIdentity.parse(rooted.toDocument(), "p"), "round trip")
+        assertEquals(listOf("dependency_roots [] vs [a., b.]"), reachable.differences(rooted))
         fun malformed(document: Any?) = assertFailsWith<IllegalArgumentException> { FoldProvenance.parse(document, "p") }.message
-        assertEquals("p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256}",
+        assertEquals(
+            "p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256, " +
+                "dependency_artifacts, dependency_packages, dependency_reachable, dependency_roots}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("inclde" to listOf("a")))))
         assertEquals("p.analysis.include must be a list of strings, got string 'a'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include" to "a"))))
@@ -354,7 +423,9 @@ class ConstantFoldTest {
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include_libs" to "yes"))))
         assertEquals("p.analysis.android_platform_sha256 must be 64 lowercase hexadecimal digits, got 'x'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("android_platform_sha256" to "x"))))
-        assertEquals("p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256}, got integer 1",
+        assertEquals(
+            "p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256, dependency_artifacts, " +
+                "dependency_packages, dependency_reachable, dependency_roots}, got integer 1",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to 1)))
         assertEquals("p has no key 'x'; it is {input_sha256, frontend_version, analysis}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "x" to 1)))

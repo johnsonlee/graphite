@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ConstantFold
+import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -16,6 +17,7 @@ import javax.tools.ToolProvider
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import picocli.CommandLine
@@ -348,7 +350,8 @@ class BuildFoldCommandTest {
         val command = FoldPlanCommand()
         CommandLine(command).parseArgs(
             "folds.yml", "--input", "app.jar", "--include", "a,b", "--exclude", "a.x", "--include-libs",
-            "--lib-filter", "*.jar", "--android-sdk", "/sdk"
+            "--lib-filter", "*.jar", "--android-sdk", "/sdk", "--dependency-artifacts", "dep-*.jar,util-*.jar",
+            "--dependency-packages", "kotlin.text."
         )
         assertEquals(Path.of("folds.yml"), command.file)
         assertEquals(Path.of("app.jar"), command.input)
@@ -357,6 +360,53 @@ class BuildFoldCommandTest {
         assertTrue(command.includeLibs)
         assertEquals(listOf("*.jar"), command.libFilters)
         assertEquals(Path.of("/sdk"), command.androidSdk)
+        assertEquals(listOf("dep-*.jar", "util-*.jar"), command.dependencyArtifacts)
+        assertEquals(listOf("kotlin.text."), command.dependencyPackages)
+    }
+
+    @Test
+    fun `the dependency body scope is part of a plan's provenance`() {
+        compileFixture()
+        val scoped = LoaderConfig(
+            includePackages = listOf("sample.gate"), includeLibraries = true,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar"), packages = listOf("kotlin.text."))
+        )
+        val provenance = FoldConfig.provenance(classes, scoped)
+        assertEquals(listOf("dep-*.jar"), provenance.analysis.dependencyArtifacts)
+        assertEquals(listOf("kotlin.text."), provenance.analysis.dependencyPackages)
+        assertEquals(
+            listOf("include_libs false vs true", "dependency_artifacts [] vs [dep-*.jar]", "dependency_packages [] vs [kotlin.text.]"),
+            FoldConfig.provenance(classes, LoaderConfig(includePackages = listOf("sample.gate"))).differences(provenance),
+            "a key selected with other bodies in the graph names, perhaps, another call"
+        )
+        assertEquals(DependencyBodyScope.None, dependencyBodyScope(emptyList(), emptyList()))
+        assertEquals(DependencyBodyScope.Declared(packages = listOf("a")), dependencyBodyScope(emptyList(), listOf("a")))
+        assertEquals(DependencyBodyScope.Reachable(700), dependencyBodyScope(emptyList(), emptyList(), 700))
+        assertEquals(
+            "--dependency-reachable reads the library classes the application reaches; " +
+                "it cannot be combined with --dependency-artifacts or --dependency-packages",
+            assertFailsWith<IllegalArgumentException> { dependencyBodyScope(listOf("a-*.jar"), emptyList(), 700) }.message
+        )
+        val planned = FoldPlanCommand()
+        CommandLine(planned).parseArgs("folds.yml", "--dependency-reachable", "50000", "--input", "app.jar")
+        assertEquals(50_000, planned.dependencyReachable)
+        val budgeted = BuildCommand()
+        CommandLine(budgeted).parseArgs("app.jar", "-o", "out", "--include-libs", "--dependency-reachable=2500")
+        assertEquals(2500, budgeted.dependencyReachable)
+        val scope = dependencyBodyScope(budgeted.dependencyArtifacts, budgeted.dependencyPackages, budgeted.dependencyReachable)
+        assertEquals(DependencyBodyScope.Reachable(2500), scope)
+        CommandLine(budgeted).parseArgs(
+            "app.jar", "-o", "out", "--include-libs", "--dependency-reachable", "50000", "--dependency-roots", "a.web,a.jobs"
+        )
+        assertEquals(listOf("a.web", "a.jobs"), budgeted.dependencyRoots)
+        assertEquals(
+            DependencyBodyScope.Reachable(50_000, listOf("a.web", "a.jobs")),
+            dependencyBodyScope(emptyList(), emptyList(), budgeted.dependencyReachable, budgeted.dependencyRoots)
+        )
+        assertEquals(
+            "--dependency-roots names the roots of --dependency-reachable; give both",
+            assertFailsWith<IllegalArgumentException> { dependencyBodyScope(emptyList(), emptyList(), null, listOf("a")) }.message
+        )
     }
 
     @Test

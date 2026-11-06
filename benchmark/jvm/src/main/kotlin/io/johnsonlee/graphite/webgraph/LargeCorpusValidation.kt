@@ -112,7 +112,13 @@ data class CorpusBaseline(
  * by their complete identity (`MethodDescriptor.identity`, the signature plus the return type), so a
  * bridge is counted beside the covariant override it delegates to instead of replacing it: Tika
  * +5,133 (312,852 -> 317,985), Hive +48,464 (404,043 -> 452,507), Kotlin compiler +14,959
- * (249,669 -> 264,628); nodes, edges and call sites are unchanged again (Attempt311).
+ * (249,669 -> 264,628); nodes, edges and call sites are unchanged again (Attempt311). A static
+ * field reference is then the field of the class that declares it, by the JVM's field resolution,
+ * so a field javac spells through a subclass or an implementing class (`Textifier.OPCODES` for
+ * `Printer`'s, `ElementType.CLASS_KEYWORD` for the interface's) is one node with the declaration
+ * it reads: Tika -558 nodes (3,901,103 -> 3,900,545), Hive -761 (5,992,914 -> 5,992,153), Kotlin
+ * compiler -550 (3,292,214 -> 3,291,664); edges, methods and call sites are unchanged (PR #193,
+ * review of the static-field dataflow identity).
  */
 internal object LargeCorpusBaselines {
     // Add only independently reviewed exact product-identity/corpus expectations here.
@@ -255,7 +261,7 @@ internal object LargeCorpusBaselines {
         sha256 = "87e06f88c801fcb2beae5f15e707241edb14da468a154ad78be4e31ff982c3da",
         jarBytes = 60_900_523,
         classCount = 33_128,
-        nodeCount = 3_901_103,
+        nodeCount = 3_900_545,
         sourceEdgeCount = 4_510_016,
         persistedEdgeCount = 4_353_588,
         methodCount = 317_985,
@@ -269,7 +275,7 @@ internal object LargeCorpusBaselines {
         sha256 = "232d67c5d2ff54806944bb5b7402eaf1ebb81f11dbe4fd51bc5604a8e0c0bdad",
         jarBytes = 84_163_106,
         classCount = 38_999,
-        nodeCount = 5_992_914,
+        nodeCount = 5_992_153,
         sourceEdgeCount = 6_597_267,
         persistedEdgeCount = 6_376_682,
         methodCount = 452_507,
@@ -283,7 +289,7 @@ internal object LargeCorpusBaselines {
         sha256 = "9fa8cdd1de0dccffe154c997d423ec6b5f53cd6d9177e3a77a9b0de03fb1bc81",
         jarBytes = 58_272_093,
         classCount = 24_941,
-        nodeCount = 3_292_214,
+        nodeCount = 3_291_664,
         sourceEdgeCount = 3_906_617,
         persistedEdgeCount = 3_785_858,
         methodCount = 264_628,

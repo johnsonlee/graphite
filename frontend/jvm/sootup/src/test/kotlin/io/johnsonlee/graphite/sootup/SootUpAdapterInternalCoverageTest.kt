@@ -2,7 +2,12 @@
 
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.graph.AnalysisStatus
+import io.johnsonlee.graphite.graph.ArtifactEvidence
+import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -401,6 +406,61 @@ class SootUpAdapterInternalCoverageTest {
             override fun hasBody(): Boolean = throw OutOfMemoryError("boom")
         }
         invokePrivate<Unit>(adapter, "processMethod", arrayOf(SootMethod::class.java), throwingMethod)
+
+        // What each fallback leaves in the completeness evidence: a method the build gave up on
+        // part way is INCOMPLETE with the failure's message, a body-less method says why it has
+        // none, and a class whose methods could not be resolved is noted while it is the pass-2 class.
+        val evidence = readField<Map<String, MethodEvidence>>(adapter, "methodEvidence")
+        assertEquals(MethodEvidence(AnalysisStatus.INCOMPLETE, "boom"), evidence["sample.fake.Owner.boom()V"])
+        for ((name, modifiers, status) in listOf(
+            Triple("abstractOne", listOf(MethodModifier.ABSTRACT), AnalysisStatus.ABSTRACT),
+            Triple("nativeOne", listOf(MethodModifier.NATIVE), AnalysisStatus.NATIVE),
+            Triple("stub", emptyList(), AnalysisStatus.NO_BODY)
+        )) {
+            val bodyless = object : FakeSootMethod(
+                identifierFactory.getMethodSignature("sample.fake.Owner", name, "void", emptyList()), modifiers
+            ) {
+                override fun hasBody(): Boolean = false
+            }
+            invokePrivate<Unit>(adapter, "processMethod", arrayOf(SootMethod::class.java), bodyless)
+            assertEquals(MethodEvidence(status), evidence["sample.fake.Owner.$name()V"], name)
+        }
+        assertFalse(readField<Boolean>(adapter, "activeClassResolutionFailed"), "a failure outside pass 2 is not the pass-2 class's")
+        // A method resolved again after a failure (the enum pass reads a <clinit> the method pass later streams) drops the record.
+        val recovered = identifierFactory.getMethodSignature("sample.fake.Owner", "later", "void", emptyList())
+        val record = SootUpAdapter::class.java.getDeclaredMethod(
+            "recordMethodEvidence", MethodDescriptor::class.java, AnalysisStatus::class.java, String::class.java
+        ).apply { isAccessible = true }
+        val descriptor = invokePrivate<MethodDescriptor>(adapter, "toMethodDescriptor", arrayOf(MethodSignature::class.java), recovered)
+        record.invoke(adapter, descriptor, AnalysisStatus.RESOLUTION_FAILED, "first")
+        assertEquals(MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, "first"), evidence["sample.fake.Owner.later()V"])
+        record.invoke(adapter, descriptor, AnalysisStatus.ANALYZED, null)
+        assertNull(evidence["sample.fake.Owner.later()V"])
+        val failing = FakeSootClass(identifierFactory.getClassType("sample.fake.Oom"), failure = OutOfMemoryError("boom"))
+        writeField(adapter, "methodCacheOwner", failing)
+        assertTrue(invokePrivate<Set<SootMethod>>(adapter, "resolveMethodsOrEmpty", arrayOf(SootClass::class.java), failing).isEmpty())
+        assertTrue(readField<Boolean>(adapter, "activeClassResolutionFailed"))
+        writeField(adapter, "methodCacheOwner", null)
+    }
+
+    @Test
+    fun `a class whose methods cannot be resolved is analysed in name only, and the evidence says so`() {
+        val broken = FakeSootClass(identifierFactory.getClassType("sample.fake.Broken"), failure = IllegalStateException("missing"))
+        val whole = FakeSootClass(identifierFactory.getClassType("sample.fake.Whole"))
+        val adapter = SootUpAdapter(
+            view = FakeView(listOf(broken, whole), identifierFactory),
+            config = LoaderConfig(includePackages = listOf("sample.fake"), buildCallGraph = false),
+            extensions = emptyList(),
+            resourceAccessor = EmptyResourceAccessor,
+            inputLocationSources = emptyMap(),
+            singleArtifactSource = "fake.jar",
+            graphBuilder = DefaultGraph.Builder()
+        )
+        val completeness = assertNotNull(adapter.buildGraph().analysisCompleteness())
+        assertEquals(ClassEvidence("fake.jar", AnalysisStatus.RESOLUTION_FAILED), completeness.classes["sample.fake.Broken"])
+        assertEquals(ClassEvidence("fake.jar", AnalysisStatus.ANALYZED), completeness.classes["sample.fake.Whole"])
+        assertEquals(mapOf("fake.jar" to ArtifactEvidence(ArtifactRole.APPLICATION)), completeness.artifacts)
+        assertEquals(listOf("sample.fake"), completeness.scope.includePackages)
     }
 
     @Test

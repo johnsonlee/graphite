@@ -71,8 +71,16 @@ pub const INTERPROCEDURAL: &str = "--interprocedural";
 
 /// The options that decide which classes a build reads, and so which calls its graph has:
 /// `fold plan` takes the same ones, so the plan's provenance names the build the keys are for.
-const ANALYSIS_VALUE_OPTIONS: [&str; 4] =
-    ["--include", "--exclude", "--lib-filter", "--android-sdk"];
+const ANALYSIS_VALUE_OPTIONS: [&str; 8] = [
+    "--include",
+    "--exclude",
+    "--lib-filter",
+    "--android-sdk",
+    "--dependency-artifacts",
+    "--dependency-packages",
+    "--dependency-reachable",
+    "--dependency-roots",
+];
 const ANALYSIS_FLAGS: [&str; 1] = ["--include-libs"];
 
 /// The analysis options of a build command line, as given (`--include a,b`, `--include=a,b`
@@ -675,6 +683,26 @@ mod tests {
             input_of(&os(&["--output=/g", "-v", "--include-libs", "classes"])),
             Some(PathBuf::from("classes"))
         );
+        assert_eq!(
+            input_of(&os(&["--dependency-artifacts", "dep-*.jar", "app.jar"])),
+            Some(PathBuf::from("app.jar")),
+            "a scope option takes a value"
+        );
+        assert_eq!(
+            input_of(&os(&["--dependency-reachable", "5000", "app.jar"])),
+            Some(PathBuf::from("app.jar")),
+            "the budget is the flag's value, not the input"
+        );
+        assert_eq!(
+            text(&analysis_options(&os(&[
+                "--dependency-reachable",
+                "5000",
+                "app.jar",
+                "-o",
+                "g"
+            ]))),
+            ["--dependency-reachable", "5000"]
+        );
         assert_eq!(input_of(&os(&["-o", "/g"])), None);
         let staged = staging_args(
             &os(&["a.jar", "-o", "/g", "--fold", "f.yml", "--fold-strict"]),
@@ -799,6 +827,12 @@ mod tests {
             "*.jar",
             "--android-sdk",
             "/sdk",
+            "--dependency-artifacts",
+            "dep-*.jar",
+            "--dependency-packages=kotlin.text.",
+            "--dependency-reachable=5000",
+            "--dependency-roots",
+            "com.acme.web",
             "--interprocedural",
         ]
         .iter()
@@ -833,7 +867,13 @@ mod tests {
                 "--lib-filter",
                 "*.jar",
                 "--android-sdk",
-                "/sdk"
+                "/sdk",
+                "--dependency-artifacts",
+                "dep-*.jar",
+                "--dependency-packages=kotlin.text.",
+                "--dependency-reachable=5000",
+                "--dependency-roots",
+                "com.acme.web"
             ]
         );
         // Without an input there is no build to describe.

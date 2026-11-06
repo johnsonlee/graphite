@@ -57,4 +57,6 @@ interface FullGraphBuilder : GraphBuilder {
     fun addSyntheticIdentity(member: String, fingerprint: String): FullGraphBuilder
     fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int = 1): FullGraphBuilder
     fun setResources(resources: ResourceAccessor): FullGraphBuilder
+    /** Record what the build did with every class and method, see [Graph.analysisCompleteness]. */
+    fun setAnalysisCompleteness(completeness: AnalysisCompleteness): FullGraphBuilder
 }

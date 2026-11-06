@@ -4,8 +4,10 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
-import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.input.GlobPatterns
 import io.johnsonlee.graphite.input.JavaArchiveLayout
+import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ProjectLoader
 import sootup.apk.frontend.ApkAnalysisInputLocation
 import sootup.apk.frontend.DexBodyInterceptors
@@ -15,7 +17,7 @@ import sootup.core.model.SourceType
 import sootup.core.interceptor.BodyInterceptor
 import sootup.interceptors.BytecodeBodyInterceptors
 import sootup.interceptors.LocalSplitter
-import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
+import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,11 +43,41 @@ private const val ANDROID_DIR_NAME = "Android"
 private const val ANDROID_SDK_DIR_NAME = "Sdk"
 private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
 
+/**
+ * The nested jars of a Spring Boot archive in the order its runtime loads them, from
+ * `BOOT-INF/classpath.idx` (one `- "BOOT-INF/lib/name.jar"` line per jar), by jar name;
+ * empty when the archive carries no index. The duplicate-class evidence lists sources in
+ * this order, since the first is the definition that runs.
+ */
+private fun springBootClasspathOrder(zip: ZipFile): List<String> {
+    val entry = zip.getEntry(JavaArchiveLayout.BOOT_INF_CLASSPATH_INDEX) ?: return emptyList()
+    return zip.getInputStream(entry).bufferedReader().useLines { lines ->
+        lines.map { it.trim().removePrefix("-").trim().trim('"') }
+            .filter { it.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
+            .map { it.substringAfterLast('/') }
+            .toList()
+    }
+}
+
 private data class InputLocations(
     val locations: List<AnalysisInputLocation>,
     val sources: Map<AnalysisInputLocation, String>,
-    val dexApi: Int? = null
-)
+    val dexApi: Int? = null,
+    /** The source name of the Android platform jar, whose role is [ArtifactRole.PLATFORM]. */
+    val platformSource: String? = null,
+    /** The nested jars in the order the runtime loads them, when the archive declares it (`BOOT-INF/classpath.idx`). */
+    val artifactOrder: List<String> = emptyList()
+) {
+    /** The role of every source, by its location's source type, see [ArtifactRole]. */
+    val roles: Map<String, ArtifactRole>
+        get() = sources.entries.associate { (location, name) ->
+            name to when {
+                name == platformSource -> ArtifactRole.PLATFORM
+                location.sourceType == SourceType.Library -> ArtifactRole.LIBRARY
+                else -> ArtifactRole.APPLICATION
+            }
+        }
+}
 
 /**
  * The Android platform jar a build of [input] with [config] reads as a library (`includeLibraries`),
@@ -89,25 +121,33 @@ private fun createApkInputLocations(
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
+    var platformSource: String? = null
 
     if (config.includeLibraries) {
         val androidJar = resolveAndroidJar(androidVersion.api_version, platforms)
         val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
-        val androidJarLocation = folding?.let {
-            JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library, bytecodeInterceptors(it))
-        } ?: JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
+        // The jar's own location, not a class-path wrapper around it: a class source names the
+        // location it was read from, and the adapter's source map must find the platform by it.
+        // The chain is the one `JavaClassPathAnalysisInputLocation` installs.
+        val androidJarLocation = PathBasedAnalysisInputLocation.create(
+            androidJar,
+            SourceType.Library,
+            folding?.let(::bytecodeInterceptors) ?: BytecodeBodyInterceptors.Default.bodyInterceptors
+        )
         locations.add(androidJarLocation)
         sources[androidJarLocation] = sourceName
+        platformSource = sourceName
         log("  + Loading Android platform: $sourceName")
     }
 
-    return InputLocations(locations, sources, androidVersion.api_version)
+    return InputLocations(locations, sources, androidVersion.api_version, platformSource)
 }
 
 /**
  * SootUp's default bytecode interceptors with the fold passes, for the Android platform jar:
- * `JavaClassPathAnalysisInputLocation(path, type)` installs `BytecodeBodyInterceptors.Default`
- * when given no chain, so the fold chain builds on the same one.
+ * the platform was read through `JavaClassPathAnalysisInputLocation(path, type)`, which
+ * installs `BytecodeBodyInterceptors.Default` when given no chain, and its own location keeps
+ * that chain, so the fold chain builds on the same one.
  */
 private fun bytecodeInterceptors(folding: ConstantFolding): List<BodyInterceptor> =
     folding.bodyInterceptors(BytecodeBodyInterceptors.Default.bodyInterceptors)
@@ -316,7 +356,9 @@ class JavaProjectLoader(
             resourceAccessor = resourceAccessor,
             declarationWarning = ::warn,
             inputLocationSources = inputLocations.sources,
+            artifactRoles = inputLocations.roles,
             singleArtifactSource = singleArtifactSource(path),
+            artifactOrder = inputLocations.artifactOrder,
             graphBuilder = graphBuilderFactory(),
             preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
         )
@@ -450,9 +492,11 @@ class JavaProjectLoader(
         val locations = mutableListOf<AnalysisInputLocation>()
         val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-springboot")
+        var artifactOrder: List<String> = emptyList()
 
         try {
             ZipFile(path.toFile()).use { zip ->
+                artifactOrder = springBootClasspathOrder(zip)
                 // Extract Spring Boot application classes.
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
@@ -475,20 +519,26 @@ class JavaProjectLoader(
                     val libDir = tempDir.resolve("lib")
                     Files.createDirectories(libDir)
 
-                    zip.entries().asSequence()
+                    val nested = zip.entries().asSequence()
                         .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
                         .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
-                        .forEach { entry ->
+                        .mapNotNull { entry ->
                             val jarName = entry.name.substringAfterLast("/")
                             val targetFile = libDir.resolve(jarName)
                             zip.getInputStream(entry).use { input ->
                                 Files.copy(input, targetFile)
                             }
-                            // Only add JAR if it contains classes from included packages
-                            if (jarContainsIncludedPackages(targetFile)) {
-                                locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
-                            }
+                            // Only add JAR if it holds classes the build analyses.
+                            (jarName to targetFile).takeIf { jarInScope(targetFile, jarName) }
                         }
+                        .toList()
+                    // The view resolves a class from the first location that defines it: the
+                    // launcher's order, where the archive declares one, so a duplicate class is
+                    // the definition that runs; the listing order otherwise.
+                    val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
+                    nested.sortedBy { (jarName, _) -> rank[jarName] ?: Int.MAX_VALUE }.forEach { (jarName, targetFile) ->
+                        locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -497,7 +547,7 @@ class JavaProjectLoader(
             throw e
         }
 
-        return InputLocations(locations, sources)
+        return InputLocations(locations, sources, artifactOrder = artifactOrder)
     }
 
     /**
@@ -562,8 +612,8 @@ class JavaProjectLoader(
                             Files.copy(input, targetFile)
                         }
 
-                        // Only add JAR if it contains classes from included packages
-                        if (jarContainsIncludedPackages(targetFile)) {
+                        // Only add JAR if it holds classes the build analyses.
+                        if (jarInScope(targetFile, jarName)) {
                             locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                             loadedJarCount++
                             log("  + Loading JAR: $jarName")
@@ -632,31 +682,36 @@ class JavaProjectLoader(
         if (config.includePackages.isEmpty()) {
             return true // No filter, include all
         }
+        return jarContainsPackages(jarPath, config.includePackages)
+    }
 
-        return try {
-            ZipFile(jarPath.toFile()).use { jar ->
-                jar.entries().asSequence()
-                    .filter { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                    .any { entry ->
-                        val className = entry.name
-                            .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
-                            .replace('/', '.')
-                        config.includePackages.any { pkg ->
-                            className.startsWith(pkg)
-                        }
+    /**
+     * Whether a library jar named [jarName] holds something the build analyses: a class of the
+     * included packages, or what the dependency body scope names (the jar by its name, or a class
+     * of one of its packages). A jar that holds neither is not loaded.
+     */
+    private fun jarInScope(jarPath: Path, jarName: String): Boolean {
+        if (jarContainsIncludedPackages(jarPath)) return true
+        val scope = config.dependencyBodies
+        return scope.coversArtifact(jarName) || (scope.packages.isNotEmpty() && jarContainsPackages(jarPath, scope.packages))
+    }
+
+    private fun jarContainsPackages(jarPath: Path, packages: List<String>): Boolean = try {
+        ZipFile(jarPath.toFile()).use { jar ->
+            jar.entries().asSequence()
+                .filter { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
+                .any { entry ->
+                    val className = entry.name
+                        .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
+                        .replace('/', '.')
+                    packages.any { pkg ->
+                        className.startsWith(pkg)
                     }
-            }
-        } catch (e: Exception) {
-            true // On error, include to be safe
+                }
         }
+    } catch (e: Exception) {
+        true // On error, include to be safe
     }
 
-    private fun matchesGlobPattern(name: String, pattern: String): Boolean {
-        val regex = pattern
-            .replace(".", "\\.")
-            .replace("*", ".*")
-            .let { "^$it$" }
-            .toRegex()
-        return regex.matches(name)
-    }
+    private fun matchesGlobPattern(name: String, pattern: String): Boolean = GlobPatterns.matches(name, pattern)
 }
