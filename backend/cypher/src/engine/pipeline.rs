@@ -154,6 +154,9 @@ impl Executor {
     ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
         self.validate_procedure_calls(clauses)?;
+        let validated =
+            crate::validation::resolve_with_procedures(clauses, self.procedures.as_deref())?;
+        let clauses = validated.as_slice();
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
         for c in clauses {

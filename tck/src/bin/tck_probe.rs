@@ -185,16 +185,15 @@ fn render(value: &Value, graph: Option<&PropertyGraph>, depth: usize) -> Result<
 
 fn error_kind(error: &CypherError) -> &'static str {
     match error {
+        CypherError::Standard { .. } => "standard",
         CypherError::Parse { .. } | CypherError::Syntax { .. } => "parse",
         CypherError::Runtime(_) => "runtime",
-        CypherError::Standard { .. } => "standard",
         CypherError::Aggregation(_) => "aggregation",
         CypherError::NotImplemented(_) => "not_implemented",
         CypherError::Cancelled => "cancelled",
         CypherError::Timeout(_) => "timeout",
         CypherError::BudgetExceeded(_) => "budget_exceeded",
         CypherError::Other(_) => "other",
-        CypherError::Standard { .. } => "standard",
     }
 }
 
