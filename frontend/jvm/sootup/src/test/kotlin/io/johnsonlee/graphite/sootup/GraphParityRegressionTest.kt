@@ -47,7 +47,6 @@ import kotlin.test.assertTrue
  * The baseline is a multiset of stable graph facts from the sample corpus.
  * New facts are allowed, but dropping any baseline fact fails the test.
  */
-@Suppress("TooManyFunctions")
 class GraphParityRegressionTest {
 
     @Test
@@ -208,7 +207,6 @@ private data class GraphParitySnapshot(
     }
 }
 
-@Suppress("CyclomaticComplexMethod", "TooManyFunctions")
 private class GraphParityCanonicalizer(
     private val graph: Graph
 ) {
@@ -419,8 +417,6 @@ private class GraphParityCanonicalizer(
             is ByteArray -> value.joinToString(prefix = "[", postfix = "]")
             is CharArray -> value.joinToString(prefix = "[", postfix = "]") { escape(it.toString()) }
             is DoubleArray -> value.joinToString(prefix = "[", postfix = "]")
-            is EnumValueReference -> "EnumValueReference(${escape(value.enumClass)}.${escape(value.enumName)})"
-            is FieldDescriptor -> value.key()
             is FloatArray -> value.joinToString(prefix = "[", postfix = "]")
             is IntArray -> value.joinToString(prefix = "[", postfix = "]")
             is Iterable<*> -> value.joinToString(prefix = "[", postfix = "]") { valueKey(it) }
@@ -429,12 +425,18 @@ private class GraphParityCanonicalizer(
                 .map { valueKey(it.key) to valueKey(it.value) }
                 .sortedBy { it.first }
                 .joinToString(prefix = "{", postfix = "}") { (key, mapValue) -> "$key=$mapValue" }
-            is MethodDescriptor -> value.key()
             is ShortArray -> value.joinToString(prefix = "[", postfix = "]")
             is String -> escape(value)
-            is TypeDescriptor -> value.key()
-            else -> escape(value.toString())
+            else -> descriptorValueKey(value)
         }
+
+    private fun descriptorValueKey(value: Any): String = when (value) {
+    is EnumValueReference -> "EnumValueReference(${escape(value.enumClass)}.${escape(value.enumName)})"
+    is FieldDescriptor -> value.key()
+    is MethodDescriptor -> value.key()
+    is TypeDescriptor -> value.key()
+        else -> escape(value.toString())
+    }
 
     private fun escapeNullable(value: String?): String =
         value?.let(::escape) ?: "null"

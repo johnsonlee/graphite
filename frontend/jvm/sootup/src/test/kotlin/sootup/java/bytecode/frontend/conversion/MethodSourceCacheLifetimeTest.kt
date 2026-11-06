@@ -1,5 +1,6 @@
 package sootup.java.bytecode.frontend.conversion
 
+import io.johnsonlee.graphite.sootup.operation
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.GraphiteContext
@@ -188,10 +189,10 @@ class MethodSourceCacheLifetimeTest {
         invoke(adapter, name, JavaSootClass::class.java, sootClass)
 
     private fun invoke(adapter: SootUpAdapter, name: String): Any? =
-        SootUpAdapter::class.java.getDeclaredMethod(name).apply { isAccessible = true }.invoke(adapter)
+        adapter.operation(name).apply { isAccessible = true }.invoke(adapter)
 
     private fun invoke(adapter: SootUpAdapter, name: String, type: Class<*>, value: Any): Any? =
-        SootUpAdapter::class.java.getDeclaredMethod(name, type).apply { isAccessible = true }.invoke(adapter, value)
+        adapter.operation(name, type).apply { isAccessible = true }.invoke(adapter, value)
 
     private fun field(adapter: SootUpAdapter, name: String): Any? =
         SootUpAdapter::class.java.getDeclaredField(name).apply { isAccessible = true }.get(adapter)

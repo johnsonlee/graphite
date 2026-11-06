@@ -4,16 +4,12 @@ import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.LocalVariable
-import io.johnsonlee.graphite.core.Node
-import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.incoming
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.graph.outgoing
@@ -61,7 +57,8 @@ class AdvancedBytecodeTest {
         assertTrue(params.isNotEmpty(), "Should find parameter nodes for varargs method sum()")
         // Varargs compiles to array: int... -> int[]
         val arrayParam = params.find { it.type.className == "int[]" }
-        assertNotNull(arrayParam, "sum() parameter should have type int[] (varargs compiles to array), found types: ${params.map { it.type.className }}")
+        assertNotNull(arrayParam,
+            "sum() parameter should have type int[] (varargs compiles to array), found types: ${params.map { it.type.className }}")
     }
 
     @Test
@@ -278,7 +275,8 @@ class AdvancedBytecodeTest {
         val sourceNodes = incomingEdges.map { graph.node(it.from) }
         val intConstant42 = sourceNodes.filterIsInstance<IntConstant>().find { it.value == 42 }
         assertNotNull(intConstant42,
-            "returnOnly should have IntConstant(42) flowing to ReturnNode, found sources: ${sourceNodes.map { it?.javaClass?.simpleName to (it as? ConstantNode)?.value }}")
+            "returnOnly should have IntConstant(42) flowing to ReturnNode, found sources: " +
+                "${sourceNodes.map { it?.javaClass?.simpleName to (it as? ConstantNode)?.value }}")
     }
 
     @Test
@@ -308,7 +306,8 @@ class AdvancedBytecodeTest {
         val sourceNode = graph.node(returnValueEdge.from)
         assertNotNull(sourceNode, "Source node of RETURN_VALUE edge should exist in graph")
         assertTrue(sourceNode is LocalVariable,
-            "Source of RETURN_VALUE to syncMethod return should be a LocalVariable (computed value), got ${sourceNode?.javaClass?.simpleName}")
+            "Source of RETURN_VALUE to syncMethod return should be a LocalVariable (computed value), got " +
+                "${sourceNode?.javaClass?.simpleName}")
     }
 
     @Test

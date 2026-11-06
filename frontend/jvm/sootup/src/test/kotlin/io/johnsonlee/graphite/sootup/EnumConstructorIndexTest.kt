@@ -141,7 +141,7 @@ class EnumConstructorIndexTest {
             JavaView(emptyList()), LoaderConfig(verbose = {}), extensions = emptyList(),
             inputLocationSources = emptyMap(), graphBuilder = builder
         )
-        SootUpAdapter::class.java.getDeclaredMethod("extractEnumValues", String::class.java, Iterable::class.java).apply {
+        adapter.operation("extractEnumValues", String::class.java, Iterable::class.java).apply {
             isAccessible = true
         }.invoke(adapter, className, statements)
         return builder.build()

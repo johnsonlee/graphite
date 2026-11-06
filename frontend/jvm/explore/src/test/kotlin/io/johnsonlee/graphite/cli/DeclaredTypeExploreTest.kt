@@ -1,22 +1,21 @@
 package io.johnsonlee.graphite.cli
 
 import com.google.gson.JsonParser
-import io.johnsonlee.graphite.cypher.CypherCancellationSignal
-import io.johnsonlee.graphite.core.MethodDescriptor
-import io.johnsonlee.graphite.graph.MethodTypes
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MemberTypeKey
+import io.johnsonlee.graphite.graph.MethodTypes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @Suppress("StringLiteralDuplication")
 class DeclaredTypeExploreTest {
@@ -24,19 +23,20 @@ class DeclaredTypeExploreTest {
     fun `node JSON and subgraphs expose declaration metadata from graph`() {
         val genericType = "generic_type"
         val typeInfo = "type_info"
-        val field = FieldNode(
-            NodeId.next(), FieldDescriptor(TypeDescriptor("Example"), "items", TypeDescriptor("java.util.List")), false
-        )
-        val graph = DefaultGraph.Builder().apply {
-            addNode(field)
-            setDeclaredTypes(DeclaredTypeTable(
-                listOf(
-                    DeclaredType("class", "java.lang.String"),
-                    DeclaredType("class", "java.util.List", arguments = listOf(0))
-                ),
-                mapOf(MemberTypeKey("Example", "items", "Ljava/util/List;") to 1), emptyMap(), emptyMap()
-            ))
-        }.build()
+        val field = FieldNode(NodeId.next(), FieldDescriptor(TypeDescriptor("Example"), "items", TypeDescriptor("java.util.List")), false)
+        val graph =
+            DefaultGraph.Builder()
+                .apply {
+                    addNode(field)
+                    setDeclaredTypes(
+                        DeclaredTypeTable(
+                            listOf(
+                                DeclaredType("class", "java.lang.String"), DeclaredType("class", "java.util.List", arguments = listOf(0))),
+                            mapOf(MemberTypeKey("Example", "items", "Ljava/util/List;") to 1),
+                            emptyMap(),
+                            emptyMap()))
+                }
+                .build()
         val mapped = nodeToMap(field, graph)
         assertEquals("java.util.List", mapped["fieldType"])
         assertEquals("java.util.List<java.lang.String>", mapped[genericType])
@@ -55,12 +55,12 @@ class DeclaredTypeExploreTest {
 
     @Test
     fun `declared type maps and JSON use the same sparse optional members recursively`() {
-        val table = DeclaredTypeTable(
-            listOf(
-                DeclaredType("class", "java.lang.String"),
-                DeclaredType("class", "java.util.List", arguments = listOf(0))
-            ), emptyMap(), emptyMap(), emptyMap()
-        )
+        val table =
+            DeclaredTypeTable(
+                listOf(DeclaredType("class", "java.lang.String"), DeclaredType("class", "java.util.List", arguments = listOf(0))),
+                emptyMap(),
+                emptyMap(),
+                emptyMap())
         val info = table.info(1)
         assertFalse("scope" in info)
         assertNull(info["scope"])
@@ -80,18 +80,21 @@ class DeclaredTypeExploreTest {
         val owner = TypeDescriptor("Example")
         val list = TypeDescriptor("java.util.List")
         val method = MethodDescriptor(owner, "load", listOf(list), list)
-        val graph = DefaultGraph.Builder().apply {
-            addMethod(method)
-            addMemberAnnotation(owner.className, method.name, "org.springframework.web.bind.annotation.GetMapping",
-                mapOf("value" to "/items"))
-            setDeclaredTypes(DeclaredTypeTable(
-                listOf(
-                    DeclaredType("class", "java.lang.String"),
-                    DeclaredType("class", "java.util.List", arguments = listOf(0))
-                ), emptyMap(), mapOf(MemberTypeKey(owner.className, method.name, method.descriptor) to MethodTypes(listOf(1), 1)),
-                emptyMap()
-            ))
-        }.build()
+        val graph =
+            DefaultGraph.Builder()
+                .apply {
+                    addMethod(method)
+                    addMemberAnnotation(
+                        owner.className, method.name, "org.springframework.web.bind.annotation.GetMapping", mapOf("value" to "/items"))
+                    setDeclaredTypes(
+                        DeclaredTypeTable(
+                            listOf(
+                                DeclaredType("class", "java.lang.String"), DeclaredType("class", "java.util.List", arguments = listOf(0))),
+                            emptyMap(),
+                            mapOf(MemberTypeKey(owner.className, method.name, method.descriptor) to MethodTypes(listOf(1), 1)),
+                            emptyMap()))
+                }
+                .build()
         val endpoint = EndpointExtractor().extract(graph).single()
         assertEquals("GET", endpoint["httpMethod"])
         assertEquals("/items", endpoint["path"])
@@ -102,5 +105,4 @@ class DeclaredTypeExploreTest {
         assertEquals(listOf(endpoint["return_type_info"]), endpoint["parameter_type_info"])
         assertEquals(emptyList<Any>(), endpoint["type_parameters"])
     }
-
 }

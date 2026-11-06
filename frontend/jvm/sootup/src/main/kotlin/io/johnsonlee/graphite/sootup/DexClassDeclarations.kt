@@ -26,7 +26,6 @@ import sootup.apk.frontend.dexpler.DexFileProvider
 import kotlin.io.path.extension
 
 /** Reads the declaration metadata that Android stores in system annotations in every DEX file. */
-@Suppress("TooManyFunctions") // DEX decoding policies stay centralized at this untrusted-input boundary.
 internal object DexClassDeclarations {
     private const val SIGNATURE = "Ldalvik/annotation/Signature;"
     private const val ENCLOSING_CLASS = "Ldalvik/annotation/EnclosingClass;"
@@ -51,7 +50,7 @@ internal object DexClassDeclarations {
                 return read(resourceClasses(resources, true, warning), classNames, warning)
             }
             val classes = dexFiles.asSequence().flatMapIndexed { index, dex ->
-                safeClasses(dex.base.dexFile, "SootUp DEX container #${index + 1}", warning)
+                DexDeclarationResources.safeClasses(dex.base.dexFile, "SootUp DEX container #${index + 1}", warning)
             }
             return read(classes, classNames, warning)
         }
@@ -78,7 +77,7 @@ internal object DexClassDeclarations {
             val name = try {
                 definition.type.dexClassName()
             } catch (failure: Exception) {
-                warning("Skipping a DEX declaration with an invalid class type: ${failure.summary()}")
+                warning("Skipping a DEX declaration with an invalid class type: ${failure.dexDeclarationSummary()}")
                 return@forEach
             }
             if (name in classNames) {
@@ -90,83 +89,14 @@ internal object DexClassDeclarations {
             try {
                 name to from(definition, stringIndexField)
             } catch (failure: Exception) {
-                warning("Skipping DEX declarations for $name: ${failure.summary()}")
+                warning("Skipping DEX declarations for $name: ${failure.dexDeclarationSummary()}")
                 null
             }
         }.toMap(linkedMapOf())
     }
 
-    @Suppress("TooGenericExceptionCaught") // Resource providers and dexlib surface implementation-specific failures.
-    internal fun resourceClasses(
-        resources: ResourceAccessor,
-        includeNonDexNames: Boolean,
-        warning: (String) -> Unit
-    ): Sequence<ClassDef> = sequence {
-        val entries = if (includeNonDexNames) resources.list("**") else resources.list("**/*.dex")
-        val selectedBasenames = hashSetOf<String>()
-        entries
-            // An exceptional SootUp-provider fallback accepts any entry with DEX magic.
-            // Generic accessors are limited to .dex names. Preserve SootUp's primary/classes-first
-            // and reverse-lexical ordering so the same last duplicate wins in both paths.
-            .sortedWith(compareBy<ResourceEntry> {
-                it.path.substringAfterLast('/') != "classes.dex"
-            }.thenBy {
-                !it.path.substringAfterLast('/').startsWith("classes")
-            }.thenByDescending { it.path.substringAfterLast('/') })
-            .forEach { entry ->
-                val basename = entry.path.substringAfterLast('/')
-                val classes = if (basename in selectedBasenames) emptySequence() else try {
-                    resources.open(entry.path).use { input ->
-                        val buffered = BufferedInputStream(input)
-                        buffered.mark(DEX_MAGIC_SIZE)
-                        val magic = ByteArray(DEX_MAGIC_SIZE)
-                        val read = buffered.read(magic)
-                        buffered.reset()
-                        // DexFileProvider indexes only valid DEX entries by basename. Deduplicate
-                        // after the magic check so an arbitrary resource cannot shadow a DEX body.
-                        if (read != DEX_MAGIC_SIZE || !magic.isDexMagic() ||
-                            !selectedBasenames.add(basename)
-                        ) emptySequence() else {
-                            safeClasses(DexBackedDexFile.fromInputStream(null, buffered), entry.path, warning)
-                        }
-                    }
-                } catch (failure: Exception) {
-                    warning("Failed to read DEX declarations from ${entry.path}: ${failure.summary()}")
-                    emptySequence()
-                }
-                yieldAll(classes)
-            }
-    }
-
-    @Suppress("TooGenericExceptionCaught") // Class iterators from damaged DEX files may fail at any traversal step.
-    private fun safeClasses(
-        dexFile: DexFile,
-        source: String,
-        warning: (String) -> Unit
-    ): Sequence<ClassDef> = sequence {
-        val iterator = try {
-            dexFile.classes.iterator()
-        } catch (failure: Exception) {
-            warning("Failed to enumerate classes in $source: ${failure.summary()}")
-            return@sequence
-        }
-        while (true) {
-            val hasNext = try {
-                iterator.hasNext()
-            } catch (failure: Exception) {
-                warning("Stopped enumerating classes in $source: ${failure.summary()}")
-                return@sequence
-            }
-            if (!hasNext) return@sequence
-            val definition = try {
-                iterator.next()
-            } catch (failure: Exception) {
-                warning("Stopped enumerating classes in $source: ${failure.summary()}")
-                return@sequence
-            }
-            yield(definition)
-        }
-    }
+    internal fun resourceClasses(resources: ResourceAccessor, includeNonDexNames: Boolean, warning: (String) -> Unit): Sequence<ClassDef> =
+        DexDeclarationResources.resourceClasses(resources, includeNonDexNames, warning)
 
     private fun from(definition: ClassDef, stringIndexField: Field?): ClassDeclarations {
         val name = definition.type.dexClassName()
@@ -353,15 +283,6 @@ internal object DexClassDeclarations {
         }
     }
 
-    @Suppress("MagicNumber") // Fixed offsets and byte values in the eight-byte DEX magic header.
-    private fun ByteArray.isDexMagic(): Boolean =
-        size == DEX_MAGIC_SIZE && this[0] == 'd'.code.toByte() && this[1] == 'e'.code.toByte() &&
-            this[2] == 'x'.code.toByte() && this[3] == '\n'.code.toByte() &&
-            (4..6).all { this[it] in '0'.code.toByte()..'9'.code.toByte() } && this[7] == 0.toByte()
-
-    private const val DEX_MAGIC_SIZE = 8
-
-    private fun Exception.summary(): String = message?.takeIf(String::isNotBlank) ?: javaClass.simpleName
 }
 
 private inline fun <T> dexTolerant(block: () -> T?): T? = try {
@@ -393,29 +314,35 @@ private fun String.requireDexMethodDescriptor() {
     if (dexTypeEnd(index + 1, allowVoid = true) != length) invalidDexDescriptor(METHOD_DESCRIPTOR_KIND)
 }
 
-@Suppress("CyclomaticComplexMethod", "ReturnCount") // Mirrors the compact DEX descriptor grammar.
 private fun String.dexTypeEnd(start: Int, allowVoid: Boolean): Int? {
     if (start !in indices) return null
-    var valueStart = start
-    while (valueStart < length && this[valueStart] == '[') {
-        if (valueStart - start == MAX_DEX_ARRAY_DIMENSIONS) return null
-        valueStart++
-    }
-    if (valueStart == length) return null
-    return when (this[valueStart]) {
-        'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z' -> valueStart + 1
-        'V' -> if (allowVoid && valueStart == start) valueStart + 1 else null
-        'L' -> indexOf(';', valueStart + 1).takeIf { end ->
-            end >= 0 && substring(valueStart + 1, end).isDexObjectName()
-        }?.plus(1)
-        else -> null
+    return dexValueStart(start)?.let { valueStart ->
+        when (this[valueStart]) {
+            'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z' -> valueStart + 1
+            'V' -> if (allowVoid && valueStart == start) valueStart + 1 else null
+            'L' -> indexOf(';', valueStart + 1).takeIf { end ->
+                end >= 0 && substring(valueStart + 1, end).isDexObjectName()
+            }?.plus(1)
+            else -> null
+        }
     }
 }
 
-@Suppress("ComplexCondition") // DEX names allow broad Unicode but forbid descriptor separators and empty segments.
-private fun String.isDexObjectName(): Boolean =
-    isNotEmpty() && !startsWith('/') && !endsWith('/') && "//" !in this &&
-        none { it == '.' || it == '[' || it == '(' || it == ')' || it == '\u0000' }
+private fun String.dexValueStart(start: Int): Int? {
+    var position = start
+    while (position < length && this[position] == '[') {
+        if (position - start == MAX_DEX_ARRAY_DIMENSIONS) return null
+        position++
+    }
+    return position.takeIf { it < length }
+}
+
+private const val INVALID_DEX_NAME_CHARACTERS = ".[()\u0000"
+
+private fun String.isDexObjectName(): Boolean {
+    if (isEmpty() || startsWith('/') || endsWith('/')) return false
+    return "//" !in this && none { it in INVALID_DEX_NAME_CHARACTERS }
+}
 
 private fun String.invalidDexDescriptor(kind: String): Nothing =
     throw IllegalArgumentException("Invalid $kind descriptor: $this")

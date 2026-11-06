@@ -1,5 +1,3 @@
-@file:Suppress("MagicNumber")
-
 package io.johnsonlee.graphite.cli
 
 import com.google.gson.stream.JsonWriter
@@ -25,6 +23,12 @@ private const val FILE_HEADER_BYTES = 12
 private const val STRING_REF_BYTES = 12
 private const val NODE_RECORD_BYTES = 44
 private const val RELATION_RECORD_BYTES = 60
+private const val RELATION_STRING_COUNT = 3
+private const val CALL_SITE_STAT_OFFSET = Long.SIZE_BYTES * 3
+private const val RELATION_EVIDENCE_COUNT_OFFSET = Int.SIZE_BYTES * 3
+private const val MANIFEST_RULE_COUNT_OFFSET = Int.SIZE_BYTES * 3
+private const val MANIFEST_COUNTS_BYTES = Int.SIZE_BYTES * 4
+private const val UNSIGNED_BYTE_MASK = 0xFF
 
 private const val MANIFEST_MAGIC = 0x4754504D // GTPM
 private const val STRINGS_MAGIC = 0x47545053 // GTPS
@@ -49,10 +53,7 @@ internal data class TopologySummary(
     val rules: List<String>
 )
 
-internal data class TopologyApiStream(
-    val contentLength: Long,
-    val input: InputStream
-)
+internal data class TopologyApiStream(val contentLength: Long, val input: InputStream)
 
 /** Internal, Explorer-only topology persistence. It does not use or version the public GraphStore format. */
 internal object TopologyStore {
@@ -76,8 +77,8 @@ internal object TopologyStore {
     private fun write(buildDir: Path, buildId: UUID, topology: TopologyGraph) {
         val operationCount = topology.edges.sumOf { it.operations.size }
         val evidenceCount = topology.edges.sumOf { it.evidence.size }
-        val stringCount = topology.nodes.size +
-            topology.edges.size * 3 + operationCount + evidenceCount + topology.rules.size
+        val stringCount =
+            topology.nodes.size + topology.edges.size * RELATION_STRING_COUNT + operationCount + evidenceCount + topology.rules.size
 
         StringSink(buildDir.resolve(STRINGS_FILE), stringCount).use { strings ->
             writeNodes(buildDir, topology.nodes, strings)
@@ -101,7 +102,6 @@ internal object TopologyStore {
         }
     }
 
-    @Suppress("NestedBlockDepth")
     private fun writeRelations(
         buildDir: Path,
         topologyEdges: List<TopologyEdge>,
@@ -110,13 +110,24 @@ internal object TopologyStore {
         strings: StringSink
     ) {
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(buildDir.resolve(RELATIONS_FILE)))).use { relations ->
-            DataOutputStream(BufferedOutputStream(Files.newOutputStream(buildDir.resolve(OPERATIONS_FILE)))).use { operations ->
-                DataOutputStream(BufferedOutputStream(Files.newOutputStream(buildDir.resolve(EVIDENCE_FILE)))).use { evidence ->
-                    relations.writeHeader(RELATIONS_MAGIC, topologyEdges.size)
-                    operations.writeHeader(OPERATIONS_MAGIC, operationCount)
-                    evidence.writeHeader(EVIDENCE_MAGIC, evidenceCount)
-                    writeRelations(topologyEdges, strings, relations, operations, evidence)
-                }
+            writeRelationDetails(buildDir, topologyEdges, operationCount, evidenceCount, strings, relations)
+        }
+    }
+
+    private fun writeRelationDetails(
+        buildDir: Path,
+        topologyEdges: List<TopologyEdge>,
+        operationCount: Int,
+        evidenceCount: Int,
+        strings: StringSink,
+        relations: DataOutputStream
+    ) {
+        DataOutputStream(BufferedOutputStream(Files.newOutputStream(buildDir.resolve(OPERATIONS_FILE)))).use { operations ->
+            DataOutputStream(BufferedOutputStream(Files.newOutputStream(buildDir.resolve(EVIDENCE_FILE)))).use { evidence ->
+                relations.writeHeader(RELATIONS_MAGIC, topologyEdges.size)
+                operations.writeHeader(OPERATIONS_MAGIC, operationCount)
+                evidence.writeHeader(EVIDENCE_MAGIC, evidenceCount)
+                writeRelations(topologyEdges, strings, relations, operations, evidence)
             }
         }
     }
@@ -212,36 +223,26 @@ internal object TopologyStore {
 
     internal fun deleteBuildDirectory(buildDir: Path) {
         val normalized = buildDir.toAbsolutePath().normalize()
-        require(normalized.parent?.fileName?.toString() == "graphite") {
-            "Refusing to delete non-topology directory: $normalized"
-        }
+        require(normalized.parent?.fileName?.toString() == "graphite") { "Refusing to delete non-topology directory: $normalized" }
         UUID.fromString(normalized.fileName.toString())
         if (!Files.exists(normalized)) return
-        val paths = Files.walk(normalized).use { stream ->
-            stream.sorted(Comparator.reverseOrder()).toList()
-        }
-        paths.forEach { path ->
-            runCatching { Files.deleteIfExists(path) }
-                .onFailure { path.toFile().deleteOnExit() }
-        }
+        val paths = Files.walk(normalized).use { stream -> stream.sorted(Comparator.reverseOrder()).toList() }
+        paths.forEach { path -> runCatching { Files.deleteIfExists(path) }.onFailure { path.toFile().deleteOnExit() } }
     }
 }
 
-internal class MappedTopologySnapshot private constructor(
-    val buildDir: Path,
-    private val manifest: TopologyManifest,
-    private val buffers: TopologyBuffers
-) : Closeable {
+internal class MappedTopologySnapshot
+private constructor(val buildDir: Path, private val manifest: TopologyManifest, private val buffers: TopologyBuffers) : Closeable {
 
     private val closed = AtomicBoolean()
 
-    fun summary(): TopologySummary = TopologySummary(
-        graphCount = manifest.nodeCount,
-        relationCount = manifest.relationCount,
-        matchedRows = manifest.matchedRows,
-        builtAt = manifest.builtAt,
-        rules = manifest.ruleRefs.map(::readString)
-    )
+    fun summary(): TopologySummary =
+        TopologySummary(
+            graphCount = manifest.nodeCount,
+            relationCount = manifest.relationCount,
+            matchedRows = manifest.matchedRows,
+            builtAt = manifest.builtAt,
+            rules = manifest.ruleRefs.map(::readString))
 
     fun materialize(): TopologyGraph {
         checkOpen()
@@ -252,8 +253,7 @@ internal class MappedTopologySnapshot private constructor(
             edges = materializedEdges,
             builtAt = manifest.builtAt,
             rules = manifest.ruleRefs.map(::readString),
-            matchedRows = manifest.matchedRows
-        )
+            matchedRows = manifest.matchedRows)
     }
 
     fun toApiMap(stale: Boolean): Map<String, Any> = materialize().toApiMap(stale)
@@ -261,10 +261,7 @@ internal class MappedTopologySnapshot private constructor(
     fun openApiStream(onClose: () -> Unit): TopologyApiStream {
         checkOpen()
         val buffer = buffers.apiJson.asReadOnlyBuffer()
-        return TopologyApiStream(
-            contentLength = buffer.remaining().toLong(),
-            input = MappedByteBufferInputStream(buffer, onClose)
-        )
+        return TopologyApiStream(contentLength = buffer.remaining().toLong(), input = MappedByteBufferInputStream(buffer, onClose))
     }
 
     override fun close() {
@@ -279,13 +276,12 @@ internal class MappedTopologySnapshot private constructor(
         offset += STRING_REF_BYTES
         return TopologyNode(
             id = id,
-            stats = GraphStats(
-                nodes = buffers.nodes.getLong(offset),
-                edges = buffers.nodes.getLong(offset + Long.SIZE_BYTES),
-                methods = buffers.nodes.getLong(offset + Long.SIZE_BYTES * 2),
-                callSites = buffers.nodes.getLong(offset + Long.SIZE_BYTES * 3)
-            )
-        )
+            stats =
+                GraphStats(
+                    nodes = buffers.nodes.getLong(offset),
+                    edges = buffers.nodes.getLong(offset + Long.SIZE_BYTES),
+                    methods = buffers.nodes.getLong(offset + Long.SIZE_BYTES * 2),
+                    callSites = buffers.nodes.getLong(offset + CALL_SITE_STAT_OFFSET)))
     }
 
     private fun readRelation(index: Int): TopologyEdge {
@@ -301,29 +297,20 @@ internal class MappedTopologySnapshot private constructor(
         val operationStart = buffers.relations.getInt(offset)
         val relationOperationCount = buffers.relations.getInt(offset + Int.SIZE_BYTES)
         val evidenceStart = buffers.relations.getInt(offset + Int.SIZE_BYTES * 2)
-        val relationEvidenceCount = buffers.relations.getInt(offset + Int.SIZE_BYTES * 3)
-        require(
-            operationStart >= 0 && relationOperationCount >= 0 &&
-                operationStart + relationOperationCount <= buffers.operationCount
-        )
-        require(
-            evidenceStart >= 0 && relationEvidenceCount >= 0 &&
-                evidenceStart + relationEvidenceCount <= buffers.evidenceCount
-        )
+        val relationEvidenceCount = buffers.relations.getInt(offset + RELATION_EVIDENCE_COUNT_OFFSET)
+        require(operationStart >= 0 && relationOperationCount >= 0 && operationStart + relationOperationCount <= buffers.operationCount)
+        require(evidenceStart >= 0 && relationEvidenceCount >= 0 && evidenceStart + relationEvidenceCount <= buffers.evidenceCount)
         return TopologyEdge(
             from = from,
             to = to,
             protocol = protocol,
             weight = weight,
             operations = readDetails(buffers.operations, operationStart, relationOperationCount),
-            evidence = readDetails(buffers.evidence, evidenceStart, relationEvidenceCount)
-        )
+            evidence = readDetails(buffers.evidence, evidenceStart, relationEvidenceCount))
     }
 
     private fun readDetails(buffer: ByteBuffer, start: Int, count: Int): List<String> =
-        (start until start + count).map { index ->
-            readString(readRef(buffer, recordOffset(index, STRING_REF_BYTES)))
-        }
+        (start until start + count).map { index -> readString(readRef(buffer, recordOffset(index, STRING_REF_BYTES))) }
 
     private fun readString(ref: StringRef): String {
         checkOpen()
@@ -360,42 +347,30 @@ internal class MappedTopologySnapshot private constructor(
             val matchedRows = manifest.getInt(offset)
             val nodeCount = manifest.getInt(offset + Int.SIZE_BYTES)
             val relationCount = manifest.getInt(offset + Int.SIZE_BYTES * 2)
-            val ruleCount = manifest.getInt(offset + Int.SIZE_BYTES * 3)
-            offset += Int.SIZE_BYTES * 4
+            val ruleCount = manifest.getInt(offset + MANIFEST_RULE_COUNT_OFFSET)
+            offset += MANIFEST_COUNTS_BYTES
             require(nodeCount >= 0 && relationCount >= 0 && matchedRows >= 0 && ruleCount >= 0)
             requireCapacity(manifest, offset.toLong() + ruleCount.toLong() * STRING_REF_BYTES, MANIFEST_FILE)
-            val ruleRefs = (0 until ruleCount).map { index ->
-                readRef(manifest, offset + index * STRING_REF_BYTES)
-            }
+            val ruleRefs = (0 until ruleCount).map { index -> readRef(manifest, offset + index * STRING_REF_BYTES) }
 
             val strings = map(buildDir.resolve(STRINGS_FILE)).also { requireHeader(it, STRINGS_MAGIC) }
-            val nodes = map(buildDir.resolve(NODES_FILE)).also {
-                requireHeader(it, NODES_MAGIC, nodeCount)
-                requireCapacity(it, FILE_HEADER_BYTES.toLong() + nodeCount.toLong() * NODE_RECORD_BYTES, NODES_FILE)
-            }
-            val relations = map(buildDir.resolve(RELATIONS_FILE)).also {
-                requireHeader(it, RELATIONS_MAGIC, relationCount)
-                requireCapacity(
-                    it,
-                    FILE_HEADER_BYTES.toLong() + relationCount.toLong() * RELATION_RECORD_BYTES,
-                    RELATIONS_FILE
-                )
-            }
+            val nodes =
+                map(buildDir.resolve(NODES_FILE)).also {
+                    requireHeader(it, NODES_MAGIC, nodeCount)
+                    requireCapacity(it, FILE_HEADER_BYTES.toLong() + nodeCount.toLong() * NODE_RECORD_BYTES, NODES_FILE)
+                }
+            val relations =
+                map(buildDir.resolve(RELATIONS_FILE)).also {
+                    requireHeader(it, RELATIONS_MAGIC, relationCount)
+                    requireCapacity(it, FILE_HEADER_BYTES.toLong() + relationCount.toLong() * RELATION_RECORD_BYTES, RELATIONS_FILE)
+                }
             val operations = map(buildDir.resolve(OPERATIONS_FILE)).also { requireHeader(it, OPERATIONS_MAGIC) }
             val evidence = map(buildDir.resolve(EVIDENCE_FILE)).also { requireHeader(it, EVIDENCE_MAGIC) }
             val operationCount = operations.getInt(Int.SIZE_BYTES * 2)
             val evidenceCount = evidence.getInt(Int.SIZE_BYTES * 2)
             require(operationCount >= 0 && evidenceCount >= 0)
-            requireCapacity(
-                operations,
-                FILE_HEADER_BYTES.toLong() + operationCount.toLong() * STRING_REF_BYTES,
-                OPERATIONS_FILE
-            )
-            requireCapacity(
-                evidence,
-                FILE_HEADER_BYTES.toLong() + evidenceCount.toLong() * STRING_REF_BYTES,
-                EVIDENCE_FILE
-            )
+            requireCapacity(operations, FILE_HEADER_BYTES.toLong() + operationCount.toLong() * STRING_REF_BYTES, OPERATIONS_FILE)
+            requireCapacity(evidence, FILE_HEADER_BYTES.toLong() + evidenceCount.toLong() * STRING_REF_BYTES, EVIDENCE_FILE)
             val apiJson = map(buildDir.resolve(API_FILE))
             return MappedTopologySnapshot(
                 buildDir,
@@ -405,8 +380,7 @@ internal class MappedTopologySnapshot private constructor(
                     relationCount = relationCount,
                     matchedRows = matchedRows,
                     builtAt = Instant.ofEpochSecond(epochSecond, nano.toLong()),
-                    ruleRefs = ruleRefs
-                ),
+                    ruleRefs = ruleRefs),
                 TopologyBuffers(
                     strings = strings,
                     nodes = nodes,
@@ -415,15 +389,14 @@ internal class MappedTopologySnapshot private constructor(
                     evidence = evidence,
                     apiJson = apiJson,
                     operationCount = operationCount,
-                    evidenceCount = evidenceCount
-                )
-            )
+                    evidenceCount = evidenceCount))
         }
 
-        private fun map(path: Path): MappedByteBuffer = FileChannel.open(path, StandardOpenOption.READ).use { channel ->
-            require(channel.size() in 1..Int.MAX_VALUE.toLong()) { "Topology file is too large to map: $path" }
-            channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
-        }
+        private fun map(path: Path): MappedByteBuffer =
+            FileChannel.open(path, StandardOpenOption.READ).use { channel ->
+                require(channel.size() in 1..Int.MAX_VALUE.toLong()) { "Topology file is too large to map: $path" }
+                channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
+            }
 
         private fun requireHeader(buffer: ByteBuffer, magic: Int, expectedCount: Int? = null) {
             requireCapacity(buffer, FILE_HEADER_BYTES.toLong(), "header")
@@ -435,9 +408,7 @@ internal class MappedTopologySnapshot private constructor(
         }
 
         private fun requireCapacity(buffer: ByteBuffer, required: Long, name: String) {
-            require(required <= buffer.limit().toLong()) {
-                "Truncated topology file '$name': required=$required actual=${buffer.limit()}"
-            }
+            require(required <= buffer.limit().toLong()) { "Truncated topology file '$name': required=$required actual=${buffer.limit()}" }
         }
     }
 }
@@ -483,13 +454,10 @@ private class StringSink(path: Path, count: Int) : Closeable {
     override fun close() = output.close()
 }
 
-private class MappedByteBufferInputStream(
-    private val buffer: ByteBuffer,
-    private val onClose: () -> Unit
-) : InputStream() {
+private class MappedByteBufferInputStream(private val buffer: ByteBuffer, private val onClose: () -> Unit) : InputStream() {
     private val closed = AtomicBoolean()
 
-    override fun read(): Int = if (buffer.hasRemaining()) buffer.get().toInt() and 0xff else -1
+    override fun read(): Int = if (buffer.hasRemaining()) buffer.get().toInt() and UNSIGNED_BYTE_MASK else -1
 
     override fun read(bytes: ByteArray, offset: Int, length: Int): Int {
         Objects.checkFromIndexSize(offset, length, bytes.size)
@@ -518,8 +486,6 @@ private fun DataOutputStream.writeRef(ref: StringRef) {
     writeInt(ref.length)
 }
 
-private fun readRef(buffer: ByteBuffer, offset: Int): StringRef =
-    StringRef(buffer.getLong(offset), buffer.getInt(offset + Long.SIZE_BYTES))
+private fun readRef(buffer: ByteBuffer, offset: Int): StringRef = StringRef(buffer.getLong(offset), buffer.getInt(offset + Long.SIZE_BYTES))
 
-private fun recordOffset(index: Int, recordBytes: Int): Int =
-    Math.addExact(FILE_HEADER_BYTES, Math.multiplyExact(index, recordBytes))
+private fun recordOffset(index: Int, recordBytes: Int): Int = Math.addExact(FILE_HEADER_BYTES, Math.multiplyExact(index, recordBytes))

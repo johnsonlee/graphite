@@ -22,11 +22,11 @@ internal class CallSiteOrdinalPersistenceInput(ordinalCount: Int) {
         size++
     }
 
-    fun encode(): NodeSerializer.EncodedCallSiteOrdinals? {
+    fun encode(): CallSiteOrdinalCodec.EncodedCallSiteOrdinals? {
         check(size == ids.size) { "Call-site ordinal count changed while saving" }
         if (size == 0) return null
         if (!ordered) sortById()
-        return NodeSerializer.encodeCallSiteOrdinals(ids, ordinals, origins)
+        return CallSiteOrdinalCodec.encodeCallSiteOrdinals(ids, ordinals, origins)
     }
 
     private fun sortById() {
@@ -45,8 +45,7 @@ internal class CallSiteOrdinalPersistenceInput(ordinalCount: Int) {
                 ordinals.swap(left, right)
                 origins.swap(left, right)
                 encounterOrder.swap(left, right)
-            }
-        )
+            })
     }
 
     private fun IntArray.swap(left: Int, right: Int) {

@@ -1,48 +1,44 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.input.ResourceAccessor
-import it.unimi.dsi.webgraph.ImmutableGraph
 
 /**
  * A [Graph] implementation backed by WebGraph's compressed adjacency structure.
  *
- * Edges are reconstructed on-the-fly from the BVGraph successor lists and
- * a compact label map (8 bits per edge) instead of storing full [Edge] objects.
- * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
- * `(from << 32 | to)`.
+ * Edges are reconstructed on-the-fly from the BVGraph successor lists and a compact label map (8 bits per edge) instead of storing full
+ * [Edge] objects. [ControlFlowEdge.comparison] data is stored in a separate map keyed by `(from << 32 | to)`.
  */
-@Suppress("LongParameterList", "TooManyFunctions")
-internal class WebGraphBackedGraph(
-    private val forward: ImmutableGraph,
-    private val backward: Lazy<ImmutableGraph>,
-    private val nodesById: Map<Int, Node>,
-    private val nodeDataVersion: Int,
-    private val forwardLabels: ByteArray,
-    private val cumulativeOutdeg: IntArray,
-    private val comparisonLookup: BranchComparisonLookup,
-    private val metadata: GraphMetadata,
-    private val classOverviewProvider: (Int) -> ClassOverview?,
-    override val resources: ResourceAccessor,
-    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
-    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY),
-    /** The build's completeness evidence, read on first use; absent for a graph saved without it. */
-    private val analysisCompleteness: Lazy<AnalysisCompleteness?> = lazyOf(null)
-) : Graph, EnumValueIndexSource {
+// The implementation exposes Graph's stable capability contract; private responsibilities remain small.
+@Suppress("TooManyFunctions")
+internal class WebGraphBackedGraph(nodes: EagerNodeStorage, edges: EagerEdgeStorage, sidecars: EagerGraphSidecars) :
+    Graph, EnumValueIndexSource {
+    private val forward = edges.forward
+    private val backward = edges.backward
+    private val nodesById = nodes.nodesById
+    private val nodeDataVersion = nodes.nodeDataVersion
+    private val forwardLabels = edges.forwardLabels
+    private val cumulativeOutdeg = edges.cumulativeOutdeg
+    private val comparisonLookup = edges.comparisonLookup
+    private val metadata = sidecars.metadata
+    private val classOverviewProvider = sidecars.classOverviewProvider
+    override val resources = sidecars.resources
+    private val branchDefinitions = sidecars.branchDefinitions
+    private val declaredTypeTable = sidecars.declaredTypeTable
+    private val analysisCompleteness = sidecars.analysisCompleteness
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>> = nodesById.values.groupBy { it::class.java }
@@ -50,8 +46,7 @@ internal class WebGraphBackedGraph(
     // Lazy branch scope materialization
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
         val sidecar = branchDefinitions.value.scopes
-        metadata.branchScopes.mapIndexed { index, raw -> raw.toBranchScope(sidecar.getOrNull(index)) }
-            .groupBy { it.conditionNodeId.value }
+        metadata.branchScopes.mapIndexed { index, raw -> raw.toBranchScope(sidecar.getOrNull(index)) }.groupBy { it.conditionNodeId.value }
     }
 
     private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
@@ -67,18 +62,16 @@ internal class WebGraphBackedGraph(
     @Suppress("UNCHECKED_CAST")
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
         // Fast path: exact type match
-        nodesByType[type]?.let { return (it as List<T>).asSequence() }
+        nodesByType[type]?.let {
+            return (it as List<T>).asSequence()
+        }
         // Slow path: supertype match
-        return nodesByType.entries.asSequence()
-            .filter { type.isAssignableFrom(it.key) }
-            .flatMap { it.value.asSequence() } as Sequence<T>
+        return nodesByType.entries.asSequence().filter { type.isAssignableFrom(it.key) }.flatMap { it.value.asSequence() } as Sequence<T>
     }
 
     override fun nodeCount(type: Class<out Node>): Long =
         nodesByType[type]?.size?.toLong()
-            ?: nodesByType.entries.asSequence()
-                .filter { type.isAssignableFrom(it.key) }
-                .sumOf { it.value.size.toLong() }
+            ?: nodesByType.entries.asSequence().filter { type.isAssignableFrom(it.key) }.sumOf { it.value.size.toLong() }
 
     override fun edgeCount(): Long = forwardLabels.size.toLong()
 
@@ -118,12 +111,10 @@ internal class WebGraphBackedGraph(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
-        outgoing(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> = outgoing(id).filter { type.isInstance(it) } as Sequence<T>
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> =
-        incoming(id).filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> = incoming(id).filter { type.isInstance(it) } as Sequence<T>
 
     override fun callSites(methodPattern: MethodPattern): Sequence<CallSiteNode> =
         nodes(CallSiteNode::class.java).filter { methodPattern.matches(it.callee) }
@@ -142,16 +133,14 @@ internal class WebGraphBackedGraph(
     override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
         methods(pattern).take(limit.coerceAtLeast(0)).toList()
 
-    override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
-        metadata.enumValues["$enumClass#$enumName"]
+    override fun enumValues(enumClass: String, enumName: String): List<Any?>? = metadata.enumValues["$enumClass#$enumName"]
 
     override fun enumValueIndex(): Map<String, List<Any?>> = metadata.enumValues
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.memberAnnotations["$className#$memberName"] ?: emptyMap()
 
-    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
-        metadata.memberAnnotations
+    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> = metadata.memberAnnotations
 
     override fun classOrigin(className: String): String? = metadata.classOrigins[className]
 
@@ -169,12 +158,10 @@ internal class WebGraphBackedGraph(
 
     override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness.value
 
-    override fun branchScopes(): Sequence<BranchScope> =
-        branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
+    override fun branchScopes(): Sequence<BranchScope> = branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
-    override fun typeHierarchyTypes(): Set<String> =
-        metadata.supertypes.keys + metadata.subtypes.keys
+    override fun typeHierarchyTypes(): Set<String> = metadata.supertypes.keys + metadata.subtypes.keys
 }

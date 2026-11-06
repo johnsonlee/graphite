@@ -11,16 +11,13 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
-import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.webgraph.BVGraph
-import org.openjdk.jmh.annotations.*
 import java.io.BufferedOutputStream
 import java.io.DataOutputStream
-import java.io.File
-import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.*
 
 // ============================================================================
 //  Save phase breakdown — isolate each phase to find the real bottleneck
@@ -28,8 +25,7 @@ import java.util.concurrent.TimeUnit
 // ============================================================================
 
 /**
- * Breaks down GraphStore.save() into individual phases, each measured
- * independently by JMH. Prerequisites are prepared in @Setup.
+ * Breaks down GraphStore.save() into individual phases, each measured independently by JMH. Prerequisites are prepared in @Setup.
  *
  * Phases:
  * 1. stringCollection — iterate nodes, collect unique strings
@@ -49,8 +45,7 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 1)
 open class SavePhaseBreakdownBenchmark {
 
-    @Param("10000000")
-    var nodeCount: Int = 0
+    @Param("10000000") var nodeCount: Int = 0
 
     // Shared state built in setup
     private lateinit var graph: Graph
@@ -72,13 +67,13 @@ open class SavePhaseBreakdownBenchmark {
         val annotationInterval = 10
         for (i in 1..nodeCount) {
             if (i % annotationInterval == 0) {
-                builder.addNode(AnnotationNode(
-                    id = NodeId.next(),
-                    name = "org.example.Ann${i % 100}",
-                    className = "com.example.Class${i % 1000}",
-                    memberName = "method${i % 500}",
-                    values = mapOf("value" to "/path/$i")
-                ))
+                builder.addNode(
+                    AnnotationNode(
+                        id = NodeId.next(),
+                        name = "org.example.Ann${i % 100}",
+                        className = "com.example.Class${i % 1000}",
+                        memberName = "method${i % 500}",
+                        values = mapOf("value" to "/path/$i")))
             } else {
                 builder.addNode(IntConstant(NodeId.next(), i))
             }
@@ -95,11 +90,11 @@ open class SavePhaseBreakdownBenchmark {
         for (node in graph.nodes(Node::class.java)) {
             if (node.id.value > maxNodeId) maxNodeId = node.id.value
             graphNodeCount++
-            NodeSerializer.collectNodeStrings(listOf(node), strings)
+            NodeRecordCodec.collectNodeStrings(listOf(node), strings)
         }
 
         metadata = GraphStore.collectMetadata(graph)
-        NodeSerializer.collectMetadataStrings(metadata, strings)
+        GraphMetadataCodec.collectMetadataStrings(metadata, strings)
         allStrings = strings.toSet()
 
         tmpDir = Files.createTempDirectory("phase-bench")
@@ -117,7 +112,7 @@ open class SavePhaseBreakdownBenchmark {
             NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
             dos.writeInt(graphNodeCount)
             for (node in graph.nodes(Node::class.java)) {
-                NodeSerializer.writeNode(dos, node, stringTable)
+                NodeRecordCodec.writeNode(dos, node, stringTable)
             }
         }
     }
@@ -134,7 +129,7 @@ open class SavePhaseBreakdownBenchmark {
         val strings = mutableSetOf<String>()
         var count = 0
         for (node in graph.nodes(Node::class.java)) {
-            NodeSerializer.collectNodeStrings(listOf(node), strings)
+            NodeRecordCodec.collectNodeStrings(listOf(node), strings)
             count++
         }
         return strings.size
@@ -169,10 +164,12 @@ open class SavePhaseBreakdownBenchmark {
             BVGraph.store(
                 GraphStore.PrecomputedImmutableGraph(forwardAdj),
                 dir.resolve("forward").toString(),
-                BVGraph.DEFAULT_WINDOW_SIZE, BVGraph.DEFAULT_MAX_REF_COUNT,
-                BVGraph.DEFAULT_MIN_INTERVAL_LENGTH, BVGraph.DEFAULT_ZETA_K,
-                0, 2
-            )
+                BVGraph.DEFAULT_WINDOW_SIZE,
+                BVGraph.DEFAULT_MAX_REF_COUNT,
+                BVGraph.DEFAULT_MIN_INTERVAL_LENGTH,
+                BVGraph.DEFAULT_ZETA_K,
+                0,
+                2)
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -186,7 +183,7 @@ open class SavePhaseBreakdownBenchmark {
                 NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
                 dos.writeInt(graphNodeCount)
                 for (node in graph.nodes(Node::class.java)) {
-                    NodeSerializer.writeNode(dos, node, stringTable)
+                    NodeRecordCodec.writeNode(dos, node, stringTable)
                 }
             }
         } finally {
@@ -198,9 +195,7 @@ open class SavePhaseBreakdownBenchmark {
     fun phase7_nodeindexBuild() {
         val indexFile = tmpDir.resolve("graph.nodeindex.tmp")
         try {
-            GraphStore.buildNodeIndex(
-                tmpDir.resolve("graph.nodedata"), indexFile, stringTable
-            )
+            GraphStore.buildNodeIndex(tmpDir.resolve("graph.nodedata"), indexFile, stringTable)
         } finally {
             indexFile.toFile().delete()
         }
@@ -211,7 +206,7 @@ open class SavePhaseBreakdownBenchmark {
         val dir = Files.createTempDirectory("meta")
         try {
             DataOutputStream(BufferedOutputStream(dir.resolve("graph.metadata").toFile().outputStream())).use { dos ->
-                NodeSerializer.saveMetadata(metadata, dos, stringTable)
+                GraphMetadataCodec.saveMetadata(metadata, dos, stringTable)
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -232,9 +227,7 @@ open class SavePhaseBreakdownBenchmark {
         val forwardOffsets = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
             val next = forwardOffsets[i].toLong() + forwardDeg[i].toLong()
-            require(next <= Int.MAX_VALUE) {
-                "Graph has too many edges for in-memory adjacency: $next"
-            }
+            require(next <= Int.MAX_VALUE) { "Graph has too many edges for in-memory adjacency: $next" }
             forwardOffsets[i + 1] = next.toInt()
         }
         val forwardTargets = IntArray(forwardOffsets[numNodes])
@@ -249,11 +242,7 @@ open class SavePhaseBreakdownBenchmark {
         return GraphStore.PrecomputedAdjacency(numNodes, forwardTargets, forwardOffsets)
     }
 
-    private fun buildLabelArrayForBench(
-        graph: Graph,
-        numNodes: Int,
-        comparisonMap: MutableMap<Long, BranchComparison>
-    ): ByteArray {
+    private fun buildLabelArrayForBench(graph: Graph, numNodes: Int, comparisonMap: MutableMap<Long, BranchComparison>): ByteArray {
         var totalArcs = 0L
         for (node in 0 until numNodes) {
             val targets = mutableSetOf<Int>()

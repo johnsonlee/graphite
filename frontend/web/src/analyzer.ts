@@ -4,17 +4,9 @@ import fs from 'node:fs';
 import { distribution } from './distribution.js';
 import { encodeArtifactString } from './strings.js';
 
-export interface Method {
-  declaringClass: string;
-  name: string;
-  parameterTypes: readonly string[];
-  returnType: string;
-}
-export interface GraphNode {
-  id: number;
-  kind: string;
-  [key: string]: unknown;
-}
+import type { ConstantArguments, GraphNode, Method, NodeArguments } from './graph-node.js';
+export type { GraphNode, Method } from './graph-node.js';
+
 // Higher ranks retain the more specific operation when v3 cannot represent both.
 const edgePriority = { ASSIGN: 0, ARRAY_LOAD: 1, FIELD_LOAD: 2, FIELD_STORE: 3, RETURN_VALUE: 4, PARAMETER_PASS: 5, CALL: 6 } as const;
 type EdgeKind = keyof typeof edgePriority;
@@ -273,17 +265,28 @@ class Analyzer {
     }
     return method;
   }
-  private node(kind: string, fields: Record<string, string | number | boolean | undefined | Method | number[]>): number {
+  private node(...[kind, fields]: NodeArguments): number {
     const id = this.graph.nodes.length;
-    for (const [key, value] of Object.entries(fields)) {
+    // NodeArguments has already checked each kind's complete fields. This mutable view is only
+    // the encoding boundary: strings stay strings, descriptors stay descriptors, keys never change.
+    const encoded = fields as Record<string, string | number | boolean | undefined | Method | number[]>;
+    for (const [key, value] of Object.entries(encoded)) {
       if (typeof value === 'string') {
         // Synthetic local names identify individual positions or slots. Encode them
         // directly so they do not occupy the cache for recurring names and types.
         const synthetic = kind === 'LocalVariable' && key === 'name' && value.startsWith('@');
-        fields[key] = synthetic ? encodeArtifactString(value) : this.text(value);
-      } else if (typeof value === 'object' && !Array.isArray(value)) fields[key] = this.graphMethod(value);
+        encoded[key] = synthetic ? encodeArtifactString(value) : this.text(value);
+      } else if (typeof value === 'object' && !Array.isArray(value)) encoded[key] = this.graphMethod(value);
     }
-    this.graph.nodes.push({ id, kind, ...fields });
+    // Spreading correlated union fields loses their relationship to kind in TypeScript.
+    this.graph.nodes.push({ id, kind, ...fields } as GraphNode);
+    return id;
+  }
+  private parameterBinding(formal: Extract<GraphNode, { kind: 'Parameter' }>, name: string): number {
+    const id = this.graph.nodes.length;
+    // The formal's type and descriptor are already encoded; preserve their identity and avoid double escaping.
+    this.graph.nodes.push({ id, kind: 'LocalVariable', name: encodeArtifactString(name),
+      varType: formal.paramType, method: formal.method });
     return id;
   }
   private edge(from: number, to: number, kind: EdgeKind, extra: Pick<GraphEdge, 'isVirtual' | 'isDynamic'> = {}): void {
@@ -314,6 +317,8 @@ class Analyzer {
       this.graph.classOrigins.push({ className: encoded.declaringClass, origin: this.text(origin) });
     }
   }
+  private name(n: ts.Node & { name: ts.DeclarationName }): string;
+  private name(n: ts.Node & { name?: ts.DeclarationName }): string | undefined;
   private name(n: ts.Node & { name?: ts.DeclarationName }): string | undefined {
     return n.name?.getText().replace(/^['"]|['"]$/g, '');
   }
@@ -421,7 +426,8 @@ class Analyzer {
       this.registerMethod(method, n);
       n.parameters.forEach((parameter, index) => {
         if (parameter.dotDotDotToken) context.restIndex = index;
-        const id = this.node('Parameter', { index, paramType: method.parameterTypes[index], method });
+        // descriptor() derives one parameter type from each parameter in this same declaration.
+        const id = this.node('Parameter', { index, paramType: method.parameterTypes[index]!, method });
         context.parameters.push(id);
         this.bind(parameter.name, id, context);
       });
@@ -458,9 +464,7 @@ class Analyzer {
       const formal = previous === undefined ? undefined : this.graph.nodes[previous];
       if (formal?.kind === 'Parameter' && ts.isIdentifier(target)) {
         // A formal denotes the incoming argument; a reassignment writes its binding.
-        const binding = this.node('LocalVariable', { name: `@binding:${target.text}` });
-        // These fields already crossed the encoding boundary on the formal node.
-        Object.assign(this.graph.nodes[binding]!, { varType: formal.paramType, method: formal.method });
+        const binding = this.parameterBinding(formal, `@binding:${target.text}`);
         this.edge(formal.id, binding, 'ASSIGN');
         this.symbols.set(symbol, binding);
       }
@@ -488,10 +492,20 @@ class Analyzer {
     if (symbol) this.symbols.set(symbol, id);
     return id;
   }
-  private constant(kind: string, value?: string | number | boolean): number {
+  private constant(...args: ConstantArguments): number {
+    const [kind, value] = args;
     const key = JSON.stringify([kind, Object.is(value, -0) ? '-0' : value]);
     let id = this.constants.get(key);
-    if (id === undefined) { id = this.node(kind, value === undefined ? {} : { value }); this.constants.set(key, id); }
+    if (id === undefined) {
+      switch (kind) {
+        case 'NullConstant': id = this.node(kind, {}); break;
+        case 'StringConstant': id = this.node(kind, { value }); break;
+        case 'BooleanConstant': id = this.node(kind, { value }); break;
+        case 'IntConstant': id = this.node(kind, { value }); break;
+        case 'DoubleConstant': id = this.node(kind, { value }); break;
+      }
+      this.constants.set(key, id);
+    }
     return id;
   }
   private receiverOwner(n: ts.Expression): ReceiverOwner | undefined {

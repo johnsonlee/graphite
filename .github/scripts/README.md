@@ -2,8 +2,13 @@
 
 English · [简体中文](README.zh.md)
 
-CI helpers are TypeScript, executed directly with Bun. The runtime version is pinned
-in the `packageManager` field of `package.json`; `bun.lock` pins the development
+CI helpers are primarily TypeScript, executed directly with Bun. The coverage gate
+uses Python's standard-library XML parser (`check-coverage.py`) to validate all seven
+JVM modules' Kover reports and enforce the exact 98% line threshold; console logs
+and a native Kover verification task without configured rules are not coverage evidence.
+Missing, malformed, duplicate, unknown or zero-total module reports fail the gate.
+The Bun runtime version is pinned in the `packageManager` field of `package.json`;
+`bun.lock` pins the development
 dependencies. Scripts use built-in modules and the existing `gh`, Java and
 binary-inspection tools, with no runtime npm dependencies.
 
@@ -23,6 +28,7 @@ Run the same validation as CI from this directory:
 bun install --frozen-lockfile
 bun run check
 bun test
+python3 -m unittest discover -s . -p test_check_coverage.py -v
 ```
 
 Type checking is separate from runtime execution. Tests use temporary fixtures and

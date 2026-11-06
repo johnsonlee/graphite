@@ -34,7 +34,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Generic List results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getUsers method")
@@ -63,7 +64,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Generic Map results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getOrderMap method")
@@ -91,7 +93,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Optional results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find findUserById method")
@@ -121,7 +124,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("2-level nested results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getUser method")
@@ -150,7 +154,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("3-level nested results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getUserWrapped method")
@@ -179,7 +184,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("4-level nested results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getDeepUser method")
@@ -208,7 +214,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Cross-class call results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getRepoUser method")
@@ -236,7 +243,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Multi-level cross-class results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find getRepoUserWrapped method")
@@ -266,7 +274,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Lombok @Data results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find createUserData method")
@@ -294,7 +303,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Lombok @Builder results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find createUserWithBuilder method")
@@ -322,7 +332,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Lombok @Builder nested results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find createNestedBuilderUser method")
@@ -350,7 +361,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Lombok @Value with of() results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find createImmutableUser method")
@@ -378,7 +390,8 @@ class AdvancedReturnTypeAnalysisTest {
 
         println("Lombok @With results:")
         results.forEach { result ->
-            println("  ${result.method.name}(): declared=${result.declaredType.className}, actual=${result.actualTypes.map { it.className }}")
+            println("  ${result.method.name}(): declared=${result.declaredType.className}, " +
+                "actual=${result.actualTypes.map { it.className }}")
         }
 
         assertTrue(results.isNotEmpty(), "Should find updateUserName method")

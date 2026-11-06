@@ -12,25 +12,21 @@ import java.util.concurrent.atomic.AtomicLongArray
 import java.util.logging.Logger
 
 /**
- * The `graph.callsite-ordinals` sidecar: `CallSiteNode.ordinal` per call site and
- * `CallSiteNode.origin` per derived call site, by node id.
+ * The `graph.callsite-ordinals` sidecar: `CallSiteNode.ordinal` per call site and `CallSiteNode.origin` per derived call site, by node id.
  *
- * [entries] holds the file's `(nodeId, ordinal)` pairs, ascending by id, then its
- * `(nodeId, origin)` pairs, one per derived call site resolved from another, ascending by id;
- * [heads] the id heading each block of [BLOCK] ordinal pairs and [blockDigests] the SHA-256 of
- * each [BLOCK_BYTES]-byte block of the entries, both from the index the binding in
- * `graph.metadata` covers. A persisted graph maps the file rather than reading it: a fresh
- * mapping of a graph with a million call sites paid about a tenth of a second to read the eight
- * megabytes through a stream, once per query in a cold benchmark, and the mapping pays nothing
- * until a call site is decoded. Nor does it hash the entries up front: that cost the cold rows
- * of the slow-query-shapes gate 15–20% per query on a 14-megabyte sidecar. The index is hashed
- * when the sidecar is opened and a block of entries on its first touch, against the digest the
- * index holds for it, so a lookup proves exactly the bytes it reads. A lookup is on the decode
- * path of every call site, so it first finds its block in [heads], which stays in cache, then
- * searches that block; an origin is looked up only for a derived call site, apart from the
- * ordinals so that the common decode pays for nothing it does not read.
+ * [entries] holds the file's `(nodeId, ordinal)` pairs, ascending by id, then its `(nodeId, origin)` pairs, one per derived call site
+ * resolved from another, ascending by id; [heads] the id heading each block of [BLOCK] ordinal pairs and [blockDigests] the SHA-256 of each
+ * [BLOCK_BYTES]-byte block of the entries, both from the index the binding in `graph.metadata` covers. A persisted graph maps the file
+ * rather than reading it: a fresh mapping of a graph with a million call sites paid about a tenth of a second to read the eight megabytes
+ * through a stream, once per query in a cold benchmark, and the mapping pays nothing until a call site is decoded. Nor does it hash the
+ * entries up front: that cost the cold rows of the slow-query-shapes gate 15–20% per query on a 14-megabyte sidecar. The index is hashed
+ * when the sidecar is opened and a block of entries on its first touch, against the digest the index holds for it, so a lookup proves
+ * exactly the bytes it reads. A lookup is on the decode path of every call site, so it first finds its block in [heads], which stays in
+ * cache, then searches that block; an origin is looked up only for a derived call site, apart from the ordinals so that the common decode
+ * pays for nothing it does not read.
  */
-class CallSiteOrdinals internal constructor(
+class CallSiteOrdinals
+internal constructor(
     private val entries: ByteBuffer,
     val size: Int,
     private val originCount: Int,
@@ -103,16 +99,15 @@ class CallSiteOrdinals internal constructor(
     }
 
     /**
-     * Check [block] of the entries against the digest the index holds for it, once: the index
-     * is what `graph.metadata` binds, so a block that does not hash to its entry has changed
-     * since the sidecar was bound and is corrupt, not another graph's.
+     * Check [block] of the entries against the digest the index holds for it, once: the index is what `graph.metadata` binds, so a block
+     * that does not hash to its entry has changed since the sidecar was bound and is corrupt, not another graph's.
      */
     private fun verify(block: Int) {
         val word = block / Long.SIZE_BITS
         val bit = 1L shl (block % Long.SIZE_BITS)
         if (verified.get(word) and bit != 0L) return
         val from = block * BLOCK_BYTES
-        val digest = NodeSerializer.digestOf(entries.duplicate().position(from).limit(minOf(from + BLOCK_BYTES, entries.limit())))
+        val digest = CallSiteOrdinalCodec.digestOf(entries.duplicate().position(from).limit(minOf(from + BLOCK_BYTES, entries.limit())))
         val expected = ByteArray(DIGEST_BYTES).also { blockDigests.duplicate().position(block * DIGEST_BYTES).get(it) }
         check(digest.contentEquals(expected)) {
             "graph.callsite-ordinals block $block does not hash to the digest its index holds: " +
@@ -132,21 +127,19 @@ class CallSiteOrdinals internal constructor(
         private const val DIGEST_BYTES = NodeSerializer.DIGEST_BYTES
 
         /**
-         * The sidecar in [file], mapped read-only, or [EMPTY] when there is none or [binding] is
-         * `null`: a graph written before the sidecar existed has no ordinals and no binding. A
-         * sidecar that is not one (wrong header, cut short, longer than its counts), or whose
-         * index does not hash to the digest `graph.metadata` ends with (left behind by a writer
-         * that did not know it, so it describes another graph), is reported once and treated the
-         * same, since the graph is complete without it. Every mapping hashes the index, and every
-         * block of entries on its first touch: a path, a size and a modification time are not a
-         * content identity, and nothing short of the hash is.
+         * The sidecar in [file], mapped read-only, or [EMPTY] when there is none or [binding] is `null`: a graph written before the sidecar
+         * existed has no ordinals and no binding. A sidecar that is not one (wrong header, cut short, longer than its counts), or whose
+         * index does not hash to the digest `graph.metadata` ends with (left behind by a writer that did not know it, so it describes
+         * another graph), is reported once and treated the same, since the graph is complete without it. Every mapping hashes the index,
+         * and every block of entries on its first touch: a path, a size and a modification time are not a content identity, and nothing
+         * short of the hash is.
          */
         fun load(file: Path, binding: ByteArray?): CallSiteOrdinals {
             if (binding == null || !Files.isRegularFile(file)) return EMPTY
             return try {
                 FileChannel.open(file, StandardOpenOption.READ).use { channel ->
                     val mapped = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
-                    NodeSerializer.callSiteOrdinalsOf(mapped, binding)
+                    CallSiteOrdinalCodec.callSiteOrdinalsOf(mapped, binding)
                 } ?: EMPTY.also { logger.warning("Ignoring $file: not the call-site ordinal sidecar graph.metadata binds") }
             } catch (e: IOException) {
                 logger.warning("Ignoring $file: ${e.message}")
@@ -155,31 +148,29 @@ class CallSiteOrdinals internal constructor(
         }
 
         /**
-         * The sidecar whose header passed, in [bytes]: the counts at [PREAMBLE_BYTES], the block
-         * heads, the block digests, then the entries, which must end the file; `null` when the
-         * counts and the length disagree or the index (counts, heads and block digests) does not
-         * hash to [binding].
+         * The sidecar whose header passed, in [bytes]: the counts at [PREAMBLE_BYTES], the block heads, the block digests, then the
+         * entries, which must end the file; `null` when the counts and the length disagree or the index (counts, heads and block digests)
+         * does not hash to [binding].
          */
         @Suppress("ReturnCount")
         internal fun entries(bytes: ByteBuffer, binding: ByteArray): CallSiteOrdinals? {
             val count = bytes.getInt(PREAMBLE_BYTES)
             val originCount = bytes.getInt(PREAMBLE_BYTES + Int.SIZE_BYTES)
             if (count < 0 || originCount < 0) return null
-            val heads = NodeSerializer.callSiteOrdinalBlocks(count.toLong(), BLOCK)
+            val heads = CallSiteOrdinalCodec.callSiteOrdinalBlocks(count.toLong(), BLOCK)
             val entryBytes = (count.toLong() + originCount) * ENTRY_BYTES
-            val blocks = NodeSerializer.callSiteOrdinalBlocks(entryBytes, BLOCK_BYTES)
+            val blocks = CallSiteOrdinalCodec.callSiteOrdinalBlocks(entryBytes, BLOCK_BYTES)
             val digestsAt = HEADER_BYTES + heads.toLong() * Int.SIZE_BYTES
             val entriesAt = digestsAt + blocks.toLong() * DIGEST_BYTES
             if (entriesAt + entryBytes != bytes.limit().toLong()) return null
             val index = bytes.duplicate().position(PREAMBLE_BYTES).limit(entriesAt.toInt())
-            if (!NodeSerializer.digestOf(index).contentEquals(binding)) return null
+            if (!CallSiteOrdinalCodec.digestOf(index).contentEquals(binding)) return null
             return CallSiteOrdinals(
                 bytes.duplicate().position(entriesAt.toInt()).slice(),
                 count,
                 originCount,
                 bytes.duplicate().position(HEADER_BYTES).limit(digestsAt.toInt()).slice().asIntBuffer(),
-                bytes.duplicate().position(digestsAt.toInt()).limit(entriesAt.toInt()).slice()
-            )
+                bytes.duplicate().position(digestsAt.toInt()).limit(entriesAt.toInt()).slice())
         }
     }
 }

@@ -3,11 +3,11 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.ComparisonOp
-import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
@@ -25,17 +25,15 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-/**
- * Persistence of branch-side constant definitions through the optional `graph.branchdefs` sidecar.
- */
+/** Persistence of branch-side constant definitions through the optional `graph.branchdefs` sidecar. */
 class BranchDefinitionPersistenceTest {
 
     private val method = MethodDescriptor(TypeDescriptor("com.example.Foo"), "check", emptyList(), TypeDescriptor("int"))
@@ -51,10 +49,9 @@ class BranchDefinitionPersistenceTest {
     )
 
     /**
-     * `x = 1` in straight-line code, then a branch on `on` whose true side assigns `x = 1` twice and whose
-     * false side assigns `x = 0`; a second scope on `p` carries no definitions. Node ids are fixed so two
-     * fixtures share them. With [swapSides] the `x = 1` writes sit on the false side and `x = 0` on the true
-     * side, which leaves every persisted graph file byte-identical.
+     * `x = 1` in straight-line code, then a branch on `on` whose true side assigns `x = 1` twice and whose false side assigns `x = 0`; a
+     * second scope on `p` carries no definitions. Node ids are fixed so two fixtures share them. With [swapSides] the `x = 1` writes sit on
+     * the false side and `x = 0` on the true side, which leaves every persisted graph file byte-identical.
      */
     private fun buildGraph(constantEdges: Boolean = true, swapSides: Boolean = false): Fixture {
         val builder = DefaultGraph.Builder()
@@ -83,10 +80,13 @@ class BranchDefinitionPersistenceTest {
             builder.addEdge(DataFlowEdge(other.id, local.id, DataFlowKind.ASSIGN))
         }
         builder.addBranchScope(
-            cond.id, method, comparison, intArrayOf(local.id.value), intArrayOf(local.id.value, other.id.value),
+            cond.id,
+            method,
+            comparison,
+            intArrayOf(local.id.value),
+            intArrayOf(local.id.value, other.id.value),
             trueDefinitions = BranchScope.packDefinitions(trueDefinitions),
-            falseDefinitions = BranchScope.packDefinitions(falseDefinitions)
-        )
+            falseDefinitions = BranchScope.packDefinitions(falseDefinitions))
         builder.addBranchScope(otherCond.id, method, comparison, intArrayOf(zero.id.value), intArrayOf())
         builder.addLocalDefinitions(local.id, BranchScope.packDefinitions(all))
         return Fixture(builder.build(), cond.id, otherCond.id, local.id, trueDefinitions, falseDefinitions, all)
@@ -142,8 +142,7 @@ class BranchDefinitionPersistenceTest {
         assertEquals(
             original.map { it.copy(trueDefinitions = emptyList(), falseDefinitions = emptyList()) },
             scopes,
-            "every other field is unchanged"
-        )
+            "every other field is unchanged")
         assertNotEquals(original, scopes, "a graph read without its definitions is not equal to the built one")
         assertEquals(emptyMap(), loaded.localDefinitions())
         assertEquals(emptyList(), loaded.localDefinitionsFor(fixture.localId))
@@ -161,11 +160,8 @@ class BranchDefinitionPersistenceTest {
         Files.write(sidecar(dir), bytes)
     }
 
-    /**
-     * Replace the payload and re-sign it in both the sidecar preamble and the metadata trailer, so only
-     * the payload's meaning changes.
-     */
-    private val noNodes = NodeSerializer.NodeTagLookup { NodeSerializer.NO_NODE }
+    /** Replace the payload and re-sign it in both the sidecar preamble and the metadata trailer, so only the payload's meaning changes. */
+    private val noNodes = BranchDefinitionCodec.NodeTagLookup { NodeSerializer.NO_NODE }
 
     private fun rewritePayload(dir: Path, edit: (ByteBuffer) -> Unit) =
         replacePayload(dir) { payload -> payload.also { edit(ByteBuffer.wrap(it)) } }
@@ -212,13 +208,19 @@ class BranchDefinitionPersistenceTest {
 
     @Test
     fun `persisted graphs collapse repeated edges but keep every definition`() = withSavedGraph { fixture, dir ->
-        val sourceEdges = fixture.graph.incoming<DataFlowEdge>(fixture.localId)
-            .filter { it.kind == DataFlowKind.ASSIGN && fixture.graph.node(it.from) is ConstantNode }.toList()
+        val sourceEdges =
+            fixture.graph
+                .incoming<DataFlowEdge>(fixture.localId)
+                .filter { it.kind == DataFlowKind.ASSIGN && fixture.graph.node(it.from) is ConstantNode }
+                .toList()
         assertEquals(4, sourceEdges.size, "the source graph keeps one ASSIGN edge per constant definition")
 
         val (loaded, _) = loadScopes(dir)
-        val loadedEdges = loaded.incoming<DataFlowEdge>(fixture.localId)
-            .filter { it.kind == DataFlowKind.ASSIGN && loaded.node(it.from) is ConstantNode }.toList()
+        val loadedEdges =
+            loaded
+                .incoming<DataFlowEdge>(fixture.localId)
+                .filter { it.kind == DataFlowKind.ASSIGN && loaded.node(it.from) is ConstantNode }
+                .toList()
         assertEquals(2, loadedEdges.size, "one arc per (constant, local) pair survives persistence")
 
         // The consumer subtracts the killed side from the local's full definition list, never from its edges.
@@ -262,7 +264,7 @@ class BranchDefinitionPersistenceTest {
         val bytes = Files.readAllBytes(metadata(dir))
         val trailerBytes = NodeSerializer.METADATA_TRAILER_BYTES
         val input = java.io.DataInputStream(bytes.inputStream(bytes.size - trailerBytes, trailerBytes))
-        return NodeSerializer.readMetadataTrailer(input)
+        return BranchDefinitionCodec.readMetadataTrailer(input)
     }
 
     @Test
@@ -405,7 +407,7 @@ class BranchDefinitionPersistenceTest {
     @Test
     fun `a flipped payload bit loads empty definitions`() = withSavedGraph { fixture, dir ->
         val bytes = Files.readAllBytes(sidecar(dir))
-        val constantIdOffset = preamble + 4 * Int.SIZE_BYTES  // first triple's constantNodeId
+        val constantIdOffset = preamble + 4 * Int.SIZE_BYTES // first triple's constantNodeId
         bytes[constantIdOffset + 3] = (bytes[constantIdOffset + 3].toInt() xor 1).toByte()
         Files.write(sidecar(dir), bytes)
         val (loaded, stderr) = loadScopes(dir)
@@ -447,15 +449,15 @@ class BranchDefinitionPersistenceTest {
         preambleBytes.putInt(NodeSerializer.MAGIC_BRANCHDEFS or NodeSerializer.BRANCH_DEFINITIONS_VERSION)
         preambleBytes.putInt(1 shl 20)
         preambleBytes.put(ByteArray(NodeSerializer.DIGEST_BYTES))
-        val rejected = NodeSerializer.decodeBranchDefinitionPreamble(
-            preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES), maxPayloadBytes = 1 shl 16
-        )
+        val rejected =
+            BranchDefinitionCodec.decodeBranchDefinitionPreamble(
+                preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES), maxPayloadBytes = 1 shl 16)
         assertNull(rejected.payloadDigest)
         assertTrue(rejected.rejection!!.contains("exceeds the 65536-byte budget"), rejected.rejection)
 
-        val accepted = NodeSerializer.decodeBranchDefinitionPreamble(
-            preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES)
-        )
+        val accepted =
+            BranchDefinitionCodec.decodeBranchDefinitionPreamble(
+                preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES))
         assertNotNull(accepted.payloadDigest)
     }
 
@@ -491,10 +493,11 @@ class BranchDefinitionPersistenceTest {
 
     @Test
     fun `a bad local table loads empty definitions`() = withSavedGraph { fixture, dir ->
-        val scopesEnd = Int.SIZE_BYTES + // scopeCount
-            (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
-            (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
-            2 * Int.SIZE_BYTES // second scope: two zero counts
+        val scopesEnd =
+            Int.SIZE_BYTES + // scopeCount
+                (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
+                (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
+                2 * Int.SIZE_BYTES // second scope: two zero counts
         rewritePayload(dir) { it.putInt(scopesEnd, 1_000_000) }
         val (tooMany, stderr) = loadScopes(dir)
         assertTrue(stderr.contains("is corrupt (invalid local count 1000000)"), stderr)
@@ -510,17 +513,16 @@ class BranchDefinitionPersistenceTest {
         // The table now holds two zero-length entries for the same local in place of the four definitions.
         val (_, duplicateStderr) = loadScopes(dir)
         assertTrue(
-            duplicateStderr.contains("is corrupt (invalid local count") || duplicateStderr.contains("duplicate local"),
-            duplicateStderr
-        )
+            duplicateStderr.contains("is corrupt (invalid local count") || duplicateStderr.contains("duplicate local"), duplicateStderr)
     }
 
     @Test
     fun `a local table larger than the graph or with a negative local loads empty definitions`() = withSavedGraph { fixture, dir ->
-        val scopesEnd = Int.SIZE_BYTES + // scopeCount
-            (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
-            (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
-            2 * Int.SIZE_BYTES // second scope: two zero counts
+        val scopesEnd =
+            Int.SIZE_BYTES + // scopeCount
+                (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
+                (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
+                2 * Int.SIZE_BYTES // second scope: two zero counts
         // The fixture graph has six nodes; declare seven zero-length tables, which the payload could hold.
         rewritePayload(dir) { it.putInt(scopesEnd, 7) }
         val (tooMany, stderr) = loadScopes(dir)
@@ -535,7 +537,7 @@ class BranchDefinitionPersistenceTest {
         assertTrue(negativeStderr.contains("is corrupt (invalid local -5)"), negativeStderr)
         assertLoadedWithoutDefinitions(fixture, negative)
 
-        rewritePayload(dir) { it.putInt(2 * Int.SIZE_BYTES, -3) }  // first triple's stmtOrdinal
+        rewritePayload(dir) { it.putInt(2 * Int.SIZE_BYTES, -3) } // first triple's stmtOrdinal
         val (badTriple, tripleStderr) = loadScopes(dir)
         assertTrue(tripleStderr.contains("is corrupt (invalid definition [-3,"), tripleStderr)
         assertLoadedWithoutDefinitions(fixture, badTriple)
@@ -544,12 +546,13 @@ class BranchDefinitionPersistenceTest {
     @Test
     fun `ids that are not the expected node kind load empty definitions`() = withSavedGraph { fixture, dir ->
         // The fixture's node ids are 1..6 (locals 1, 2, 3, 6; constants 4, 5): 0 and 7 are not nodes.
-        val scopesEnd = Int.SIZE_BYTES +
-            (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
-            (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
-            2 * Int.SIZE_BYTES
-        val firstTriple = 2 * Int.SIZE_BYTES  // after scopeCount and the first scope's true count
-        val firstTableTriple = scopesEnd + 3 * Int.SIZE_BYTES  // after localCount, localId and the table's count
+        val scopesEnd =
+            Int.SIZE_BYTES +
+                (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
+                (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
+                2 * Int.SIZE_BYTES
+        val firstTriple = 2 * Int.SIZE_BYTES // after scopeCount and the first scope's true count
+        val firstTableTriple = scopesEnd + 3 * Int.SIZE_BYTES // after localCount, localId and the table's count
         val stride = 3 * Int.SIZE_BYTES
 
         fun rejects(reason: String, edit: (ByteBuffer) -> Unit) {
@@ -561,26 +564,26 @@ class BranchDefinitionPersistenceTest {
 
         // Each rewrite edits the file the previous one left, so every step also restores the field before it.
         val constantOfFirstTriple = firstTriple + 2 * Int.SIZE_BYTES
-        rejects("is corrupt (invalid definition [3, 3, 0] in a branch side)") { it.putInt(constantOfFirstTriple, 0) }  // no node 0
-        rejects("is corrupt (invalid definition [3, 3, 7] in a branch side)") { it.putInt(constantOfFirstTriple, 7) }  // no node 7
-        rejects("is corrupt (invalid definition [3, 3, 6] in a branch side)") { it.putInt(constantOfFirstTriple, 6) }  // a local
+        rejects("is corrupt (invalid definition [3, 3, 0] in a branch side)") { it.putInt(constantOfFirstTriple, 0) } // no node 0
+        rejects("is corrupt (invalid definition [3, 3, 7] in a branch side)") { it.putInt(constantOfFirstTriple, 7) } // no node 7
+        rejects("is corrupt (invalid definition [3, 3, 6] in a branch side)") { it.putInt(constantOfFirstTriple, 6) } // a local
         rejects("is corrupt (invalid definition [3, 3, -2] in a branch side)") { it.putInt(firstTriple + 2 * Int.SIZE_BYTES, -2) }
         rejects("is corrupt (side definition [3, 7, 4] has no table)") {
             it.putInt(firstTriple + 2 * Int.SIZE_BYTES, 4)
-            it.putInt(firstTriple + Int.SIZE_BYTES, 7)  // side local that is not a node
+            it.putInt(firstTriple + Int.SIZE_BYTES, 7) // side local that is not a node
         }
         rejects("is corrupt (invalid local 7)") {
             it.putInt(firstTriple + Int.SIZE_BYTES, 3)
-            it.putInt(scopesEnd + Int.SIZE_BYTES, 7)  // table key that is not a node
+            it.putInt(scopesEnd + Int.SIZE_BYTES, 7) // table key that is not a node
         }
         rejects("is corrupt (invalid local 4)") {
-            it.putInt(scopesEnd + Int.SIZE_BYTES, 4)  // table key that is a constant node
+            it.putInt(scopesEnd + Int.SIZE_BYTES, 4) // table key that is a constant node
             repeat(fixture.allDefinitions.size) { index -> it.putInt(firstTableTriple + index * stride + Int.SIZE_BYTES, 4) }
         }
         rejects("is corrupt (invalid definition [1, 6, 4] in the table of local 3)") {
             it.putInt(scopesEnd + Int.SIZE_BYTES, 3)
             repeat(fixture.allDefinitions.size) { index -> it.putInt(firstTableTriple + index * stride + Int.SIZE_BYTES, 3) }
-            it.putInt(firstTableTriple + Int.SIZE_BYTES, 6)  // one entry names another local
+            it.putInt(firstTableTriple + Int.SIZE_BYTES, 6) // one entry names another local
         }
 
         rewritePayload(dir) { it.putInt(firstTableTriple + Int.SIZE_BYTES, 3) }
@@ -591,10 +594,11 @@ class BranchDefinitionPersistenceTest {
 
     @Test
     fun `a table that disagrees with the side definitions loads empty definitions`() = withSavedGraph { fixture, dir ->
-        val scopesEnd = Int.SIZE_BYTES +
-            (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
-            (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
-            2 * Int.SIZE_BYTES
+        val scopesEnd =
+            Int.SIZE_BYTES +
+                (Int.SIZE_BYTES + fixture.trueDefinitions.size * 3 * Int.SIZE_BYTES) +
+                (Int.SIZE_BYTES + fixture.falseDefinitions.size * 3 * Int.SIZE_BYTES) +
+                2 * Int.SIZE_BYTES
         val firstTriple = 2 * Int.SIZE_BYTES
         val firstTableTriple = scopesEnd + 3 * Int.SIZE_BYTES
         val stride = 3 * Int.SIZE_BYTES
@@ -619,15 +623,15 @@ class BranchDefinitionPersistenceTest {
         rejects("is corrupt (side definition [3, 3, 5] is not in the table of local 3)") {
             it.putInt(scopesEnd + Int.SIZE_BYTES, 3)
             repeat(fixture.allDefinitions.size) { index -> it.putInt(firstTableTriple + index * stride + Int.SIZE_BYTES, 3) }
-            it.putInt(firstTriple + 2 * Int.SIZE_BYTES, 5)  // the side says x = 0 where the table says x = 1
+            it.putInt(firstTriple + 2 * Int.SIZE_BYTES, 5) // the side says x = 0 where the table says x = 1
         }
         rejects("is corrupt (side definition [4, 3, 4] is not in the table of local 3)") {
             it.putInt(firstTriple + 2 * Int.SIZE_BYTES, 4)
-            it.putInt(firstTriple, 4)  // an ordinal the table has no entry for
+            it.putInt(firstTriple, 4) // an ordinal the table has no entry for
         }
         rejects("is corrupt (unordered definitions in the table of local 3)") {
             it.putInt(firstTriple, 3)
-            it.putInt(firstTableTriple, 3)  // entries 0 and 1 (ordinals 1 and 3) swap ordinals
+            it.putInt(firstTableTriple, 3) // entries 0 and 1 (ordinals 1 and 3) swap ordinals
             it.putInt(firstTableTriple + stride, 1)
         }
         rewritePayload(dir) {
@@ -647,7 +651,7 @@ class BranchDefinitionPersistenceTest {
         rejects("is corrupt (unordered definitions in a branch side)") {
             it.putInt(firstFalseTriple, 8)
             it.putInt(firstFalseTriple + 2 * Int.SIZE_BYTES, 5)
-            it.putInt(firstTriple, 5)  // true side: ordinals 5, 5
+            it.putInt(firstTriple, 5) // true side: ordinals 5, 5
         }
         rewritePayload(dir) { it.putInt(firstTriple, 3) }
 
@@ -670,7 +674,7 @@ class BranchDefinitionPersistenceTest {
             assertSame(PersistedBranchDefinitions.EMPTY, empty)
             assertEquals("", stderr)
 
-            Files.createDirectories(sidecar(dir))  // a directory where the file should be
+            Files.createDirectories(sidecar(dir)) // a directory where the file should be
             val scope = BranchScopeData(0, method, BranchComparison(ComparisonOp.EQ, NodeId(1)), intArrayOf(), intArrayOf())
             val one = none.copy(branchScopes = listOf(scope), branchDefinitionDigest = ByteArray(NodeSerializer.DIGEST_BYTES))
             val (rejected, dirStderr) = capturingStderr { GraphStore.loadBranchDefinitions(dir, one, 1, noNodes) }
@@ -685,7 +689,7 @@ class BranchDefinitionPersistenceTest {
     fun `decodeBranchDefinitionPreamble rejects a bad header before touching the payload`() {
         val bytes = ByteArray(preamble)
         ByteBuffer.wrap(bytes).putInt(NodeSerializer.MAGIC_COMPARISONS or NodeSerializer.BRANCH_DEFINITIONS_VERSION)
-        val decoded = NodeSerializer.decodeBranchDefinitionPreamble(bytes, 0, ByteArray(NodeSerializer.DIGEST_BYTES))
+        val decoded = BranchDefinitionCodec.decodeBranchDefinitionPreamble(bytes, 0, ByteArray(NodeSerializer.DIGEST_BYTES))
         assertNull(decoded.payloadDigest)
         assertNotNull(decoded.rejection)
     }
@@ -693,15 +697,18 @@ class BranchDefinitionPersistenceTest {
     @Test
     fun `writeMetadataTrailer rejects a digest of the wrong length`() {
         assertFailsWith<IllegalArgumentException> {
-            NodeSerializer.writeMetadataTrailer(DataOutputStream(ByteArrayOutputStream()), ByteArray(16))
+            BranchDefinitionCodec.writeMetadataTrailer(DataOutputStream(ByteArrayOutputStream()), ByteArray(16))
         }
     }
 
     @Test
     fun `readMetadataTrailer ignores a trailer with another magic`() {
         val out = ByteArrayOutputStream()
-        DataOutputStream(out).use { it.writeInt(NodeSerializer.MAGIC_COMPARISONS); it.write(ByteArray(NodeSerializer.DIGEST_BYTES)) }
-        assertNull(NodeSerializer.readMetadataTrailer(java.io.DataInputStream(out.toByteArray().inputStream())))
+        DataOutputStream(out).use {
+            it.writeInt(NodeSerializer.MAGIC_COMPARISONS)
+            it.write(ByteArray(NodeSerializer.DIGEST_BYTES))
+        }
+        assertNull(BranchDefinitionCodec.readMetadataTrailer(java.io.DataInputStream(out.toByteArray().inputStream())))
     }
 
     @Test

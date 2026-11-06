@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.LocalVariable
@@ -10,7 +9,6 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ReturnNode
-import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.input.LoaderConfig
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import java.nio.file.Path
@@ -62,9 +60,9 @@ class MemoryBenchmarkTest {
 
             println("Attempt $attempt:")
             println("  Int-based NodeId (current): ${formatBytes(intMemory)}, " +
-                "${String.format("%.1f", intMemory.toDouble() / count)} bytes per node")
+                "${String.format(java.util.Locale.ROOT, "%.1f", intMemory.toDouble() / count)} bytes per node")
             println("  String-based NodeId (old):  ${formatBytes(stringMemory)}, " +
-                "${String.format("%.1f", stringMemory.toDouble() / count)} bytes per node")
+                "${String.format(java.util.Locale.ROOT, "%.1f", stringMemory.toDouble() / count)} bytes per node")
             check(intIds.size == count && stringIds.size == count)
             if (intMemory < stringMemory) break
         }
@@ -73,7 +71,7 @@ class MemoryBenchmarkTest {
         val savingsPercent = (savings.toDouble() / stringMemory * 100)
         println("SAVINGS:")
         println("  Total: ${formatBytes(savings)}")
-        println("  Percent: ${String.format("%.1f", savingsPercent)}%")
+        println("  Percent: ${String.format(java.util.Locale.ROOT, "%.1f", savingsPercent)}%")
         println("  Per 100K nodes: ${formatBytes(savings / 5)}")
         println()
 
@@ -113,7 +111,7 @@ class MemoryBenchmarkTest {
 
         println("Int2ObjectOpenHashMap (current):")
         println("  Total memory: ${formatBytes(fastutilMemory)}")
-        println("  Per entry: ${String.format("%.1f", fastutilMemory.toDouble() / nodeCount)} bytes")
+        println("  Per entry: ${String.format(java.util.Locale.ROOT, "%.1f", fastutilMemory.toDouble() / nodeCount)} bytes")
         println()
 
         // Keep reference and measure HashMap
@@ -133,14 +131,14 @@ class MemoryBenchmarkTest {
 
         println("HashMap<Int, Node> (old):")
         println("  Total memory: ${formatBytes(hashMapMemory)}")
-        println("  Per entry: ${String.format("%.1f", hashMapMemory.toDouble() / nodeCount)} bytes")
+        println("  Per entry: ${String.format(java.util.Locale.ROOT, "%.1f", hashMapMemory.toDouble() / nodeCount)} bytes")
         println()
 
         val savings = hashMapMemory - fastutilMemory
         val savingsPercent = if (hashMapMemory > 0) (savings.toDouble() / hashMapMemory * 100) else 0.0
         println("SAVINGS:")
         println("  Total: ${formatBytes(savings)}")
-        println("  Percent: ${String.format("%.1f", savingsPercent)}%")
+        println("  Percent: ${String.format(java.util.Locale.ROOT, "%.1f", savingsPercent)}%")
         println()
     }
 
@@ -194,7 +192,7 @@ class MemoryBenchmarkTest {
         println()
         println("Memory Usage:")
         println("  Total graph memory: ${formatBytes(graphMemory)}")
-        println("  Memory per node: ${String.format("%.1f", graphMemory.toDouble() / totalNodes)} bytes")
+        println("  Memory per node: ${String.format(java.util.Locale.ROOT, "%.1f", graphMemory.toDouble() / totalNodes)} bytes")
         println()
 
         // Estimate savings
@@ -205,7 +203,8 @@ class MemoryBenchmarkTest {
         println("Estimated Savings (NodeId only):")
         println("  Old String NodeIds would use: ${formatBytes(oldNodeIdOverhead)}")
         println("  New Int NodeIds use: ${formatBytes(newNodeIdOverhead)}")
-        println("  Savings: ${formatBytes(nodeIdSavings)} (${String.format("%.0f", nodeIdSavings * 100.0 / oldNodeIdOverhead)}%)")
+        println("  Savings: ${formatBytes(nodeIdSavings)} " +
+            "(${String.format(java.util.Locale.ROOT, "%.0f", nodeIdSavings * 100.0 / oldNodeIdOverhead)}%)")
     }
 
     /**
@@ -258,7 +257,7 @@ class MemoryBenchmarkTest {
 
         val savings = oldTotal - newTotal
         println("TOTAL SAVINGS:")
-        println("  ${formatBytes(savings)} (${String.format("%.1f", savings * 100.0 / oldTotal)}%)")
+        println("  ${formatBytes(savings)} (${String.format(java.util.Locale.ROOT, "%.1f", savings * 100.0 / oldTotal)}%)")
         println()
         println("For a 100K-method enterprise application:")
         println("  Old: ${formatBytes(oldTotal * 10)}")
@@ -310,9 +309,9 @@ class MemoryBenchmarkTest {
 
     private fun formatBytes(bytes: Long): String {
         return when {
-            bytes >= 1_000_000_000 -> String.format("%.2f GB", bytes / 1_000_000_000.0)
-            bytes >= 1_000_000 -> String.format("%.2f MB", bytes / 1_000_000.0)
-            bytes >= 1_000 -> String.format("%.2f KB", bytes / 1_000.0)
+            bytes >= 1_000_000_000 -> String.format(java.util.Locale.ROOT, "%.2f GB", bytes / 1_000_000_000.0)
+            bytes >= 1_000_000 -> String.format(java.util.Locale.ROOT, "%.2f MB", bytes / 1_000_000.0)
+            bytes >= 1_000 -> String.format(java.util.Locale.ROOT, "%.2f KB", bytes / 1_000.0)
             bytes < 0 -> "-${formatBytes(-bytes)}"
             else -> "$bytes bytes"
         }

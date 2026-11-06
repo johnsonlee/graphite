@@ -100,10 +100,9 @@ pub struct Opened {
     pub topology_relations: usize,
 }
 
-/// A runtime sized as the server's: Cypher queries run on the worker that received
-/// them (`block_in_place`) rather than on the blocking pool, so there are enough
-/// workers that the concurrency guard can be full and every core still has one free
-/// for the rest of the API.
+/// Keep the server's established async worker capacity. Bounded query and graph
+/// preparation jobs run on the blocking pool, so their CPU work does not prevent
+/// HTTP/MCP control tasks from making progress on these workers.
 pub fn runtime(max_concurrent_cypher: usize) -> Result<tokio::runtime::Runtime, String> {
     let cores = std::thread::available_parallelism()
         .map(|n| n.get())

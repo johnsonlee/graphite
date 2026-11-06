@@ -24,7 +24,6 @@ import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
-import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -116,14 +115,10 @@ object NodePropertyAccessor {
         // Try node-specific properties first (they take precedence)
         val nodeSpecific = when (node) {
             is CallSiteNode -> getCallSiteProperty(node, property)
-            is IntConstant -> getIntConstantProperty(node, property)
-            is StringConstant -> getStringConstantProperty(node, property)
-            is LongConstant -> getLongConstantProperty(node, property)
-            is FloatConstant -> getFloatConstantProperty(node, property)
-            is DoubleConstant -> getDoubleConstantProperty(node, property)
-            is BooleanConstant -> getBooleanConstantProperty(node, property)
-            is NullConstant -> null
             is EnumConstant -> getEnumConstantProperty(node, property)
+            is IntConstant, is StringConstant, is LongConstant, is FloatConstant,
+            is DoubleConstant, is BooleanConstant, is NullConstant ->
+                CypherConstantProperties.getProperty(node as ConstantNode, property)
             is LocalVariable -> getLocalVariableProperty(node, property)
             is FieldNode -> getFieldNodeProperty(node, property)
             is ParameterNode -> getParameterNodeProperty(node, property)
@@ -132,10 +127,8 @@ object NodePropertyAccessor {
             is ResourceValueNode -> getResourceValueNodeProperty(node, property)
             is AnnotationNode -> getAnnotationNodeProperty(node, property)
         }
-        if (nodeSpecific != null) return nodeSpecific
-
-        // Fall back to global properties
-        return when (property) {
+        // Fall back to global properties only after node-specific values have been tried.
+        return nodeSpecific ?: when (property) {
             PROPERTY_TYPE -> nodeTypeName(node)
             else -> null
         }
@@ -171,36 +164,6 @@ object NodePropertyAccessor {
         "caller_descriptor" -> node.caller.descriptor
         "line" -> node.lineNumber
         "ordinal" -> node.ordinal
-        else -> null
-    }
-
-    private fun getIntConstantProperty(node: IntConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
-
-    private fun getStringConstantProperty(node: StringConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
-
-    private fun getLongConstantProperty(node: LongConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
-
-    private fun getFloatConstantProperty(node: FloatConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
-
-    private fun getDoubleConstantProperty(node: DoubleConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
-
-    private fun getBooleanConstantProperty(node: BooleanConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
         else -> null
     }
 
@@ -287,19 +250,15 @@ object NodePropertyAccessor {
             "line" to node.lineNumber,
             "ordinal" to node.ordinal
         )
-        is IntConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is StringConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is LongConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is FloatConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is DoubleConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is BooleanConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is NullConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to null)
         is EnumConstant -> mapOf(
             PROPERTY_ID to node.id.value,
             PROPERTY_VALUE to node.value,
             PROPERTY_NAME to node.enumName,
             "enum_type" to node.enumType.className
         )
+        is IntConstant, is StringConstant, is LongConstant, is FloatConstant,
+        is DoubleConstant, is BooleanConstant, is NullConstant ->
+            CypherConstantProperties.getAllProperties(node as ConstantNode)
         is LocalVariable -> mapOf(
             PROPERTY_ID to node.id.value,
             PROPERTY_NAME to node.name,

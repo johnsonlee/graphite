@@ -15,225 +15,265 @@ internal object ComponentSelector {
         apiEndpoints: List<ApiEndpointEvidence>,
         systemBoundary: String,
         limit: Int,
-        subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary),
-        capabilityLayout: ContainerLayout = inferContainerLayout(
-            graph = graph,
-            methods = methods,
-            callSites = callSites,
-            apiEndpoints = apiEndpoints,
-            systemBoundary = systemBoundary,
-            limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES)
-        )
-    ): C4View {
-        val runtimeLayout = inferOperationalContainerLayout(subject, capabilityLayout)
-        if (runtimeLayout.containers.isEmpty()) {
-            return C4View(
-                type = C4Level.COMPONENT,
-                elements = emptyList(),
-                relationships = emptyList(),
-                systemBoundary = runtimeLayout.systemBoundary,
-                skippedReason = "No C4 runtime container inferred; library/package code is not promoted " +
-                    "to component scope without a runtime boundary"
-            )
+        inference: ComponentInference =
+            ComponentInference(
+                inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary),
+                inferContainerLayout(
+                    graph,
+                    methods,
+                    callSites,
+                    apiEndpoints,
+                    systemBoundary,
+                    maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES)))
+    ): C4View = ComponentViewBuilder(methods, callSites, apiEndpoints, systemBoundary, limit, inference).build()
+
+    private class ComponentViewBuilder(
+        methods: List<MethodDescriptor>,
+        private val callSites: List<CallSiteNode>,
+        apiEndpoints: List<ApiEndpointEvidence>,
+        private val systemBoundary: String,
+        private val limit: Int,
+        inference: ComponentInference
+    ) {
+        private val capabilityLayout = inference.capabilityLayout
+        private val runtimeLayout = inferOperationalContainerLayout(inference.subject, capabilityLayout)
+        private val runtimeContainer
+            get() = runtimeLayout.containers.first()
+
+        private val capabilityById = capabilityLayout.containers.associateBy { it.id }
+        private val capabilityIds = capabilityById.keys
+        private val methodCounts =
+            methods
+                .map { it.declaringClass.className }
+                .filter { isInternalArchitectureClass(it, systemBoundary) }
+                .groupingBy { it }
+                .eachCount()
+        private val endpointCounts =
+            apiEndpoints.map { it.className }.filter { isInternalArchitectureClass(it, systemBoundary) }.groupingBy { it }.eachCount()
+        private val callCounts = mutableMapOf<String, Int>()
+        private val externalCallsByCapability = mutableMapOf<String, Int>()
+        private val capabilityCallCounts = mutableMapOf<String, Int>()
+        private val relationshipWeights = mutableMapOf<Pair<String, String>, Int>()
+
+        fun build(): C4View {
+            if (runtimeLayout.containers.isEmpty()) {
+                return C4View(
+                    type = C4Level.COMPONENT,
+                    elements = emptyList(),
+                    relationships = emptyList(),
+                    systemBoundary = runtimeLayout.systemBoundary,
+                    skippedReason =
+                        "No C4 runtime container inferred; library/package code is not promoted " +
+                            "to component scope without a runtime boundary")
+            }
+            callSites.forEach(::recordCall)
+            val evidence = classEvidence()
+            val rankedCapabilities = rankCapabilities(evidence)
+            val selectedCapabilityIds = rankedCapabilities.map { it.id }.toSet()
+            val componentKindById = componentKinds(rankedCapabilities, evidence)
+            val elements = componentElements(rankedCapabilities, componentKindById, evidence)
+            val relationships = componentRelationships(selectedCapabilityIds, componentKindById)
+            return C4View(C4Level.COMPONENT, elements, relationships)
         }
-        val runtimeContainer = runtimeLayout.containers.first()
-        val capabilityById = capabilityLayout.containers.associateBy { it.id }
-        val capabilityIds = capabilityById.keys
-        val methodCounts = methods
-            .map { it.declaringClass.className }
-            .filter { isInternalArchitectureClass(it, systemBoundary) }
-            .groupingBy { it }
-            .eachCount()
-        val endpointCounts = apiEndpoints
-            .map { it.className }
-            .filter { isInternalArchitectureClass(it, systemBoundary) }
-            .groupingBy { it }
-            .eachCount()
-        val callCounts = mutableMapOf<String, Int>()
-        val externalCallsByCapability = mutableMapOf<String, Int>()
-        val capabilityCallCounts = mutableMapOf<String, Int>()
-        val relationshipWeights = mutableMapOf<Pair<String, String>, Int>()
-        callSites.forEach { cs ->
+
+        private fun recordCall(cs: CallSiteNode) {
             val caller = cs.caller.declaringClass.className
             val callee = cs.callee.declaringClass.className
             val callerInternal = isInternalArchitectureClass(caller, systemBoundary)
             val calleeInternal = isInternalArchitectureClass(callee, systemBoundary)
-            if (!callerInternal && !calleeInternal) return@forEach
+            if (!callerInternal && !calleeInternal) return
             if (callerInternal) callCounts[caller] = (callCounts[caller] ?: 0) + 1
             if (calleeInternal) callCounts[callee] = (callCounts[callee] ?: 0) + 1
-            val callerCapability = if (callerInternal) {
-                capabilityLayout.unitToContainerId[internalPackageUnit(caller, systemBoundary)]
-            } else {
-                null
-            }
-            val calleeCapability = if (calleeInternal) {
-                capabilityLayout.unitToContainerId[internalPackageUnit(callee, systemBoundary)]
-            } else {
-                null
-            }
-            if (callerCapability != null) {
-                capabilityCallCounts[callerCapability] = (capabilityCallCounts[callerCapability] ?: 0) + 1
-            }
-            if (calleeCapability != null) {
-                capabilityCallCounts[calleeCapability] = (capabilityCallCounts[calleeCapability] ?: 0) + 1
-            }
+            val callerCapability =
+                if (callerInternal) {
+                    capabilityLayout.unitToContainerId[internalPackageUnit(caller, systemBoundary)]
+                } else {
+                    null
+                }
+            val calleeCapability =
+                if (calleeInternal) {
+                    capabilityLayout.unitToContainerId[internalPackageUnit(callee, systemBoundary)]
+                } else {
+                    null
+                }
+            capabilityCallCounts.incrementCount(callerCapability)
+            capabilityCallCounts.incrementCount(calleeCapability)
             if (!callerInternal || !calleeInternal) {
                 if (callerInternal && !isRuntimeArchitectureClass(callee)) {
                     callerCapability?.let { externalCallsByCapability[it] = (externalCallsByCapability[it] ?: 0) + 1 }
                 }
-                return@forEach
+                return
             }
+            recordRelationship(callerCapability, calleeCapability)
+        }
+
+        private fun recordRelationship(callerCapability: String?, calleeCapability: String?) {
             if (callerCapability != null && calleeCapability != null && callerCapability != calleeCapability) {
                 val callerKind = capabilityById[callerCapability]?.let(::containerKind) ?: WIRE_CAPABILITY
                 val calleeKind = capabilityById[calleeCapability]?.let(::containerKind) ?: WIRE_CAPABILITY
-                val pair = canonicalRelationshipPair(
-                    componentId(callerCapability),
-                    componentId(calleeCapability),
-                    callerKind,
-                    calleeKind,
-                    callerKind,
-                    calleeKind
-                )
+                val pair =
+                    canonicalRelationshipPair(
+                        componentId(callerCapability), componentId(calleeCapability), callerKind, calleeKind, callerKind, calleeKind)
                 relationshipWeights[pair] = (relationshipWeights[pair] ?: 0) + 1
             }
         }
-        val candidateClasses = (methodCounts.keys + endpointCounts.keys + callCounts.keys).distinct()
-        val classToCapability = candidateClasses.mapNotNull { className ->
-            val capabilityId = capabilityLayout.unitToContainerId[internalPackageUnit(className, systemBoundary)] ?: return@mapNotNull null
-            if (capabilityId in capabilityIds) className to capabilityId else null
-        }.toMap()
-        val classesByCapability = classToCapability.entries.groupBy({ it.value }, { it.key })
-        val endpointCountsByCapability = endpointCounts.entries
-            .mapNotNull { (className, count) -> classToCapability[className]?.let { it to count } }
-            .groupingBy { it.first }
-            .fold(0) { total, item -> total + item.second }
-        val rankedCapabilities = capabilityLayout.containers
-            .sortedWith(compareByDescending<ContainerDescriptor> {
-                componentCapabilityScore(
-                    it,
-                    endpointCountsByCapability[it.id] ?: it.endpointCount,
-                    capabilityCallCounts[it.id] ?: it.callSiteCount,
-                    externalCallsByCapability[it.id] ?: it.externalCallCount
-                )
-            }.thenBy { it.name })
-            .take(limit)
-        val selectedCapabilityIds = rankedCapabilities.map { it.id }.toSet()
-        val componentKindById = rankedCapabilities.associate { capability ->
-            capability.id to inferKind(
-                endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
-                inboundCrossContainer = capability.inboundCrossContainer,
-                outboundCrossContainer = capability.outboundCrossContainer,
-                externalCalls = externalCallsByCapability[capability.id] ?: capability.externalCallCount
-            )
+
+        private fun classEvidence(): ComponentClassEvidence {
+            val candidateClasses = (methodCounts.keys + endpointCounts.keys + callCounts.keys).distinct()
+            val classToCapability =
+                candidateClasses
+                    .mapNotNull { className ->
+                        val capabilityId =
+                            capabilityLayout.unitToContainerId[internalPackageUnit(className, systemBoundary)] ?: return@mapNotNull null
+                        if (capabilityId in capabilityIds) className to capabilityId else null
+                    }
+                    .toMap()
+            val classesByCapability = classToCapability.entries.groupBy({ it.value }, { it.key })
+            val endpointCountsByCapability =
+                endpointCounts.entries
+                    .mapNotNull { (className, count) -> classToCapability[className]?.let { it to count } }
+                    .groupingBy { it.first }
+                    .fold(0) { total, item -> total + item.second }
+            return ComponentClassEvidence(classesByCapability, endpointCountsByCapability)
         }
-        val elements = rankedCapabilities.map { capability ->
-            val kind = componentKindById.getValue(capability.id)
-            val representativeClasses = classesByCapability[capability.id].orEmpty()
-                .sortedByDescending {
-                    score(
-                        className = it,
-                        systemBoundary = systemBoundary,
-                        methodCount = methodCounts[it] ?: 0,
-                        callCount = callCounts[it] ?: 0,
-                        endpointCount = endpointCounts[it] ?: 0,
-                        incomingCrossContainer = capability.inboundCrossContainer,
-                        outgoingCrossContainer = capability.outboundCrossContainer,
-                        capabilityClassCount = classesByCapability[capability.id].orEmpty().size
-                    )
-                }
-                .ifEmpty { capability.primaryClasses }
-                .take(C4EvidenceLimits.MAX_CLASSES_PER_COMPONENT)
-            C4Element(
-                id = componentId(capability.id),
-                type = C4ElementType.COMPONENT,
-                name = capability.name,
-                kind = kind.toC4ElementKind(),
-                architectureType = architectureType(kind),
-                responsibility = responsibility(
-                    containerName = runtimeContainer.name,
-                    endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
-                    inboundCrossContainer = capability.inboundCrossContainer,
-                    outboundCrossContainer = capability.outboundCrossContainer,
-                    externalCalls = externalCallsByCapability[capability.id] ?: capability.externalCallCount
-                ),
-                metadata = C4Metadata.componentMetadata(
-                    capability = capability,
-                    runtimeContainer = runtimeContainer,
-                    callSiteCount = capabilityCallCounts[capability.id] ?: capability.callSiteCount,
-                    endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
-                    externalCallCount = externalCallsByCapability[capability.id] ?: capability.externalCallCount,
-                    representativeClasses = representativeClasses
-                )
-            )
+
+        private fun rankCapabilities(evidence: ComponentClassEvidence): List<ContainerDescriptor> {
+            val endpointCountsByCapability = evidence.endpointCountsByCapability
+            return capabilityLayout.containers
+                .sortedWith(
+                    compareByDescending<ContainerDescriptor> {
+                            componentCapabilityScore(
+                                it,
+                                endpointCountsByCapability[it.id] ?: it.endpointCount,
+                                capabilityCallCounts[it.id] ?: it.callSiteCount,
+                                externalCallsByCapability[it.id] ?: it.externalCallCount)
+                        }
+                        .thenBy { it.name })
+                .take(limit)
         }
-        val relationships = selectReadableRelationships(relationshipWeights.entries
-            .filter { it.key.first.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds } }
-            .filter { it.key.second.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds } }
-            .sortedByDescending { it.value }
-            .map { (pair, weight) ->
-                val sourceCapabilityId = pair.first.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
-                val targetCapabilityId = pair.second.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
-                val sourceKind = componentKindById[sourceCapabilityId] ?: WIRE_DOMAIN_COMPONENT
-                val targetKind = componentKindById[targetCapabilityId] ?: WIRE_DOMAIN_COMPONENT
-                val relationshipKind = inferDependencyKind(sourceKind, targetKind)
-                val relationshipKindType = relationshipKind.toC4RelationshipKind()
-                C4Relationship(
-                    from = pair.first,
-                    to = pair.second,
-                    type = relationshipKind.toC4RelationshipType(),
-                    kind = relationshipKindType,
-                    description = describeDependency(
-                        relationshipKind = relationshipKind,
-                        sourceName = capabilityById[sourceCapabilityId]?.name ?: pair.first.removePrefix(COMPONENT_ID_PREFIX),
-                        targetName = capabilityById[targetCapabilityId]?.name ?: pair.second.removePrefix(COMPONENT_ID_PREFIX)
-                    ),
-                    weight = weight,
-                    evidence = C4Metadata.componentCallEvidence(weight)
-                )
-            })
-        return C4View(
-            type = C4Level.COMPONENT,
-            elements = elements,
-            relationships = relationships
-        )
+
+        private fun componentKinds(rankedCapabilities: List<ContainerDescriptor>, evidence: ComponentClassEvidence): Map<String, String> {
+            val endpointCountsByCapability = evidence.endpointCountsByCapability
+            return rankedCapabilities.associate { capability ->
+                capability.id to
+                    inferKind(
+                        endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
+                        inboundCrossContainer = capability.inboundCrossContainer,
+                        outboundCrossContainer = capability.outboundCrossContainer,
+                        externalCalls = externalCallsByCapability[capability.id] ?: capability.externalCallCount)
+            }
+        }
+
+        private fun componentElements(
+            rankedCapabilities: List<ContainerDescriptor>,
+            componentKindById: Map<String, String>,
+            evidence: ComponentClassEvidence
+        ): List<C4Element> {
+            val classesByCapability = evidence.classesByCapability
+            val endpointCountsByCapability = evidence.endpointCountsByCapability
+            return rankedCapabilities.map { capability ->
+                val kind = componentKindById.getValue(capability.id)
+                val representativeClasses =
+                    classesByCapability[capability.id]
+                        .orEmpty()
+                        .sortedByDescending {
+                            score(
+                                className = it,
+                                systemBoundary = systemBoundary,
+                                evidence =
+                                    ComponentScoreEvidence(
+                                        methodCount = methodCounts[it] ?: 0,
+                                        callCount = callCounts[it] ?: 0,
+                                        endpointCount = endpointCounts[it] ?: 0,
+                                        incomingCrossContainer = capability.inboundCrossContainer,
+                                        outgoingCrossContainer = capability.outboundCrossContainer,
+                                        capabilityClassCount = classesByCapability[capability.id].orEmpty().size))
+                        }
+                        .ifEmpty { capability.primaryClasses }
+                        .take(C4EvidenceLimits.MAX_CLASSES_PER_COMPONENT)
+                C4Element(
+                    id = componentId(capability.id),
+                    type = C4ElementType.COMPONENT,
+                    name = capability.name,
+                    kind = kind.toC4ElementKind(),
+                    architectureType = architectureType(kind),
+                    responsibility =
+                        responsibility(
+                            containerName = runtimeContainer.name,
+                            endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
+                            inboundCrossContainer = capability.inboundCrossContainer,
+                            outboundCrossContainer = capability.outboundCrossContainer,
+                            externalCalls = externalCallsByCapability[capability.id] ?: capability.externalCallCount),
+                    metadata =
+                        C4Metadata.componentMetadata(
+                            capability = capability,
+                            runtimeContainer = runtimeContainer,
+                            callSiteCount = capabilityCallCounts[capability.id] ?: capability.callSiteCount,
+                            endpointCount = endpointCountsByCapability[capability.id] ?: capability.endpointCount,
+                            externalCallCount = externalCallsByCapability[capability.id] ?: capability.externalCallCount,
+                            representativeClasses = representativeClasses))
+            }
+        }
+
+        private fun componentRelationships(
+            selectedCapabilityIds: Set<String>,
+            componentKindById: Map<String, String>
+        ): List<C4Relationship> {
+            return selectReadableRelationships(
+                relationshipWeights.entries
+                    .filter {
+                        it.key.first.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds }
+                    }
+                    .filter {
+                        it.key.second.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds }
+                    }
+                    .sortedByDescending { it.value }
+                    .map { (pair, weight) ->
+                        val sourceCapabilityId = pair.first.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
+                        val targetCapabilityId = pair.second.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
+                        val sourceKind = componentKindById[sourceCapabilityId] ?: WIRE_DOMAIN_COMPONENT
+                        val targetKind = componentKindById[targetCapabilityId] ?: WIRE_DOMAIN_COMPONENT
+                        val relationshipKind = inferDependencyKind(sourceKind, targetKind)
+                        val relationshipKindType = relationshipKind.toC4RelationshipKind()
+                        C4Relationship(
+                            from = pair.first,
+                            to = pair.second,
+                            type = relationshipKind.toC4RelationshipType(),
+                            kind = relationshipKindType,
+                            description =
+                                describeDependency(
+                                    relationshipKind = relationshipKind,
+                                    sourceName = capabilityById[sourceCapabilityId]?.name ?: pair.first.removePrefix(COMPONENT_ID_PREFIX),
+                                    targetName = capabilityById[targetCapabilityId]?.name ?: pair.second.removePrefix(COMPONENT_ID_PREFIX)),
+                            weight = weight,
+                            evidence = C4Metadata.componentCallEvidence(weight))
+                    })
+        }
     }
 
-    fun score(
-        className: String,
-        systemBoundary: String,
-        methodCount: Int,
-        callCount: Int,
-        endpointCount: Int,
-        incomingCrossContainer: Int,
-        outgoingCrossContainer: Int,
-        capabilityClassCount: Int = 1
-    ): Int {
-        val baseScore = (incomingCrossContainer + outgoingCrossContainer) * C4ComponentScoring.REPRESENTATIVE_CROSS_CAPABILITY_WEIGHT +
-            endpointCount * C4ComponentScoring.REPRESENTATIVE_ENDPOINT_WEIGHT +
-            callCount * C4ComponentScoring.CALL_WEIGHT +
-            methodCount * C4ComponentScoring.METHOD_WEIGHT
-        val utilityPenalty = if (isUtilityLikeClass(
+    fun score(className: String, systemBoundary: String, evidence: ComponentScoreEvidence): Int {
+        val baseScore =
+            (evidence.incomingCrossContainer + evidence.outgoingCrossContainer) *
+                C4ComponentScoring.REPRESENTATIVE_CROSS_CAPABILITY_WEIGHT +
+                evidence.endpointCount * C4ComponentScoring.REPRESENTATIVE_ENDPOINT_WEIGHT +
+                evidence.callCount * C4ComponentScoring.CALL_WEIGHT +
+                evidence.methodCount * C4ComponentScoring.METHOD_WEIGHT
+        val utilityPenalty =
+            if (isUtilityLikeClass(
                 className = className,
                 systemBoundary = systemBoundary,
-                endpointCount = endpointCount,
-                incomingCrossContainer = incomingCrossContainer,
-                outgoingCrossContainer = outgoingCrossContainer,
-                capabilityClassCount = capabilityClassCount
-            )
-        ) {
-            C4ComponentScoring.LOW_SIGNAL_HELPER_PENALTY
-        } else {
-            1
-        }
+                endpointCount = evidence.endpointCount,
+                incomingCrossContainer = evidence.incomingCrossContainer,
+                outgoingCrossContainer = evidence.outgoingCrossContainer,
+                capabilityClassCount = evidence.capabilityClassCount)) {
+                C4ComponentScoring.LOW_SIGNAL_HELPER_PENALTY
+            } else {
+                1
+            }
         return baseScore / utilityPenalty
     }
 
-    fun componentCapabilityScore(
-        capability: ContainerDescriptor,
-        endpointCount: Int,
-        callCount: Int,
-        externalCalls: Int
-    ): Int =
+    fun componentCapabilityScore(capability: ContainerDescriptor, endpointCount: Int, callCount: Int, externalCalls: Int): Int =
         endpointCount * C4ComponentScoring.ENDPOINT_WEIGHT +
             (capability.inboundCrossContainer + capability.outboundCrossContainer) * C4ComponentScoring.CROSS_CAPABILITY_WEIGHT +
             externalCalls * C4ComponentScoring.EXTERNAL_CALL_WEIGHT +
@@ -252,13 +292,13 @@ internal object ComponentSelector {
         capabilityClassCount: Int = 1
     ): Boolean =
         utilityEvidence(
-            className = className,
-            systemBoundary = systemBoundary,
-            endpointCount = endpointCount,
-            incomingCrossContainer = incomingCrossContainer,
-            outgoingCrossContainer = outgoingCrossContainer,
-            capabilityClassCount = capabilityClassCount
-        ).isLowSignalHelper
+                className = className,
+                systemBoundary = systemBoundary,
+                endpointCount = endpointCount,
+                incomingCrossContainer = incomingCrossContainer,
+                outgoingCrossContainer = outgoingCrossContainer,
+                capabilityClassCount = capabilityClassCount)
+            .isLowSignalHelper
 
     fun utilityEvidence(
         className: String,
@@ -268,20 +308,15 @@ internal object ComponentSelector {
         outgoingCrossContainer: Int,
         capabilityClassCount: Int
     ): ClassUtilityEvidence {
-        val relativePackage = className
-            .removePrefix("$systemBoundary.")
-            .substringBeforeLast('.', missingDelimiterValue = "")
-        val packageSignal = relativePackage
-            .split('.')
-            .any { it in utilityPackageSignals }
+        val relativePackage = className.removePrefix("$systemBoundary.").substringBeforeLast('.', missingDelimiterValue = "")
+        val packageSignal = relativePackage.split('.').any { it in utilityPackageSignals }
         val simpleName = className.substringAfterLast('.')
         val helperSignal = helperClassSignals.any(simpleName::endsWith)
         return ClassUtilityEvidence(
             hasNamingSignal = packageSignal || helperSignal,
             hasEntrypointEvidence = endpointCount > 0,
             hasCrossCapabilityEvidence = incomingCrossContainer > 0 || outgoingCrossContainer > 0,
-            isSoleCapabilityClass = capabilityClassCount <= 1
-        )
+            isSoleCapabilityClass = capabilityClassCount <= 1)
     }
 
     fun canonicalRelationshipPair(
@@ -299,44 +334,22 @@ internal object ComponentSelector {
 
     fun selectReadableRelationships(relationships: List<C4Relationship>): List<C4Relationship> {
         if (relationships.size <= 1) return relationships
-        val architecturalEdges = relationships
-            .filter { it.kind != C4RelationshipKind.COLLABORATES_WITH }
-            .ifEmpty { relationships }
-        val reduced = reduceTransitiveEdges(
-            architecturalEdges
-                .distinctBy { "${it.from}:${it.to}:${it.kind}" }
-                .sortedByDescending { it.weight ?: 0 },
-            preserveRuntimeEdges = false
-        )
-        val selected = mutableListOf<C4Relationship>()
-        val outgoing = mutableMapOf<String, Int>()
-        val incoming = mutableMapOf<String, Int>()
-
-        fun tryAdd(edge: C4Relationship, enforceCaps: Boolean): Boolean {
-            val source = edge.from
-            val target = edge.to
-            if (source.isBlank() || target.isBlank()) return false
-            if (selected.any { it.from == source && it.to == target && it.kind == edge.kind }) return false
-            if (enforceCaps &&
-                ((outgoing[source] ?: 0) >= C4ComponentLimits.MAX_OUTGOING_EDGES_PER_COMPONENT ||
-                    (incoming[target] ?: 0) >= C4ComponentLimits.MAX_INCOMING_EDGES_PER_COMPONENT)
-            ) {
-                return false
-            }
-            selected += edge
-            outgoing[source] = (outgoing[source] ?: 0) + 1
-            incoming[target] = (incoming[target] ?: 0) + 1
-            return true
-        }
+        val architecturalEdges = relationships.filter { it.kind != C4RelationshipKind.COLLABORATES_WITH }.ifEmpty { relationships }
+        val reduced =
+            reduceTransitiveEdges(
+                architecturalEdges.distinctBy { "${it.from}:${it.to}:${it.kind}" }.sortedByDescending { it.weight ?: 0 },
+                preserveRuntimeEdges = false)
+        val selection = ComponentRelationshipSelection()
+        val selected = selection.edges
 
         reduced.forEach { edge ->
             if (selected.size >= C4ComponentLimits.MAX_VIEW_EDGES) return@forEach
-            tryAdd(edge, enforceCaps = true)
+            selection.tryAdd(edge, enforceCaps = true)
         }
         if (selected.size < minOf(C4ComponentLimits.MAX_VIEW_EDGES, reduced.size, C4ComponentLimits.MIN_EDGES_AFTER_CAP_RELAXATION)) {
             reduced.forEach { edge ->
                 if (selected.size >= C4ComponentLimits.MAX_VIEW_EDGES) return@forEach
-                tryAdd(edge, enforceCaps = false)
+                selection.tryAdd(edge, enforceCaps = false)
             }
         }
         return selected
@@ -355,7 +368,10 @@ internal object ComponentSelector {
 
     fun architectureType(kind: String): C4ArchitectureType =
         when (kind) {
-            WIRE_ENTRYPOINT, WIRE_ORCHESTRATOR, WIRE_INTEGRATION, WIRE_COORDINATION -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_ENTRYPOINT,
+            WIRE_ORCHESTRATOR,
+            WIRE_INTEGRATION,
+            WIRE_COORDINATION -> C4ArchitectureType.APPLICATION_SERVICE
             else -> C4ArchitectureType.APPLICATION_COMPONENT
         }
 
@@ -389,8 +405,7 @@ internal object ComponentSelector {
         return when {
             externalCalls > maxOf(inboundCrossContainer, outboundCrossContainer) ->
                 "Connects the ${containerName} capability to external collaborators and dependency boundaries"
-            outboundCrossContainer > inboundCrossContainer ->
-                "Coordinates work across neighboring capabilities inside ${containerName}"
+            outboundCrossContainer > inboundCrossContainer -> "Coordinates work across neighboring capabilities inside ${containerName}"
             inboundCrossContainer > outboundCrossContainer ->
                 "Provides a shared internal capability that other containers depend on through ${containerName}"
             inboundCrossContainer > 0 || outboundCrossContainer > 0 ->
@@ -412,12 +427,7 @@ internal fun componentScore(
     ComponentSelector.score(
         className,
         systemBoundary,
-        methodCount,
-        callCount,
-        endpointCount,
-        incomingCrossContainer,
-        outgoingCrossContainer
-    )
+        ComponentScoreEvidence(methodCount, callCount, endpointCount, incomingCrossContainer, outgoingCrossContainer))
 
 internal fun isUtilityLikeClass(className: String, systemBoundary: String): Boolean =
     ComponentSelector.isUtilityLikeClass(className, systemBoundary)
@@ -438,8 +448,7 @@ internal fun selectReadableComponentRelationships(relationships: List<C4Relation
 internal fun inferComponentKind(endpointCount: Int, inboundCrossContainer: Int, outboundCrossContainer: Int, externalCalls: Int): String =
     ComponentSelector.inferKind(endpointCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
 
-internal fun inferComponentArchitectureType(kind: String): String =
-    ComponentSelector.architectureType(kind).wireName
+internal fun inferComponentArchitectureType(kind: String): String = ComponentSelector.architectureType(kind).wireName
 
 internal fun inferArchitecturalDependencyKind(sourceKind: String, targetKind: String): String =
     ComponentSelector.inferDependencyKind(sourceKind, targetKind)
@@ -453,5 +462,44 @@ internal fun inferComponentResponsibility(
     inboundCrossContainer: Int,
     outboundCrossContainer: Int,
     externalCalls: Int
-): String =
-    ComponentSelector.responsibility(containerName, endpointCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
+): String = ComponentSelector.responsibility(containerName, endpointCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
+
+internal data class ComponentInference(val subject: SubjectDescriptor, val capabilityLayout: ContainerLayout)
+
+internal data class ComponentScoreEvidence(
+    val methodCount: Int,
+    val callCount: Int,
+    val endpointCount: Int,
+    val incomingCrossContainer: Int,
+    val outgoingCrossContainer: Int,
+    val capabilityClassCount: Int = 1
+)
+
+private data class ComponentClassEvidence(
+    val classesByCapability: Map<String, List<String>>,
+    val endpointCountsByCapability: Map<String, Int>
+)
+
+private class ComponentRelationshipSelection {
+    val edges = mutableListOf<C4Relationship>()
+    private val outgoing = mutableMapOf<String, Int>()
+    private val incoming = mutableMapOf<String, Int>()
+
+    fun tryAdd(edge: C4Relationship, enforceCaps: Boolean): Boolean {
+        val source = edge.from
+        val target = edge.to
+        val invalidEndpoint = source.isBlank() || target.isBlank()
+        val duplicate = edges.any { it.from == source && it.to == target && it.kind == edge.kind }
+        val atCapacity =
+            (outgoing[source] ?: 0) >= C4ComponentLimits.MAX_OUTGOING_EDGES_PER_COMPONENT ||
+                (incoming[target] ?: 0) >= C4ComponentLimits.MAX_INCOMING_EDGES_PER_COMPONENT
+        val capped = enforceCaps && atCapacity
+        if (invalidEndpoint || duplicate || capped) {
+            return false
+        }
+        edges += edge
+        outgoing[source] = (outgoing[source] ?: 0) + 1
+        incoming[target] = (incoming[target] ?: 0) + 1
+        return true
+    }
+}

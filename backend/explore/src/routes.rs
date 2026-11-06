@@ -4,6 +4,7 @@
 //! one graph and returns its payload directly. Under `/api/…` the same route serves
 //! every loaded graph and wraps the per-graph payloads in a grouped envelope.
 
+use crate::graph_updates::{GraphUpdate, ServedTopology};
 use crate::guard::*;
 use crate::helpers::*;
 use crate::registry::*;
@@ -31,12 +32,12 @@ pub const C4_WARM_QUIET: std::time::Duration = std::time::Duration::from_secs(2)
 const C4_WARM_POLL: std::time::Duration = std::time::Duration::from_millis(200);
 
 #[cfg(test)]
-type CypherExecutionHook = Arc<dyn Fn(&mut Arc<CancelToken>, u64) + Send + Sync>;
+pub(crate) type CypherExecutionHook = Arc<dyn Fn(&mut Arc<CancelToken>, u64) + Send + Sync>;
 
 pub struct AppState {
     // Test-only execution boundary: no hook or tuning surface exists in production.
     #[cfg(test)]
-    cypher_before_execute: Option<CypherExecutionHook>,
+    pub(crate) cypher_before_execute: Option<CypherExecutionHook>,
     pub registry: Arc<GraphRegistry>,
     pub guard: Arc<CypherGuard>,
     pub version: String,
@@ -74,80 +75,11 @@ pub struct AppState {
     /// registry catalog it was built against so a later load or unload marks it stale
     /// until the rebuild that follows it lands.
     pub topology_queries: Vec<crate::topology::TopologyQuery>,
-    topology: parking_lot::RwLock<Option<ServedTopology>>,
-}
-
-/// A built topology and the catalog version it describes.
-struct ServedTopology {
-    graph: crate::topology::TopologyGraph,
-    catalog: std::collections::BTreeMap<String, u64>,
-}
-
-impl AppState {
-    /// Rebuild the topology from the rules over every loaded graph, as the Kotlin
-    /// server does at startup and after each load and unload. A rule that fails leaves
-    /// the previous topology in place and is reported to the caller.
-    pub fn rebuild_topology(&self) -> Result<(usize, usize), String> {
-        let leases = self.registry.acquire_all();
-        let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
-        for l in &leases {
-            stats.insert(l.id.clone(), l.stats);
-        }
-        let catalog = self.registry.catalog_version();
-        let graph = if self.topology_queries.is_empty() {
-            crate::topology::TopologyGraph::nodes_only(&stats)
-        } else {
-            let sources: Vec<Source> = leases
-                .iter()
-                .map(|l| Source {
-                    id: Arc::from(l.id.as_str()),
-                    graph: l.graph.clone(),
-                })
-                .collect();
-            let ex = Executor::new(sources, true);
-            crate::topology::build(&stats, &self.topology_queries, |cypher, max_rows| {
-                let result = ex
-                    .execute(cypher, Some(max_rows))
-                    .map_err(|e| e.to_string())?;
-                let rows = result
-                    .rows
-                    .iter()
-                    .map(|row| {
-                        row.iter()
-                            .filter(|(k, _)| !k.starts_with('$'))
-                            .map(|(k, v)| (k.clone(), materialize(v, &ex)))
-                            .collect::<indexmap::IndexMap<String, J>>()
-                    })
-                    .collect();
-                Ok(crate::topology::QueryRows {
-                    columns: result.columns.clone(),
-                    rows,
-                })
-            })?
-        };
-        let summary = (graph.nodes.len(), graph.edges.len());
-        *self.topology.write() = Some(ServedTopology { graph, catalog });
-        Ok(summary)
-    }
-
-    /// The topology as the API serves it: the last build, flagged stale when the
-    /// registry catalog has changed since.
-    fn topology_api_map(&self) -> J {
-        let current = self.topology.read();
-        match current.as_ref() {
-            Some(t) => t
-                .graph
-                .to_api_map(t.catalog != self.registry.catalog_version()),
-            None => {
-                let leases = self.registry.acquire_all();
-                let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
-                for l in &leases {
-                    stats.insert(l.id.clone(), l.stats);
-                }
-                crate::topology::TopologyGraph::nodes_only(&stats).to_api_map(false)
-            }
-        }
-    }
+    pub(crate) topology: parking_lot::RwLock<Option<ServedTopology>>,
+    pub(crate) graph_updates: Arc<tokio::sync::Semaphore>,
+    pub(crate) topology_work_limit: u64,
+    #[cfg(test)]
+    pub(crate) graph_update_hook: Option<crate::graph_updates::UpdateHook>,
 }
 
 impl AppState {
@@ -181,6 +113,14 @@ impl AppState {
             c4_warm_quiet: C4_WARM_QUIET,
             topology_queries: Vec::new(),
             topology: parking_lot::RwLock::new(None),
+            graph_updates: Arc::new(tokio::sync::Semaphore::new(
+                std::thread::available_parallelism()
+                    .map_or(1, |n| n.get())
+                    .min(4),
+            )),
+            topology_work_limit: crate::graph_updates::DEFAULT_TOPOLOGY_WORK_LIMIT,
+            #[cfg(test)]
+            graph_update_hook: None,
         }
     }
 
@@ -311,7 +251,7 @@ impl AppState {
     /// replaced under traffic, nothing accumulates but one entry per id, and the
     /// worker leases only the generation current when its turn comes, so an unloaded
     /// graph is dropped and a replaced one is built once, in its final form.
-    fn warm_c4_graphs(self: &Arc<Self>, ids: impl IntoIterator<Item = String>) {
+    pub(crate) fn warm_c4_graphs(self: &Arc<Self>, ids: impl IntoIterator<Item = String>) {
         if graphite_cypher::engine::optimizations_disabled() {
             return;
         }
@@ -377,7 +317,7 @@ impl AppState {
     }
 
     /// Drop C4 state for generations the registry no longer serves.
-    fn prune_c4(&self) {
+    pub(crate) fn prune_c4(&self) {
         let live: Vec<u64> = self.registry.catalog_version().into_values().collect();
         self.c4.retain(&live);
     }
@@ -612,55 +552,33 @@ async fn load_graph(
         },
         None => None,
     };
-    match s.registry.load(&id, std::path::Path::new(&path), mode) {
-        Ok(g) => {
-            // The topology follows the catalog. A rule that fails against the new
-            // catalog fails the load, and the graph is withdrawn again, as the Kotlin
-            // registry rolls its load back when the rebuild throws.
-            if let Err(e) = s.rebuild_topology() {
-                let _ = s.registry.unload(&id);
-                return error_json(StatusCode::BAD_REQUEST, &e);
-            }
-            // A replaced graph's C4 state goes with it; the new one is inferred ahead
-            // of its first request.
-            s.prune_c4();
-            s.warm_c4_graphs([g.id.clone()]);
-            // As at startup (`serve::DeclaredTableReader`): a served graph has its declared
-            // table read before its first request, here inline since the load itself is
-            // the request.
-            if !graphite_cypher::engine::optimizations_disabled() {
-                g.graph.declared_types();
-            }
-            ok_json(json!({ "graph": g.to_api_map() }))
-        }
-        Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
+    match s
+        .clone()
+        .update_graph(GraphUpdate::Load {
+            id,
+            path: path.into(),
+            mode,
+        })
+        .await
+    {
+        Ok(Some(graph)) => ok_json(json!({ "graph": graph.to_api_map() })),
+        Ok(None) => error_json(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Graph load produced no graph",
+        ),
+        Err(error) => error_json(StatusCode::BAD_REQUEST, &error),
     }
 }
 
 async fn unload_graph(State(s): St, AxPath(id): AxPath<String>) -> Response {
-    let removed = match s.registry.take(&id) {
-        Ok(r) => r,
-        Err(e) => return error_json(StatusCode::BAD_REQUEST, &e),
-    };
-    if let Some(served) = removed.as_ref() {
-        if let Err(e) = s.rebuild_topology() {
-            // Put the graph back, as the Kotlin registry restores it when the rebuild
-            // after an unload throws.
-            s.registry.restore(served.clone());
-            return error_json(StatusCode::BAD_REQUEST, &e);
-        }
-        s.prune_c4();
-    }
-    if removed.is_some() {
-        // A 204 has no body, but the baseline still emits Javalin's default
-        // `Content-Type: text/plain` on it, and a client that inspects headers sees it.
-        (
+    match s.update_graph(GraphUpdate::Unload { id: id.clone() }).await {
+        Ok(Some(_)) => (
             StatusCode::NO_CONTENT,
             [(header::CONTENT_TYPE, "text/plain")],
         )
-            .into_response()
-    } else {
-        error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}"))
+            .into_response(),
+        Ok(None) => error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}")),
+        Err(error) => error_json(StatusCode::BAD_REQUEST, &error),
     }
 }
 
@@ -1070,28 +988,22 @@ async fn schema_response(
         Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
-    let started = Instant::now();
-    let result: Result<Vec<J>, CypherError> = tokio::task::block_in_place(|| {
-        leases
+    let graph_count = leases.len();
+    let result = crate::query_job::run(permit, move |permit| {
+        let mut results: Vec<J> = leases
             .iter()
-            .map(|l| schema_payload(l, limit, &permit.cancel).map(|v| grouped(&l.id, v)))
-            .collect()
-    });
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match result {
-        Ok(mut results) => {
-            s.guard.finish(Outcome::Success, elapsed);
-            if grouped_output {
-                ok_json(grouped_envelope(leases.len(), results))
-            } else {
-                ok_json(results.remove(0)["data"].take())
-            }
-        }
-        Err(e) => {
-            s.guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-    }
+            .map(|lease| {
+                schema_payload(lease, limit, &permit.cancel).map(|value| grouped(&lease.id, value))
+            })
+            .collect::<Result<_, _>>()?;
+        Ok(if grouped_output {
+            ok_json(grouped_envelope(graph_count, results))
+        } else {
+            ok_json(results.remove(0)["data"].take())
+        })
+    })
+    .await;
+    query_job_response(result, timeout_millis)
 }
 
 /// The 429 a query gets when the guard has no permit to spare.
@@ -1901,16 +1813,9 @@ async fn run_cypher(
         Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
-    let guard = s.guard.clone();
     #[cfg(test)]
     let before_execute = s.cypher_before_execute.clone();
-    let started = Instant::now();
-    // The query runs on this worker thread, with the runtime told to move its other
-    // tasks elsewhere first, rather than being handed to the blocking pool and awaited
-    // back. The hand-off was a thread wake each way -- measured at 50-100us on a
-    // request whose whole engine time is a few hundred -- and the concurrency guard
-    // already bounds how many queries run at once, so the runtime keeps workers free.
-    let result: Result<_, tokio::task::JoinError> = Ok(tokio::task::block_in_place(move || {
+    let result = crate::query_job::run(permit, move |permit| {
         let cancel = permit.cancel.clone();
         #[cfg(test)]
         let cancel = {
@@ -1924,45 +1829,32 @@ async fn run_cypher(
             CypherSources::Shared(sources) => sources,
             CypherSources::Leases(leases) => leases
                 .into_iter()
-                .map(|l| Source {
-                    id: Arc::from(l.id.as_str()),
-                    graph: l.graph,
+                .map(|lease| Source {
+                    id: Arc::from(lease.id.as_str()),
+                    graph: lease.graph,
                 })
                 .collect(),
         };
-        let ex = Executor::new(sources, cross)
+        let executor = Executor::new(sources, cross)
             .with_cancel(cancel)
             .with_compact()
             .with_probe();
-        let out = ex.execute(&query, Some(limit.max(0) as usize));
-        (out, ex)
-    }));
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match result {
-        Ok((Ok(r), ex)) => {
-            guard.finish(Outcome::Success, elapsed);
-            let returned = match &r.compact {
-                Some(c) => c.values.len(),
-                None => r.rows.len(),
-            };
-            let mut extra = extra;
-            extra.push(("total", total_json(returned, r.more)));
-            (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "application/json")],
-                result_body(&r, &ex, &extra),
-            )
-                .into_response()
-        }
-        Ok((Err(e), _)) => {
-            guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-        Err(_) => {
-            guard.finish(Outcome::Failed, elapsed);
-            error_json(StatusCode::INTERNAL_SERVER_ERROR, "Query execution failed")
-        }
-    }
+        let result = executor.execute(&query, Some(limit.max(0) as usize))?;
+        let returned = result
+            .compact
+            .as_ref()
+            .map_or(result.rows.len(), |compact| compact.values.len());
+        let mut extra = extra;
+        extra.push(("total", total_json(returned, result.more)));
+        Ok((
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "application/json")],
+            result_body(&result, &executor, &extra),
+        )
+            .into_response())
+    })
+    .await;
+    query_job_response(result, timeout_millis)
 }
 
 /// The `total` of a Cypher response, in the shape Elasticsearch gives `hits.total`:
@@ -2003,10 +1895,8 @@ async fn run_fanout(
         }
     };
     let timeout_millis = permit.timeout_millis;
-    let guard = s.guard.clone();
     let graph_count = leases.len();
-    let started = Instant::now();
-    let outcome = tokio::task::spawn_blocking(move || {
+    let outcome = crate::query_job::run(permit, move |permit| {
         let mut remaining = limit;
         let mut truncated = false;
         // Whether any graph had rows past its limit, or a graph was not queried at all.
@@ -2065,7 +1955,7 @@ async fn run_fanout(
             per_graph_out.push(J::Object(entry));
             all_rows.extend(rows);
         }
-        Ok::<_, CypherError>(json!({
+        Ok(ok_json(json!({
             "columns": columns,
             "rows": all_rows,
             "rowCount": all_rows.len(),
@@ -2080,21 +1970,22 @@ async fn run_fanout(
             }),
             "graphs": per_graph_out,
             "mode": "fanout",
-        }))
+        })))
     })
     .await;
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match outcome {
-        Ok(Ok(body)) => {
-            guard.finish(Outcome::Success, elapsed);
-            ok_json(body)
+    query_job_response(outcome, timeout_millis)
+}
+
+fn query_job_response(
+    result: Result<Response, crate::query_job::QueryJobError>,
+    timeout_millis: u64,
+) -> Response {
+    match result {
+        Ok(response) => response,
+        Err(crate::query_job::QueryJobError::Query(error)) => {
+            cypher_error_response(&error, timeout_millis)
         }
-        Ok(Err(e)) => {
-            guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-        Err(_) => {
-            guard.finish(Outcome::Failed, elapsed);
+        Err(crate::query_job::QueryJobError::Failed) => {
             error_json(StatusCode::INTERNAL_SERVER_ERROR, "Query execution failed")
         }
     }

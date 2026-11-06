@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.sootup
 
-import io.johnsonlee.graphite.Graphite
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig

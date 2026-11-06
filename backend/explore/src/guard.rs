@@ -133,7 +133,7 @@ pub struct CypherGuard {
     permits: Arc<Semaphore>,
     pub max_concurrent: usize,
     pub max_timeout_millis: u64,
-    pub metrics: GuardMetrics,
+    pub metrics: Arc<GuardMetrics>,
 }
 
 /// Raised when every permit is taken; the caller maps it to HTTP 429.
@@ -152,6 +152,40 @@ pub struct QueryPermit {
     _permit: OwnedSemaphorePermit,
     pub cancel: Arc<CancelToken>,
     pub timeout_millis: u64,
+    metrics: Arc<GuardMetrics>,
+    started: std::time::Instant,
+    outcome: Outcome,
+}
+
+impl QueryPermit {
+    /// Select the completed outcome; recording and capacity release happen together on drop.
+    pub fn complete(&mut self, outcome: Outcome) {
+        self.outcome = outcome;
+    }
+}
+
+impl Drop for QueryPermit {
+    fn drop(&mut self) {
+        let outcome = if std::thread::panicking() {
+            Outcome::Failed
+        } else {
+            self.outcome
+        };
+        self.metrics.active.fetch_sub(1, Ordering::Relaxed);
+        self.metrics.record(
+            outcome,
+            self.started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+        );
+    }
+}
+
+/// The waiting request cancels cooperative work when its future is dropped. The
+/// worker still owns its permit until it actually stops, including serialization.
+pub(crate) struct CancelOnDrop(pub Arc<CancelToken>);
+impl Drop for CancelOnDrop {
+    fn drop(&mut self) {
+        self.0.cancel();
+    }
 }
 
 impl CypherGuard {
@@ -162,7 +196,7 @@ impl CypherGuard {
             permits: Arc::new(Semaphore::new(max_concurrent)),
             max_concurrent,
             max_timeout_millis,
-            metrics: GuardMetrics::default(),
+            metrics: Arc::new(GuardMetrics::default()),
         }
     }
 
@@ -186,6 +220,9 @@ impl CypherGuard {
                     _permit: permit,
                     cancel: CancelToken::with_timeout(timeout_millis),
                     timeout_millis,
+                    metrics: self.metrics.clone(),
+                    started: std::time::Instant::now(),
+                    outcome: Outcome::Cancelled,
                 })
             }
             Err(_) => {
@@ -193,11 +230,6 @@ impl CypherGuard {
                 Err(ConcurrencyLimit(self.max_concurrent))
             }
         }
-    }
-
-    pub fn finish(&self, outcome: Outcome, nanos: u64) {
-        self.metrics.active.fetch_sub(1, Ordering::Relaxed);
-        self.metrics.record(outcome, nanos);
     }
 }
 
@@ -257,8 +289,10 @@ mod tests {
         let g = CypherGuard::new(1, 1000);
         let p = g.try_acquire(None).ok().expect("first permit");
         assert!(g.try_acquire(None).is_err());
+        let mut p = p;
+        p.complete(Outcome::Success);
         drop(p);
-        g.finish(Outcome::Success, 1);
+        assert_eq!(g.metrics.active.load(Ordering::Relaxed), 0);
         assert!(g.try_acquire(None).is_ok());
     }
 

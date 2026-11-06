@@ -201,7 +201,7 @@ class SootUpAdapterCoverageRegressionTest {
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> invokePrivate(target: Any, name: String, parameterTypes: Array<Class<*>>, vararg args: Any?): T {
-        val method = target.javaClass.getDeclaredMethod(name, *parameterTypes)
+        val method = operationFor(target, name, *parameterTypes)
         method.isAccessible = true
         return method.invoke(target, *args) as T
     }

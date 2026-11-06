@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.ParsedClassLocation
 import io.johnsonlee.graphite.sootup.SootUpAdapter
+import io.johnsonlee.graphite.sootup.operation
 import java.nio.file.Files
 import java.util.stream.Stream
 import kotlin.test.Test
@@ -33,23 +34,23 @@ class StreamingMethodSelectionTest {
         withClasses(selectionClassBytes()) { optimized, _ ->
             val sources = assertNotNull(optimized.classSource.streamingMethodSources())
             var unrelatedReads = 0
-            sources.filter { it.name != "main" || (it.access and Opcodes.ACC_STATIC) == 0 }.forEach {
-                it.visibleAnnotations = unreadableAnnotations { unrelatedReads++ }
-            }
+            sources
+                .filter { it.name != "main" || (it.access and Opcodes.ACC_STATIC) == 0 }
+                .forEach { it.visibleAnnotations = unreadableAnnotations { unrelatedReads++ } }
             val broken = sources.single { it.name == "main" && it.desc == "(I)V" }
-            broken.visibleAnnotations = arrayListOf(AnnotationNode("Lfixture/Broken;").apply {
-                values = arrayListOf<Any>("missing-value")
-            })
+            broken.visibleAnnotations = arrayListOf(AnnotationNode("Lfixture/Broken;").apply { values = arrayListOf<Any>("missing-value") })
             val logs = mutableListOf<String>()
-            val guarded = object : JavaSootClass(optimized.classSource, SourceType.Application) {
-                override fun getMethods(): Set<JavaSootMethod> = error("persistent method cache was resolved")
-            }
+            val guarded =
+                object : JavaSootClass(optimized.classSource, SourceType.Application) {
+                    override fun getMethods(): Set<JavaSootMethod> = error("persistent method cache was resolved")
+                }
             val adapter = selectionAdapter(guarded, logs)
-            val find = SootUpAdapter::class.java.getDeclaredMethod("findEntryPoints").apply { isAccessible = true }
+            val find = adapter.operation("findEntryPoints").apply { isAccessible = true }
             repeat(2) {
                 seedScratch(sources)
                 val signatures = assertIs<List<*>>(find.invoke(adapter)).map { assertIs<MethodSignature>(it) }
-                assertEquals(listOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(java.lang.String[])>"),
+                assertEquals(
+                    listOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(java.lang.String[])>"),
                     signatures.map { it.toString() })
                 signatures.forEach { signature ->
                     val source = sources.single { it.signatureFor(optimized.type) == signature }
@@ -58,16 +59,17 @@ class StreamingMethodSelectionTest {
                 assertEquals(0, unrelatedReads, "raw non-matches must not convert any annotation metadata")
                 assertTrue(logs.any { it.contains("Skipping method fixture.Streamed.main(I)V:") })
                 // The skipped method is in the completeness evidence, named as the graph names methods.
-                val evidence = SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }
-                    .get(adapter) as Map<*, *>
+                val evidence =
+                    SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }.get(adapter) as Map<*, *>
                 val skipped = assertIs<MethodEvidence>(evidence["fixture.Streamed.main(I)V"])
                 assertEquals(AnalysisStatus.RESOLUTION_FAILED, skipped.status)
                 assertTrue(skipped.message!!.isNotBlank())
                 assertScratchReleased(sources)
                 for (field in listOf("streamingSourcesCache", "bytecodeMethodsCache")) {
-                    assertEquals(emptyMap<Any, Any>(), SootUpAdapter::class.java.getDeclaredField(field).apply {
-                        isAccessible = true
-                    }.get(adapter), "selection outside pass 2 must not retain classes")
+                    assertEquals(
+                        emptyMap<Any, Any>(),
+                        SootUpAdapter::class.java.getDeclaredField(field).apply { isAccessible = true }.get(adapter),
+                        "selection outside pass 2 must not retain classes")
                 }
             }
         }
@@ -78,24 +80,62 @@ class StreamingMethodSelectionTest {
         withClasses(selectionClassBytes()) { optimized, _ ->
             val sources = assertNotNull(optimized.classSource.streamingMethodSources())
             val broken = sources.single { it.name == "main" && it.desc == "(I)V" }
-            broken.visibleAnnotations = object : java.util.AbstractList<AnnotationNode>() {
-                override val size: Int get() = 1
-                override fun get(index: Int): AnnotationNode = throw OutOfMemoryError("boom")
-            }
+            broken.visibleAnnotations =
+                object : java.util.AbstractList<AnnotationNode>() {
+                    override val size: Int
+                        get() = 1
+
+                    override fun get(index: Int): AnnotationNode = throw OutOfMemoryError("boom")
+                }
             val logs = mutableListOf<String>()
             val adapter = selectionAdapter(optimized, logs)
-            val find = SootUpAdapter::class.java.getDeclaredMethod("findEntryPoints").apply { isAccessible = true }
+            val find = adapter.operation("findEntryPoints").apply { isAccessible = true }
             val entries = assertIs<List<*>>(find.invoke(adapter)).map { assertIs<MethodSignature>(it).toString() }
             assertEquals(listOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(java.lang.String[])>"), entries)
-            val stream = SootUpAdapter::class.java.getDeclaredMethod("streamMethodsOrNull", SootClass::class.java)
-                .apply { isAccessible = true }
+            val stream = adapter.operation("streamMethodsOrNull", SootClass::class.java).apply { isAccessible = true }
             val streamed = assertIs<Sequence<*>>(stream.invoke(adapter, optimized)).map { assertIs<JavaSootMethod>(it).name }.toList()
             assertEquals(sources.size - 1, streamed.size, "every other method streams")
             assertEquals(2, logs.count { it.contains("Skipping method fixture.Streamed.main(I)V: OOM during streaming resolution") })
-            val evidence = SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }
-                .get(adapter) as Map<*, *>
+            val evidence =
+                SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }.get(adapter) as Map<*, *>
             assertEquals(MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, "boom"), evidence["fixture.Streamed.main(I)V"])
             assertEquals(1, evidence.size)
+        }
+    }
+
+    @Test
+    fun `metadata resolution failures skip only the affected method and always clear scratch`() {
+        val failures =
+            listOf(
+                sootup.core.frontend.ResolveException("unresolved annotation", java.nio.file.Path.of("annotation.class")),
+                IllegalArgumentException("invalid annotation"),
+                IllegalStateException("unavailable annotation"))
+        failures.forEach { failure ->
+            withClasses(selectionClassBytes()) { optimized, _ ->
+                val sources = assertNotNull(optimized.classSource.streamingMethodSources())
+                val broken = sources.single { it.name == "main" && it.desc == "(I)V" }
+                broken.visibleAnnotations =
+                    object : java.util.AbstractList<AnnotationNode>() {
+                        override val size: Int
+                            get() = 1
+
+                        override fun get(index: Int): AnnotationNode = throw failure
+                    }
+                val logs = mutableListOf<String>()
+                val adapter = selectionAdapter(optimized, logs)
+                seedScratch(sources)
+                val entries = adapter.methodSources.findEntryPoints().map { it.toString() }
+                assertEquals(listOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(java.lang.String[])>"), entries)
+                assertScratchReleased(sources)
+                seedScratch(sources)
+                val streamed = assertNotNull(adapter.methodSources.streamMethodsOrNull(optimized)).toList()
+                assertEquals(sources.filter { it !== broken }.map { it.signatureFor(optimized.type) }, streamed.map { it.signature })
+                assertEquals(
+                    mapOf("fixture.Streamed.main(I)V" to MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, failure.message)),
+                    adapter.completeness.analysisCompleteness().methods)
+                assertEquals(2, logs.count { it.contains("Skipping method fixture.Streamed.main(I)V:") })
+                assertScratchReleased(sources)
+            }
         }
     }
 
@@ -104,14 +144,13 @@ class StreamingMethodSelectionTest {
         withClasses(selectionClassBytes()) { optimized, stock ->
             val sources = assertNotNull(optimized.classSource.streamingMethodSources())
             var unrelatedReads = 0
-            sources.filter { it.name != "<clinit>" }.forEach {
-                it.visibleAnnotations = unreadableAnnotations { unrelatedReads++ }
-            }
+            sources.filter { it.name != "<clinit>" }.forEach { it.visibleAnnotations = unreadableAnnotations { unrelatedReads++ } }
             val expected = stock.methods.single { it.name == "<clinit>" }
             val source = sources.single { it.name == "<clinit>" }
-            val guarded = object : JavaSootClass(optimized.classSource, SourceType.Application) {
-                override fun getMethods(): Set<JavaSootMethod> = error("persistent method cache was resolved")
-            }
+            val guarded =
+                object : JavaSootClass(optimized.classSource, SourceType.Application) {
+                    override fun getMethods(): Set<JavaSootMethod> = error("persistent method cache was resolved")
+                }
             val adapter = selectionAdapter(guarded)
             val first = selectStaticMethod(adapter, guarded, "<clinit>")
             assertNotNull(first)
@@ -132,10 +171,9 @@ class StreamingMethodSelectionTest {
             val firstBody = first.body
             val secondBody = second.body
             assertNotSame(firstBody, secondBody)
-            assertEquals(expected.body.controlFlowGraph.stmts.map { it.toString() },
-                firstBody.controlFlowGraph.stmts.map { it.toString() })
-            assertEquals(expected.body.controlFlowGraph.stmts.map { it.toString() },
-                secondBody.controlFlowGraph.stmts.map { it.toString() })
+            assertEquals(expected.body.controlFlowGraph.stmts.map { it.toString() }, firstBody.controlFlowGraph.stmts.map { it.toString() })
+            assertEquals(
+                expected.body.controlFlowGraph.stmts.map { it.toString() }, secondBody.controlFlowGraph.stmts.map { it.toString() })
             assertEquals(listOf("return"), secondBody.controlFlowGraph.stmts.map { it.toString() })
             releaseScratch(source)
         }
@@ -148,12 +186,13 @@ class StreamingMethodSelectionTest {
             sources.single { it.name == "<clinit>" }.visibleAnnotations =
                 arrayListOf(AnnotationNode("Lfixture/Broken;").apply { values = arrayListOf<Any>("missing-value") })
             var eagerReads = 0
-            val guarded = object : JavaSootClass(optimized.classSource, SourceType.Application) {
-                override fun getMethods(): Set<JavaSootMethod> {
-                    eagerReads++
-                    error("fallback resolution failed")
+            val guarded =
+                object : JavaSootClass(optimized.classSource, SourceType.Application) {
+                    override fun getMethods(): Set<JavaSootMethod> {
+                        eagerReads++
+                        error("fallback resolution failed")
+                    }
                 }
-            }
             val logs = mutableListOf<String>()
             val adapter = selectionAdapter(guarded, logs)
             seedScratch(sources)
@@ -169,45 +208,59 @@ class StreamingMethodSelectionTest {
     fun `ordinary bytecode sources and missing static initializers retain fallback behavior`() {
         withClasses(selectionClassBytes()) { _, stock ->
             val adapter = selectionAdapter(stock)
-            val find = SootUpAdapter::class.java.getDeclaredMethod("findEntryPoints").apply { isAccessible = true }
+            val find = adapter.operation("findEntryPoints").apply { isAccessible = true }
             val signatures = assertIs<List<*>>(find.invoke(adapter)).map { assertIs<MethodSignature>(it).toString() }
-            assertEquals(setOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(int)>",
-                "<fixture.Streamed: void main(java.lang.String[])>"), signatures.toSet())
+            assertEquals(
+                setOf(
+                    "<fixture.Streamed: void main()>",
+                    "<fixture.Streamed: void main(int)>",
+                    "<fixture.Streamed: void main(java.lang.String[])>"),
+                signatures.toSet())
             val actual = assertNotNull(selectStaticMethod(adapter, stock, "<clinit>"))
             val expected = stock.methods.single { it.name == "<clinit>" }
             assertEquals(expected.signature, actual.signature)
             assertEquals(expected.annotations.toList(), actual.annotations.toList())
-            assertEquals(expected.body.controlFlowGraph.stmts.map { it.toString() },
-                actual.body.controlFlowGraph.stmts.map { it.toString() })
+            assertEquals(
+                expected.body.controlFlowGraph.stmts.map { it.toString() }, actual.body.controlFlowGraph.stmts.map { it.toString() })
         }
         withClasses(selectionClassBytes(includeInitializer = false)) { optimized, stock ->
             var eagerReads = 0
-            val guarded = object : JavaSootClass(optimized.classSource, SourceType.Application) {
-                override fun getMethods(): Set<JavaSootMethod> {
-                    eagerReads++
-                    return stock.methods
+            val guarded =
+                object : JavaSootClass(optimized.classSource, SourceType.Application) {
+                    override fun getMethods(): Set<JavaSootMethod> {
+                        eagerReads++
+                        return stock.methods
+                    }
                 }
-            }
             assertNull(selectStaticMethod(selectionAdapter(guarded), guarded, "<clinit>"))
             assertEquals(1, eagerReads, "no successful streamed match must retain the original fallback")
         }
     }
 
     private fun selectionAdapter(sootClass: JavaSootClass, logs: MutableList<String> = mutableListOf()): SootUpAdapter {
-        val view = object : JavaView(emptyList()) {
-            override fun getClasses(): Stream<JavaSootClass> = Stream.of(sootClass)
-        }
-        return SootUpAdapter(view, LoaderConfig(buildCallGraph = false, verbose = logs::add),
-            extensions = emptyList(), inputLocationSources = emptyMap(), singleArtifactSource = "fixture.jar")
+        val view =
+            object : JavaView(emptyList()) {
+                override fun getClasses(): Stream<JavaSootClass> = Stream.of(sootClass)
+            }
+        return SootUpAdapter(
+            view,
+            LoaderConfig(buildCallGraph = false, verbose = logs::add),
+            extensions = emptyList(),
+            inputLocationSources = emptyMap(),
+            singleArtifactSource = "fixture.jar")
     }
 
     private fun selectStaticMethod(adapter: SootUpAdapter, sootClass: SootClass, name: String): JavaSootMethod? =
-        SootUpAdapter::class.java.getDeclaredMethod("findStaticMethod", SootClass::class.java, String::class.java)
-            .apply { isAccessible = true }.invoke(adapter, sootClass, name) as JavaSootMethod?
+        adapter
+            .operation("findStaticMethod", SootClass::class.java, String::class.java)
+            .apply { isAccessible = true }
+            .invoke(adapter, sootClass, name) as JavaSootMethod?
 
     private fun unreadableAnnotations(onRead: () -> Unit): MutableList<AnnotationNode> =
         object : java.util.AbstractList<AnnotationNode>() {
-            override val size: Int get() = 1
+            override val size: Int
+                get() = 1
+
             override fun get(index: Int): AnnotationNode {
                 onRead()
                 error("unrelated annotation conversion")
@@ -217,8 +270,7 @@ class StreamingMethodSelectionTest {
     private fun seedScratch(sources: List<AsmMethodSource>) {
         sources.forEach { source ->
             for (field in listOf("insnIndexCache", "localVarTypeAnnotationIndex")) {
-                AsmMethodSource::class.java.getDeclaredField(field).apply { isAccessible = true }
-                    .set(source, hashMapOf<Any, Any>())
+                AsmMethodSource::class.java.getDeclaredField(field).apply { isAccessible = true }.set(source, hashMapOf<Any, Any>())
             }
         }
     }
@@ -234,8 +286,7 @@ class StreamingMethodSelectionTest {
         val writer = ClassWriter(0)
         writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "fixture/Streamed", null, "java/lang/Object", null)
         fun method(name: String, desc: String, isStatic: Boolean) {
-            val access = (if (name == "<clinit>") 0 else Opcodes.ACC_PUBLIC) or
-                (if (isStatic) Opcodes.ACC_STATIC else 0)
+            val access = (if (name == "<clinit>") 0 else Opcodes.ACC_PUBLIC) or (if (isStatic) Opcodes.ACC_STATIC else 0)
             val method = writer.visitMethod(access, name, desc, null, arrayOf("java/io/IOException"))
             if (name == "<clinit>") {
                 method.visitAnnotation("Lfixture/Initializer;", true).apply {
@@ -262,10 +313,14 @@ class StreamingMethodSelectionTest {
         AsmMethodSource::class.java.getDeclaredField(name).apply { isAccessible = true }.get(source)
 
     private fun releaseScratch(source: AsmMethodSource) {
-        val adapter = SootUpAdapter(JavaView(emptyList()), LoaderConfig(buildCallGraph = false),
-            extensions = emptyList(), inputLocationSources = emptyMap(), singleArtifactSource = "fixture.jar")
-        SootUpAdapter::class.java.getDeclaredMethod("releaseConversionState", Any::class.java)
-            .apply { isAccessible = true }.invoke(adapter, source)
+        val adapter =
+            SootUpAdapter(
+                JavaView(emptyList()),
+                LoaderConfig(buildCallGraph = false),
+                extensions = emptyList(),
+                inputLocationSources = emptyMap(),
+                singleArtifactSource = "fixture.jar")
+        adapter.operation("releaseConversionState", Any::class.java).apply { isAccessible = true }.invoke(adapter, source)
     }
 
     private fun withClasses(bytes: ByteArray, action: (JavaSootClass, JavaSootClass) -> Unit) {

@@ -9,7 +9,6 @@ import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.DoubleConstant
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
@@ -18,7 +17,6 @@ import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.MethodDescriptor
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ParameterNode
@@ -31,7 +29,6 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
-import io.johnsonlee.graphite.core.ValueNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -318,13 +315,13 @@ class HelpersTest {
 
     @Test
     fun `formatNode formats AnnotationNode`() {
-        val node = AnnotationNode(
-            NodeId.next(),
-            "org.springframework.web.bind.annotation.GetMapping",
-            "com.example.UserController",
-            "getUser",
-            mapOf("value" to "/api/users/{id}")
-        )
+        val node =
+            AnnotationNode(
+                NodeId.next(),
+                "org.springframework.web.bind.annotation.GetMapping",
+                "com.example.UserController",
+                "getUser",
+                mapOf("value" to "/api/users/{id}"))
         val result = formatNode(node)
         assertTrue(result.startsWith("Annotation["), "Should start with 'Annotation[', got: $result")
         assertTrue(result.contains("@GetMapping"), "Should contain short annotation name, got: $result")
@@ -333,13 +330,13 @@ class HelpersTest {
 
     @Test
     fun `nodeToMap for AnnotationNode includes correct fields`() {
-        val node = AnnotationNode(
-            NodeId.next(),
-            "org.springframework.web.bind.annotation.GetMapping",
-            "com.example.UserController",
-            "getUser",
-            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
-        )
+        val node =
+            AnnotationNode(
+                NodeId.next(),
+                "org.springframework.web.bind.annotation.GetMapping",
+                "com.example.UserController",
+                "getUser",
+                mapOf("value" to "/api/users/{id}", "produces" to "application/json"))
         val map = nodeToMap(node)
         assertEquals("AnnotationNode", map["type"])
         assertEquals(node.id.value, map["id"])
@@ -353,13 +350,7 @@ class HelpersTest {
 
     @Test
     fun `nodeToMap for AnnotationNode with empty values`() {
-        val node = AnnotationNode(
-            NodeId.next(),
-            "javax.persistence.Id",
-            "com.example.User",
-            "id",
-            emptyMap()
-        )
+        val node = AnnotationNode(NodeId.next(), "javax.persistence.Id", "com.example.User", "id", emptyMap())
         val map = nodeToMap(node)
         assertEquals("AnnotationNode", map["type"])
         assertEquals("javax.persistence.Id", map["name"])

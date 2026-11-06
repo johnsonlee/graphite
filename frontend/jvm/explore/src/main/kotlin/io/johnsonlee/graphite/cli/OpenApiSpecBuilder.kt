@@ -1,373 +1,377 @@
 package io.johnsonlee.graphite.cli
 
-@Suppress("StringLiteralDuplication")
 internal class OpenApiSpecBuilder {
     internal fun build(): Map<String, Any?> {
-        val paths = linkedMapOf<String, Any?>(
-            "/api/topology" to mapOf(
-                "get" to operation(
-                    "Get the startup-built graph-to-graph call topology",
-                    parameters = emptyList(),
-                    responses = mapOf("200" to response("Topology graph with loaded graphs and aggregated call relations"))
-                )
-            ),
-            "/api/graphs" to mapOf(
-                "get" to operation(
-                    "List loaded webgraphs with cached statistics and aggregate totals",
-                    parameters = emptyList(),
-                    responses = mapOf("200" to response("Loaded graph registry, per-graph statistics, and totals"))
-                )
-            ),
-            "/api/graphs/{graphId}" to mapOf(
-                "get" to operation(
-                    "Get metadata and cached statistics for one graph",
-                    parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
-                    responses = mapOf(
-                        "200" to response("Loaded graph descriptor and statistics"),
-                        "404" to response("Graph not loaded")
-                    )
-                ),
-                "put" to operation(
-                    "Load or replace a webgraph by id",
-                    parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
-                    requestBody = graphLoadRequestBody(),
-                    responses = mapOf(
-                        "200" to response("Loaded graph descriptor"),
-                        "400" to response("Invalid graph id, path, or graph payload")
-                    )
-                ),
-                "post" to operation(
-                    "Load or replace a webgraph by id",
-                    parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
-                    requestBody = graphLoadRequestBody(),
-                    responses = mapOf(
-                        "200" to response("Loaded graph descriptor"),
-                        "400" to response("Invalid graph id, path, or graph payload")
-                    )
-                ),
-                "delete" to operation(
-                    "Unload a webgraph by id",
-                    parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
-                    responses = mapOf(
-                        "204" to response("Graph unloaded"),
-                        "404" to response("Graph not loaded")
-                    )
-                )
-            ),
-            "/api/graphs/{graphId}/cypher" to mapOf(
-                "get" to operation(
-                    "Execute a Cypher query against a specific graph",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id"),
-                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
-                        cypherTimeoutParameter()
-                    ),
-                    responses = mapOf(
-                        "200" to response("Cypher result"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected"),
-                        "404" to response("Graph not loaded")
-                    )
-                ),
-                "post" to operation(
-                    "Execute a Cypher query against a specific graph",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
-                        cypherTimeoutParameter()
-                    ),
-                    requestBody = cypherRequestBody(),
-                    responses = mapOf(
-                        "200" to response("Cypher result"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected"),
-                        "404" to response("Graph not loaded")
-                    )
-                )
-            ),
-            "/api/cypher/graphs" to mapOf(
-                "get" to operation(
-                    "Execute one cross-graph query or explicit fanout over selected graphs",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_ALL_GRAPHS, TYPE_BOOLEAN, false, "Query all loaded graphs; mutually exclusive with graph"),
-                        queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Graph id selection; repeat or comma-separate"),
-                        queryParameter(API_PARAM_MODE, TYPE_STRING, false, "cross-graph (default) or fanout"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
-                        cypherTimeoutParameter(),
-                        queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
-                        queryParameter(
-                            API_PARAM_INCLUDE_GRAPH_ROWS,
-                            TYPE_BOOLEAN,
-                            false,
-                            "Include duplicate per-graph row arrays in graph summaries"
-                        )
-                    ),
-                    responses = mapOf(
-                        "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected"),
-                        "404" to response("Requested graph not loaded")
-                    )
-                ),
-                "post" to operation(
-                    "Execute one cross-graph query or explicit fanout over selected graphs",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
-                        cypherTimeoutParameter(),
-                        queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
-                        queryParameter(
-                            API_PARAM_INCLUDE_GRAPH_ROWS,
-                            TYPE_BOOLEAN,
-                            false,
-                            "Include duplicate per-graph row arrays in graph summaries"
-                        )
-                    ),
-                    requestBody = multiGraphCypherRequestBody(),
-                    responses = mapOf(
-                        "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected"),
-                        "404" to response("Requested graph not loaded")
-                    )
-                )
-            ),
-            "/api/node/{id}" to mapOf(
-                "get" to operation(
-                    "Fetch every graph-local node with this id, grouped by graphId",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)
-                    ),
-                    responses = mapOf(
-                        "200" to response("Node payload"),
-                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI),
-                        "404" to response(API_ERROR_NODE_NOT_FOUND)
-                    )
-                )
-            ),
-            "/api/node/{id}/outgoing" to mapOf(
-                "get" to operation(
-                    "List outgoing edges for this local node id, grouped by graphId",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Outgoing edges"),
-                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
-                    )
-                )
-            ),
-            "/api/node/{id}/incoming" to mapOf(
-                "get" to operation(
-                    "List incoming edges for this local node id, grouped by graphId",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Incoming edges"),
-                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
-                    )
-                )
-            ),
-            "/api/annotations" to mapOf(
-                "get" to operation(
-                    "Fetch member annotations across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_CLASS, TYPE_STRING, true, "Declaring class name"),
-                        queryParameter(API_PARAM_MEMBER, TYPE_STRING, true, "Member name")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Annotation map"),
-                        "400" to response("Missing required parameters")
-                    )
-                )
-            ),
-            "/api/resources" to mapOf(
-                "get" to operation(
-                    "List persisted resources across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_PATTERN, TYPE_STRING, false, "Glob pattern, defaults to **"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
-                    ),
-                    responses = mapOf(
-                        "200" to response("Resource listing"),
-                        "409" to response("Graph was built without a persisted resource store and must be rebuilt")
-                    )
-                )
-            ),
-            "/api/resources/{path}" to mapOf(
-                "get" to operation(
-                    "Read every matching persisted resource, grouped by graphId",
-                    parameters = listOf(
-                        pathParameter(API_FIELD_PATH, TYPE_STRING, "Resource path inside the graph payload; may include nested segments")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Raw resource content"),
-                        "409" to response("Graph was built without a persisted resource store and must be rebuilt"),
-                        "413" to response("Resource exceeds maximum response size"),
-                        "404" to response(API_ERROR_RESOURCE_NOT_FOUND)
-                    )
-                )
-            ),
-            "/api/endpoints" to mapOf(
-                "get" to operation(
-                    "Extract framework API endpoints across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of endpoints"),
-                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional controller class filter")
-                    ),
-                    responses = mapOf("200" to response("Extracted framework HTTP endpoints"))
-                )
-            ),
-            "/api/architecture/c4" to mapOf(
-                "get" to operation(
-                    "Build C4 architecture views for all loaded graphs, grouped by graphId for JSON",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_LEVEL, TYPE_STRING, false, "context, container, component, or all"),
-                        queryParameter(API_PARAM_FORMAT, TYPE_STRING, false, "json, dsl, mermaid, or plantuml")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Structurizr workspace JSON, Structurizr DSL, Mermaid text, or PlantUML text"),
-                        "400" to response("Invalid level or format parameter")
-                    )
-                )
-            ),
-            "/api/overview" to mapOf(
-                "get" to operation(
-                    "Build class-level overviews for all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of classes")
-                    ),
-                    responses = mapOf("200" to response("Overview graph"))
-                )
-            ),
-            "/api/subgraph" to mapOf(
-                "get" to operation(
-                    "Build local subgraphs for this graph-local node id, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_CENTER, TYPE_INTEGER, true, "Center node id"),
-                        queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth"),
-                        queryParameter(API_PARAM_DIRECTION, TYPE_STRING, false, "outgoing, incoming, or both")
-                    ),
-                    responses = mapOf(
-                        "200" to response("Subgraph"),
-                        "400" to response("Missing or invalid parameters")
-                    )
-                )
-            ),
-            "/api/cypher" to mapOf(
-                "get" to operation(
-                    "Execute one query over the union of all loaded graphs",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
-                        cypherTimeoutParameter()
-                    ),
-                    responses = mapOf(
-                        "200" to response("Cypher result"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected")
-                    )
-                ),
-                "post" to operation(
-                    "Execute one query over the union of all loaded graphs",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
-                        cypherTimeoutParameter()
-                    ),
-                    requestBody = cypherRequestBody(),
-                    responses = mapOf(
-                        "200" to response("Cypher result"),
-                        "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency limit exceeded"),
-                        "504" to response("Cypher query timeout exceeded"),
-                        "503" to response("Cypher cancelled while the client remained connected")
-                    )
-                )
-            ),
-            "/openapi.json" to mapOf(
-                "get" to operation(
-                    "Fetch this OpenAPI document",
-                    parameters = emptyList(),
-                    responses = mapOf("200" to response("OpenAPI specification"))
-                )
-            ),
-            "/swagger.json" to mapOf(
-                "get" to operation(
-                    "Fetch this API document via Swagger-compatible alias",
-                    parameters = emptyList(),
-                    responses = mapOf("200" to response("OpenAPI specification"))
-                )
-            )
-        )
+        val paths =
+            linkedMapOf<String, Any?>().apply {
+                putAll(registryPaths())
+                putAll(queryPaths())
+                putAll(nodePaths())
+                putAll(resourcePaths())
+            }
         addGraphScopedPaths(paths)
         GRAPH_LOCAL_ID_PATHS.forEach(paths::remove)
         return mapOf(
             "openapi" to "3.0.3",
-            "info" to mapOf(
-                "title" to "Graphite Explore API",
-                "version" to GraphiteVersionProvider.currentVersion(),
-                "description" to "Graph-qualified single-graph and cross-graph query API for Graphite Explore."
-            ),
-            "paths" to paths
-        )
+            "info" to
+                mapOf(
+                    "title" to "Graphite Explore API",
+                    "version" to GraphiteVersionProvider.currentVersion(),
+                    "description" to "Graph-qualified single-graph and cross-graph query API for Graphite Explore."),
+            "paths" to paths)
     }
+
+    private fun registryPaths(): Map<String, Any?> =
+        linkedMapOf(
+            "/api/topology" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Get the startup-built graph-to-graph call topology",
+                            parameters = emptyList(),
+                            responses = mapOf("200" to response("Topology graph with loaded graphs and aggregated call relations")))),
+            "/api/graphs" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "List loaded webgraphs with cached statistics and aggregate totals",
+                            parameters = emptyList(),
+                            responses = mapOf("200" to response("Loaded graph registry, per-graph statistics, and totals")))),
+            "/api/graphs/{graphId}" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Get metadata and cached statistics for one graph",
+                            parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)),
+                            responses =
+                                mapOf(
+                                    "200" to response("Loaded graph descriptor and statistics"), "404" to response(TEXT_GRAPH_NOT_LOADED))),
+                    "put" to
+                        operation(
+                            "Load or replace a webgraph by id",
+                            parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)),
+                            requestBody = graphLoadRequestBody(),
+                            responses =
+                                mapOf(
+                                    "200" to response("Loaded graph descriptor"),
+                                    "400" to response("Invalid graph id, path, or graph payload"))),
+                    "post" to
+                        operation(
+                            "Load or replace a webgraph by id",
+                            parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)),
+                            requestBody = graphLoadRequestBody(),
+                            responses =
+                                mapOf(
+                                    "200" to response("Loaded graph descriptor"),
+                                    "400" to response("Invalid graph id, path, or graph payload"))),
+                    "delete" to
+                        operation(
+                            "Unload a webgraph by id",
+                            parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)),
+                            responses = mapOf("204" to response("Graph unloaded"), "404" to response(TEXT_GRAPH_NOT_LOADED)))),
+            "/api/graphs/{graphId}/cypher" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Execute a Cypher query against a specific graph",
+                            parameters =
+                                listOf(
+                                    pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID),
+                                    queryParameter(API_PARAM_QUERY, TYPE_STRING, true, TEXT_CYPHER_QUERY_TEXT),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_SERVER_SIDE_MAXIMUM_RESULT_ROWS),
+                                    cypherTimeoutParameter()),
+                            responses =
+                                mapOf(
+                                    "200" to response(TEXT_CYPHER_RESULT),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED),
+                                    "404" to response(TEXT_GRAPH_NOT_LOADED))),
+                    "post" to
+                        operation(
+                            "Execute a Cypher query against a specific graph",
+                            parameters =
+                                listOf(
+                                    pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_SERVER_SIDE_MAXIMUM_RESULT_ROWS),
+                                    cypherTimeoutParameter()),
+                            requestBody = cypherRequestBody(),
+                            responses =
+                                mapOf(
+                                    "200" to response(TEXT_CYPHER_RESULT),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED),
+                                    "404" to response(TEXT_GRAPH_NOT_LOADED)))))
+
+    private fun queryPaths(): Map<String, Any?> =
+        linkedMapOf(
+            "/api/cypher/graphs" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Execute one cross-graph query or explicit fanout over selected graphs",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_QUERY, TYPE_STRING, true, TEXT_CYPHER_QUERY_TEXT),
+                                    queryParameter(
+                                        API_PARAM_ALL_GRAPHS,
+                                        TYPE_BOOLEAN,
+                                        false,
+                                        "Query all loaded graphs; mutually exclusive with graph"),
+                                    queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Graph id selection; repeat or comma-separate"),
+                                    queryParameter(API_PARAM_MODE, TYPE_STRING, false, "cross-graph (default) or fanout"),
+                                    queryParameter(
+                                        API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_MAXIMUM_TOTAL_RESULT_ROWS_ACROSS_QUERIED_GRAPHS),
+                                    cypherTimeoutParameter(),
+                                    queryParameter(
+                                        API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, TEXT_OPTIONAL_MAXIMUM_RESULT_ROWS_PER_GRAPH),
+                                    queryParameter(
+                                        API_PARAM_INCLUDE_GRAPH_ROWS,
+                                        TYPE_BOOLEAN,
+                                        false,
+                                        TEXT_INCLUDE_DUPLICATE_PER_GRAPH_ROW_ARRAYS_IN_GRAPH_SUMMARIES)),
+                            responses =
+                                mapOf(
+                                    "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED),
+                                    "404" to response("Requested graph not loaded"))),
+                    "post" to
+                        operation(
+                            "Execute one cross-graph query or explicit fanout over selected graphs",
+                            parameters =
+                                listOf(
+                                    queryParameter(
+                                        API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_MAXIMUM_TOTAL_RESULT_ROWS_ACROSS_QUERIED_GRAPHS),
+                                    cypherTimeoutParameter(),
+                                    queryParameter(
+                                        API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, TEXT_OPTIONAL_MAXIMUM_RESULT_ROWS_PER_GRAPH),
+                                    queryParameter(
+                                        API_PARAM_INCLUDE_GRAPH_ROWS,
+                                        TYPE_BOOLEAN,
+                                        false,
+                                        TEXT_INCLUDE_DUPLICATE_PER_GRAPH_ROW_ARRAYS_IN_GRAPH_SUMMARIES)),
+                            requestBody = multiGraphCypherRequestBody(),
+                            responses =
+                                mapOf(
+                                    "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED),
+                                    "404" to response("Requested graph not loaded")))),
+            PATH_API_NODE_ID to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Fetch every graph-local node with this id, grouped by graphId",
+                            parameters = listOf(pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)),
+                            responses =
+                                mapOf(
+                                    "200" to response("Node payload"),
+                                    "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI),
+                                    "404" to response(API_ERROR_NODE_NOT_FOUND)))),
+            PATH_API_NODE_ID_OUTGOING to
+                mapOf(
+                    "get" to
+                        operation(
+                            "List outgoing edges for this local node id, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")),
+                            responses = mapOf("200" to response("Outgoing edges"), "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)))),
+            PATH_API_NODE_ID_INCOMING to
+                mapOf(
+                    "get" to
+                        operation(
+                            "List incoming edges for this local node id, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")),
+                            responses = mapOf("200" to response("Incoming edges"), "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)))))
+
+    private fun nodePaths(): Map<String, Any?> =
+        linkedMapOf(
+            PATH_API_ANNOTATIONS to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Fetch member annotations across all loaded graphs, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_CLASS, TYPE_STRING, true, "Declaring class name"),
+                                    queryParameter(API_PARAM_MEMBER, TYPE_STRING, true, "Member name")),
+                            responses = mapOf("200" to response("Annotation map"), "400" to response("Missing required parameters")))),
+            PATH_API_RESOURCES to
+                mapOf(
+                    "get" to
+                        operation(
+                            "List persisted resources across all loaded graphs, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_PATTERN, TYPE_STRING, false, "Glob pattern, defaults to **"),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)),
+                            responses =
+                                mapOf(
+                                    "200" to response("Resource listing"),
+                                    "409" to response("Graph was built without a persisted resource store and must be rebuilt")))),
+            PATH_API_RESOURCES_PATH to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Read every matching persisted resource, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    pathParameter(
+                                        API_FIELD_PATH,
+                                        TYPE_STRING,
+                                        "Resource path inside the graph payload; may include nested segments")),
+                            responses =
+                                mapOf(
+                                    "200" to response("Raw resource content"),
+                                    "409" to response("Graph was built without a persisted resource store and must be rebuilt"),
+                                    "413" to response("Resource exceeds maximum response size"),
+                                    "404" to response(API_ERROR_RESOURCE_NOT_FOUND)))),
+            PATH_API_ENDPOINTS to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Extract framework API endpoints across all loaded graphs, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of endpoints"),
+                                    queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional controller class filter")),
+                            responses = mapOf("200" to response("Extracted framework HTTP endpoints")))),
+            PATH_API_ARCHITECTURE_C4 to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Build C4 architecture views for all loaded graphs, grouped by graphId for JSON",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_LEVEL, TYPE_STRING, false, "context, container, component, or all"),
+                                    queryParameter(API_PARAM_FORMAT, TYPE_STRING, false, "json, dsl, mermaid, or plantuml")),
+                            responses =
+                                mapOf(
+                                    "200" to response("Structurizr workspace JSON, Structurizr DSL, Mermaid text, or PlantUML text"),
+                                    "400" to response("Invalid level or format parameter")))),
+            PATH_API_OVERVIEW to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Build class-level overviews for all loaded graphs, grouped by graphId",
+                            parameters = listOf(queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of classes")),
+                            responses = mapOf("200" to response("Overview graph")))),
+            PATH_API_SUBGRAPH to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Build local subgraphs for this graph-local node id, grouped by graphId",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_CENTER, TYPE_INTEGER, true, "Center node id"),
+                                    queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth"),
+                                    queryParameter(API_PARAM_DIRECTION, TYPE_STRING, false, "outgoing, incoming, or both")),
+                            responses = mapOf("200" to response("Subgraph"), "400" to response("Missing or invalid parameters")))))
+
+    private fun resourcePaths(): Map<String, Any?> =
+        linkedMapOf(
+            "/api/cypher" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Execute one query over the union of all loaded graphs",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_QUERY, TYPE_STRING, true, TEXT_CYPHER_QUERY_TEXT),
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_SERVER_SIDE_MAXIMUM_RESULT_ROWS),
+                                    cypherTimeoutParameter()),
+                            responses =
+                                mapOf(
+                                    "200" to response(TEXT_CYPHER_RESULT),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED))),
+                    "post" to
+                        operation(
+                            "Execute one query over the union of all loaded graphs",
+                            parameters =
+                                listOf(
+                                    queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, TEXT_SERVER_SIDE_MAXIMUM_RESULT_ROWS),
+                                    cypherTimeoutParameter()),
+                            requestBody = cypherRequestBody(),
+                            responses =
+                                mapOf(
+                                    "200" to response(TEXT_CYPHER_RESULT),
+                                    "400" to response(TEXT_MISSING_OR_INVALID_QUERY),
+                                    "429" to response(TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED),
+                                    "504" to response(TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED),
+                                    "503" to response(TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED)))),
+            "/openapi.json" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Fetch this OpenAPI document",
+                            parameters = emptyList(),
+                            responses = mapOf("200" to response("OpenAPI specification")))),
+            "/swagger.json" to
+                mapOf(
+                    "get" to
+                        operation(
+                            "Fetch this API document via Swagger-compatible alias",
+                            parameters = emptyList(),
+                            responses = mapOf("200" to response("OpenAPI specification")))))
 
     @Suppress("UNCHECKED_CAST")
     private fun addGraphScopedPaths(paths: MutableMap<String, Any?>) {
-        val graphBoundRoots = listOf(
-            "/api/node/{id}",
-            "/api/node/{id}/outgoing",
-            "/api/node/{id}/incoming",
-            "/api/annotations",
-            "/api/resources",
-            "/api/resources/{path}",
-            "/api/endpoints",
-            "/api/architecture/c4",
-            "/api/overview",
-            "/api/subgraph"
-        )
+        val graphBoundRoots =
+            listOf(
+                PATH_API_NODE_ID,
+                PATH_API_NODE_ID_OUTGOING,
+                PATH_API_NODE_ID_INCOMING,
+                PATH_API_ANNOTATIONS,
+                PATH_API_RESOURCES,
+                PATH_API_RESOURCES_PATH,
+                PATH_API_ENDPOINTS,
+                PATH_API_ARCHITECTURE_C4,
+                PATH_API_OVERVIEW,
+                PATH_API_SUBGRAPH)
         graphBoundRoots.forEach { rootPath ->
             val scopedPath = "/api/graphs/{graphId}" + rootPath.removePrefix("/api")
             val operations = paths.getValue(rootPath) as Map<String, Map<String, Any?>>
-            paths[scopedPath] = operations.mapValues { (_, operation) ->
-                operation.toMutableMap().apply {
-                    val parameters = (this["parameters"] as? List<Map<String, Any?>>).orEmpty()
-                    this["parameters"] = listOf(
-                        pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")
-                    ) + parameters
-                    this["summary"] = scopedSummary(rootPath)
+            paths[scopedPath] =
+                operations.mapValues { (_, operation) ->
+                    operation.toMutableMap().apply {
+                        val parameters = (this[TEXT_PARAMETERS] as? List<Map<String, Any?>>).orEmpty()
+                        this[TEXT_PARAMETERS] = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)) + parameters
+                        this["summary"] = scopedSummary(rootPath)
+                    }
                 }
-            }
         }
     }
 
-    private fun scopedSummary(rootPath: String): String = when (rootPath) {
-        "/api/node/{id}" -> "Fetch a node by graph-local id in one explicit graph"
-        "/api/node/{id}/outgoing" -> "List outgoing edges in one explicit graph"
-        "/api/node/{id}/incoming" -> "List incoming edges in one explicit graph"
-        "/api/annotations" -> "Fetch member annotations in one explicit graph"
-        "/api/resources" -> "List persisted resources in one explicit graph"
-        "/api/resources/{path}" -> "Read persisted resource content in one explicit graph"
-        "/api/endpoints" -> "Extract framework API endpoints from one explicit graph"
-        "/api/architecture/c4" -> "Build C4 architecture views for one explicit graph"
-        "/api/overview" -> "Build a class-level overview for one explicit graph"
-        "/api/subgraph" -> "Build a local subgraph in one explicit graph"
-        else -> error("Unknown graph-bound route: $rootPath")
-    }
+    private fun scopedSummary(rootPath: String): String =
+        when (rootPath) {
+            PATH_API_NODE_ID -> "Fetch a node by graph-local id in one explicit graph"
+            PATH_API_NODE_ID_OUTGOING -> "List outgoing edges in one explicit graph"
+            PATH_API_NODE_ID_INCOMING -> "List incoming edges in one explicit graph"
+            PATH_API_ANNOTATIONS -> "Fetch member annotations in one explicit graph"
+            PATH_API_RESOURCES -> "List persisted resources in one explicit graph"
+            PATH_API_RESOURCES_PATH -> "Read persisted resource content in one explicit graph"
+            PATH_API_ENDPOINTS -> "Extract framework API endpoints from one explicit graph"
+            PATH_API_ARCHITECTURE_C4 -> "Build C4 architecture views for one explicit graph"
+            PATH_API_OVERVIEW -> "Build a class-level overview for one explicit graph"
+            PATH_API_SUBGRAPH -> "Build a local subgraph in one explicit graph"
+            else -> error("Unknown graph-bound route: $rootPath")
+        }
 
     private fun operation(
         summary: String,
@@ -377,103 +381,61 @@ internal class OpenApiSpecBuilder {
     ): Map<String, Any?> = buildMap {
         put("summary", summary)
         put("responses", responses)
-        if (parameters.isNotEmpty()) put("parameters", parameters)
+        if (parameters.isNotEmpty()) put(TEXT_PARAMETERS, parameters)
         if (requestBody != null) put("requestBody", requestBody)
     }
 
     private fun cypherRequestBody(): Map<String, Any?> =
         objectRequestBody(
             mapOf(
-                API_PARAM_QUERY to mapOf(
-                    API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "Cypher query text"
-                ),
-                API_PARAM_TIMEOUT_MILLIS to mapOf(
-                    API_FIELD_TYPE to TYPE_INTEGER,
-                    FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION,
-                    "minimum" to 1
-                )
-            ),
-            listOf(API_PARAM_QUERY)
-        )
+                API_PARAM_QUERY to mapOf(API_FIELD_TYPE to TYPE_STRING, FIELD_DESCRIPTION to TEXT_CYPHER_QUERY_TEXT),
+                API_PARAM_TIMEOUT_MILLIS to
+                    mapOf(API_FIELD_TYPE to TYPE_INTEGER, FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION, TEXT_MINIMUM to 1)),
+            listOf(API_PARAM_QUERY))
 
     private fun graphLoadRequestBody(): Map<String, Any?> =
         objectRequestBody(
             mapOf(
-                API_FIELD_PATH to mapOf(
-                    API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "Absolute graph path, or path relative to --data"
-                ),
-                API_FIELD_LOAD_MODE to mapOf(
-                    API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "Optional graph load mode: EAGER, MAPPED, or AUTO"
-                )
-            ),
-            listOf(API_FIELD_PATH)
-        )
+                API_FIELD_PATH to
+                    mapOf(API_FIELD_TYPE to TYPE_STRING, FIELD_DESCRIPTION to "Absolute graph path, or path relative to --data"),
+                API_FIELD_LOAD_MODE to
+                    mapOf(API_FIELD_TYPE to TYPE_STRING, FIELD_DESCRIPTION to "Optional graph load mode: EAGER, MAPPED, or AUTO")),
+            listOf(API_FIELD_PATH))
 
     private fun multiGraphCypherRequestBody(): Map<String, Any?> =
         objectRequestBody(
             mapOf(
-                API_PARAM_QUERY to mapOf(
-                    API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "Cypher query text"
-                ),
-                API_FIELD_GRAPHS to mapOf(
-                    API_FIELD_TYPE to "array",
-                    FIELD_DESCRIPTION to "Explicit graph ids to query; mutually exclusive with allGraphs",
-                    "items" to mapOf(API_FIELD_TYPE to TYPE_STRING)
-                ),
-                API_PARAM_ALL_GRAPHS to mapOf(
-                    API_FIELD_TYPE to TYPE_BOOLEAN,
-                    FIELD_DESCRIPTION to "Query all loaded graphs; mutually exclusive with graphs"
-                ),
-                API_PARAM_MODE to mapOf(
-                    API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "cross-graph (default) or fanout"
-                ),
-                API_PARAM_LIMIT to mapOf(
-                    API_FIELD_TYPE to TYPE_INTEGER,
-                    FIELD_DESCRIPTION to "Maximum total result rows across queried graphs"
-                ),
-                API_PARAM_PER_GRAPH_LIMIT to mapOf(
-                    API_FIELD_TYPE to TYPE_INTEGER,
-                    FIELD_DESCRIPTION to "Optional maximum result rows per graph"
-                ),
-                API_PARAM_INCLUDE_GRAPH_ROWS to mapOf(
-                    API_FIELD_TYPE to TYPE_BOOLEAN,
-                    FIELD_DESCRIPTION to "Include duplicate per-graph row arrays in graph summaries"
-                ),
-                API_PARAM_TIMEOUT_MILLIS to mapOf(
-                    API_FIELD_TYPE to TYPE_INTEGER,
-                    FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION,
-                    "minimum" to 1
-                )
-            ),
-            listOf(API_PARAM_QUERY)
-        )
+                API_PARAM_QUERY to mapOf(API_FIELD_TYPE to TYPE_STRING, FIELD_DESCRIPTION to TEXT_CYPHER_QUERY_TEXT),
+                API_FIELD_GRAPHS to
+                    mapOf(
+                        API_FIELD_TYPE to "array",
+                        FIELD_DESCRIPTION to "Explicit graph ids to query; mutually exclusive with allGraphs",
+                        "items" to mapOf(API_FIELD_TYPE to TYPE_STRING)),
+                API_PARAM_ALL_GRAPHS to
+                    mapOf(API_FIELD_TYPE to TYPE_BOOLEAN, FIELD_DESCRIPTION to "Query all loaded graphs; mutually exclusive with graphs"),
+                API_PARAM_MODE to mapOf(API_FIELD_TYPE to TYPE_STRING, FIELD_DESCRIPTION to "cross-graph (default) or fanout"),
+                API_PARAM_LIMIT to
+                    mapOf(API_FIELD_TYPE to TYPE_INTEGER, FIELD_DESCRIPTION to TEXT_MAXIMUM_TOTAL_RESULT_ROWS_ACROSS_QUERIED_GRAPHS),
+                API_PARAM_PER_GRAPH_LIMIT to
+                    mapOf(API_FIELD_TYPE to TYPE_INTEGER, FIELD_DESCRIPTION to TEXT_OPTIONAL_MAXIMUM_RESULT_ROWS_PER_GRAPH),
+                API_PARAM_INCLUDE_GRAPH_ROWS to
+                    mapOf(
+                        API_FIELD_TYPE to TYPE_BOOLEAN,
+                        FIELD_DESCRIPTION to TEXT_INCLUDE_DUPLICATE_PER_GRAPH_ROW_ARRAYS_IN_GRAPH_SUMMARIES),
+                API_PARAM_TIMEOUT_MILLIS to
+                    mapOf(API_FIELD_TYPE to TYPE_INTEGER, FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION, TEXT_MINIMUM to 1)),
+            listOf(API_PARAM_QUERY))
 
     private fun objectRequestBody(properties: Map<String, Any?>, required: List<String>): Map<String, Any?> =
         mapOf(
             FIELD_REQUIRED to true,
-            "content" to mapOf(
-                "application/json" to mapOf(
-                    "schema" to mapOf(
-                        API_FIELD_TYPE to TYPE_OBJECT,
-                        "properties" to properties,
-                        FIELD_REQUIRED to required
-                    )
-                )
-            )
-        )
+            "content" to
+                mapOf(
+                    "application/json" to
+                        mapOf("schema" to mapOf(API_FIELD_TYPE to TYPE_OBJECT, "properties" to properties, FIELD_REQUIRED to required))))
 
-    private fun cypherTimeoutParameter(): Map<String, Any?> = queryParameter(
-        API_PARAM_TIMEOUT_MILLIS,
-        TYPE_INTEGER,
-        false,
-        CYPHER_TIMEOUT_DESCRIPTION,
-        minimum = 1
-    )
+    private fun cypherTimeoutParameter(): Map<String, Any?> =
+        queryParameter(API_PARAM_TIMEOUT_MILLIS, TYPE_INTEGER, false, CYPHER_TIMEOUT_DESCRIPTION, minimum = 1)
 
     private fun queryParameter(
         name: String,
@@ -499,31 +461,48 @@ internal class OpenApiSpecBuilder {
             API_FIELD_NAME to name,
             FIELD_REQUIRED to required,
             FIELD_DESCRIPTION to description,
-            "schema" to if (minimum == null) {
-                mapOf(API_FIELD_TYPE to type)
-            } else {
-                mapOf(API_FIELD_TYPE to type, "minimum" to minimum)
-            }
-        )
+            "schema" to
+                if (minimum == null) {
+                    mapOf(API_FIELD_TYPE to type)
+                } else {
+                    mapOf(API_FIELD_TYPE to type, TEXT_MINIMUM to minimum)
+                })
 
-    private fun response(description: String): Map<String, Any?> =
-        mapOf(FIELD_DESCRIPTION to description)
+    private fun response(description: String): Map<String, Any?> = mapOf(FIELD_DESCRIPTION to description)
 
     companion object {
+        private const val TEXT_UNIQUE_GRAPH_ID = "Unique graph id"
+        private const val TEXT_GRAPH_NOT_LOADED = "Graph not loaded"
+        private const val TEXT_CYPHER_QUERY_TEXT = "Cypher query text"
+        private const val TEXT_SERVER_SIDE_MAXIMUM_RESULT_ROWS = "Server-side maximum result rows"
+        private const val TEXT_CYPHER_RESULT = "Cypher result"
+        private const val TEXT_MISSING_OR_INVALID_QUERY = "Missing or invalid query"
+        private const val TEXT_CYPHER_CONCURRENCY_LIMIT_EXCEEDED = "Cypher concurrency limit exceeded"
+        private const val TEXT_CYPHER_QUERY_TIMEOUT_EXCEEDED = "Cypher query timeout exceeded"
+        private const val TEXT_CYPHER_CANCELLED_WHILE_THE_CLIENT_REMAINED_CONNECTED = "Cypher cancelled while the client remained connected"
+        private const val TEXT_MAXIMUM_TOTAL_RESULT_ROWS_ACROSS_QUERIED_GRAPHS = "Maximum total result rows across queried graphs"
+        private const val TEXT_OPTIONAL_MAXIMUM_RESULT_ROWS_PER_GRAPH = "Optional maximum result rows per graph"
+        private const val TEXT_INCLUDE_DUPLICATE_PER_GRAPH_ROW_ARRAYS_IN_GRAPH_SUMMARIES =
+            "Include duplicate per-graph row arrays in graph summaries"
+        private const val PATH_API_NODE_ID = "/api/node/{id}"
+        private const val PATH_API_NODE_ID_OUTGOING = "/api/node/{id}/outgoing"
+        private const val PATH_API_NODE_ID_INCOMING = "/api/node/{id}/incoming"
+        private const val PATH_API_ANNOTATIONS = "/api/annotations"
+        private const val PATH_API_RESOURCES = "/api/resources"
+        private const val PATH_API_RESOURCES_PATH = "/api/resources/{path}"
+        private const val PATH_API_ENDPOINTS = "/api/endpoints"
+        private const val PATH_API_ARCHITECTURE_C4 = "/api/architecture/c4"
+        private const val PATH_API_OVERVIEW = "/api/overview"
+        private const val PATH_API_SUBGRAPH = "/api/subgraph"
+        private const val TEXT_PARAMETERS = "parameters"
+        private const val TEXT_MINIMUM = "minimum"
         private const val FIELD_DESCRIPTION = "description"
         private const val FIELD_REQUIRED = "required"
         private const val TYPE_BOOLEAN = "boolean"
         private const val TYPE_INTEGER = "integer"
         private const val TYPE_OBJECT = "object"
         private const val TYPE_STRING = "string"
-        private const val CYPHER_TIMEOUT_DESCRIPTION =
-            "Positive client timeout in milliseconds, capped by the server maximum"
-        private val GRAPH_LOCAL_ID_PATHS = listOf(
-            "/api/node/{id}",
-            "/api/node/{id}/outgoing",
-            "/api/node/{id}/incoming",
-            "/api/subgraph"
-        )
+        private const val CYPHER_TIMEOUT_DESCRIPTION = "Positive client timeout in milliseconds, capped by the server maximum"
+        private val GRAPH_LOCAL_ID_PATHS = listOf(PATH_API_NODE_ID, PATH_API_NODE_ID_OUTGOING, PATH_API_NODE_ID_INCOMING, PATH_API_SUBGRAPH)
     }
-
 }
