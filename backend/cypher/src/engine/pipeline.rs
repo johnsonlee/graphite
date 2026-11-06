@@ -438,19 +438,16 @@ impl Executor {
                     where_clause,
                 } => {
                     let order = next_order_by(&clauses[i + 1..]);
-                    let (cols, projected) = project(&ev, rows, items.as_deref(), *distinct, order)?;
+                    let (cols, projected) = project_filtered(
+                        &ev,
+                        rows,
+                        items.as_deref(),
+                        *distinct,
+                        order,
+                        where_clause.as_ref(),
+                    )?;
                     columns = cols;
                     rows = projected;
-                    if let Some(w) = where_clause {
-                        let mut out = Vec::with_capacity(rows.len());
-                        for r in rows {
-                            self.tick()?;
-                            if ev.eval(w, &r)?.as_bool() == Some(true) {
-                                out.push(r);
-                            }
-                        }
-                        rows = out;
-                    }
                 }
                 Clause::Return { distinct, items } => {
                     let order = next_order_by(&clauses[i + 1..]);
@@ -1484,6 +1481,14 @@ impl FusedShape {
             }) => (*distinct, items.clone(), where_clause.as_ref()),
             _ => return None,
         };
+        // A fused projection releases its input row. Predicates needing a dropped
+        // binding must use the ordinary projection/filter boundary instead.
+        if let (Some(predicate), Some(items)) = (with_where, items.as_deref()) {
+            let names = item_names(items).into_iter().collect();
+            if !crate::validation::references_only(predicate, &names) {
+                return None;
+            }
+        }
         i += 1;
         let order = next_order_by(&clauses[i..]).map(|o| o.to_vec());
         Some((
@@ -2409,6 +2414,17 @@ fn project(
     distinct: bool,
     order: Option<&[OrderItem]>,
 ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+    project_filtered(ev, rows, items, distinct, order, None)
+}
+
+fn project_filtered(
+    ev: &Evaluator,
+    rows: Vec<Row>,
+    items: Option<&[ReturnItem]>,
+    distinct: bool,
+    order: Option<&[OrderItem]>,
+    predicate: Option<&Expr>,
+) -> CypherResult<(Vec<String>, Vec<Row>)> {
     let explicit_items = items.is_some();
     // RETURN * expansion.
     let expanded: Vec<ReturnItem>;
@@ -2439,6 +2455,7 @@ fn project(
     if explicit_items
         && !distinct
         && order.is_none()
+        && predicate.is_none()
         && is_identity_projection(items, &columns, &rows)
     {
         return Ok((columns, rows));
@@ -2478,7 +2495,7 @@ fn project(
         let mut cols = columns.clone();
         // Release each input row after its projection and order keys are owned by out.
         for row in rows {
-            out.push(project_row(
+            let projected = project_row(
                 ev,
                 &row,
                 Some(items),
@@ -2487,7 +2504,30 @@ fn project(
                 distinct,
                 false,
                 &mut cols,
-            )?);
+            )?;
+            if let Some(predicate) = predicate {
+                let mut scope = row;
+                scope.extend(columns.iter().filter_map(|name| {
+                    projected
+                        .get(name)
+                        .map(|value| (name.clone(), value.clone()))
+                }));
+                if ev.eval(predicate, &scope)?.as_bool() != Some(true) {
+                    continue;
+                }
+            }
+            out.push(projected);
+        }
+    }
+    if aggregated {
+        if let Some(predicate) = predicate {
+            let mut filtered = Vec::with_capacity(out.len());
+            for row in out {
+                if ev.eval(predicate, &row)?.as_bool() == Some(true) {
+                    filtered.push(row);
+                }
+            }
+            out = filtered;
         }
     }
     if distinct {

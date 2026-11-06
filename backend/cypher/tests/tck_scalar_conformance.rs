@@ -433,3 +433,41 @@ fn skip_limit_parameters_require_nonnegative_integer_values() {
         }
     }
 }
+
+#[test]
+fn with_where_sees_input_and_projected_bindings_without_leaking_dropped_variables() {
+    let ex = Executor::new(vec![], false);
+    let query="UNWIND [{name:'A'},{name:'B'},{name:'C'}] AS a WITH a.name AS name WHERE name = 'B' OR a.name = 'C' RETURN * ORDER BY name";
+    let result = ex.execute(query, None).unwrap();
+    assert_eq!(result.columns, vec!["name"]);
+    assert_eq!(
+        result
+            .rows
+            .iter()
+            .map(|r| r["name"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec!["B", "C"]
+    );
+    assert!(result.rows.iter().all(|r| !r.contains_key("a")));
+    let graph = std::sync::Arc::new(graphite_cypher::property_graph::PropertyGraph::new());
+    let ex = Executor::property_graph(graph);
+    ex.execute("CREATE ({name:'A'}),({name:'B'}),({name:'C'})", None)
+        .unwrap();
+    let result=ex.execute("MATCH (a) WITH a.name AS name WHERE name = 'B' OR a.name = 'C' RETURN name ORDER BY name",None).unwrap();
+    assert_eq!(
+        result
+            .rows
+            .iter()
+            .map(|r| r["name"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec!["B", "C"]
+    );
+    let result = ex
+        .execute(
+            "MATCH (a) WITH DISTINCT a.name AS name WHERE a.name = 'B' RETURN name",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows.len(), 1);
+    assert_eq!(result.rows[0]["name"].as_str(), Some("B"));
+}
