@@ -97,13 +97,22 @@ impl CancelToken {
 
     fn charge_work(&self) -> CypherResult<()> {
         if let Some(work) = &self.work {
-            let consumed =
-                work.consumed
-                    .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |used| {
-                        used.checked_add(1)
-                    });
-            if consumed.is_err() || consumed.is_ok_and(|used| used >= work.limit) {
-                return Err(CypherError::BudgetExceeded(work.limit));
+            // Keep this compatible with toolchains predating AtomicU64::try_update.
+            let mut consumed = work.consumed.load(Ordering::Relaxed);
+            loop {
+                let next = consumed
+                    .checked_add(1)
+                    .ok_or(CypherError::BudgetExceeded(work.limit))?;
+                match work.consumed.compare_exchange_weak(
+                    consumed,
+                    next,
+                    Ordering::Relaxed,
+                    Ordering::Relaxed,
+                ) {
+                    Ok(_) if consumed < work.limit => break,
+                    Ok(_) => return Err(CypherError::BudgetExceeded(work.limit)),
+                    Err(observed) => consumed = observed,
+                }
             }
         }
         Ok(())
