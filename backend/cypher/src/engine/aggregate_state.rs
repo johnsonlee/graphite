@@ -14,7 +14,7 @@ enum Kind {
     Number(Box<NumberState>),
     Extreme {
         min: bool,
-        best: Option<(Value, f64)>,
+        best: Option<Value>,
     },
     Collect {
         values: Vec<Value>,
@@ -140,17 +140,16 @@ impl AggregateState {
                 if value.is_null() {
                     return;
                 }
-                let number = to_double(&value);
-                let replace = best.as_ref().is_none_or(|(_, previous)| {
-                    let (a, b) = if *min {
-                        (number, *previous)
+                let replace = best.as_ref().is_none_or(|previous| {
+                    let order = crate::ordering::compare_order_values(&value, previous);
+                    if *min {
+                        order.is_lt()
                     } else {
-                        (*previous, number)
-                    };
-                    !a.is_nan() && (b.is_nan() || a < b)
+                        order.is_gt()
+                    }
                 });
                 if replace {
-                    *best = Some((value, number));
+                    *best = Some(value);
                 }
             }
             Kind::Collect {
@@ -211,7 +210,7 @@ impl AggregateState {
                     Value::Float(sum)
                 })
             }
-            Kind::Extreme { best, .. } => Ok(best.map(|(v, _)| v).unwrap_or(Value::Null)),
+            Kind::Extreme { best, .. } => Ok(best.unwrap_or(Value::Null)),
             Kind::Collect {
                 mut values,
                 weighted: false,

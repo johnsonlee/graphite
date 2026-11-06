@@ -882,6 +882,41 @@ pub fn compare_values_with(a: &Value, b: &Value, ctx: &dyn GraphContext) -> Orde
     }
 }
 
+/// Predicate comparisons are partial: unlike ORDER BY, unrelated types and
+/// null-bearing equal prefixes do not have an ordering. Numeric NaN is unordered.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PredicateOrder {
+    Ordered(Ordering),
+    Unordered,
+    Unknown,
+}
+
+pub fn predicate_order(left: &Value, right: &Value) -> PredicateOrder {
+    use PredicateOrder::*;
+    match (left, right) {
+        (Value::Null, _) | (_, Value::Null) => Unknown,
+        (a, b) if a.is_number() && b.is_number() => {
+            if to_double(a).is_nan() || to_double(b).is_nan() {
+                Unordered
+            } else {
+                Ordered(compare_cypher_numbers(a, b))
+            }
+        }
+        (Value::Str(a), Value::Str(b)) => Ordered(compare_utf16(a, b)),
+        (Value::Bool(a), Value::Bool(b)) => Ordered(a.cmp(b)),
+        (Value::List(a), Value::List(b)) => {
+            for (a, b) in a.iter().zip(b.iter()) {
+                match predicate_order(a, b) {
+                    Ordered(Ordering::Equal) => {}
+                    other => return other,
+                }
+            }
+            Ordered(a.len().cmp(&b.len()))
+        }
+        _ => Unknown,
+    }
+}
+
 /// `compare_values_with` without graph access (string fallback uses the plain rendering).
 pub fn compare_values(a: &Value, b: &Value) -> Ordering {
     match (a, b) {

@@ -5,7 +5,8 @@ use crate::context::GraphContext;
 use crate::error::{CypherError, CypherResult};
 use crate::functions;
 use crate::semantics::{
-    compare_values_with, cypher_equals, kotlin_to_string, to_double, utf16_len, value_key, Row,
+    cypher_equals, kotlin_to_string, predicate_order, to_double, utf16_len, value_key,
+    PredicateOrder, Row,
 };
 use crate::value::Value;
 use indexmap::IndexMap;
@@ -397,6 +398,26 @@ impl<'a> Evaluator<'a> {
     }
 
     fn binary(&self, op: BinOp, l: &Value, r: &Value) -> CypherResult<Value> {
+        if op == BinOp::Add {
+            match (l, r) {
+                (Value::List(a), Value::List(b)) => {
+                    let mut out = a.as_ref().clone();
+                    out.extend(b.iter().cloned());
+                    return Ok(Value::list(out));
+                }
+                (Value::List(a), other) => {
+                    let mut out = a.as_ref().clone();
+                    out.push(other.clone());
+                    return Ok(Value::list(out));
+                }
+                (other, Value::List(b)) => {
+                    let mut out = vec![other.clone()];
+                    out.extend(b.iter().cloned());
+                    return Ok(Value::list(out));
+                }
+                _ => {}
+            }
+        }
         if l.is_null() || r.is_null() {
             return Ok(Value::Null);
         }
@@ -415,16 +436,6 @@ impl<'a> Evaluator<'a> {
                     kotlin_to_string(l, self.ctx),
                     b
                 )));
-            }
-            if let (Value::List(a), Value::List(b)) = (l, r) {
-                let mut out = a.as_ref().clone();
-                out.extend(b.iter().cloned());
-                return Ok(Value::list(out));
-            }
-            if let (Value::List(a), other) = (l, r) {
-                let mut out = a.as_ref().clone();
-                out.push(other.clone());
-                return Ok(Value::list(out));
             }
         }
         if op == BinOp::Pow {
@@ -464,12 +475,7 @@ impl<'a> Evaluator<'a> {
             BinOp::Add => Value::Float(a + b),
             BinOp::Sub => Value::Float(a - b),
             BinOp::Mul => Value::Float(a * b),
-            BinOp::Div => {
-                if b == 0.0 {
-                    return Err(CypherError::Runtime("Division by zero".into()));
-                }
-                Value::Float(a / b)
-            }
+            BinOp::Div => Value::Float(a / b),
             BinOp::Mod => {
                 if b == 0.0 {
                     return Err(CypherError::Runtime("Division by zero".into()));
@@ -494,7 +500,11 @@ impl<'a> Evaluator<'a> {
                 if l.is_null() || r.is_null() {
                     return Value::Null;
                 }
-                let ord = compare_values_with(l, r, self.ctx);
+                let ord = match predicate_order(l, r) {
+                    PredicateOrder::Ordered(order) => order,
+                    PredicateOrder::Unknown => return Value::Null,
+                    PredicateOrder::Unordered => return Value::Bool(false),
+                };
                 Value::Bool(match op {
                     CmpOp::Lt => ord.is_lt(),
                     CmpOp::Gt => ord.is_gt(),

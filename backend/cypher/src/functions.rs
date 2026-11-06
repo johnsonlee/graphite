@@ -86,7 +86,16 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         // -- conversion ----------------------------------------------------
         "tointeger" | "toint" => match arg(args, 0)? {
             v if v.is_number() => Value::Int(to_double(v) as i64),
-            Value::Str(s) => kotlin_parse_long(s).map(Value::Int).unwrap_or(Value::Null),
+            Value::Str(s) => kotlin_parse_long(s)
+                .or_else(|| {
+                    java_parse_double(s)
+                        .filter(|n| {
+                            n.is_finite() && *n >= i64::MIN as f64 && *n < -(i64::MIN as f64)
+                        })
+                        .map(|n| n as i64)
+                })
+                .map(Value::Int)
+                .unwrap_or(Value::Null),
             Value::Bool(b) => Value::Int(if *b { 1 } else { 0 }),
             _ => Value::Null,
         },
@@ -403,7 +412,7 @@ pub fn aggregate(name: &str, values: &[Value]) -> CypherResult<Value> {
                 )
             }
         }
-        // min/max compare by toDouble() and return the ORIGINAL value; NaN sorts greatest.
+        // Min/max use Cypher value ordering and retain the original value type.
         "min" => pick_extreme(&non_null, true),
         "max" => pick_extreme(&non_null, false),
         "collect" => Value::list(non_null.into_iter().cloned().collect()),
@@ -421,36 +430,21 @@ pub fn count_star(rows: usize) -> Value {
 }
 
 fn pick_extreme(values: &[&Value], min: bool) -> Value {
-    let mut best: Option<(&Value, f64)> = None;
-    for v in values {
-        let d = to_double(v);
-        best = Some(match best {
-            None => (v, d),
-            Some((bv, bd)) => {
-                // NaN is greatest, matching the Kotlin comparator.
-                let replace = if min {
-                    nan_aware_lt(d, bd)
-                } else {
-                    nan_aware_lt(bd, d)
-                };
-                if replace {
-                    (v, d)
-                } else {
-                    (bv, bd)
-                }
+    let mut best: Option<&Value> = None;
+    for value in values {
+        let replace = best.is_none_or(|previous| {
+            let order = crate::ordering::compare_order_values(value, previous);
+            if min {
+                order.is_lt()
+            } else {
+                order.is_gt()
             }
         });
+        if replace {
+            best = Some(value);
+        }
     }
-    best.map(|(v, _)| (*v).clone()).unwrap_or(Value::Null)
-}
-
-fn nan_aware_lt(a: f64, b: f64) -> bool {
-    match (a.is_nan(), b.is_nan()) {
-        (true, true) => false,
-        (true, false) => false,
-        (false, true) => true,
-        (false, false) => a < b,
-    }
+    best.cloned().unwrap_or(Value::Null)
 }
 
 fn sorted_doubles(values: &[&Value]) -> Vec<f64> {

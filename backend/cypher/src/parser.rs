@@ -788,17 +788,17 @@ impl Parser {
         Ok(left)
     }
 
-    /// Right-associative `^`.
+    /// Cypher exponentiation associates left to right.
     fn power_expr(&mut self) -> CypherResult<Expr> {
-        let left = self.unary_expr()?;
-        if self.at(T::Caret) {
+        let mut left = self.unary_expr()?;
+        while self.at(T::Caret) {
             self.bump();
-            let right = self.power_expr()?;
-            return Ok(Expr::Binary {
+            let right = self.unary_expr()?;
+            left = Expr::Binary {
                 op: BinOp::Pow,
                 left: Box::new(left),
                 right: Box::new(right),
-            });
+            };
         }
         Ok(left)
     }
@@ -806,6 +806,17 @@ impl Parser {
     fn unary_expr(&mut self) -> CypherResult<Expr> {
         if self.at(T::Sub) {
             self.bump();
+            let token = self.peek();
+            let magnitude = match token.kind {
+                T::Int => token.text.parse::<u64>().ok(),
+                T::Hex => u64::from_str_radix(&token.text[2..], 16).ok(),
+                T::Octal => u64::from_str_radix(&token.text[2..], 8).ok(),
+                _ => None,
+            };
+            if magnitude == Some(i64::MAX as u64 + 1) {
+                self.bump();
+                return Ok(Expr::Literal(Literal::Int(i64::MIN)));
+            }
             return Ok(Expr::Unary {
                 negate: true,
                 expr: Box::new(self.unary_expr()?),
