@@ -376,6 +376,7 @@ impl<'a> Evaluator<'a> {
             Value::Rel(r) => self.ctx.rel_property(*r, key),
             Value::Method(m) => self.ctx.method_property(*m, key),
             Value::Map(m) => m.get(key).cloned().unwrap_or(Value::Null),
+            Value::Temporal(t) => t.property(key),
             Value::Path(p) => match key {
                 "length" => Value::Int(p.edges.len() as i64),
                 "graphId" if self.ctx.is_cross_graph() => Value::str(self.ctx.graph_id(p.source)),
@@ -709,6 +710,7 @@ fn class_cast(v: &Value, target: &str) -> CypherError {
         Value::Str(_) => "java.lang.String",
         Value::List(_) => "java.util.List",
         Value::Map(_) => "java.util.Map",
+        Value::Temporal(_) => "Temporal",
         _ => "java.lang.Object",
     };
     CypherError::Other(format!("class {actual} cannot be cast to class {target}"))

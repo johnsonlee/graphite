@@ -16,6 +16,7 @@ fn type_rank(v: &Value) -> u8 {
         Value::List(_) => 3,
         Value::Path(_) => 4,
         Value::Str(_) => 5,
+        Value::Temporal(_) => 8,
         Value::Bool(_) => 6,
         Value::Int(_) | Value::Float(_) | Value::Float32(_) => 7,
         Value::Null => u8::MAX,
@@ -31,6 +32,11 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
     }
     match (a, b) {
         (Value::Int(x), Value::Int(y)) => return x.cmp(y),
+        (Value::Temporal(a), Value::Temporal(b)) => {
+            return a
+                .compare(b)
+                .unwrap_or_else(|| a.to_string().cmp(&b.to_string()))
+        }
         (Value::Str(x), Value::Str(y)) => return compare_utf16(x, y),
         (Value::Bool(x), Value::Bool(y)) => return x.cmp(y),
         (Value::Float(x), Value::Float(y)) => return java_double_compare(*x, *y),

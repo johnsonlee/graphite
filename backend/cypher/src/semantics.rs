@@ -409,6 +409,7 @@ pub fn cypher_equals(left: &Value, right: &Value) -> Option<bool> {
         (Value::Map(a), Value::Map(b)) => cypher_maps_equal(a, b),
         (Value::Bool(a), Value::Bool(b)) => Some(a == b),
         (Value::Str(a), Value::Str(b)) => Some(a == b),
+        (Value::Temporal(a), Value::Temporal(b)) => Some(a == b),
         (Value::Node(a), Value::Node(b)) => Some(a == b),
         (Value::Rel(a), Value::Rel(b)) => Some(a == b),
         (Value::Method(a), Value::Method(b)) => Some(a == b),
@@ -474,6 +475,7 @@ pub enum Key {
     /// -1 = -Infinity, 1 = +Infinity, 2 = NaN
     NonFinite(i8),
     Str(Arc<str>),
+    Temporal(Arc<crate::temporal::Temporal>),
     List(Vec<Key>),
     /// Entries sorted by key (Kotlin map equality is order independent).
     Map(Vec<(String, Key)>),
@@ -501,6 +503,7 @@ pub fn value_key(value: &Value) -> Key {
             }
         }
         Value::Str(s) => Key::Str(s.clone()),
+        Value::Temporal(t) => Key::Temporal(t.clone()),
         Value::List(l) => Key::List(l.iter().map(value_key).collect()),
         Value::Map(m) => {
             let mut entries: Vec<(String, Key)> =
@@ -647,6 +650,7 @@ fn write_kotlin_string(out: &mut String, value: &Value, ctx: Option<&dyn GraphCo
         Value::Float(f) => out.push_str(&java_double_to_string(*f)),
         Value::Float32(f) => out.push_str(&java_float_to_string(*f)),
         Value::Str(s) => out.push_str(s),
+        Value::Temporal(t) => out.push_str(&t.to_string()),
         Value::List(l) => {
             out.push('[');
             for (i, v) in l.iter().enumerate() {
@@ -858,6 +862,11 @@ pub fn kotlin_is_whitespace(c: char) -> bool {
 
 /// `ExpressionEvaluator.compareValues` (both operands non-null).
 pub fn compare_values_with(a: &Value, b: &Value, ctx: &dyn GraphContext) -> Ordering {
+    if let (Value::Temporal(a), Value::Temporal(b)) = (a, b) {
+        if let Some(order) = a.compare(b) {
+            return order;
+        }
+    }
     match (a, b) {
         (x, y) if x.is_number() && y.is_number() => compare_cypher_numbers(x, y),
         (Value::Str(x), Value::Str(y)) => compare_utf16(x, y),
@@ -919,6 +928,11 @@ pub fn predicate_order(left: &Value, right: &Value) -> PredicateOrder {
 
 /// `compare_values_with` without graph access (string fallback uses the plain rendering).
 pub fn compare_values(a: &Value, b: &Value) -> Ordering {
+    if let (Value::Temporal(a), Value::Temporal(b)) = (a, b) {
+        if let Some(order) = a.compare(b) {
+            return order;
+        }
+    }
     match (a, b) {
         (x, y) if x.is_number() && y.is_number() => compare_cypher_numbers(x, y),
         (Value::Str(x), Value::Str(y)) => compare_utf16(x, y),

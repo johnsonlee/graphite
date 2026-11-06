@@ -18,6 +18,7 @@ use crate::value::Value;
 pub fn java_to_string(v: &Value, ctx: &dyn GraphContext) -> String {
     match v {
         Value::Null => "null".to_string(),
+        Value::Temporal(t) => t.to_string(),
         Value::Bool(b) => b.to_string(),
         Value::Int(i) => i.to_string(),
         Value::Float(f) => java_double_to_string(*f),

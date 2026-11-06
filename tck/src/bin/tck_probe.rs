@@ -41,6 +41,7 @@ fn value_from_json(value: &Json) -> Result<Value, String> {
 fn value_to_json(value: &Value) -> Result<Json, String> {
     Ok(match value {
         Value::Null => Json::Null,
+        Value::Temporal(t) => Json::String(t.to_string()),
         Value::Bool(value) => json!(value),
         Value::Int(value) => json!(value),
         Value::Float(value) if value.is_finite() => json!(value),

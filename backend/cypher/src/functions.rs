@@ -31,6 +31,9 @@ fn as_number(v: &Value) -> CypherResult<f64> {
 
 /// Call a non-aggregation function. Unknown names produce `Unknown function: <name>`.
 pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<Value> {
+    if let Some(result) = crate::temporal::call(name, args) {
+        return result;
+    }
     let lower = name.to_ascii_lowercase();
     Ok(match lower.as_str() {
         // -- identity ------------------------------------------------------

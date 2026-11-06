@@ -43,6 +43,7 @@ pub enum Value {
     /// Kotlin `Float` node property (kept separate for JSON rendering parity).
     Float32(f32),
     Str(Arc<str>),
+    Temporal(Arc<crate::temporal::Temporal>),
     List(Arc<Vec<Value>>),
     Map(Arc<IndexMap<String, Value>>),
     Node(NodeRef),

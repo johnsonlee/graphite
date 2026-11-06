@@ -9,6 +9,7 @@ use serde_json::{Map, Number, Value as J};
 pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
     match v {
         Value::Null => J::Null,
+        Value::Temporal(t) => J::String(t.to_string()),
         Value::Bool(b) => J::Bool(*b),
         Value::Int(i) => J::Number(Number::from(*i)),
         Value::Float(f) => number(*f),
