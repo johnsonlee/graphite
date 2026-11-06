@@ -385,7 +385,7 @@ impl<'a> Evaluator<'a> {
             Expr::Subscript { expr, index } => {
                 let base = self.eval(expr, row)?;
                 let idx = self.eval(index, row)?;
-                Ok(self.subscript(&base, &idx))
+                self.subscript(&base, &idx)
             }
             Expr::Slice { expr, from, to } => {
                 let base = self.eval(expr, row)?;
@@ -661,13 +661,22 @@ impl<'a> Evaluator<'a> {
         })
     }
 
-    fn subscript(&self, base: &Value, index: &Value) -> Value {
-        match base {
+    fn subscript(&self, base: &Value, index: &Value) -> CypherResult<Value> {
+        if base.is_null() || index.is_null() {
+            return Ok(Value::Null);
+        }
+        let invalid = || {
+            CypherError::execution(
+                "TypeError",
+                "InvalidArgumentType",
+                "Indexing requires a list and integer index or a map and string key",
+            )
+        };
+        Ok(match base {
             Value::List(items) => {
                 let i = match index {
                     Value::Int(i) => *i,
-                    Value::Float(f) => *f as i64,
-                    _ => return Value::Null,
+                    _ => return Err(invalid()),
                 };
                 let len = items.len() as i64;
                 let idx = if i < 0 { len + i } else { i };
@@ -679,14 +688,26 @@ impl<'a> Evaluator<'a> {
             }
             Value::Map(m) => match index.as_str() {
                 Some(k) => m.get(k).cloned().unwrap_or(Value::Null),
-                None => Value::Null,
+                None => {
+                    return Err(CypherError::execution(
+                        "TypeError",
+                        "MapElementAccessByNonString",
+                        "Map indexes must be strings",
+                    ))
+                }
             },
             Value::Node(_) | Value::Rel(_) | Value::Method(_) => match index.as_str() {
                 Some(k) => self.property(base, k),
-                None => Value::Null,
+                None => {
+                    return Err(CypherError::execution(
+                        "TypeError",
+                        "MapElementAccessByNonString",
+                        "Property indexes must be strings",
+                    ))
+                }
             },
-            _ => Value::Null,
-        }
+            _ => return Err(invalid()),
+        })
     }
 
     fn slice(&self, base: &Value, from: Option<&Value>, to: Option<&Value>) -> Value {

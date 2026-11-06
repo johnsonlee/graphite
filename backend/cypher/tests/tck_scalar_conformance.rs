@@ -471,3 +471,52 @@ fn with_where_sees_input_and_projected_bindings_without_leaking_dropped_variable
     assert_eq!(result.rows.len(), 1);
     assert_eq!(result.rows[0]["name"].as_str(), Some("B"));
 }
+
+#[test]
+fn dynamic_element_access_requires_valid_container_and_index_types() {
+    for (query, detail) in [
+        (
+            "WITH $value AS value RETURN value[0]",
+            "InvalidArgumentType",
+        ),
+        ("RETURN [1][0.0]", "InvalidArgumentType"),
+        ("RETURN [1]['0']", "InvalidArgumentType"),
+        ("RETURN {name:'x'}[0]", "MapElementAccessByNonString"),
+    ] {
+        let ex = Executor::new(vec![], false).with_params(indexmap::IndexMap::from([(
+            "value".into(),
+            Value::str("x"),
+        )]));
+        let err = ex.execute(query, None).unwrap_err();
+        let d = err.diagnostic().unwrap();
+        assert_eq!(
+            (d.error_type, d.phase, d.detail),
+            ("TypeError", "runtime", detail)
+        );
+    }
+    same("RETURN [1,2][-1]", Value::Int(2));
+    same("RETURN [1,2][null]", Value::Null);
+    same("RETURN null[0]", Value::Null);
+    same("RETURN {name:'x'}['name']", Value::str("x"));
+}
+
+#[test]
+fn conversion_functions_preserve_null_and_reject_unsupported_runtime_types() {
+    for function in ["toBoolean", "toInteger", "toFloat"] {
+        let err = Executor::new(vec![], false)
+            .execute(&format!("UNWIND [1, []] AS x RETURN {function}(x)"), None)
+            .unwrap_err();
+        let d = err.diagnostic().unwrap();
+        assert_eq!(
+            (d.error_type, d.phase, d.detail),
+            ("TypeError", "runtime", "InvalidArgumentValue")
+        );
+        same(&format!("RETURN {function}(null)"), Value::Null);
+    }
+    same(
+        "RETURN toInteger(9223372036854775807)",
+        Value::Int(i64::MAX),
+    );
+    same("RETURN toInteger('invalid')", Value::Null);
+    same("RETURN toString(1)", Value::str("1"));
+}

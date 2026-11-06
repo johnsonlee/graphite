@@ -29,6 +29,14 @@ fn as_number(v: &Value) -> CypherResult<f64> {
     })
 }
 
+fn invalid_conversion(name: &str) -> CypherError {
+    CypherError::execution(
+        "TypeError",
+        "InvalidArgumentValue",
+        format!("Unsupported value type for {name}()"),
+    )
+}
+
 /// Call a non-aggregation function. Unknown names produce `Unknown function: <name>`.
 pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<Value> {
     if let Some(result) = crate::temporal::call(name, args, ctx) {
@@ -91,6 +99,8 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
 
         // -- conversion ----------------------------------------------------
         "tointeger" | "toint" => match arg(args, 0)? {
+            Value::Null => Value::Null,
+            Value::Int(value) => Value::Int(*value),
             v if v.is_number() => Value::Int(to_double(v) as i64),
             Value::Str(s) => kotlin_parse_long(s)
                 .or_else(|| {
@@ -103,16 +113,18 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                 .map(Value::Int)
                 .unwrap_or(Value::Null),
             Value::Bool(b) => Value::Int(if *b { 1 } else { 0 }),
-            _ => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "tofloat" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             v if v.is_number() => Value::Float(to_double(v)),
             Value::Str(s) => java_parse_double(s)
                 .map(Value::Float)
                 .unwrap_or(Value::Null),
-            _ => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "toboolean" => match arg(args, 0)? {
+            Value::Null => Value::Null,
             Value::Bool(b) => Value::Bool(*b),
             Value::Str(s) => {
                 let l = s.to_ascii_lowercase();
@@ -124,7 +136,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                     Value::Null
                 }
             }
-            _ => Value::Null,
+            _ => return Err(invalid_conversion(name)),
         },
         "tostring" => match arg(args, 0)? {
             Value::Null => Value::Null,
