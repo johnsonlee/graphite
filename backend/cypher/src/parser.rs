@@ -49,6 +49,7 @@ fn parse_single(text: &str) -> CypherResult<Vec<Clause>> {
         toks: tokens,
         i: 0,
         source: text,
+        parameter_properties_forbidden: true,
     };
     let clauses = p.script()?;
     Ok(clauses)
@@ -105,6 +106,7 @@ struct Parser<'a> {
     source: &'a str,
     toks: Vec<Token>,
     i: usize,
+    parameter_properties_forbidden: bool,
 }
 
 impl Parser<'_> {
@@ -312,7 +314,11 @@ impl Parser<'_> {
             T::Keyword(K::Return) => self.return_st(out),
             T::Keyword(K::Create) => {
                 self.bump();
-                let patterns = self.pattern_list()?;
+                let previous = self.parameter_properties_forbidden;
+                self.parameter_properties_forbidden = false;
+                let parsed = self.pattern_list();
+                self.parameter_properties_forbidden = previous;
+                let patterns = parsed?;
                 out.push(Clause::Create(patterns));
                 Ok(())
             }
@@ -633,6 +639,11 @@ impl Parser<'_> {
         while self.eat(T::Colon) {
             labels.push(self.symbolic_name()?);
         }
+        if self.parameter_properties_forbidden && self.at(T::Dollar) {
+            return Err(CypherError::compilation(
+                "SyntaxError", "InvalidParameterUse", "A pattern predicate must be a literal property map",
+            ));
+        }
         let properties_present = self.at(T::LBrace);
         let properties = if properties_present {
             self.map_entries()?
@@ -692,13 +703,34 @@ impl Parser<'_> {
                 d.types.push(self.symbolic_name()?);
             }
         }
+        if self.at(T::Range) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidRelationshipPattern",
+                "Relationship length bounds require an asterisk",
+            ));
+        }
         if self.at(T::Mult) {
             self.bump();
             d.variable_length = true;
+            if matches!(self.kind(), T::Sub | T::Plus | T::Float) {
+                return Err(CypherError::compilation(
+                    "SyntaxError",
+                    "InvalidRelationshipPattern",
+                    "Relationship length bounds must be non-negative integers",
+                ));
+            }
             // `*`, `*n`, `*n..m`, `*n..`, `*..m`, `*..`
             let has_min = self.kind().is_integer_literal();
             let min = if has_min { Some(self.integer()?) } else { None };
             if self.eat(T::Range) {
+                if matches!(self.kind(), T::Sub | T::Plus | T::Float) {
+                    return Err(CypherError::compilation(
+                        "SyntaxError",
+                        "InvalidRelationshipPattern",
+                        "Relationship length bounds must be non-negative integers",
+                    ));
+                }
                 let max = if self.kind().is_integer_literal() {
                     Some(self.integer()?)
                 } else {
@@ -710,6 +742,13 @@ impl Parser<'_> {
                 d.min_hops = Some(m);
                 d.max_hops = Some(m);
             }
+        }
+        if self.parameter_properties_forbidden && self.at(T::Dollar) {
+            return Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidParameterUse",
+                "A relationship pattern predicate must be a literal property map",
+            ));
         }
         if self.at(T::LBrace) {
             d.properties = self.map_entries()?;
@@ -727,7 +766,11 @@ impl Parser<'_> {
             _ => None,
         };
         match n {
-            Some(v) if v >= 0 => Ok(v as u32),
+            Some(v) if v >= 0 => u32::try_from(v).map_err(|_| {
+                CypherError::NotImplemented(
+                    "Relationship length bounds above u32::MAX are not supported".into(),
+                )
+            }),
             _ => Err(CypherError::Other(format!(
                 "For input string: \"{}\"",
                 t.text
@@ -1049,9 +1092,20 @@ impl Parser<'_> {
 
     fn atom_expr(&mut self) -> CypherResult<Expr> {
         match self.kind() {
+            T::InvalidNumber => Err(CypherError::compilation(
+                "SyntaxError",
+                "InvalidNumberLiteral",
+                format!("Invalid numeric literal: {}", self.peek().text),
+            )),
+
             T::Dollar => {
                 self.bump();
-                Ok(Expr::Parameter(self.symbolic_name()?))
+                let name = if self.at(T::Int) {
+                    self.bump().text
+                } else {
+                    self.symbolic_name()?
+                };
+                Ok(Expr::Parameter(name))
             }
             T::Keyword(K::Case) => self.case_expr(),
             T::Keyword(K::Count) if self.peek_at(1) == T::LParen && self.peek_at(2) == T::Mult => {
@@ -1188,32 +1242,57 @@ impl Parser<'_> {
 
     fn literal(&mut self) -> CypherResult<Expr> {
         let t = self.bump();
-        let lit =
-            match t.kind {
-                T::Int => {
-                    let v: i64 = t.text.parse().map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", t.text))
-                    })?;
-                    Literal::Int(v)
+        let lit = match t.kind {
+            T::Int => {
+                let v: i64 = t.text.parse().map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Hex => {
+                let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Octal => {
+                let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "IntegerOverflow",
+                        format!("Integer literal is outside signed 64-bit range: {}", t.text),
+                    )
+                })?;
+                Literal::Int(v)
+            }
+            T::Float => {
+                let value = t.text.parse::<f64>().map_err(|_| {
+                    CypherError::compilation(
+                        "SyntaxError",
+                        "InvalidNumberLiteral",
+                        "Invalid floating point literal",
+                    )
+                })?;
+                if !value.is_finite() {
+                    return Err(CypherError::compilation(
+                        "SyntaxError",
+                        "FloatingPointOverflow",
+                        "Floating point literal is outside finite range",
+                    ));
                 }
-                T::Hex => {
-                    let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                    })?;
-                    Literal::Int(v)
-                }
-                T::Octal => {
-                    let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
-                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                    })?;
-                    Literal::Int(v)
-                }
-                T::Float => Literal::Float(t.text.parse::<f64>().map_err(|_| {
-                    CypherError::Other(format!("For input string: \"{}\"", t.text))
-                })?),
-                T::Str => Literal::Str(decode_string_literal(&t.text)),
-                _ => return Err(self.err("Unknown literal type")),
-            };
+                Literal::Float(value)
+            }
+            T::Str => Literal::Str(decode_string_literal(&t.text)),
+            _ => return Err(self.err("Unknown literal type")),
+        };
         Ok(Expr::Literal(lit))
     }
 
@@ -1419,17 +1498,18 @@ pub fn decode_string_literal(raw: &str) -> String {
                     out.push('\u{8}');
                     i += 2;
                 }
-                'u' => {
-                    if i + 6 <= body.len() {
-                        let hex: String = body[i + 2..i + 6].iter().collect();
+                'u' | 'U' => {
+                    let count = if n == 'u' { 4 } else { 8 };
+                    if i + count + 2 <= body.len() {
+                        let hex: String = body[i + 2..i + count + 2].iter().collect();
                         match u32::from_str_radix(&hex, 16).ok().and_then(char::from_u32) {
                             Some(ch) => {
                                 out.push(ch);
-                                i += 6;
+                                i += count + 2;
                             }
                             None => {
                                 out.push('\\');
-                                out.push('u');
+                                out.push(n);
                                 i += 2;
                             }
                         }
@@ -1571,5 +1651,103 @@ mod correlated_expression_tests {
             matches!(&inside[0],Clause::Match{patterns,..} if patterns[0].nodes[1].variable.as_deref()==Some("b"))
         );
         assert!(matches!(&inside[1], Clause::Where(Expr::Comparison { .. })));
+    }
+}
+
+#[cfg(test)]
+mod native_grammar_diagnostics {
+    use super::*;
+    use crate::{engine::Executor, property_graph::PropertyGraph, Value};
+    use std::sync::Arc;
+
+    #[test]
+    fn invalid_literals_and_pattern_predicates_have_precise_origin_diagnostics() {
+        for (query, detail) in [
+            ("RETURN 9223372036854775808", "IntegerOverflow"),
+            ("RETURN -9223372036854775809", "IntegerOverflow"),
+            ("RETURN 0x8000000000000000", "IntegerOverflow"),
+            ("RETURN -0x8000000000000001", "IntegerOverflow"),
+            ("RETURN 0o1000000000000000000000", "IntegerOverflow"),
+            ("RETURN -0o1000000000000000000001", "IntegerOverflow"),
+            ("RETURN 1.34E999", "FloatingPointOverflow"),
+            ("MATCH (n $properties) RETURN n", "InvalidParameterUse"),
+            (
+                "MATCH ()-[r:R $properties]->() RETURN r",
+                "InvalidParameterUse",
+            ),
+            ("MERGE (n $properties) RETURN n", "InvalidParameterUse"),
+            (
+                "MERGE (a)-[r:R $properties]->(b) RETURN r",
+                "InvalidParameterUse",
+            ),
+            ("MATCH ()-[:R..]->() RETURN 1", "InvalidRelationshipPattern"),
+            (
+                "MATCH ()-[:R*-2]->() RETURN 1",
+                "InvalidRelationshipPattern",
+            ),
+            (
+                "MATCH ()-[:R*1..-2]->() RETURN 1",
+                "InvalidRelationshipPattern",
+            ),
+        ] {
+            let error = parse(query).unwrap_err();
+            let diagnostic = error.diagnostic().unwrap();
+            assert_eq!(
+                (diagnostic.error_type, diagnostic.phase, diagnostic.detail),
+                ("SyntaxError", "compile time", detail),
+                "{query}"
+            );
+        }
+    }
+
+    #[test]
+    fn malformed_numbers_keep_identifier_position_diagnostics_distinct() {
+        let literal = parse("RETURN 1key").unwrap_err();
+        assert_eq!(literal.diagnostic().unwrap().detail, "InvalidNumberLiteral");
+        let key = parse("RETURN {1key: 0}").unwrap_err();
+        assert_eq!(key.diagnostic().unwrap().detail, "UnexpectedSyntax");
+        let label = parse("MATCH (n:1label) RETURN n").unwrap_err();
+        assert_eq!(label.diagnostic().unwrap().detail, "UnexpectedSyntax");
+    }
+
+    #[test]
+    fn valid_signed_boundaries_numeric_parameter_names_and_property_map_parameters_are_preserved() {
+        for query in [
+            "RETURN -9223372036854775808 AS n",
+            "RETURN -0x8000000000000000 AS n",
+            "RETURN -0o1000000000000000000000 AS n",
+        ] {
+            let result = Executor::new(vec![], false).execute(query, None).unwrap();
+            assert!(matches!(result.rows[0]["n"], Value::Int(i64::MIN)));
+        }
+        let parsed = parse("RETURN $1 AS n").unwrap();
+        assert!(
+            matches!(&parsed[0],Clause::Return {items:Some(items),..} if items[0].expr==Expr::Parameter("1".into()))
+        );
+        let result = Executor::new(vec![], false)
+            .with_params(indexmap::IndexMap::from([("1".into(), Value::Int(7))]))
+            .execute("RETURN $1 AS n", None)
+            .unwrap();
+        assert!(matches!(result.rows[0]["n"], Value::Int(7)));
+        let clauses = parse("MATCH (n {key:$1}) RETURN n").unwrap();
+        assert!(
+            matches!(&clauses[0],Clause::Match {patterns,..} if patterns[0].nodes[0].properties[0].1==Expr::Parameter("1".into()))
+        );
+        assert!(parse("MATCH ()-[:R*0..2]->() RETURN 1").is_ok());
+        let unicode = Executor::new(vec![], false)
+            .execute(r"RETURN '\U0001F600' AS n", None)
+            .unwrap();
+        assert_eq!(unicode.rows[0]["n"].as_str(), Some("😀"));
+    }
+
+    #[test]
+    fn grammar_failure_occurs_before_an_earlier_mutation_can_execute() {
+        let graph = Arc::new(PropertyGraph::new());
+        let executor = Executor::property_graph(graph.clone());
+        let error = executor
+            .execute("CREATE (:A) MATCH (n $properties) RETURN n", None)
+            .unwrap_err();
+        assert_eq!(error.diagnostic().unwrap().detail, "InvalidParameterUse");
+        assert!(graph.snapshot().nodes.is_empty());
     }
 }
