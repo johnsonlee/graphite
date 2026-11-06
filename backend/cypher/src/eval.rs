@@ -45,18 +45,51 @@ pub fn contains_aggregation(e: &Expr) -> bool {
         Expr::FunctionCall { name, args, .. } => {
             is_aggregation_name(name) || args.iter().any(contains_aggregation)
         }
-        Expr::Property { expr, .. } => contains_aggregation(expr),
+        Expr::Property { expr, .. }
+        | Expr::Unary { expr, .. }
+        | Expr::Distinct(expr)
+        | Expr::IsNull(expr)
+        | Expr::IsNotNull(expr)
+        | Expr::Not(expr) => contains_aggregation(expr),
+        Expr::Binary { left, right, .. }
+        | Expr::Comparison { left, right, .. }
+        | Expr::StringOp { left, right, .. }
+        | Expr::In { left, right }
+        | Expr::And(left, right)
+        | Expr::Or(left, right)
+        | Expr::Xor(left, right) => contains_aggregation(left) || contains_aggregation(right),
+        Expr::ListLiteral(items) => items.iter().any(contains_aggregation),
+        Expr::MapLiteral(items) => items.iter().any(|(_, e)| contains_aggregation(e)),
+        Expr::Case {
+            test,
+            whens,
+            else_expr,
+        } => {
+            test.as_deref().is_some_and(contains_aggregation)
+                || whens
+                    .iter()
+                    .any(|(a, b)| contains_aggregation(a) || contains_aggregation(b))
+                || else_expr.as_deref().is_some_and(contains_aggregation)
+        }
+        Expr::ListComprehension {
+            list, filter, map, ..
+        } => {
+            contains_aggregation(list)
+                || filter.as_deref().is_some_and(contains_aggregation)
+                || map.as_deref().is_some_and(contains_aggregation)
+        }
         Expr::PredicateFunction {
             list, predicate, ..
         } => contains_aggregation(list) || predicate.as_deref().is_some_and(contains_aggregation),
-        Expr::Binary { left, right, .. } => {
-            contains_aggregation(left) || contains_aggregation(right)
+        Expr::Subscript { expr, index } => {
+            contains_aggregation(expr) || contains_aggregation(index)
         }
-        Expr::Comparison { left, right, .. } => {
-            contains_aggregation(left) || contains_aggregation(right)
+        Expr::Slice { expr, from, to } => {
+            contains_aggregation(expr)
+                || from.as_deref().is_some_and(contains_aggregation)
+                || to.as_deref().is_some_and(contains_aggregation)
         }
-        Expr::Distinct(inner) => contains_aggregation(inner),
-        _ => false,
+        Expr::Literal(_) | Expr::Variable(_) | Expr::Parameter(_) => false,
     }
 }
 

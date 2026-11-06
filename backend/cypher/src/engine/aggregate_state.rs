@@ -476,7 +476,7 @@ mod tests {
         let clauses = crate::parser::parse("MATCH (n:CallSite) WITH any(x IN collect(n.callee_name) WHERE count(*) > 0) AS flag, collect(n.callee_name) AS names, collect(n.caller_name) AS dropped RETURN names[0..10] AS result").unwrap();
         let (shape, _, consumed) = FusedShape::detect_with(&clauses).unwrap();
         assert_eq!(
-            AggPlan::new(shape.items.as_deref().unwrap())
+            AggPlan::new(shape.items.as_deref().unwrap(), shape.order.as_deref())
                 .unwrap()
                 .aggs
                 .len(),

@@ -911,6 +911,7 @@ pub fn predicate_order(left: &Value, right: &Value) -> PredicateOrder {
                 Ordered(compare_cypher_numbers(a, b))
             }
         }
+        (Value::Temporal(a), Value::Temporal(b)) => a.compare(b).map(Ordered).unwrap_or(Unknown),
         (Value::Str(a), Value::Str(b)) => Ordered(compare_utf16(a, b)),
         (Value::Bool(a), Value::Bool(b)) => Ordered(a.cmp(b)),
         (Value::List(a), Value::List(b)) => {

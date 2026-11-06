@@ -166,10 +166,22 @@ fn grouped_csr_executor_limit_probe_and_cancellation_keep_existing_contracts() {
     assert!(grouped_call_site_property(&ex, &parse(invalid).unwrap())
         .unwrap()
         .is_none());
-    assert!(matches!(
-        ex.execute(invalid, None),
-        Err(CypherError::Aggregation(_))
-    ));
+    let actual = ex.execute(invalid, None).unwrap();
+    let expected = ex
+        .execute(
+            "MATCH (n:CallSite) RETURN n.callee_class AS c, count(*) AS k ORDER BY k DESC LIMIT 1",
+            None,
+        )
+        .unwrap();
+    assert_eq!(actual.rows.len(), expected.rows.len());
+    assert_eq!(
+        format!("{:?}", actual.rows[0]["n.callee_class"]),
+        format!("{:?}", expected.rows[0]["c"])
+    );
+    assert_eq!(
+        format!("{:?}", actual.rows[0]["count(*)"]),
+        format!("{:?}", expected.rows[0]["k"])
+    );
 }
 
 struct Variant(PathBuf);

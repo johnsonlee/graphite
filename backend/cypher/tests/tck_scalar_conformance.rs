@@ -125,3 +125,45 @@ fn list_prepend_preserves_scalar_types() {
         Value::list(vec![Value::Int(1), Value::str("x")]),
     );
 }
+
+#[test]
+fn aggregates_work_inside_complete_projected_expressions() {
+    same("MATCH (a) RETURN count(a) > 0", Value::Bool(false));
+    same("UNWIND [1,2] AS n RETURN 1 + count(*)", Value::Int(3));
+    same(
+        "UNWIND [1,2] AS n RETURN {total: count(*)}",
+        Value::map(indexmap::IndexMap::from([("total".into(), Value::Int(2))])),
+    );
+    same(
+        "UNWIND [1,2] AS n RETURN [count(*)]",
+        Value::list(vec![Value::Int(2)]),
+    );
+    same(
+        "UNWIND [1,2] AS n RETURN CASE WHEN count(*) > 1 THEN 'yes' ELSE 'no' END",
+        Value::str("yes"),
+    );
+}
+#[test]
+fn aggregate_order_expressions_use_finalized_values_and_aliases() {
+    let ex = Executor::new(vec![], false).with_params(indexmap::IndexMap::from([(
+        "offset".into(),
+        Value::Int(10),
+    )]));
+    let result = ex
+        .execute(
+            "MATCH (p) RETURN avg(p.age) AS a ORDER BY $offset + avg(p.age)",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.columns, vec!["a"]);
+    assert_eq!(format!("{:?}", result.rows[0]["a"]), "Null");
+    let result = ex
+        .execute(
+            "UNWIND [1,1,2] AS n RETURN n, count(*) AS c ORDER BY c + 1 DESC",
+            None,
+        )
+        .unwrap();
+    assert_eq!(result.rows.len(), 2);
+    assert_eq!(format!("{:?}", result.rows[0]["n"]), "Int(1)");
+    assert_eq!(format!("{:?}", result.rows[0]["c"]), "Int(2)");
+}

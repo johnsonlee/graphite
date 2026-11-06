@@ -729,7 +729,7 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
-            let mut plan = AggPlan::new(items)?;
+            let mut plan = AggPlan::new(items, shape.order.as_deref())?;
             plan.prefix_caps = prefix_caps.to_vec();
             let columns = item_names(items);
             let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
@@ -769,7 +769,7 @@ impl Executor {
                     &mut consume,
                 )?;
             }
-            let out = finalize_groups(ev, &plan, items, groups, shape.order.as_deref())?;
+            let out = finalize_groups(ev, &plan, items, groups)?;
             return Ok((columns, out));
         }
 
@@ -1906,6 +1906,7 @@ struct AggPlan {
     aggs: Vec<AggCall>,
     group_exprs: Vec<Expr>,
     prefix_caps: Vec<Option<usize>>,
+    rewritten_order: Option<Vec<OrderItem>>,
 }
 
 impl AggPlan {
@@ -1917,68 +1918,34 @@ impl AggPlan {
             .collect()
     }
 
-    fn new(items: &[ReturnItem]) -> CypherResult<AggPlan> {
+    fn new(items: &[ReturnItem], order: Option<&[OrderItem]>) -> CypherResult<AggPlan> {
         let mut aggs = Vec::new();
         let mut rewritten = Vec::new();
         let mut group_exprs = Vec::new();
         for it in items {
             if contains_aggregation(&it.expr) {
-                // An aggregate is only a projection when it *is* the projected
-                // expression. Nested inside a larger one — `count(*) * 2` — the
-                // baseline evaluates the outer expression generically, and the
-                // evaluator refuses the aggregate it finds there. Substituting the
-                // aggregate's value instead would answer a query the baseline rejects.
-                if let Some(name) = nested_aggregation_name(&it.expr) {
-                    return Err(CypherError::Aggregation(name));
-                }
                 rewritten.push(rewrite_aggs(&it.expr, &mut aggs));
             } else {
                 rewritten.push(it.expr.clone());
                 group_exprs.push(it.expr.clone());
             }
         }
+        let rewritten_order = order.map(|order| {
+            order
+                .iter()
+                .map(|item| OrderItem {
+                    expr: rewrite_aggs(&item.expr, &mut aggs),
+                    descending: item.descending,
+                })
+                .collect()
+        });
         Ok(AggPlan {
             rewritten,
             aggs,
             group_exprs,
             prefix_caps: Vec::new(),
+            rewritten_order,
         })
-    }
-}
-
-/// The aggregate that would reach the generic evaluator, if this expression carries one
-/// anywhere other than at its root.
-fn nested_aggregation_name(e: &Expr) -> Option<String> {
-    match e {
-        // At the root an aggregate is a projection, not an error.
-        Expr::CountStar => None,
-        Expr::FunctionCall { name, .. } if is_aggregation_name(name) => None,
-        other => first_aggregation_name(other),
-    }
-}
-
-fn first_aggregation_name(e: &Expr) -> Option<String> {
-    match e {
-        Expr::CountStar => Some("count".to_string()),
-        Expr::FunctionCall { name, args, .. } => {
-            if is_aggregation_name(name) {
-                Some(name.to_ascii_lowercase())
-            } else {
-                args.iter().find_map(first_aggregation_name)
-            }
-        }
-        Expr::Property { expr, .. } => first_aggregation_name(expr),
-        Expr::Binary { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
-        }
-        Expr::Unary { expr, .. } => first_aggregation_name(expr),
-        Expr::Comparison { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
-        }
-        Expr::StringOp { left, right, .. } => {
-            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
-        }
-        _ => None,
     }
 }
 
@@ -2044,6 +2011,77 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
             variable: variable.clone(),
             list: Box::new(rewrite_aggs(list, aggs)),
             predicate: predicate.as_ref().map(|p| Box::new(rewrite_aggs(p, aggs))),
+        },
+        Expr::Unary { negate, expr } => Expr::Unary {
+            negate: *negate,
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+        },
+        Expr::StringOp { op, left, right } => Expr::StringOp {
+            op: *op,
+            left: Box::new(rewrite_aggs(left, aggs)),
+            right: Box::new(rewrite_aggs(right, aggs)),
+        },
+        Expr::In { left, right } => Expr::In {
+            left: Box::new(rewrite_aggs(left, aggs)),
+            right: Box::new(rewrite_aggs(right, aggs)),
+        },
+        Expr::IsNull(e) => Expr::IsNull(Box::new(rewrite_aggs(e, aggs))),
+        Expr::IsNotNull(e) => Expr::IsNotNull(Box::new(rewrite_aggs(e, aggs))),
+        Expr::Not(e) => Expr::Not(Box::new(rewrite_aggs(e, aggs))),
+        Expr::And(a, b) => Expr::And(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::Or(a, b) => Expr::Or(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::Xor(a, b) => Expr::Xor(
+            Box::new(rewrite_aggs(a, aggs)),
+            Box::new(rewrite_aggs(b, aggs)),
+        ),
+        Expr::ListLiteral(items) => {
+            Expr::ListLiteral(items.iter().map(|e| rewrite_aggs(e, aggs)).collect())
+        }
+        Expr::MapLiteral(items) => Expr::MapLiteral(
+            items
+                .iter()
+                .map(|(k, e)| (k.clone(), rewrite_aggs(e, aggs)))
+                .collect(),
+        ),
+        Expr::Case {
+            test,
+            whens,
+            else_expr,
+        } => Expr::Case {
+            test: test.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            whens: whens
+                .iter()
+                .map(|(a, b)| (rewrite_aggs(a, aggs), rewrite_aggs(b, aggs)))
+                .collect(),
+            else_expr: else_expr
+                .as_deref()
+                .map(|e| Box::new(rewrite_aggs(e, aggs))),
+        },
+        Expr::ListComprehension {
+            variable,
+            list,
+            filter,
+            map,
+        } => Expr::ListComprehension {
+            variable: variable.clone(),
+            list: Box::new(rewrite_aggs(list, aggs)),
+            filter: filter.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            map: map.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+        },
+        Expr::Subscript { expr, index } => Expr::Subscript {
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+            index: Box::new(rewrite_aggs(index, aggs)),
+        },
+        Expr::Slice { expr, from, to } => Expr::Slice {
+            expr: Box::new(rewrite_aggs(expr, aggs)),
+            from: from.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
+            to: to.as_deref().map(|e| Box::new(rewrite_aggs(e, aggs))),
         },
         other => other.clone(),
     }
@@ -2134,7 +2172,6 @@ fn finalize_groups(
     plan: &AggPlan,
     items: &[ReturnItem],
     groups: IndexMap<Vec<Key>, GroupAcc>,
-    order: Option<&[OrderItem]>,
 ) -> CypherResult<Vec<Row>> {
     let columns: Vec<String> = items
         .iter()
@@ -2166,7 +2203,14 @@ fn finalize_groups(
         if let Some(p) = acc.first_row.get(INTERNAL_PROVENANCE_KEY) {
             row.insert(INTERNAL_PROVENANCE_KEY.to_string(), p.clone());
         }
-        stash_order_values(ev, &acc.first_row, &mut row, order, &columns)?;
+        tmp.extend(row.iter().map(|(key, value)| (key.clone(), value.clone())));
+        stash_order_values(
+            ev,
+            &tmp,
+            &mut row,
+            plan.rewritten_order.as_deref(),
+            &columns,
+        )?;
         Ok(row)
     };
     if groups.is_empty() && plan.group_exprs.is_empty() {
@@ -2260,7 +2304,7 @@ fn project(
     let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
     let mut out: Vec<Row>;
     if aggregated {
-        let plan = AggPlan::new(items)?;
+        let plan = AggPlan::new(items, order)?;
         let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
         for row in rows {
             let mut keyv = Vec::with_capacity(plan.group_exprs.len());
@@ -2285,7 +2329,7 @@ fn project(
             }
             merge_provenance(&mut acc.first_row, &row);
         }
-        out = finalize_groups(ev, &plan, items, groups, order)?;
+        out = finalize_groups(ev, &plan, items, groups)?;
     } else {
         out = Vec::with_capacity(rows.len());
         let names = item_names(items);

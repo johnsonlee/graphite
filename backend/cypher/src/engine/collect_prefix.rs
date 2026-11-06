@@ -97,7 +97,7 @@ impl<'a> CollectPrefixPlan<'a> {
                 return Ok(None);
             }
         }
-        let mut plan = AggPlan::new(self.items)?;
+        let mut plan = AggPlan::new(self.items, None)?;
         plan.prefix_caps = vec![Some(self.cap)];
         let mut acc = GroupAcc {
             first_row: Row::new(),
@@ -143,7 +143,7 @@ impl<'a> CollectPrefixPlan<'a> {
         if any_match {
             groups.insert(Vec::new(), acc);
         }
-        let rows = finalize_groups(ev, &plan, self.items, groups, None)?;
+        let rows = finalize_groups(ev, &plan, self.items, groups)?;
         Ok(Some((item_names(self.items), rows)))
     }
 }
