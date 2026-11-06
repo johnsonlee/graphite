@@ -116,14 +116,18 @@ fn graph_functions_check_runtime_types_in_standard_mode_and_preserve_legacy_fall
         ("RETURN type($value)", Value::map(indexmap::IndexMap::new())),
     ] {
         let standard = Executor::new(vec![], false).with_dialect(CypherDialect::OpenCypherM23);
-        let standard = standard.with_params(indexmap::IndexMap::from([("value".into(), value.clone())]));
+        let standard =
+            standard.with_params(indexmap::IndexMap::from([("value".into(), value.clone())]));
         let err = standard.execute(query, None).unwrap_err();
         let d = err.diagnostic().unwrap();
         assert_eq!(
             (d.error_type, d.phase, d.detail),
             ("TypeError", "runtime", "InvalidArgumentValue")
         );
-        assert!(Executor::new(vec![], false).with_params(indexmap::IndexMap::from([("value".into(), value)])).execute(query, None).is_ok());
+        assert!(Executor::new(vec![], false)
+            .with_params(indexmap::IndexMap::from([("value".into(), value)]))
+            .execute(query, None)
+            .is_ok());
     }
     for query in ["RETURN labels(null)", "RETURN type(null)"] {
         let result = Executor::new(vec![], false)

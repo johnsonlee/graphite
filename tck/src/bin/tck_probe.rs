@@ -1,8 +1,8 @@
 //! JSON-lines adapter for the official openCypher TCK correctness runner.
 //!
-//! Each line executes independently on an empty immutable graph. Arbitrary TCK graph
-//! setup is intentionally handled as unsupported by the runner, never emulated with
-//! Graphite program nodes. Errors expose native categories, not guessed TCK codes.
+//! Each line uses a fresh native property graph session in the public M23 dialect.
+//! Setup, primary and control queries share the production executor and typed
+//! procedure registry. Errors expose native diagnostics, never guessed TCK codes.
 use graphite_cypher::engine::{CancelToken, Executor};
 use graphite_cypher::procedures::{
     ProcedureField, ProcedureRegistry, ProcedureSignature, ProcedureType,

@@ -229,5 +229,9 @@
     "tck/features/useCases/triadicSelection/TriadicSelection1.feature": "492504a1d036a9cf0963b85570e74354da44be73ba98d93cbddccf03716eb301",
     "tck/graphs/binary-tree-1/binary-tree-1.cypher": "fbcada6966edb9e2d66b1a11a4f8a4c906a9da6afd622640ab08c686962d42da",
     "tck/graphs/binary-tree-2/binary-tree-2.cypher": "923bcaf5686ea9051f46ad5c440a286381fd111daad5dbd6377aa3edd7dbfc4c"
+  },
+  "scenarioInventory": {
+    "count": 3897,
+    "sha256": "5386156516fb7bc35881447d620c431bcfb6144b560071af101c6abad5761e33"
   }
 }

@@ -641,7 +641,9 @@ impl Parser<'_> {
         }
         if self.parameter_properties_forbidden && self.at(T::Dollar) {
             return Err(CypherError::compilation(
-                "SyntaxError", "InvalidParameterUse", "A pattern predicate must be a literal property map",
+                "SyntaxError",
+                "InvalidParameterUse",
+                "A pattern predicate must be a literal property map",
             ));
         }
         let properties_present = self.at(T::LBrace);
