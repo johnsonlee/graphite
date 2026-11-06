@@ -183,7 +183,11 @@ impl Executor {
         {
             clauses.push(Clause::Return {
                 distinct: false,
-                items: None,
+                items: Some(vec![ReturnItem {
+                    expr: Expr::Literal(crate::ast::Literal::Int(1)),
+                    alias: Some("__exists".into()),
+                    source_text: None,
+                }]),
             });
         }
         self.execute_clauses_seeded(&clauses, None, Some(row))
@@ -211,8 +215,14 @@ impl Executor {
             }
         }
         self.validate_procedure_calls(clauses)?;
-        let validated =
-            crate::validation::resolve_with_procedures(clauses, self.procedures.as_deref())?;
+        let seed_names = seed
+            .map(|row| row.keys().cloned().collect::<Vec<_>>())
+            .unwrap_or_default();
+        let validated = crate::validation::resolve_with_bindings(
+            clauses,
+            self.procedures.as_deref(),
+            &seed_names,
+        )?;
         let clauses = validated.as_slice();
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];

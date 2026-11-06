@@ -35,7 +35,8 @@ fn aggregate(expr: &Expr) -> bool {
 }
 fn children(expr: &Expr) -> Vec<&Expr> {
     match expr {
-        Expr::Property { expr, .. }
+        Expr::LabelPredicate { expr, .. }
+        | Expr::Property { expr, .. }
         | Expr::Distinct(expr)
         | Expr::Unary { expr, .. }
         | Expr::IsNull(expr)
@@ -94,6 +95,10 @@ fn infer(expr: &Expr, scope: &Scope) -> Kind {
         Expr::MapLiteral(_) => Kind::Map,
         Expr::CountStar => Kind::Int,
         Expr::Distinct(expr) | Expr::Unary { expr, .. } => infer(expr, scope),
+        Expr::LabelPredicate { .. } | Expr::PatternPredicate(_) | Expr::ExistsSubquery(_) => {
+            Kind::Bool
+        }
+        Expr::PatternComprehension { .. } => Kind::List,
         Expr::Not(_)
         | Expr::IsNull(_)
         | Expr::IsNotNull(_)
@@ -141,6 +146,26 @@ fn infer(expr: &Expr, scope: &Scope) -> Kind {
             }
         }
         _ => Kind::Unknown,
+    }
+}
+
+// Only infer an element type when every possible literal element agrees.
+// Empty, heterogeneous and parameter-dependent lists stay unknown.
+fn element_kind(list: &Expr, scope: &Scope) -> Kind {
+    let Expr::ListLiteral(items) = list else {
+        return Kind::Unknown;
+    };
+    let mut kinds = items
+        .iter()
+        .map(|item| infer(item, scope))
+        .filter(|kind| *kind != Kind::Null);
+    let Some(first) = kinds.next() else {
+        return Kind::Unknown;
+    };
+    if kinds.all(|kind| kind == first) {
+        first
+    } else {
+        Kind::Unknown
     }
 }
 
@@ -272,6 +297,7 @@ fn validate_function(name: &str, args: &[Expr], scope: &Scope) -> CypherResult<(
         let kind = infer(first, scope);
         if !allowed.is_empty()
             && !matches!(kind, Kind::Unknown | Kind::Null)
+            && !matches!(first, Expr::PatternPredicate(_))
             && !allowed.contains(&kind)
         {
             return Err(fail(
@@ -290,9 +316,110 @@ fn expression(
     in_aggregate: bool,
     known: &[Expr],
 ) -> CypherResult<()> {
+    expression_context(expr, scope, allow_aggregate, in_aggregate, known, false)
+}
+fn predicate(
+    expr: &Expr,
+    scope: &Scope,
+    allow_aggregate: bool,
+    in_aggregate: bool,
+    known: &[Expr],
+) -> CypherResult<()> {
+    expression_context(expr, scope, allow_aggregate, in_aggregate, known, true)?;
+    if !matches!(infer(expr, scope), Kind::Unknown | Kind::Null | Kind::Bool) {
+        return Err(fail(
+            "InvalidArgumentType",
+            "Predicate requires a boolean value",
+        ));
+    }
+    Ok(())
+}
+fn expression_context(
+    expr: &Expr,
+    scope: &Scope,
+    allow_aggregate: bool,
+    in_aggregate: bool,
+    known: &[Expr],
+    predicate_position: bool,
+) -> CypherResult<()> {
     if known.contains(expr) {
         return Ok(());
     }
+    match expr {
+        Expr::LabelPredicate { expr, .. } => {
+            expression(expr, scope, allow_aggregate, in_aggregate, known)?;
+            if !matches!(infer(expr, scope), Kind::Unknown | Kind::Null | Kind::Node) {
+                return Err(fail(
+                    "InvalidArgumentType",
+                    "Label predicate requires a node",
+                ));
+            }
+            return Ok(());
+        }
+        Expr::PatternPredicate(pattern) => {
+            if !predicate_position {
+                return Err(fail(
+                    "UnexpectedSyntax",
+                    "Graph patterns are not allowed in value expressions",
+                ));
+            }
+            for name in pattern.variables() {
+                if !scope.contains_key(name) {
+                    return Err(fail(
+                        "UndefinedVariable",
+                        format!("Variable {name} is not defined"),
+                    ));
+                }
+            }
+            let mut local = scope.clone();
+            patterns(
+                std::slice::from_ref(pattern.as_ref()),
+                &mut local,
+                false,
+                false,
+            )?;
+            return Ok(());
+        }
+        Expr::PatternComprehension {
+            pattern,
+            filter,
+            map,
+        } => {
+            let mut local = scope.clone();
+            patterns(
+                std::slice::from_ref(pattern.as_ref()),
+                &mut local,
+                false,
+                false,
+            )?;
+            if let Some(filter) = filter {
+                predicate(filter, &local, false, in_aggregate, known)?;
+            }
+            expression(map, &local, false, in_aggregate, known)?;
+            return Ok(());
+        }
+        Expr::ExistsSubquery(clauses) => {
+            if clauses.iter().any(|clause| {
+                matches!(
+                    clause,
+                    Clause::Create(_)
+                        | Clause::Merge { .. }
+                        | Clause::Set(_)
+                        | Clause::Remove(_)
+                        | Clause::Delete { .. }
+                )
+            }) {
+                return Err(fail(
+                    "InvalidClauseComposition",
+                    "Existential subqueries cannot update the graph",
+                ));
+            }
+            resolve_scoped(clauses, None, scope.clone())?;
+            return Ok(());
+        }
+        _ => {}
+    }
+
     match expr {
         Expr::And(a, b) | Expr::Or(a, b) | Expr::Xor(a, b) => {
             for operand in [a.as_ref(), b.as_ref()] {
@@ -329,10 +456,71 @@ fn expression(
                 ));
             }
         }
+        Expr::Binary {
+            op: BinOp::Mod | BinOp::Pow,
+            left,
+            right,
+        } => {
+            for operand in [left.as_ref(), right.as_ref()] {
+                if !matches!(
+                    infer(operand, scope),
+                    Kind::Unknown | Kind::Null | Kind::Int | Kind::Float
+                ) {
+                    return Err(fail(
+                        "InvalidArgumentType",
+                        "Numeric operator requires numeric operands",
+                    ));
+                }
+            }
+        }
         Expr::In { right, .. } => {
             if !matches!(infer(right, scope), Kind::Unknown | Kind::Null | Kind::List) {
                 return Err(fail("InvalidArgumentType", "IN requires a list operand"));
             }
+        }
+        _ => {}
+    }
+    match expr {
+        Expr::And(a, b) | Expr::Or(a, b) | Expr::Xor(a, b) => {
+            predicate(a, scope, allow_aggregate, in_aggregate, known)?;
+            predicate(b, scope, allow_aggregate, in_aggregate, known)?;
+            return Ok(());
+        }
+        Expr::Not(expr) => return predicate(expr, scope, allow_aggregate, in_aggregate, known),
+        Expr::Case {
+            test,
+            whens,
+            else_expr,
+        } => {
+            if let Some(test) = test {
+                expression(test, scope, allow_aggregate, in_aggregate, known)?;
+            }
+            for (when, then) in whens {
+                if test.is_none() {
+                    predicate(when, scope, allow_aggregate, in_aggregate, known)?
+                } else {
+                    expression(when, scope, allow_aggregate, in_aggregate, known)?
+                };
+                expression_context(
+                    then,
+                    scope,
+                    allow_aggregate,
+                    in_aggregate,
+                    known,
+                    predicate_position,
+                )?;
+            }
+            if let Some(other) = else_expr {
+                expression_context(
+                    other,
+                    scope,
+                    allow_aggregate,
+                    in_aggregate,
+                    known,
+                    predicate_position,
+                )?;
+            }
+            return Ok(());
         }
         _ => {}
     }
@@ -374,6 +562,13 @@ fn expression(
                     "An aggregate cannot contain another aggregate",
                 ));
             }
+            if name.eq_ignore_ascii_case("exists")
+                && args
+                    .first()
+                    .is_some_and(|arg| matches!(arg, Expr::PatternPredicate(_)))
+            {
+                return predicate(&args[0], scope, allow_aggregate, in_aggregate, known);
+            }
             for arg in args {
                 if is_aggregate && nondeterministic(arg) {
                     return Err(fail(
@@ -399,9 +594,12 @@ fn expression(
         } => {
             expression(list, scope, allow_aggregate, in_aggregate, known)?;
             let mut local = scope.clone();
-            local.insert(variable.clone(), Kind::Unknown);
-            for expr in filter.iter().chain(map.iter()) {
-                expression(expr, &local, false, in_aggregate, known)?;
+            local.insert(variable.clone(), element_kind(list, scope));
+            if let Some(filter) = filter {
+                predicate(filter, &local, false, in_aggregate, known)?;
+            }
+            if let Some(map) = map {
+                expression(map, &local, false, in_aggregate, known)?;
             }
             return Ok(());
         }
@@ -413,9 +611,9 @@ fn expression(
         } => {
             expression(list, scope, allow_aggregate, in_aggregate, known)?;
             let mut local = scope.clone();
-            local.insert(variable.clone(), Kind::Unknown);
+            local.insert(variable.clone(), element_kind(list, scope));
             if let Some(predicate) = predicate {
-                expression(predicate, &local, allow_aggregate, in_aggregate, known)?;
+                self::predicate(predicate, &local, allow_aggregate, in_aggregate, known)?;
             }
             return Ok(());
         }
@@ -522,8 +720,9 @@ fn patterns(
                 if create
                     && scope.contains_key(name)
                     && (!node.labels.is_empty()
+                        || node.properties_present
                         || !node.properties.is_empty()
-                        || (directed && pattern.rels.is_empty()))
+                        || pattern.rels.is_empty())
                 {
                     return Err(fail(
                         "VariableAlreadyBound",
@@ -609,7 +808,7 @@ fn projection(
     _with: bool,
 ) -> CypherResult<(Scope, bool, Vec<Expr>, Vec<Expr>)> {
     if items.is_none() {
-        if scope.is_empty() {
+        if scope.is_empty() && !_with {
             return Err(fail(
                 "NoVariablesInScope",
                 "Star projection has no visible variables",
@@ -779,6 +978,27 @@ pub fn resolve_with_procedures(
     clauses: &[Clause],
     procedures: Option<&crate::procedures::ProcedureRegistry>,
 ) -> CypherResult<Vec<Clause>> {
+    resolve_scoped(clauses, procedures, Scope::new())
+}
+pub fn resolve_with_bindings(
+    clauses: &[Clause],
+    procedures: Option<&crate::procedures::ProcedureRegistry>,
+    bindings: &[String],
+) -> CypherResult<Vec<Clause>> {
+    resolve_scoped(
+        clauses,
+        procedures,
+        bindings
+            .iter()
+            .map(|name| (name.clone(), Kind::Unknown))
+            .collect(),
+    )
+}
+fn resolve_scoped(
+    clauses: &[Clause],
+    procedures: Option<&crate::procedures::ProcedureRegistry>,
+    mut scope: Scope,
+) -> CypherResult<Vec<Clause>> {
     let union_modes: HashSet<_> = clauses
         .iter()
         .filter_map(|clause| {
@@ -796,7 +1016,6 @@ pub fn resolve_with_procedures(
         ));
     }
     let mut resolved = clauses.to_vec();
-    let mut scope = Scope::new();
     let mut order_scope = Scope::new();
     let mut order_known = Vec::new();
     let mut order_keys = Vec::new();
@@ -908,12 +1127,12 @@ pub fn resolve_with_procedures(
                 }
                 patterns(ps, &mut scope, false, false)?;
                 if let Some(expr) = where_clause {
-                    expression(expr, &scope, false, false, &[])?;
+                    predicate(expr, &scope, false, false, &[])?;
                 }
                 optional |= *is_optional;
             }
             Clause::Create(ps) => patterns(ps, &mut scope, true, true)?,
-            Clause::Where(expr) => expression(expr, &scope, false, false, &[])?,
+            Clause::Where(expr) => predicate(expr, &scope, false, false, &[])?,
             Clause::Unwind { expr, variable } => {
                 expression(expr, &scope, false, false, &[])?;
                 if scope.contains_key(variable) {
@@ -948,7 +1167,7 @@ pub fn resolve_with_procedures(
                 if let Some(expr) = where_clause {
                     let mut visible = scope.clone();
                     visible.extend(next.clone());
-                    expression(expr, &visible, false, false, &[])?;
+                    predicate(expr, &visible, false, false, &[])?;
                 }
                 scope = next;
                 optional = false;
@@ -993,7 +1212,10 @@ pub fn resolve_with_procedures(
                         kind,
                         Kind::Unknown | Kind::Null | Kind::Node | Kind::Rel | Kind::Path
                     ) {
-                        return Err(fail("InvalidDelete", "DELETE requires a graph element"));
+                        return Err(fail(
+                            "InvalidArgumentType",
+                            "DELETE requires a graph element",
+                        ));
                     }
                 }
             }
@@ -1147,5 +1369,88 @@ mod tests {
             &allowed
         ));
         assert!(!references_only(&expr("x IS NULL"), &allowed));
+    }
+    #[test]
+    fn patterns_are_predicates_and_comprehensions_bind_only_local_names() {
+        for query in [
+            "MATCH (n) RETURN (n)-[]->()",
+            "MATCH (n) RETURN size((n)-[]->())",
+            "MATCH (n) SET n.x = head(nodes(head((n)-[]->()))).x",
+        ] {
+            assert_eq!(detail(query), "UnexpectedSyntax", "{query}");
+        }
+        assert!(validate("MATCH(n) WHERE (n)-->() RETURN n").is_ok());
+        assert!(
+            validate("MATCH(n) RETURN NOT (n)-->() AS absent, exists((n)-->() ) AS found").is_ok()
+        );
+        assert!(validate("MATCH(n) RETURN [(n)-->(x) WHERE x.name = 'A' | x.name]").is_ok());
+        assert_eq!(
+            detail("MATCH(n) RETURN [(n)-->(x) | x], x"),
+            "UndefinedVariable"
+        );
+        assert_eq!(
+            detail("MATCH(n) WHERE (missing)-->() RETURN n"),
+            "UndefinedVariable"
+        );
+    }
+    #[test]
+    fn exists_validation_is_correlated_and_rejects_writes_before_execution() {
+        assert!(validate("MATCH(n) RETURN EXISTS { MATCH (n)-->(m) WHERE m.x = n.x }").is_ok());
+        assert_eq!(
+            detail("MATCH(n) RETURN EXISTS { CREATE (m) RETURN m }"),
+            "InvalidClauseComposition"
+        );
+        let graph = std::sync::Arc::new(crate::property_graph::PropertyGraph::new());
+        let ex = crate::engine::Executor::property_graph(graph);
+        let error = ex
+            .execute("MATCH(n) RETURN EXISTS { CREATE (m) RETURN m }", None)
+            .unwrap_err();
+        assert_eq!(
+            error.diagnostic().unwrap().detail,
+            "InvalidClauseComposition"
+        );
+        ex.execute(
+            "CREATE (:Person {name:'A'})-[:KNOWS]->(:Person {name:'B'})",
+            None,
+        )
+        .unwrap();
+        let result = ex.execute("MATCH(n:Person) WHERE EXISTS { MATCH (n)-->(m) WHERE m.name = 'B' } RETURN n.name AS name", None).unwrap();
+        assert_eq!(result.rows.len(), 1);
+        assert_eq!(result.rows[0]["name"].as_str(), Some("A"));
+    }
+    #[test]
+    fn homogeneous_list_elements_constrain_numeric_predicates() {
+        assert_eq!(
+            detail("RETURN none(x IN ['Clara'] WHERE x % 2 = 0)"),
+            "InvalidArgumentType"
+        );
+        assert_eq!(
+            detail("RETURN all(x IN [false,true] WHERE x % 2 = 0)"),
+            "InvalidArgumentType"
+        );
+        assert!(validate("RETURN all(x IN [1,2,null] WHERE x % 2 = 0)").is_ok());
+        assert!(validate("RETURN all(x IN $items WHERE x % 2 = 0)").is_ok());
+    }
+    #[test]
+    fn empty_star_and_explicit_empty_node_maps_preserve_write_semantics() {
+        assert!(validate("WITH * CREATE (:Person)").is_ok());
+        assert_eq!(
+            detail("CREATE(n:Foo) CREATE(n {})-[:OWNS]->(:Dog)"),
+            "VariableAlreadyBound"
+        );
+        assert_eq!(detail("MATCH(n) MERGE(n)"), "VariableAlreadyBound");
+        assert!(validate("MATCH(n) MERGE(n)-[:KNOWS]->(:Person)").is_ok());
+        let parsed = crate::parser::parse("CREATE(n {})").unwrap();
+        let Clause::Create(patterns) = &parsed[0] else {
+            panic!()
+        };
+        assert!(patterns[0].nodes[0].properties_present);
+        assert_eq!(crate::render::pattern_to_string(&patterns[0]), "(n {})");
+        let graph = std::sync::Arc::new(crate::property_graph::PropertyGraph::new());
+        let ex = crate::engine::Executor::property_graph(graph.clone());
+        ex.execute("CREATE (), ()", None).unwrap();
+        ex.execute("MATCH () CREATE () WITH * CREATE ()", None)
+            .unwrap();
+        assert_eq!(graph.snapshot().nodes.len(), 6);
     }
 }

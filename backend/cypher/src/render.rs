@@ -268,7 +268,7 @@ pub fn pattern_to_string(pattern: &Pattern) -> String {
             text.push(':');
             text.push_str(label);
         }
-        if !node.properties.is_empty() {
+        if node.properties_present || !node.properties.is_empty() {
             text.push_str(" {");
             text.push_str(
                 &node
@@ -379,6 +379,39 @@ pub fn clauses_to_string(clauses: &[Clause]) -> String {
     clauses
         .iter()
         .map(|clause| match clause {
+            Clause::Call(call) => {
+                let mut text = format!("CALL {}", call.name);
+                if let Some(arguments) = &call.arguments {
+                    text.push('(');
+                    text.push_str(
+                        &arguments
+                            .iter()
+                            .map(to_cypher_string)
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    );
+                    text.push(')');
+                }
+                if call.yield_all {
+                    text.push_str(" YIELD *")
+                } else if let Some(yields) = &call.yields {
+                    text.push_str(" YIELD ");
+                    text.push_str(
+                        &yields
+                            .iter()
+                            .map(|(name, alias)| {
+                                if name == alias {
+                                    name.clone()
+                                } else {
+                                    format!("{name} AS {alias}")
+                                }
+                            })
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    );
+                }
+                text
+            }
             Clause::Match {
                 patterns,
                 optional,

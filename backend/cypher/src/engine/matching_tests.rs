@@ -30,6 +30,7 @@ fn method(name: &str) -> Pattern {
     Pattern {
         path_variable: None,
         nodes: vec![NodePattern {
+            properties_present: false,
             variable: Some(name.into()),
             labels: vec!["Method".into()],
             properties: vec![],
@@ -205,11 +206,13 @@ fn shared_start_paths_use_distinct_edges_and_restore_state_after_stop() {
         path_variable: Some(path.into()),
         nodes: vec![
             NodePattern {
+                properties_present: false,
                 variable: Some("start".into()),
                 labels: vec![],
                 properties: vec![],
             },
             NodePattern {
+                properties_present: false,
                 variable: Some(target.into()),
                 labels: vec![],
                 properties: vec![],

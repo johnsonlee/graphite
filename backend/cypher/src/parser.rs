@@ -632,13 +632,15 @@ impl Parser<'_> {
         while self.eat(T::Colon) {
             labels.push(self.symbolic_name()?);
         }
-        let properties = if self.at(T::LBrace) {
+        let properties_present = self.at(T::LBrace);
+        let properties = if properties_present {
             self.map_entries()?
         } else {
             Vec::new()
         };
         self.expect(T::RParen, "{')', '{', ':'}")?;
         Ok(NodePattern {
+            properties_present,
             variable,
             labels,
             properties,

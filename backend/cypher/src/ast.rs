@@ -135,6 +135,8 @@ pub enum Direction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NodePattern {
+    /// The source contained an explicit property map, including an empty one.
+    pub properties_present: bool,
     pub variable: Option<String>,
     pub labels: Vec<String>,
     pub properties: Vec<(String, Expr)>,
