@@ -537,6 +537,32 @@ fn percentile_disc(values: &[&Value], p: f64) -> Value {
     Value::Float(nums[idx.min(nums.len() - 1)])
 }
 
+pub(crate) fn percentile(name: &str, values: &[Value], parameter: &Value) -> CypherResult<Value> {
+    if parameter.is_null() {
+        return Ok(Value::Null);
+    }
+    let p = parameter.as_f64().ok_or_else(|| {
+        CypherError::execution(
+            "TypeError",
+            "InvalidArgumentValue",
+            "Percentile must be numeric",
+        )
+    })?;
+    if !(0.0..=1.0).contains(&p) {
+        return Err(CypherError::execution(
+            "ArgumentError",
+            "NumberOutOfRange",
+            "Percentile must be between zero and one",
+        ));
+    }
+    let values: Vec<_> = values.iter().filter(|v| !v.is_null()).collect();
+    Ok(if name.eq_ignore_ascii_case("percentilecont") {
+        percentile_cont(&values, p)
+    } else {
+        percentile_disc(&values, p)
+    })
+}
+
 fn std_dev(values: &[&Value], sample: bool) -> Value {
     if values.len() < 2 {
         return Value::Null;

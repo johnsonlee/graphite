@@ -169,7 +169,7 @@ impl AggregateState {
         }
     }
 
-    pub(super) fn finish(self, agg: &AggCall) -> CypherResult<Value> {
+    pub(super) fn finish(self, agg: &AggCall, percentile: Option<&Value>) -> CypherResult<Value> {
         match self.kind {
             Kind::Count(count) => Ok(Value::Int(count.finish())),
             Kind::Number(state) => {
@@ -241,7 +241,11 @@ impl AggregateState {
             ))),
             Kind::Inputs { values, weights } => {
                 if weights.iter().all(|w| *w == 1) {
-                    aggregate(&agg.name, &values)
+                    if let Some(parameter) = percentile {
+                        crate::functions::percentile(&agg.name, &values, parameter)
+                    } else {
+                        aggregate(&agg.name, &values)
+                    }
                 } else {
                     aggregate_weighted(&agg.name, &values, &weights)
                 }
@@ -259,6 +263,7 @@ mod tests {
             name: name.into(),
             distinct,
             arg: None,
+            percentile: None,
         }
     }
 
@@ -323,7 +328,7 @@ mod tests {
                         .cloned()
                         .collect();
                     same(
-                        state.finish(&agg).unwrap(),
+                        state.finish(&agg, None).unwrap(),
                         aggregate(name, &reference).unwrap(),
                     );
                 }
@@ -357,7 +362,7 @@ mod tests {
                 } else {
                     aggregate_weighted(name, values, weights)
                 };
-                match (state.finish(&agg), reference) {
+                match (state.finish(&agg, None), reference) {
                     (Ok(actual), Ok(expected)) => same(actual, expected),
                     (Err(actual), Err(expected)) => {
                         assert_eq!(format!("{actual:?}"), format!("{expected:?}"))
@@ -382,7 +387,7 @@ mod tests {
             };
             assert_eq!(values.len(), cap.min(10));
             same(
-                state.finish(&agg).unwrap(),
+                state.finish(&agg, None).unwrap(),
                 Value::list((0..cap.min(10)).map(|n| Value::Int(n as i64)).collect()),
             );
         }
@@ -396,7 +401,7 @@ mod tests {
             state.push(Value::Int(0), i64::MAX);
         }
         same(
-            state.finish(&agg).unwrap(),
+            state.finish(&agg, None).unwrap(),
             aggregate_weighted(
                 "sum",
                 &[Value::Int(0), Value::Int(0)],
@@ -452,7 +457,8 @@ mod tests {
         let mut state = AggregateState::new(&agg, None);
         state.push(Value::Int(1), i64::MAX);
         state.push(Value::Int(1), 1);
-        let actual = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| state.finish(&agg)));
+        let actual =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| state.finish(&agg, None)));
         let expected = std::panic::catch_unwind(|| {
             aggregate_weighted("count", &[Value::Int(1), Value::Int(1)], &[i64::MAX, 1])
         });

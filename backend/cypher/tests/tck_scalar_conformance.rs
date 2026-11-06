@@ -315,3 +315,32 @@ fn integer_sum_retains_exact_integer_type_and_promotes_only_floating_inputs() {
     assert_eq!(diagnostic.detail, "IntegerOverflow");
 }
 
+#[test]
+fn percentile_aggregations_use_the_requested_parameter_and_reject_out_of_range_values() {
+    for (p, expected) in [(0.0, 10.0), (0.5, 20.0), (1.0, 30.0)] {
+        for function in ["percentileDisc", "percentileCont"] {
+            same(
+                &format!("UNWIND [10.0,20.0,30.0] AS x RETURN {function}(x,{p})"),
+                Value::Float(expected),
+            );
+        }
+    }
+    same(
+        "UNWIND [10.0,20.0,30.0] AS x RETURN percentileCont(x,0.25)",
+        Value::Float(15.0),
+    );
+    for p in [-1.0, 1.1, 1000.0] {
+        for function in ["percentileDisc", "percentileCont"] {
+            let err = Executor::new(vec![], false)
+                .execute(
+                    &format!("UNWIND [10.0] AS x RETURN {function}(x,{p})"),
+                    None,
+                )
+                .unwrap_err();
+            let diagnostic = err.diagnostic().unwrap();
+            assert_eq!(diagnostic.error_type, "ArgumentError");
+            assert_eq!(diagnostic.phase, "runtime");
+            assert_eq!(diagnostic.detail, "NumberOutOfRange");
+        }
+    }
+}

@@ -1887,6 +1887,7 @@ struct AggCall {
     name: String,
     distinct: bool,
     arg: Option<Expr>,
+    percentile: Option<Expr>,
 }
 
 /// A collect used exclusively through literal, bounded positive slices needs only
@@ -2038,6 +2039,7 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
                 name: "count".into(),
                 distinct: false,
                 arg: None,
+                percentile: None,
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
@@ -2056,6 +2058,13 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
                 name: name.clone(),
                 distinct: d,
                 arg,
+                percentile: if name.eq_ignore_ascii_case("percentilecont")
+                    || name.eq_ignore_ascii_case("percentiledisc")
+                {
+                    args.get(1).cloned()
+                } else {
+                    None
+                },
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
@@ -2280,7 +2289,12 @@ fn finalize_groups(
     let compute = |acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
         for (ai, (agg, state)) in plan.aggs.iter().zip(acc.agg_states).enumerate() {
-            let value = state.finish(agg)?;
+            let percentile = agg
+                .percentile
+                .as_ref()
+                .map(|expr| ev.eval(expr, &acc.first_row))
+                .transpose()?;
+            let value = state.finish(agg, percentile.as_ref())?;
             tmp.insert(format!("{AGG_PLACEHOLDER_PREFIX}{ai}"), value);
         }
         let mut row = Row::new();
