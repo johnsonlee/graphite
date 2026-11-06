@@ -18,7 +18,39 @@ enum Kind {
     Path,
     Temporal,
 }
-type Scope = BTreeMap<String, Kind>;
+// Dialect is lexical query context, so nested comprehensions, projections and
+// correlated subqueries inherit the caller's public language contract.
+#[derive(Clone)]
+struct Scope {
+    bindings: BTreeMap<String, Kind>,
+    dialect: crate::CypherDialect,
+}
+impl Scope {
+    fn new(dialect: crate::CypherDialect) -> Self {
+        Self {
+            bindings: BTreeMap::new(),
+            dialect,
+        }
+    }
+}
+impl std::ops::Deref for Scope {
+    type Target = BTreeMap<String, Kind>;
+    fn deref(&self) -> &Self::Target {
+        &self.bindings
+    }
+}
+impl std::ops::DerefMut for Scope {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.bindings
+    }
+}
+impl IntoIterator for Scope {
+    type Item = (String, Kind);
+    type IntoIter = std::collections::btree_map::IntoIter<String, Kind>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.bindings.into_iter()
+    }
+}
 fn fail(detail: &'static str, message: impl Into<String>) -> CypherError {
     CypherError::Syntax {
         position: 0,
@@ -417,12 +449,7 @@ fn expression_context(
                     "Existential subqueries cannot update the graph",
                 ));
             }
-            resolve_scoped(
-                clauses,
-                None,
-                scope.clone(),
-                crate::CypherDialect::OpenCypherM23,
-            )?;
+            resolve_scoped(clauses, None, scope.clone(), scope.dialect)?;
             return Ok(());
         }
         _ => {}
@@ -838,7 +865,7 @@ fn projection(
         );
     }
     let items = items.as_ref().unwrap();
-    let mut next = Scope::new();
+    let mut next = Scope::new(scope.dialect);
     let mut columns = HashSet::new();
     let aggregated = items.iter().any(|item| aggregate(&item.expr));
     let keys: Vec<_> = items
@@ -993,7 +1020,7 @@ pub fn resolve_with_procedures(
     resolve_scoped(
         clauses,
         procedures,
-        Scope::new(),
+        Scope::new(crate::CypherDialect::OpenCypherM23),
         crate::CypherDialect::OpenCypherM23,
     )
 }
@@ -1025,10 +1052,13 @@ pub fn resolve_with_bindings_and_dialect(
     resolve_scoped(
         clauses,
         procedures,
-        bindings
-            .iter()
-            .map(|name| (name.clone(), Kind::Unknown))
-            .collect(),
+        Scope {
+            bindings: bindings
+                .iter()
+                .map(|name| (name.clone(), Kind::Unknown))
+                .collect(),
+            dialect,
+        },
         dialect,
     )
 }
@@ -1055,7 +1085,7 @@ fn resolve_scoped(
         ));
     }
     let mut resolved = clauses.to_vec();
-    let mut order_scope = Scope::new();
+    let mut order_scope = Scope::new(dialect);
     let mut order_known = Vec::new();
     let mut order_keys = Vec::new();
     let mut order_aggregate = false;

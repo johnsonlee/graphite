@@ -133,3 +133,32 @@ fn graph_functions_check_runtime_types_in_standard_mode_and_preserve_legacy_fall
         assert!(result.rows[0][&result.columns[0]].is_null());
     }
 }
+
+#[test]
+fn correlated_exists_inherits_the_enclosing_dialect_through_projections() {
+    for query in [
+        "WITH 1 AS n RETURN EXISTS { UNWIND [2] AS n RETURN n } AS yes",
+        "WITH 1 AS n WITH n AS alias RETURN EXISTS { UNWIND [2] AS alias RETURN alias } AS yes",
+        "WITH 1 AS n RETURN [x IN [1] | EXISTS { UNWIND [2] AS n RETURN n }] AS yes",
+    ] {
+        let result = Executor::new(vec![], false).execute(query, None).unwrap();
+        let answer = &result.rows[0]["yes"];
+        if let Value::List(values) = answer {
+            assert_eq!(values.len(), 1);
+            assert!(matches!(values[0], Value::Bool(true)));
+        } else {
+            assert!(matches!(answer, Value::Bool(true)));
+        }
+        let error = Executor::new(vec![], false)
+            .with_dialect(CypherDialect::OpenCypherM23)
+            .execute(query, None)
+            .unwrap_err()
+            .diagnostic()
+            .unwrap();
+        assert_eq!(
+            (error.error_type, error.phase, error.detail),
+            ("SyntaxError", "compile time", "VariableAlreadyBound"),
+            "{query}"
+        );
+    }
+}
