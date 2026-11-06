@@ -161,7 +161,7 @@ class BranchDefinitionPersistenceTest {
     }
 
     /** Replace the payload and re-sign it in both the sidecar preamble and the metadata trailer, so only the payload's meaning changes. */
-    private val noNodes = BranchDefinitionCodec.NodeTagLookup { NodeSerializer.NO_NODE }
+    private val noNodes = BranchDefinitionNodeTags { NodeSerializer.NO_NODE }
 
     private fun rewritePayload(dir: Path, edit: (ByteBuffer) -> Unit) =
         replacePayload(dir) { payload -> payload.also { edit(ByteBuffer.wrap(it)) } }
@@ -264,7 +264,7 @@ class BranchDefinitionPersistenceTest {
         val bytes = Files.readAllBytes(metadata(dir))
         val trailerBytes = NodeSerializer.METADATA_TRAILER_BYTES
         val input = java.io.DataInputStream(bytes.inputStream(bytes.size - trailerBytes, trailerBytes))
-        return BranchDefinitionCodec.readMetadataTrailer(input)
+        return readBranchDefinitionMetadataTrailer(input)
     }
 
     @Test
@@ -450,13 +450,13 @@ class BranchDefinitionPersistenceTest {
         preambleBytes.putInt(1 shl 20)
         preambleBytes.put(ByteArray(NodeSerializer.DIGEST_BYTES))
         val rejected =
-            BranchDefinitionCodec.decodeBranchDefinitionPreamble(
+            decodePersistedBranchDefinitionPreamble(
                 preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES), maxPayloadBytes = 1 shl 16)
         assertNull(rejected.payloadDigest)
         assertTrue(rejected.rejection!!.contains("exceeds the 65536-byte budget"), rejected.rejection)
 
         val accepted =
-            BranchDefinitionCodec.decodeBranchDefinitionPreamble(
+            decodePersistedBranchDefinitionPreamble(
                 preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES))
         assertNotNull(accepted.payloadDigest)
     }
@@ -689,7 +689,7 @@ class BranchDefinitionPersistenceTest {
     fun `decodeBranchDefinitionPreamble rejects a bad header before touching the payload`() {
         val bytes = ByteArray(preamble)
         ByteBuffer.wrap(bytes).putInt(NodeSerializer.MAGIC_COMPARISONS or NodeSerializer.BRANCH_DEFINITIONS_VERSION)
-        val decoded = BranchDefinitionCodec.decodeBranchDefinitionPreamble(bytes, 0, ByteArray(NodeSerializer.DIGEST_BYTES))
+        val decoded = decodePersistedBranchDefinitionPreamble(bytes, 0, ByteArray(NodeSerializer.DIGEST_BYTES))
         assertNull(decoded.payloadDigest)
         assertNotNull(decoded.rejection)
     }
@@ -697,7 +697,7 @@ class BranchDefinitionPersistenceTest {
     @Test
     fun `writeMetadataTrailer rejects a digest of the wrong length`() {
         assertFailsWith<IllegalArgumentException> {
-            BranchDefinitionCodec.writeMetadataTrailer(DataOutputStream(ByteArrayOutputStream()), ByteArray(16))
+            writeBranchDefinitionMetadataTrailer(DataOutputStream(ByteArrayOutputStream()), ByteArray(16))
         }
     }
 
@@ -708,7 +708,7 @@ class BranchDefinitionPersistenceTest {
             it.writeInt(NodeSerializer.MAGIC_COMPARISONS)
             it.write(ByteArray(NodeSerializer.DIGEST_BYTES))
         }
-        assertNull(BranchDefinitionCodec.readMetadataTrailer(java.io.DataInputStream(out.toByteArray().inputStream())))
+        assertNull(readBranchDefinitionMetadataTrailer(java.io.DataInputStream(out.toByteArray().inputStream())))
     }
 
     @Test

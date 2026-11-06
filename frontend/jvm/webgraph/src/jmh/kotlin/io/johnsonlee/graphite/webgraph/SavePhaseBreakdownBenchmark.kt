@@ -90,11 +90,11 @@ open class SavePhaseBreakdownBenchmark {
         for (node in graph.nodes(Node::class.java)) {
             if (node.id.value > maxNodeId) maxNodeId = node.id.value
             graphNodeCount++
-            NodeRecordCodec.collectNodeStrings(listOf(node), strings)
+            collectGraphNodeStrings(listOf(node), strings)
         }
 
         metadata = GraphStore.collectMetadata(graph)
-        GraphMetadataCodec.collectMetadataStrings(metadata, strings)
+        collectGraphMetadataStrings(metadata, strings)
         allStrings = strings.toSet()
 
         tmpDir = Files.createTempDirectory("phase-bench")
@@ -112,7 +112,7 @@ open class SavePhaseBreakdownBenchmark {
             NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
             dos.writeInt(graphNodeCount)
             for (node in graph.nodes(Node::class.java)) {
-                NodeRecordCodec.writeNode(dos, node, stringTable)
+                writeGraphNode(dos, node, stringTable)
             }
         }
     }
@@ -129,7 +129,7 @@ open class SavePhaseBreakdownBenchmark {
         val strings = mutableSetOf<String>()
         var count = 0
         for (node in graph.nodes(Node::class.java)) {
-            NodeRecordCodec.collectNodeStrings(listOf(node), strings)
+            collectGraphNodeStrings(listOf(node), strings)
             count++
         }
         return strings.size
@@ -183,7 +183,7 @@ open class SavePhaseBreakdownBenchmark {
                 NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
                 dos.writeInt(graphNodeCount)
                 for (node in graph.nodes(Node::class.java)) {
-                    NodeRecordCodec.writeNode(dos, node, stringTable)
+                    writeGraphNode(dos, node, stringTable)
                 }
             }
         } finally {
@@ -206,7 +206,7 @@ open class SavePhaseBreakdownBenchmark {
         val dir = Files.createTempDirectory("meta")
         try {
             DataOutputStream(BufferedOutputStream(dir.resolve("graph.metadata").toFile().outputStream())).use { dos ->
-                GraphMetadataCodec.saveMetadata(metadata, dos, stringTable)
+                writeGraphMetadata(metadata, dos, stringTable)
             }
         } finally {
             dir.toFile().deleteRecursively()

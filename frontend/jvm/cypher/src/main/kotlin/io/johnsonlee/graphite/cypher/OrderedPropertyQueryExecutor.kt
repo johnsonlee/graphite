@@ -54,8 +54,8 @@ internal class OrderedPropertyQueryExecutor(
 
     private fun streamingProjection(query: OrderedPropertyLimitQuery): StreamingStringPropertyProjection? {
         val singleUnqualified = !qualified && sources.size == 1
-        val directCallFields = query.nodeClass == CallSiteNode::class.java &&
-            query.projections.all { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
+        val directCallFields =
+            query.nodeClass == CallSiteNode::class.java && query.projections.all { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
         return if (singleUnqualified && directCallFields) sources.single().graph as? StreamingStringPropertyProjection else null
     }
 
@@ -65,10 +65,7 @@ internal class OrderedPropertyQueryExecutor(
     }
 
     /** Owns comparison polling, encounter order and heap admission for both storage and node projections. */
-    private inner class ProjectionCollector(
-        private val query: OrderedPropertyLimitQuery,
-        private val cancellation: (() -> Unit)?
-    ) {
+    private inner class ProjectionCollector(private val query: OrderedPropertyLimitQuery, private val cancellation: (() -> Unit)?) {
         private var comparisons = 0
         private var encounterOrder = 0L
         private val comparator = Comparator<RankedProjectedRow> { left, right -> compareRows(left, right) }
@@ -85,7 +82,7 @@ internal class OrderedPropertyQueryExecutor(
         private fun compareRows(left: RankedProjectedRow, right: RankedProjectedRow): Int {
             pollComparison()
             for (sort in query.sortItems) {
-                val comparison = CypherOrdering.compare(left.row[sort.column], right.row[sort.column], sort.ascending)
+                val comparison = compareOrderValues(left.row[sort.column], right.row[sort.column], sort.ascending)
                 if (comparison != 0) return comparison
             }
             return left.encounterOrder.compareTo(right.encounterOrder)
@@ -127,7 +124,7 @@ internal class OrderedPropertyQueryExecutor(
             val worst = rows.peek()
             for (index in query.sortItems.indices) {
                 val sort = query.sortItems[index]
-                val comparison = CypherOrdering.compare(values[sortIndexes[index]], worst.row[sort.column], sort.ascending)
+                val comparison = compareOrderValues(values[sortIndexes[index]], worst.row[sort.column], sort.ascending)
                 if (comparison != 0) return comparison
             }
             return ordinal.compareTo(worst.encounterOrder)
@@ -177,10 +174,12 @@ internal class OrderedPropertyQueryExecutor(
         return CypherResult(listOf(query.column), rows)
     }
 
-    private fun hasNode(source: CypherGraph): Boolean = source.graph.nodeCount(Node::class.java)?.let { it > 0L } ?: run {
-        val candidates = graphAccess.trackWork(source.graph.nodes(Node::class.java)).iterator()
-        candidates.hasNext() && candidates.next().let { true }
-    }
+    private fun hasNode(source: CypherGraph): Boolean =
+        source.graph.nodeCount(Node::class.java)?.let { it > 0L }
+            ?: run {
+                val candidates = graphAccess.trackWork(source.graph.nodes(Node::class.java)).iterator()
+                candidates.hasNext() && candidates.next().let { true }
+            }
 
     private data class OrderedPropertyLimitQuery(
         val nodeClass: Class<out Node>,
@@ -191,9 +190,8 @@ internal class OrderedPropertyQueryExecutor(
         val columns: List<String> = projections.map(PropertyProjection::column)
 
         companion object {
-            fun compile(clauses: List<CypherClause>): OrderedPropertyLimitQuery? = orderedNodeProjection(clauses)
-                ?.takeIf { !it.match.optional && it.match.where == null }
-                ?.let(::compile)
+            fun compile(clauses: List<CypherClause>): OrderedPropertyLimitQuery? =
+                orderedNodeProjection(clauses)?.takeIf { !it.match.optional && it.match.where == null }?.let(::compile)
 
             private fun compile(shape: OrderedNodeProjection): OrderedPropertyLimitQuery? {
                 if (shape.returned.distinct || shape.returned.items.isEmpty()) return null
@@ -215,20 +213,26 @@ internal class OrderedPropertyQueryExecutor(
             }
 
             private fun projections(items: List<ReturnItem>, variable: String): List<PropertyProjection>? =
-                items.map { item ->
-                    val property = (item.expression as? CypherExpr.Property)
-                        ?.takeIf { it.expression == CypherExpr.Variable(variable) } ?: return null
-                    PropertyProjection(property.propertyName, item.alias ?: item.expression.toCypherString())
-                }.takeIf { projections -> projections.map(PropertyProjection::column).toSet().size == projections.size }
+                items
+                    .map { item ->
+                        val property =
+                            (item.expression as? CypherExpr.Property)?.takeIf { it.expression == CypherExpr.Variable(variable) }
+                                ?: return null
+                        PropertyProjection(property.propertyName, item.alias ?: item.expression.toCypherString())
+                    }
+                    .takeIf { projections -> projections.map(PropertyProjection::column).toSet().size == projections.size }
 
             private fun sortItems(orderBy: CypherClause.OrderBy, columns: List<String>): List<OrderedColumn>? =
-                orderBy.items.map { item ->
-                    val column = (item.expression as? CypherExpr.Variable)?.name?.takeIf { it in columns } ?: return null
-                    OrderedColumn(column, item.ascending)
-                }.takeIf { it.isNotEmpty() }
+                orderBy.items
+                    .map { item ->
+                        val column = (item.expression as? CypherExpr.Variable)?.name?.takeIf { it in columns } ?: return null
+                        OrderedColumn(column, item.ascending)
+                    }
+                    .takeIf { it.isNotEmpty() }
         }
     }
 
     private data class PropertyProjection(val property: String, val column: String)
+
     private data class OrderedColumn(val column: String, val ascending: Boolean)
 }

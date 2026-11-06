@@ -50,7 +50,7 @@ internal object DexClassDeclarations {
                 return read(resourceClasses(resources, true, warning), classNames, warning)
             }
             val classes = dexFiles.asSequence().flatMapIndexed { index, dex ->
-                DexDeclarationResources.safeClasses(dex.base.dexFile, "SootUp DEX container #${index + 1}", warning)
+                safeDexClasses(dex.base.dexFile, "SootUp DEX container #${index + 1}", warning)
             }
             return read(classes, classNames, warning)
         }
@@ -96,7 +96,7 @@ internal object DexClassDeclarations {
     }
 
     internal fun resourceClasses(resources: ResourceAccessor, includeNonDexNames: Boolean, warning: (String) -> Unit): Sequence<ClassDef> =
-        DexDeclarationResources.resourceClasses(resources, includeNonDexNames, warning)
+        dexResourceClasses(resources, includeNonDexNames, warning)
 
     private fun from(definition: ClassDef, stringIndexField: Field?): ClassDeclarations {
         val name = definition.type.dexClassName()

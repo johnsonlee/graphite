@@ -36,9 +36,9 @@ class BoundedParallelCallSiteScanTest : GraphStoreTestFixture() {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                RawCallSiteScanAssertions.verify(loaded)
-                CallSiteMetadataAssertions.verify(loaded)
-                CallSiteAdmissionAssertions.verify(loaded)
+                assertRawCallSiteScans(loaded)
+                assertCallSiteMetadataRecovery(loaded)
+                assertCallSiteAdmission(loaded)
             } finally {
                 loaded.close()
             }

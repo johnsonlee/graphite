@@ -20,8 +20,8 @@ internal class DirectStringExecutor(
     ): CypherResult {
         val filter = spec.filter.filters.single()
         return if (stringScanPolicy.hasTypedDirectStringCandidate(spec.nodeClass, filter)) {
-            executeDirectStringDisjunctionRows(spec, limit, candidateSources = candidateSources,
-                preferPersistedStorage = preferPersistedStorage)
+            executeDirectStringDisjunctionRows(
+                spec, limit, candidateSources = candidateSources, preferPersistedStorage = preferPersistedStorage)
         } else {
             executeUntypedFilter(spec, filter, limit, candidateSources)
         }
@@ -35,8 +35,9 @@ internal class DirectStringExecutor(
     ): CypherResult {
         val rows = mutableListOf<Map<String, Any?>>()
         for (source in candidateSources) {
-            val candidates = graphAccess.stringPropertyCandidates(source.graph, spec.nodeClass, filter, limit - rows.size)
-                ?: graphAccess.trackWork(source.graph.nodes(spec.nodeClass)).filter { filter.matches(it, source.graph) }
+            val candidates =
+                graphAccess.stringPropertyCandidates(source.graph, spec.nodeClass, filter, limit - rows.size)
+                    ?: graphAccess.trackWork(source.graph.nodes(spec.nodeClass)).filter { filter.matches(it, source.graph) }
             for (node in candidates) {
                 rows.add(projectNode(spec, source, node))
                 if (rows.size >= limit) return CypherResult(spec.columns, rows)
@@ -52,16 +53,17 @@ internal class DirectStringExecutor(
         candidateSources: List<CypherGraph> = sources,
         preferMappedView: Boolean = false
     ): CypherResult {
-        val indexed = if (nodePredicateFactory == null) {
-            indexedStringProjection.executeIndexedDistinctStringProjection(spec, limit, candidateSources, preferMappedView)
-        } else null
-        return indexed ?: if (stringScanPolicy.canExecuteDirectStringDisjunctionInParallel(
-                spec.nodeClass, spec.variable, spec.filter, spec.items, candidateSources
-            )) {
-            executeDirectStringDisjunctionInParallel(spec, limit, nodePredicateFactory, candidateSources, preferMappedView)
-        } else {
-            executeDirectStringDisjunctionSerial(spec, limit, nodePredicateFactory, candidateSources, preferMappedView)
-        }
+        val indexed =
+            if (nodePredicateFactory == null) {
+                indexedStringProjection.executeIndexedDistinctStringProjection(spec, limit, candidateSources, preferMappedView)
+            } else null
+        return indexed
+            ?: if (stringScanPolicy.canExecuteDirectStringDisjunctionInParallel(
+                spec.nodeClass, spec.variable, spec.filter, spec.items, candidateSources)) {
+                executeDirectStringDisjunctionInParallel(spec, limit, nodePredicateFactory, candidateSources, preferMappedView)
+            } else {
+                executeDirectStringDisjunctionSerial(spec, limit, nodePredicateFactory, candidateSources, preferMappedView)
+            }
     }
 
     fun executeDirectStringDisjunctionRows(
@@ -73,8 +75,8 @@ internal class DirectStringExecutor(
     ): CypherResult {
         if (candidateSources.isEmpty()) return CypherResult(spec.columns, emptyList())
         return indexedStringProjection.executeIndexedStringProjectionRows(
-            spec, limit, nodePredicateFactory, candidateSources, preferPersistedStorage
-        ) ?: RowScan(spec, limit, nodePredicateFactory, candidateSources, preferPersistedStorage).execute()
+            spec, limit, nodePredicateFactory, candidateSources, preferPersistedStorage)
+            ?: RowScan(spec, limit, nodePredicateFactory, candidateSources, preferPersistedStorage).execute()
     }
 
     /** Keeps leading-probe work separate from the remaining source-ordered scan. */
@@ -86,11 +88,12 @@ internal class DirectStringExecutor(
         private val preferPersisted: Boolean
     ) {
         private val balanced = usesBalancedStringSplit(candidates.size)
-        private val rawLeading = when {
-            !balanced || preferPersisted -> false
-            predicateFactory != null -> false
-            else -> stringScanPolicy.prefersBoundedRawLeadingProbe(spec.filter, limit)
-        }
+        private val rawLeading =
+            when {
+                !balanced || preferPersisted -> false
+                predicateFactory != null -> false
+                else -> stringScanPolicy.prefersBoundedRawLeadingProbe(spec.filter, limit)
+            }
         private val tracker = if (context.workTrackingEnabled) context.workTracker else null
 
         fun execute(): CypherResult {
@@ -100,37 +103,43 @@ internal class DirectStringExecutor(
             return if (policy.serial) executeSerial() else executeBatches(leading, policy)
         }
 
-        private fun leadingProjection(): List<Map<String, Any?>>? = when {
-            rawLeading -> indexedStringProjection.projectLeadingRows(spec, limit, candidates, tracker, preferRaw = true)
-            balanced && predicateFactory == null ->
-                indexedStringProjection.projectLeadingRows(spec, limit, candidates, tracker, preferRaw = false)
-            else -> null
-        }
+        private fun leadingProjection(): List<Map<String, Any?>>? =
+            when {
+                rawLeading -> indexedStringProjection.projectLeadingRows(spec, limit, candidates, tracker, preferRaw = true)
+                balanced && predicateFactory == null ->
+                    indexedStringProjection.projectLeadingRows(spec, limit, candidates, tracker, preferRaw = false)
+                else -> null
+            }
 
         private fun batchingPolicy(): BatchPolicy {
-            val parallel = stringScanPolicy.canExecuteDirectStringDisjunctionInParallel(
-                spec.nodeClass, spec.variable, spec.filter, spec.items, candidates
-            )
+            val parallel =
+                stringScanPolicy.canExecuteDirectStringDisjunctionInParallel(
+                    spec.nodeClass, spec.variable, spec.filter, spec.items, candidates)
             val retainedEligible = balanced && predicateFactory == null
-            val scopedRetained = retainedEligible && preferPersisted &&
-                stringScanPolicy.hasRetainedStringDisjunction(spec.nodeClass, spec.filter, candidates)
-            val leadingRetained = retainedEligible &&
-                stringScanPolicy.hasRetainedStringDisjunction(spec.nodeClass, spec.filter, candidates.take(1))
+            val scopedRetained =
+                retainedEligible &&
+                    preferPersisted &&
+                    stringScanPolicy.hasRetainedStringDisjunction(spec.nodeClass, spec.filter, candidates)
+            val leadingRetained =
+                retainedEligible && stringScanPolicy.hasRetainedStringDisjunction(spec.nodeClass, spec.filter, candidates.take(1))
             val batchPrepared = retainedEligible && (!preferPersisted || parallel)
             val serialStorage = !rawLeading && !batchPrepared && !parallel
-            return BatchPolicy(scopedRetained || serialStorage || context.workTrackingEnabled && !balanced,
-                leadingRetained, batchPrepared)
+            return BatchPolicy(scopedRetained || serialStorage || context.workTrackingEnabled && !balanced, leadingRetained, batchPrepared)
         }
 
         private fun executeSerial(): CypherResult {
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in candidates) {
                 val predicate = predicateFactory?.invoke(source)
-                val nodes = stringScanner.directStringCandidates(
-                    source.graph, spec.nodeClass, spec.filter,
-                    limit = if (predicate == null) limit - rows.size else Int.MAX_VALUE,
-                    storage = StringStorageOptions(candidates.size, preferPersisted, mappedView = balanced)
-                ).let { nodes -> predicate?.let { nodes.filter(it) } ?: nodes }
+                val nodes =
+                    stringScanner
+                        .directStringCandidates(
+                            source.graph,
+                            spec.nodeClass,
+                            spec.filter,
+                            limit = if (predicate == null) limit - rows.size else Int.MAX_VALUE,
+                            storage = StringStorageOptions(candidates.size, preferPersisted, mappedView = balanced))
+                        .let { nodes -> predicate?.let { nodes.filter(it) } ?: nodes }
                 for (node in nodes) {
                     rows += projectNode(spec, source, node)
                     if (rows.size >= limit) return CypherResult(spec.columns, rows)
@@ -141,11 +150,16 @@ internal class DirectStringExecutor(
 
         private fun executeBatches(leading: List<Map<String, Any?>>?, policy: BatchPolicy): CypherResult {
             val parallelism = directStringGraphParallelism(candidates.size)
-            val scanners = candidates.mapIndexed { index, source ->
-                val serialStorage = preferPersisted && !balanced || rawLeading && balanced && index == 0
-                stringScanner.DirectStringSourceScanner(source, spec, tracker, predicateFactory,
-                    StringStorageOptions(candidates.size, serialStorage, mappedView = balanced))
-            }
+            val scanners =
+                candidates.mapIndexed { index, source ->
+                    val serialStorage = preferPersisted && !balanced || rawLeading && balanced && index == 0
+                    stringScanner.DirectStringSourceScanner(
+                        source,
+                        spec,
+                        tracker,
+                        predicateFactory,
+                        StringStorageOptions(candidates.size, serialStorage, mappedView = balanced))
+                }
             val rows = mutableListOf<Map<String, Any?>>()
             if (balanced) {
                 if (leading == null) probeLeadingSource(rows, policy.leadingRetained) else rows += leading
@@ -160,11 +174,16 @@ internal class DirectStringExecutor(
         private fun probeLeadingSource(rows: MutableList<Map<String, Any?>>, retained: Boolean) {
             val source = candidates.first()
             val predicate = predicateFactory?.invoke(source)
-            val nodes = stringScanner.directStringCandidates(
-                source.graph, spec.nodeClass, spec.filter, tracker,
-                limit = if (predicate == null) limit else Int.MAX_VALUE,
-                storage = StringStorageOptions(candidates.size, rawLeading || retained, mappedView = balanced)
-            ).let { nodes -> predicate?.let { nodes.filter(it) } ?: nodes }
+            val nodes =
+                stringScanner
+                    .directStringCandidates(
+                        source.graph,
+                        spec.nodeClass,
+                        spec.filter,
+                        tracker,
+                        limit = if (predicate == null) limit else Int.MAX_VALUE,
+                        storage = StringStorageOptions(candidates.size, rawLeading || retained, mappedView = balanced))
+                    .let { nodes -> predicate?.let { nodes.filter(it) } ?: nodes }
             for (node in nodes) {
                 rows += projectNode(spec, source, node)
                 if (rows.size >= limit) break
@@ -177,15 +196,15 @@ internal class DirectStringExecutor(
             parallelism: Int,
             mayBatchPrepared: Boolean
         ) {
-            val batchPrepared = mayBatchPrepared &&
-                stringScanPolicy.hasPreparedWideStringDisjunction(spec.nodeClass, spec.filter, candidates)
+            val batchPrepared =
+                mayBatchPrepared && stringScanPolicy.hasPreparedWideStringDisjunction(spec.nodeClass, spec.filter, candidates)
             val tasks = scanners.map { scanner -> { scanner.nextRows(limit) } }
             val merge: (List<Map<String, Any?>>) -> Boolean = { batch ->
                 mergeRows(rows, batch)
                 rows.size >= limit
             }
-            if (batchPrepared) DirectStringTasks.runDirectStringTasksWithFixedWorkersInOrderUntil(tasks, parallelism, merge)
-            else DirectStringTasks.runDirectStringTasksInOrderUntil(tasks, parallelism, merge)
+            if (batchPrepared) runDirectStringTasksWithFixedWorkersInOrderUntil(tasks, parallelism, merge)
+            else runDirectStringTasksInOrderUntil(tasks, parallelism, merge)
         }
 
         private fun scanWaves(
@@ -196,8 +215,7 @@ internal class DirectStringExecutor(
             var start = 0
             while (start < scanners.size && rows.size < limit) {
                 val wave = scanners.subList(start, minOf(scanners.size, start + parallelism))
-                DirectStringTasks.runDirectStringTasks(wave.map { scanner -> { scanner.nextRows(limit) } }, parallelism)
-                    .forEach { mergeRows(rows, it) }
+                runDirectStringTasks(wave.map { scanner -> { scanner.nextRows(limit) } }, parallelism).forEach { mergeRows(rows, it) }
                 start += wave.size
             }
         }
@@ -232,18 +250,19 @@ internal class DirectStringExecutor(
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in candidateSources) {
             val nodePredicate = nodePredicateFactory?.invoke(source)
-            val candidates = stringScanner.directStringCandidates(
-                                                    graph = source.graph,
-                                                    nodeClass = nodeClass,
-                                                    disjunction = filter,
-                                                    storage = StringStorageOptions(candidateSources.size, false, false, preferMappedView)
-                                                )
-                .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
+            val candidates =
+                stringScanner
+                    .directStringCandidates(
+                        graph = source.graph,
+                        nodeClass = nodeClass,
+                        disjunction = filter,
+                        storage = StringStorageOptions(candidateSources.size, false, false, preferMappedView))
+                    .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             for (node in candidates) {
                 val candidate = graphAccess.nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
                 rowOperations.addProvenance(bindings, candidate)
-                CypherDistinctRows.addDistinctRow(rows, rowProjection.projectRow(items, columns, bindings), limit)
+                addDistinctRow(rows, rowProjection.projectRow(items, columns, bindings), limit)
                 if (!qualified && rows.size >= limit) return CypherResult(columns, rows.values.toList())
             }
         }
@@ -251,11 +270,9 @@ internal class DirectStringExecutor(
     }
 
     /**
-     * Scans independent graphs concurrently but merges rows in source order.
-     * Each scanner pauses after a bounded batch of local distinct rows. Once
-     * the global LIMIT is known, workers drain only for those selected values
-     * so later occurrences can add complete provenance without retaining an
-     * unbounded per-graph result set.
+     * Scans independent graphs concurrently but merges rows in source order. Each scanner pauses after a bounded batch of local distinct
+     * rows. Once the global LIMIT is known, workers drain only for those selected values so later occurrences can add complete provenance
+     * without retaining an unbounded per-graph result set.
      */
     private fun executeDirectStringDisjunctionInParallel(
         spec: StringProjectionSpec,
@@ -270,29 +287,27 @@ internal class DirectStringExecutor(
         val items = spec.items
         val columns = spec.columns
         val tracker = if (context.workTrackingEnabled) context.workTracker else null
-        val scanners = candidateSources.map { source ->
-            stringScanner.DirectStringSourceScanner(
-                                        source = source,
-                                        tracker = tracker,
-                                        nodePredicateFactory = nodePredicateFactory,
-                                        projection = StringProjectionSpec(nodeClass, variable, filter, items, columns),
-                                        storage = StringStorageOptions(candidateSources.size, false, false, preferMappedView)
-                                    )
-        }
+        val scanners =
+            candidateSources.map { source ->
+                stringScanner.DirectStringSourceScanner(
+                    source = source,
+                    tracker = tracker,
+                    nodePredicateFactory = nodePredicateFactory,
+                    projection = StringProjectionSpec(nodeClass, variable, filter, items, columns),
+                    storage = StringStorageOptions(candidateSources.size, false, false, preferMappedView))
+            }
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         var waveStart = 0
         while (waveStart < scanners.size && rows.size < limit) {
             val graphParallelism = directStringGraphParallelism(candidateSources.size)
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
-            val initial = DirectStringTasks.runDirectStringTasks(wave.map { scanner ->
-                { scanner.nextDistinctRows(limit) }
-            }, graphParallelism)
+            val initial = runDirectStringTasks(wave.map { scanner -> { scanner.nextDistinctRows(limit) } }, graphParallelism)
             for (index in wave.indices) {
                 var batch = initial[index]
-                CypherDistinctRows.mergeDirectStringBatch(rows, batch.rows, limit)
+                mergeDirectStringBatch(rows, batch.rows, limit)
                 while (rows.size < limit && !batch.exhausted) {
                     batch = wave[index].nextDistinctRows(limit)
-                    CypherDistinctRows.mergeDirectStringBatch(rows, batch.rows, limit)
+                    mergeDirectStringBatch(rows, batch.rows, limit)
                 }
             }
             waveStart += wave.size
@@ -301,15 +316,15 @@ internal class DirectStringExecutor(
         if (rows.size >= limit) {
             val selected = rows.keys.toSet()
             val selectedMatcher = stringScanner.DirectStringSelectedRowMatcher(selected, items, columns)
-            val hits = DirectStringTasks.runDirectStringTasks(scanners.map { scanner ->
-                { scanner.collectRemainingSelectedRows(selectedMatcher) }
-            }, directStringGraphParallelism(candidateSources.size))
+            val hits =
+                runDirectStringTasks(
+                    scanners.map { scanner -> { scanner.collectRemainingSelectedRows(selectedMatcher) } },
+                    directStringGraphParallelism(candidateSources.size))
             hits.forEachIndexed { index, visibleRows ->
                 val graphId = scanners[index].source.id
                 visibleRows.forEach { visible ->
                     val row = rows.getValue(visible)
-                    @Suppress("UNCHECKED_CAST")
-                    val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
+                    @Suppress("UNCHECKED_CAST") val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
                     row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
                 }
             }

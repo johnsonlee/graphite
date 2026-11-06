@@ -515,16 +515,16 @@ object GraphStore {
     }
 
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2, prepareCallSiteStringIndex: Boolean) =
-        GraphStoreWriter.saveGraph(
+        saveGraphFiles(
             graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
 
     /** Explicit compatibility fixture path; ordinary saves always choose the current representation. */
     internal fun saveLegacyDeclaredTypesV3(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        GraphStoreWriter.saveGraph(
+        saveGraphFiles(
             graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
 
     internal fun saveLegacyDeclaredTypesV4(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        GraphStoreWriter.saveGraph(
+        saveGraphFiles(
             graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
 
     internal const val CURRENT_DECLARED_TYPE_VERSION = 5
@@ -537,19 +537,19 @@ object GraphStore {
      * @param mode loading strategy; defaults to [LoadMode.AUTO] which selects based on graph size (< 1M nodes → eager, >= 1M → mapped).
      */
     fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
-        require(Files.isDirectory(dir)) { GraphStoreLoader.notDirectoryMessage(dir) }
+        require(Files.isDirectory(dir)) { graphNotDirectoryMessage(dir) }
         return when (mode) {
-            LoadMode.EAGER -> GraphStoreLoader.loadEager(dir)
+            LoadMode.EAGER -> loadEagerGraph(dir)
             LoadMode.MAPPED -> {
-                GraphNodeIndexStorage.ensureNodeIndex(dir)
+                ensureGraphNodeIndex(dir)
                 loadMapped(dir)
             }
             LoadMode.AUTO -> {
-                val (_, nodeCount) = GraphNodeIndexStorage.readNodeDataHeader(dir)
+                val (_, nodeCount) = readGraphNodeDataHeader(dir)
                 if (nodeCount < MAPPED_THRESHOLD) {
-                    GraphStoreLoader.loadEager(dir)
+                    loadEagerGraph(dir)
                 } else {
-                    GraphNodeIndexStorage.ensureNodeIndex(dir)
+                    ensureGraphNodeIndex(dir)
                     loadMapped(dir)
                 }
             }
@@ -578,7 +578,7 @@ object GraphStore {
      * `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
      */
     fun loadMapped(dir: Path): Graph =
-        GraphStoreLoader.loadMapped(
+        loadMappedGraph(
             dir,
             prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
             persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled())
@@ -619,15 +619,15 @@ object GraphStore {
 
     internal fun collectMetadata(graph: Graph): GraphMetadata = GraphMetadataCollector(graph).collect()
 
-    fun ensureNodeIndex(dir: Path) = GraphNodeIndexStorage.ensureNodeIndex(dir)
+    fun ensureNodeIndex(dir: Path) = ensureGraphNodeIndex(dir)
 
     internal fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) =
-        GraphNodeIndexStorage.buildNodeIndex(nodeDataPath, nodeIndexPath, stringTable)
+        buildGraphNodeIndex(nodeDataPath, nodeIndexPath, stringTable)
 
     internal fun loadBranchDefinitions(
         dir: Path,
         metadata: GraphMetadata,
         nodeCount: Int,
-        nodeTags: BranchDefinitionCodec.NodeTagLookup
-    ): PersistedBranchDefinitions = BranchDefinitionStorage.loadBranchDefinitions(dir, metadata, nodeCount, nodeTags)
+        nodeTags: BranchDefinitionNodeTags
+    ): PersistedBranchDefinitions = loadPersistedBranchDefinitions(dir, metadata, nodeCount, nodeTags)
 }

@@ -101,7 +101,7 @@ internal class NodeDataWriter(private val graph: Graph, private val dir: Path, p
     private fun writeNodes(context: NodeDataWriteContext) {
         for (node in graph.nodes(Node::class.java)) {
             val offset = context.countingOutput.bytesWritten
-            val tag = NodeRecordCodec.writeNode(context.dataDos, node, context.stringTable)
+            val tag = writeGraphNode(context.dataDos, node, context.stringTable)
             context.idxDos.writeInt(node.id.value)
             context.idxDos.writeByte(tag)
             context.idxDos.writeLong(offset)

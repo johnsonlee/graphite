@@ -52,9 +52,9 @@ internal object NodeSerializer {
     // Keep its reader entrypoints stable while the wire-format responsibilities
     // live in the individual codecs below.
     fun readMetadataOptionalSections(dis: DataInput, strings: StringTable, metadata: GraphMetadata): GraphMetadata =
-        GraphMetadataCodec.readMetadataOptionalSections(dis, strings, metadata)
+        readGraphMetadataOptionalSections(dis, strings, metadata)
 
-    fun loadMetadata(dis: DataInput, strings: StringTable): GraphMetadata = GraphMetadataCodec.loadMetadata(dis, strings)
+    fun loadMetadata(dis: DataInput, strings: StringTable): GraphMetadata = readGraphMetadata(dis, strings)
 
     fun decodeBranchDefinitionPreamble(
         preamble: ByteArray,
@@ -62,7 +62,7 @@ internal object NodeSerializer {
         expectedPayloadDigest: ByteArray?,
         maxPayloadBytes: Int = MAX_BRANCH_DEFINITIONS_PAYLOAD_BYTES
     ): BranchDefinitionPreamble =
-        BranchDefinitionCodec.decodeBranchDefinitionPreamble(preamble, payloadBytesInFile, expectedPayloadDigest, maxPayloadBytes)
+        decodePersistedBranchDefinitionPreamble(preamble, payloadBytesInFile, expectedPayloadDigest, maxPayloadBytes)
 
     fun interface NodeTagLookup {
         fun tagOf(nodeId: Int): Int
@@ -75,10 +75,10 @@ internal object NodeSerializer {
         nodeCount: Int,
         nodeTags: NodeTagLookup
     ): DecodedBranchDefinitions =
-        BranchDefinitionCodec.decodeBranchDefinitionPayload(
-            payload, expectedScopeCount, expectedPayloadDigest, nodeCount, BranchDefinitionCodec.NodeTagLookup(nodeTags::tagOf))
+        decodePersistedBranchDefinitionPayload(
+            payload, expectedScopeCount, expectedPayloadDigest, nodeCount, BranchDefinitionNodeTags(nodeTags::tagOf))
 
-    fun tagOf(node: Node): Int = NodeRecordCodec.tagOf(node)
+    fun tagOf(node: Node): Int = graphNodeTagOf(node)
 
     /** File type magic prefixes (3 bytes, big-endian high bits of the header int). */
     internal const val MAGIC_METADATA = 0x47524D00 // "GRM"
@@ -333,7 +333,7 @@ data class GraphMetadata(
 
 /**
  * The synthetic identity section as read: [records] holds `count` records of a string table index and a raw fingerprint, decoded into a map
- * on first use (see [GraphMetadataCodec.readMetadataOptionalSections]).
+ * on first use (see [readGraphMetadataOptionalSections]).
  */
 internal class LazySyntheticIdentities(private val count: Int, private val records: ByteArray, private val strings: StringTable) :
     AbstractMap<String, String>() {
@@ -344,7 +344,7 @@ internal class LazySyntheticIdentities(private val count: Int, private val recor
         repeat(count) {
             val member = strings.get(buffer.getInt())
             buffer.get(fingerprint)
-            map[member] = GraphMetadataCodec.encodeFingerprint(fingerprint)
+            map[member] = encodeGraphFingerprint(fingerprint)
         }
         map
     }
@@ -360,10 +360,10 @@ internal class LazySyntheticIdentities(private val count: Int, private val recor
     override fun containsKey(key: String): Boolean = decoded.containsKey(key)
 }
 
-/** A sidecar as [BranchDefinitionCodec.encodeBranchDefinitions] produces it, with the digest `graph.metadata` binds to. */
+/** A sidecar as [encodeBranchDefinitions] produces it, with the digest `graph.metadata` binds to. */
 class EncodedBranchDefinitions(val bytes: ByteArray, val payloadDigest: ByteArray)
 
-/** Outcome of [BranchDefinitionCodec.decodeBranchDefinitionPreamble]: the accepted length and digest, or the [rejection]. */
+/** Outcome of [decodePersistedBranchDefinitionPreamble]: the accepted length and digest, or the [rejection]. */
 data class BranchDefinitionPreamble(val payloadLength: Int, val payloadDigest: ByteArray?, val rejection: String?) {
     companion object {
         fun rejected(reason: String) = BranchDefinitionPreamble(0, null, reason)
@@ -380,7 +380,7 @@ data class PersistedBranchDefinitions(val scopes: List<Pair<IntArray, IntArray>>
     }
 }
 
-/** Outcome of [BranchDefinitionCodec.decodeBranchDefinitionPayload]: either [definitions] or the [rejection] reason. */
+/** Outcome of [decodePersistedBranchDefinitionPayload]: either [definitions] or the [rejection] reason. */
 data class DecodedBranchDefinitions(val definitions: PersistedBranchDefinitions?, val rejection: String?) {
     companion object {
         fun rejected(reason: String) = DecodedBranchDefinitions(null, reason)

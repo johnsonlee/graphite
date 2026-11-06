@@ -14,7 +14,8 @@ internal class FilteredRowOrdering(
     private val stringScanner: DirectStringScanner,
     private val stringScanPolicy: StringScanPolicy
 ) {
-    private val qualified get() = graphAccess.qualified
+    private val qualified
+        get() = graphAccess.qualified
 
     fun projectOrderedDirectStringRows(
         nodePattern: PatternElement.NodePattern,
@@ -39,9 +40,11 @@ internal class FilteredRowOrdering(
         val candidatePlan = DirectStringCandidatePlan.compile(plan.where.condition, variable, parameters) ?: return null
         val parallelism = directStringGraphParallelism(candidates.size)
         val multipleWorkers = candidates.size > 1 && parallelism > 1
-        return if (multipleWorkers && !DirectStringTasks.isWorker &&
-            stringScanPolicy.shouldParallelizeStringScan(nodeClass, candidatePlan.candidates)
-        ) OrderedStringScan(nodeClass, variable, candidatePlan, plan, candidates, parameters, parallelism) else null
+        return if (multipleWorkers &&
+            !isDirectStringWorker &&
+            stringScanPolicy.shouldParallelizeStringScan(nodeClass, candidatePlan.candidates))
+            OrderedStringScan(nodeClass, variable, candidatePlan, plan, candidates, parameters, parallelism)
+        else null
     }
 
     private inner class OrderedStringScan(
@@ -63,7 +66,7 @@ internal class FilteredRowOrdering(
             while (start < sources.size) {
                 val end = minOf(sources.size, start + parallelism)
                 val tasks = (start until end).map { index -> { sourceRows(index) } }
-                val localRows = DirectStringTasks.runDirectStringTasks(tasks, parallelism)
+                val localRows = runDirectStringTasks(tasks, parallelism)
                 localRows.forEach { batch -> batch.forEach { addOrderedTopRow(rows, it, plan.retained, comparator) } }
                 start = end
             }
@@ -73,8 +76,11 @@ internal class FilteredRowOrdering(
 
         private fun sourceRows(index: Int): List<RankedProjectedRow> {
             val source = sources[index]
-            val evaluator = ExpressionEvaluator(parameterResolver = parameters::get, graph = source.graph,
-                checkCancelled = { checkThreadInterrupted { CypherQueryCancelledException() } })
+            val evaluator =
+                ExpressionEvaluator(
+                    parameterResolver = parameters::get,
+                    graph = source.graph,
+                    checkCancelled = { checkThreadInterrupted { CypherQueryCancelledException() } })
             val bindings = mutableMapOf<String, Any?>(variable to null)
             val comparator = rankedRowComparator(orderBy)
             val rows = PriorityQueue<RankedProjectedRow>(plan.retained, comparator.reversed())
@@ -85,8 +91,11 @@ internal class FilteredRowOrdering(
                 if (evaluator.evaluate(plan.where.condition, bindings) != true) continue
                 val projected = projectSourceRow(candidate, bindings, evaluator)
                 val orderContext = bindings.toMutableMap().apply { putAll(projected) }
-                val ranked = RankedProjectedRow(projected, (index.toLong() shl DIRECT_ORDER_SOURCE_SHIFT) + ordinal++,
-                    orderBy.items.map { evaluateSortValue(it.expression, orderContext, evaluator) })
+                val ranked =
+                    RankedProjectedRow(
+                        projected,
+                        (index.toLong() shl DIRECT_ORDER_SOURCE_SHIFT) + ordinal++,
+                        orderBy.items.map { evaluateSortValue(it.expression, orderContext, evaluator) })
                 addOrderedTopRow(rows, ranked, plan.retained, comparator)
             }
             return rows.toList()
@@ -122,10 +131,7 @@ internal class FilteredRowOrdering(
         }
     }
 
-    fun projectDistinctFilteredRows(
-        matches: Sequence<Map<String, Any?>>,
-        plan: FilteredRowPlan
-    ): CypherResult {
+    fun projectDistinctFilteredRows(matches: Sequence<Map<String, Any?>>, plan: FilteredRowPlan): CypherResult {
         val where = plan.where
         val ret = plan.returned
         val columns = plan.columns
@@ -135,7 +141,7 @@ internal class FilteredRowOrdering(
         for (bindings in matches) {
             if (context.evaluator.evaluate(where.condition, bindings) == true) {
                 val projected = rowProjection.projectRow(ret.items, columns, bindings)
-                CypherDistinctRows.addCypherDistinctRow(distinctRows, projected, retainedCount)
+                addCypherDistinctRow(distinctRows, projected, retainedCount)
                 if (!qualified && distinctRows.size >= retainedCount) break
             }
         }
@@ -164,8 +170,9 @@ internal class FilteredRowOrdering(
             val visible = distinct?.let { cypherValueKey(projected.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY }) }
             val existing = visible?.let { distinct?.get(it) }
             if (existing != null) {
-                val graphIds = (existing.row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
-                    (projected[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                val graphIds =
+                    (existing.row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                        (projected[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
                 if (graphIds.isNotEmpty()) existing.row[INTERNAL_PROVENANCE_KEY] = graphIds
                 ordinal++
             } else {
@@ -185,8 +192,8 @@ internal class FilteredRowOrdering(
             }
         }
 
-        fun result(): CypherResult = CypherResult(plan.columns,
-            rows.toList().sortedWith(comparator).drop(plan.skip).map(RankedProjectedRow::row))
+        fun result(): CypherResult =
+            CypherResult(plan.columns, rows.toList().sortedWith(comparator).drop(plan.skip).map(RankedProjectedRow::row))
     }
 
     private fun rankedRowComparator(orderBy: CypherClause.OrderBy): Comparator<RankedProjectedRow> {
@@ -196,7 +203,7 @@ internal class FilteredRowOrdering(
             for ((index, item) in orderBy.items.withIndex()) {
                 val leftValue = left.sortValues[index]
                 val rightValue = right.sortValues[index]
-                val comparison = CypherOrdering.compare(leftValue, rightValue, item.ascending)
+                val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
                 if (comparison != 0) return@Comparator comparison
             }
             left.encounterOrder.compareTo(right.encounterOrder)

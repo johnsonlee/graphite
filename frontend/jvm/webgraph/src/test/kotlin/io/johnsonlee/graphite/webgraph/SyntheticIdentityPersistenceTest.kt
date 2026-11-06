@@ -75,7 +75,7 @@ class SyntheticIdentityPersistenceTest {
         val sectionBytes = Int.SIZE_BYTES + Int.SIZE_BYTES + 2 * (Int.SIZE_BYTES + NodeSerializer.FINGERPRINT_BYTES)
         val trailerStart = bytes.size - sectionBytes - NodeSerializer.METADATA_TRAILER_BYTES
         val trailer = DataInputStream(ByteArrayInputStream(bytes, trailerStart, NodeSerializer.METADATA_TRAILER_BYTES))
-        assertNotNull(BranchDefinitionCodec.readMetadataTrailer(trailer), "trailer precedes the section")
+        assertNotNull(readBranchDefinitionMetadataTrailer(trailer), "trailer precedes the section")
         val section = DataInputStream(ByteArrayInputStream(bytes, trailerStart + NodeSerializer.METADATA_TRAILER_BYTES, sectionBytes))
         assertEquals(NodeSerializer.MAGIC_SYNTHETIC_IDENTITIES or NodeSerializer.SYNTHETIC_IDENTITIES_VERSION, section.readInt())
         assertEquals(2, section.readInt())
@@ -93,7 +93,7 @@ class SyntheticIdentityPersistenceTest {
             val bytes = Files.readAllBytes(metadata(dir))
             val trailerStart = bytes.size - NodeSerializer.METADATA_TRAILER_BYTES
             val trailer = DataInputStream(ByteArrayInputStream(bytes, trailerStart, NodeSerializer.METADATA_TRAILER_BYTES))
-            assertNotNull(BranchDefinitionCodec.readMetadataTrailer(trailer), "file ends with the trailer")
+            assertNotNull(readBranchDefinitionMetadataTrailer(trailer), "file ends with the trailer")
             assertEquals(emptyMap(), GraphStore.load(dir).syntheticIdentities())
         }
 
@@ -128,7 +128,7 @@ class SyntheticIdentityPersistenceTest {
                 dos.writeInt(-1)
             }
             val read =
-                GraphMetadataCodec.readMetadataOptionalSections(DataInputStream(ByteArrayInputStream(out.toByteArray())), strings, base)
+                readGraphMetadataOptionalSections(DataInputStream(ByteArrayInputStream(out.toByteArray())), strings, base)
             assertEquals(emptyMap(), read.syntheticIdentities)
             assertNull(read.branchDefinitionDigest)
         } finally {
@@ -147,18 +147,18 @@ class SyntheticIdentityPersistenceTest {
 
             val out = ByteArrayOutputStream()
             DataOutputStream(out).use { dos ->
-                GraphMetadataCodec.writeSyntheticIdentities(withIdentities, dos, strings)
-                BranchDefinitionCodec.writeMetadataTrailer(dos, digest)
+                writeGraphSyntheticIdentities(withIdentities, dos, strings)
+                writeBranchDefinitionMetadataTrailer(dos, digest)
                 dos.writeInt(0x47524D03) // another section's header: not ours, reading stops
                 dos.writeInt(42)
             }
             val input = DataInputStream(ByteArrayInputStream(out.toByteArray()))
-            val read = GraphMetadataCodec.readMetadataOptionalSections(input, strings, base)
+            val read = readGraphMetadataOptionalSections(input, strings, base)
             assertEquals(withIdentities.syntheticIdentities, read.syntheticIdentities)
             assertContentEquals(digest, read.branchDefinitionDigest)
             assertEquals(42, input.readInt(), "the unknown header's payload is left unread")
 
-            val empty = GraphMetadataCodec.readMetadataOptionalSections(DataInputStream(ByteArrayInputStream(ByteArray(0))), strings, base)
+            val empty = readGraphMetadataOptionalSections(DataInputStream(ByteArrayInputStream(ByteArray(0))), strings, base)
             assertEquals(emptyMap(), empty.syntheticIdentities)
             assertNull(empty.branchDefinitionDigest)
         } finally {
@@ -172,17 +172,17 @@ class SyntheticIdentityPersistenceTest {
         val metadata =
             GraphMetadata(emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyList())
                 .copy(syntheticIdentities = mapOf(classKey to classFingerprint))
-        GraphMetadataCodec.collectMetadataStrings(metadata, strings)
+        collectGraphMetadataStrings(metadata, strings)
         assertEquals(setOf(classKey), strings)
     }
 
     @Test
     fun `fingerprints round trip through hex and reject malformed input`() {
         val bytes = ByteArray(NodeSerializer.FINGERPRINT_BYTES) { (it * 17).toByte() }
-        assertContentEquals(bytes, GraphMetadataCodec.decodeFingerprint(GraphMetadataCodec.encodeFingerprint(bytes)))
-        assertEquals(classFingerprint, GraphMetadataCodec.encodeFingerprint(GraphMetadataCodec.decodeFingerprint(classFingerprint)))
-        assertFailsWith<IllegalArgumentException> { GraphMetadataCodec.decodeFingerprint("abc") }
-        assertFailsWith<IllegalArgumentException> { GraphMetadataCodec.decodeFingerprint("zz" + classFingerprint.drop(2)) }
+        assertContentEquals(bytes, decodeGraphFingerprint(encodeGraphFingerprint(bytes)))
+        assertEquals(classFingerprint, encodeGraphFingerprint(decodeGraphFingerprint(classFingerprint)))
+        assertFailsWith<IllegalArgumentException> { decodeGraphFingerprint("abc") }
+        assertFailsWith<IllegalArgumentException> { decodeGraphFingerprint("zz" + classFingerprint.drop(2)) }
         val malformed = DefaultGraph.Builder().addSyntheticIdentity(classKey, "nope").build()
         val dir = Files.createTempDirectory("bad-fingerprint")
         try {

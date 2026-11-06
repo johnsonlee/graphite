@@ -23,8 +23,8 @@ class CallSiteOrdinalsTest {
         val ordinals = IntArray(1000) { it - 500 }
         // Every derived call (ordinal below zero) came from the id before it.
         val origins = IntArray(1000) { if (ordinals[it] < 0) ids[it] - 1 else NO_ORIGIN }
-        val encoded = CallSiteOrdinalCodec.encodeCallSiteOrdinals(ids, ordinals, origins)
-        val sidecar = CallSiteOrdinalCodec.callSiteOrdinalsOf(ByteBuffer.wrap(encoded.bytes), encoded.digest)!!
+        val encoded = encodeCallSiteOrdinals(ids, ordinals, origins)
+        val sidecar = callSiteOrdinalsOf(ByteBuffer.wrap(encoded.bytes), encoded.digest)!!
         assertEquals(1000, sidecar.size)
         for (index in ids.indices) assertEquals(ordinals[index], sidecar[ids[index]], "id ${ids[index]}")
         assertEquals(ids[0] - 1, sidecar.origin(ids[0])?.value)
@@ -97,7 +97,7 @@ class CallSiteOrdinalsTest {
             Files.write(file, byteArrayOf(1, 2, 3))
             assertEquals(0, CallSiteOrdinals.load(file, digest).size, "not a sidecar")
             // The encoder writes what the loader binds.
-            val encoded = CallSiteOrdinalCodec.encodeCallSiteOrdinals(intArrayOf(4, 9), intArrayOf(0, -1), intArrayOf(NO_ORIGIN, 4))
+            val encoded = encodeCallSiteOrdinals(intArrayOf(4, 9), intArrayOf(0, -1), intArrayOf(NO_ORIGIN, 4))
             Files.write(file, encoded.bytes)
             val bound = CallSiteOrdinals.load(file, encoded.digest)
             assertEquals(2, bound.size)
@@ -106,7 +106,7 @@ class CallSiteOrdinalsTest {
             assertNull(bound.origin(4))
             // Every mapping hashes the index: the same file replaced by other bytes of the same length
             // and the same modification time is not the file that was loaded before.
-            val other = CallSiteOrdinalCodec.encodeCallSiteOrdinals(intArrayOf(4, 9), intArrayOf(0, -1), intArrayOf(NO_ORIGIN, 9))
+            val other = encodeCallSiteOrdinals(intArrayOf(4, 9), intArrayOf(0, -1), intArrayOf(NO_ORIGIN, 9))
             assertEquals(encoded.bytes.size, other.bytes.size)
             val modified = Files.getLastModifiedTime(file)
             Files.write(file, other.bytes)
@@ -121,7 +121,7 @@ class CallSiteOrdinalsTest {
     fun `malformed bound sidecar warns once while valid absent and unbound sidecars stay quiet`() {
         val dir = Files.createTempDirectory("call-site-ordinal-warning")
         val file = dir.resolve("graph.callsite-ordinals")
-        val encoded = CallSiteOrdinalCodec.encodeCallSiteOrdinals(intArrayOf(7), intArrayOf(3), intArrayOf(NO_ORIGIN))
+        val encoded = encodeCallSiteOrdinals(intArrayOf(7), intArrayOf(3), intArrayOf(NO_ORIGIN))
         val logger = Logger.getLogger(CallSiteOrdinals::class.java.name)
         val previousLevel = logger.level
         val records = mutableListOf<LogRecord>()
@@ -168,13 +168,13 @@ class CallSiteOrdinalsTest {
         val ids = IntArray(600) { it * 2 }
         val ordinals = IntArray(600) { if (it % 100 == 99) -1 else it }
         val origins = IntArray(600) { if (ordinals[it] < 0) ids[it] - 2 else NO_ORIGIN }
-        val encoded = CallSiteOrdinalCodec.encodeCallSiteOrdinals(ids, ordinals, origins)
+        val encoded = encodeCallSiteOrdinals(ids, ordinals, origins)
         fun tampered(entryOffset: Int): CallSiteOrdinals {
             val bytes = encoded.bytes.copyOf()
             val at = bytes.size - 606 * NodeSerializer.CALL_SITE_ORDINAL_ENTRY_BYTES + entryOffset
             bytes[at] = (bytes[at].toInt() xor 1).toByte()
             // The index is intact, so the sidecar opens; the block that changed fails when it is read.
-            return CallSiteOrdinalCodec.callSiteOrdinalsOf(ByteBuffer.wrap(bytes), encoded.digest)!!
+            return callSiteOrdinalsOf(ByteBuffer.wrap(bytes), encoded.digest)!!
         }
         val secondBlock = tampered(300 * NodeSerializer.CALL_SITE_ORDINAL_ENTRY_BYTES + 5)
         assertEquals(0, secondBlock[0], "the first block is sound")
@@ -185,7 +185,7 @@ class CallSiteOrdinalsTest {
         val originsBlock = tampered(601 * NodeSerializer.CALL_SITE_ORDINAL_ENTRY_BYTES)
         assertEquals(1, originsBlock[2], "ordinals do not read the origins' block")
         assertFailsWith<IllegalStateException> { originsBlock.origin(ids[99]) }
-        val sound = CallSiteOrdinalCodec.callSiteOrdinalsOf(ByteBuffer.wrap(encoded.bytes), encoded.digest)!!
+        val sound = callSiteOrdinalsOf(ByteBuffer.wrap(encoded.bytes), encoded.digest)!!
         assertEquals(ids[99] - 2, sound.origin(ids[99])?.value)
     }
 }

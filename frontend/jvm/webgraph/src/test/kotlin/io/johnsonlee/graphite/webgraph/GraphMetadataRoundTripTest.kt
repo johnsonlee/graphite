@@ -336,7 +336,7 @@ class GraphMetadataRoundTripTest : GraphStoreTestFixture() {
                 },
                 "the record format does not change")
             val metadataFile = dir.resolve("graph.metadata")
-            val binding = CallSiteOrdinalCodec.readCallSiteOrdinalBinding(metadataFile)
+            val binding = readCallSiteOrdinalBinding(metadataFile)
             assertNotNull(binding, "graph.metadata ends with the sidecar's binding")
             val loaded = CallSiteOrdinals.load(sidecar, binding)
             assertEquals(2, loaded.size)
@@ -348,7 +348,7 @@ class GraphMetadataRoundTripTest : GraphStoreTestFixture() {
             // the sidecar behind: the ordinals it holds belong to another graph and must not attach.
             val metadataBytes = Files.readAllBytes(metadataFile)
             Files.write(metadataFile, metadataBytes.copyOf(metadataBytes.size - NodeSerializer.CALL_SITE_ORDINALS_BINDING_BYTES))
-            assertEquals(null, CallSiteOrdinalCodec.readCallSiteOrdinalBinding(metadataFile))
+            assertEquals(null, readCallSiteOrdinalBinding(metadataFile))
             fun Graph.ordinals(): List<Int?> = nodes(CallSiteNode::class.java).sortedBy { it.id.value }.map { it.ordinal }.toList()
             assertEquals(listOf(null, null), GraphStore.load(dir).ordinals(), "a stale sidecar is not attached")
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { mapped -> assertEquals(listOf(null, null), mapped.ordinals()) }

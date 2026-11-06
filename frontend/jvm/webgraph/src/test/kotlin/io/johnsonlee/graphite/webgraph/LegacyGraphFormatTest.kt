@@ -29,7 +29,7 @@ class LegacyGraphFormatTest : GraphStoreTestFixture() {
                 dos.writeInt(strings.indexOf("value"))
                 dos.writeInt(strings.indexOf("hello"))
             }
-            val node = NodeRecordCodec.readNode(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings, 1) as AnnotationNode
+            val node = readGraphNode(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings, 1) as AnnotationNode
             assertEquals("hello", node.values["value"])
         } finally {
             dir.toFile().deleteRecursively()
@@ -57,7 +57,7 @@ class LegacyGraphFormatTest : GraphStoreTestFixture() {
                 dos.writeInt(strings.indexOf("hello"))
                 dos.writeInt(0)
             }
-            val metadata = GraphMetadataCodec.loadMetadata(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings)
+            val metadata = readGraphMetadata(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings)
             assertEquals("hello", metadata.memberAnnotations["com.example.Foo#bar"]!!["javax.annotation.Nullable"]!!["value"])
         } finally {
             dir.toFile().deleteRecursively()

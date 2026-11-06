@@ -265,7 +265,7 @@ internal class IndexedStringProjection(
                 mergeSource(projectSource(0))
                 waveStart = 1
                 if (rows.size < limit) {
-                    DirectStringTasks.runDirectStringTasksInOrderUntil(
+                    runDirectStringTasksInOrderUntil(
                         candidateSources.indices.drop(waveStart).map { sourceIndex -> { projectSource(sourceIndex) } },
                         directStringGraphParallelism(candidateSources.size),
                         ::mergeSource)
@@ -276,8 +276,7 @@ internal class IndexedStringProjection(
                 val graphParallelism = directStringGraphParallelism(candidateSources.size)
                 val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
                 val localRows =
-                    DirectStringTasks.runDirectStringTasks(
-                        (waveStart until waveEnd).map { sourceIndex -> { projectSource(sourceIndex) } }, graphParallelism)
+                    runDirectStringTasks((waveStart until waveEnd).map { sourceIndex -> { projectSource(sourceIndex) } }, graphParallelism)
                 localRows.forEach(::mergeSource)
                 waveStart = waveEnd
             }
@@ -305,7 +304,7 @@ internal class IndexedStringProjection(
                     !zeroHitSources[sourceIndex] && knownRowsBySource[sourceIndex]?.containsAll(selected) != true
                 }
             val hits =
-                DirectStringTasks.runDirectStringTasks(
+                runDirectStringTasks(
                     provenanceSourceIndexes.map { sourceIndex ->
                         {
                             val source = candidateSources[sourceIndex]
@@ -316,8 +315,7 @@ internal class IndexedStringProjection(
                             val storageWorkConsumer =
                                 graphAccess.stringStorageWorkConsumer(
                                     candidateSources.size, tracker, forceSerial = forceSerialStorage, preferMappedView = preferMappedView)
-                            val sourceSelectedValues =
-                                StringProjectionRows.storageSelectedValues(selectedValues, projectedProperties, source.id)
+                            val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
                             val rawHits = mutableSetOf<Map<String, Any?>>()
                             if (sourceSelectedValues.isNotEmpty()) {
                                 projections[sourceIndex]
@@ -330,8 +328,7 @@ internal class IndexedStringProjection(
                                         storageWorkConsumer)
                                     .orEmpty()
                                     .mapTo(rawHits) { hit ->
-                                        rowOperations.visibleRow(
-                                            StringProjectionRows.rawProjectionRow(hit.values, projectedProperties, columns, source.id))
+                                        rowOperations.visibleRow(rawProjectionRow(hit.values, projectedProperties, columns, source.id))
                                     }
                             }
                             val matcher = selectedMatcher.cursor(source)
@@ -380,8 +377,7 @@ internal class IndexedStringProjection(
             val sourceRows =
                 projected
                     .map { raw ->
-                        OrderedProjectedRow(
-                            raw.encounterOrder, StringProjectionRows.rawProjectionRow(raw.values, projectedProperties, columns, source.id))
+                        OrderedProjectedRow(raw.encounterOrder, rawProjectionRow(raw.values, projectedProperties, columns, source.id))
                     }
                     .toMutableList()
 
@@ -393,7 +389,7 @@ internal class IndexedStringProjection(
                     disjunction = filter,
                     tracker = tracker,
                     excludedTypes = setOf(CallSiteNode::class.java))) {
-                val row = StringProjectionRows.projectedNodeRow(source, node, projectedProperties, columns)
+                val row = projectedNodeRow(source, node, projectedProperties, columns)
                 val visible = rowOperations.visibleRow(row)
                 if (seenGeneric.add(visible)) {
                     sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
@@ -401,9 +397,7 @@ internal class IndexedStringProjection(
                 }
             }
             val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-            sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
-                CypherDistinctRows.addDistinctRow(distinct, ordered.row, limit)
-            }
+            sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered -> addDistinctRow(distinct, ordered.row, limit) }
             return IndexedProjectedRows(sourceIndex, distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) })
         }
 
@@ -416,7 +410,7 @@ internal class IndexedStringProjection(
                         ?.releaseStringPropertyDisjunctionCache()
                 }
             }
-            projected.rows.forEach { ordered -> CypherDistinctRows.addDistinctRow(rows, ordered.row, limit) }
+            projected.rows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
             return rows.size >= limit
         }
     }

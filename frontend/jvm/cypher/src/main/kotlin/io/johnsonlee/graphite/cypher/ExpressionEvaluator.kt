@@ -18,11 +18,11 @@ private val REGEX_META_CHARACTERS = setOf('\\', '.', '^', '$', '|', '?', '*', '+
 private val ASCII_RANGE_SEQUENCE_TOKEN = Pattern.compile("\\[([A-Za-z0-9_])(?:-([A-Za-z0-9_]))?]\\+")
 
 /**
- * Evaluates Cypher expressions against a variable binding context.
- * Supports all openCypher expression types: arithmetic, boolean, comparison,
- * string operators, list operators, CASE, property access, function calls.
+ * Evaluates Cypher expressions against a variable binding context. Supports all openCypher expression types: arithmetic, boolean,
+ * comparison, string operators, list operators, CASE, property access, function calls.
  */
-class ExpressionEvaluator private constructor(
+class ExpressionEvaluator
+private constructor(
     private val checkCancelled: (() -> Unit)?,
     private val parameterResolver: ((String) -> Any?)?,
     private val graph: Graph?
@@ -35,101 +35,111 @@ class ExpressionEvaluator private constructor(
         graph: Graph? = null
     ) : this(checkCancelled, parameterResolver, graph)
 
-    private val regexCache = object : LinkedHashMap<String, CompiledCypherRegex>(
-        MAX_REGEX_CACHE_SIZE + 1,
-        LOAD_FACTOR,
-        true
-    ) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CompiledCypherRegex>?): Boolean =
-            size > MAX_REGEX_CACHE_SIZE
-    }
+    private val regexCache =
+        object : LinkedHashMap<String, CompiledCypherRegex>(MAX_REGEX_CACHE_SIZE + 1, LOAD_FACTOR, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CompiledCypherRegex>?): Boolean =
+                size > MAX_REGEX_CACHE_SIZE
+        }
 
     private val dynamicPropertyContainsCache = DynamicPropertyContainsCache()
     private val propertyResolver = CypherPropertyResolver(graph)
 
-    /**
-     * Evaluate a parsed expression node.
-     * The expression is represented as a sealed class hierarchy.
-     */
-    fun evaluate(expr: CypherExpr, bindings: Map<String, Any?>): Any? = when (expr) {
-        is CypherExpr.Literal -> expr.value
-        is CypherExpr.Variable -> bindings[expr.name]
-        is CypherExpr.Property -> {
-            val obj = evaluate(expr.expression, bindings)
-            resolveProperty(obj, expr.propertyName)
+    /** Evaluate a parsed expression node. The expression is represented as a sealed class hierarchy. */
+    fun evaluate(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
+        when (expr) {
+            is CypherExpr.Literal -> expr.value
+            is CypherExpr.Variable -> bindings[expr.name]
+            is CypherExpr.Property -> {
+                val obj = evaluate(expr.expression, bindings)
+                resolveProperty(obj, expr.propertyName)
+            }
+            is CypherExpr.Parameter ->
+                if (parameterResolver == null) {
+                    bindings[expr.name]
+                } else {
+                    parameterResolver.invoke(expr.name)
+                }
+            is CypherExpr.FunctionCall -> evaluateCall(expr, bindings)
+            is CypherExpr.BinaryOp,
+            is CypherExpr.UnaryOp,
+            is CypherExpr.Comparison,
+            is CypherExpr.StringOp,
+            is CypherExpr.ListOp,
+            is CypherExpr.RegexMatch -> evaluateOperator(expr, bindings)
+            is CypherExpr.IsNull,
+            is CypherExpr.IsNotNull -> evaluateNullCheck(expr, bindings)
+            is CypherExpr.CaseExpr -> evaluateCase(expr, bindings)
+            is CypherExpr.ListLiteral,
+            is CypherExpr.MapLiteral,
+            is CypherExpr.ListComprehension,
+            is CypherExpr.Subscript,
+            is CypherExpr.Slice -> evaluateCollection(expr, bindings)
+            is CypherExpr.PredicateFunction -> evaluatePredicate(expr, bindings)
+            is CypherExpr.Not,
+            is CypherExpr.And,
+            is CypherExpr.Or,
+            is CypherExpr.Xor -> evaluateBoolean(expr, bindings)
+            is CypherExpr.Distinct -> evaluate(expr.expression, bindings)
+            is CypherExpr.CountStar -> throw CypherAggregationException("count")
         }
-        is CypherExpr.Parameter -> if (parameterResolver == null) {
-            bindings[expr.name]
-        } else {
-            parameterResolver.invoke(expr.name)
-        }
-        is CypherExpr.FunctionCall -> evaluateCall(expr, bindings)
-        is CypherExpr.BinaryOp, is CypherExpr.UnaryOp, is CypherExpr.Comparison,
-        is CypherExpr.StringOp, is CypherExpr.ListOp, is CypherExpr.RegexMatch -> evaluateOperator(expr, bindings)
-        is CypherExpr.IsNull, is CypherExpr.IsNotNull -> evaluateNullCheck(expr, bindings)
-        is CypherExpr.CaseExpr -> evaluateCase(expr, bindings)
-        is CypherExpr.ListLiteral, is CypherExpr.MapLiteral, is CypherExpr.ListComprehension,
-        is CypherExpr.Subscript, is CypherExpr.Slice -> evaluateCollection(expr, bindings)
-        is CypherExpr.PredicateFunction -> evaluatePredicate(expr, bindings)
-        is CypherExpr.Not, is CypherExpr.And, is CypherExpr.Or, is CypherExpr.Xor -> evaluateBoolean(expr, bindings)
-        is CypherExpr.Distinct -> evaluate(expr.expression, bindings)
-        is CypherExpr.CountStar -> throw CypherAggregationException("count")
-    }
 
-    private fun evaluateOperator(expr: CypherExpr, bindings: Map<String, Any?>): Any? = when (expr) {
-        is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
-        is CypherExpr.UnaryOp -> evaluateUnaryOp(expr, bindings)
-        is CypherExpr.Comparison -> evaluateComparison(expr, bindings)
-        is CypherExpr.StringOp -> evaluateStringOp(expr, bindings)
-        is CypherExpr.ListOp -> evaluateListOp(expr, bindings)
-        is CypherExpr.RegexMatch -> evaluateRegex(expr, bindings)
-        else -> error("Expression does not belong to evaluateOperator")
-    }
+    private fun evaluateOperator(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
+        when (expr) {
+            is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
+            is CypherExpr.UnaryOp -> evaluateUnaryOp(expr, bindings)
+            is CypherExpr.Comparison -> evaluateComparison(expr, bindings)
+            is CypherExpr.StringOp -> evaluateStringOp(expr, bindings)
+            is CypherExpr.ListOp -> evaluateListOp(expr, bindings)
+            is CypherExpr.RegexMatch -> evaluateRegex(expr, bindings)
+            else -> error("Expression does not belong to evaluateOperator")
+        }
 
-    private fun evaluateCollection(expr: CypherExpr, bindings: Map<String, Any?>): Any? = when (expr) {
-        is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
-        is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
-        is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
-        is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
-        is CypherExpr.Slice -> evaluateSlice(expr, bindings)
-        else -> error("Expression does not belong to evaluateCollection")
-    }
+    private fun evaluateCollection(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
+        when (expr) {
+            is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
+            is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
+            is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
+            is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
+            is CypherExpr.Slice -> evaluateSlice(expr, bindings)
+            else -> error("Expression does not belong to evaluateCollection")
+        }
 
-    private fun evaluateBoolean(expr: CypherExpr, bindings: Map<String, Any?>): Any? = when (expr) {
-        is CypherExpr.Not -> {
-            val value = evaluate(expr.expression, bindings)
-            if (value == null) null else !(value as Boolean)
+    private fun evaluateBoolean(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
+        when (expr) {
+            is CypherExpr.Not -> {
+                val value = evaluate(expr.expression, bindings)
+                if (value == null) null else !(value as Boolean)
+            }
+            is CypherExpr.And -> {
+                val left = evaluate(expr.left, bindings)
+                val right = evaluate(expr.right, bindings)
+                threeValuedAnd(left as? Boolean, right as? Boolean)
+            }
+            is CypherExpr.Or -> {
+                val left = evaluate(expr.left, bindings)
+                val right = evaluate(expr.right, bindings)
+                threeValuedOr(left as? Boolean, right as? Boolean)
+            }
+            is CypherExpr.Xor -> {
+                val left = evaluate(expr.left, bindings) as? Boolean
+                val right = evaluate(expr.right, bindings) as? Boolean
+                if (left == null || right == null) null else left xor right
+            }
+            else -> error("Expression does not belong to evaluateBoolean")
         }
-        is CypherExpr.And -> {
-            val left = evaluate(expr.left, bindings)
-            val right = evaluate(expr.right, bindings)
-            CypherExpressionValues.threeValuedAnd(left as? Boolean, right as? Boolean)
-        }
-        is CypherExpr.Or -> {
-            val left = evaluate(expr.left, bindings)
-            val right = evaluate(expr.right, bindings)
-            CypherExpressionValues.threeValuedOr(left as? Boolean, right as? Boolean)
-        }
-        is CypherExpr.Xor -> {
-            val left = evaluate(expr.left, bindings) as? Boolean
-            val right = evaluate(expr.right, bindings) as? Boolean
-            if (left == null || right == null) null else left xor right
-        }
-        else -> error("Expression does not belong to evaluateBoolean")
-    }
 
-    private fun evaluateNullCheck(expr: CypherExpr, bindings: Map<String, Any?>): Any? = when (expr) {
-        is CypherExpr.IsNull -> !isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
-        is CypherExpr.IsNotNull -> isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
-        else -> error("Expression does not belong to evaluateNullCheck")
-    }
+    private fun evaluateNullCheck(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
+        when (expr) {
+            is CypherExpr.IsNull -> !isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
+            is CypherExpr.IsNotNull -> isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
+            else -> error("Expression does not belong to evaluateNullCheck")
+        }
 
     private fun evaluateCall(expr: CypherExpr.FunctionCall, bindings: Map<String, Any?>): Any? {
         checkCancelled?.invoke()
         val args = expr.args.map { evaluate(it, bindings) }
         val result = CypherFunctions.call(expr.name, args, checkCancelled, graph)
         return result.also { checkCancelled?.invoke() }
-
     }
 
     private fun evaluatePredicate(expr: CypherExpr.PredicateFunction, bindings: Map<String, Any?>): Any? {
@@ -138,14 +148,12 @@ class ExpressionEvaluator private constructor(
         val nodeTarget = target is Node || target is QualifiedNode || target is MethodValue
         // The legacy evaluator resolves parameters from the inner ANY binding when
         // no explicit parameter resolver was supplied. Preserve iterator shadowing.
-        val shadowedParameter = parameterResolver == null &&
-            (plan?.term as? CypherExpr.Parameter)?.name == plan?.keyVariable
+        val shadowedParameter = parameterResolver == null && (plan?.term as? CypherExpr.Parameter)?.name == plan?.keyVariable
         return if (plan != null && nodeTarget && !shadowedParameter) {
             plan.evaluate(checkNotNull(target), evaluate(plan.term, bindings), ::resolveProperty, checkCancelled, graph)
         } else {
             evaluatePredicateFunction(expr, bindings, { expression, row -> evaluate(expression, row) }, checkCancelled)
         }
-
     }
 
     // ========================================================================
@@ -158,14 +166,12 @@ class ExpressionEvaluator private constructor(
         if (left == null || right == null) return null
 
         return when (expr.op) {
-            "+" -> CypherExpressionValues.add(left, right, checkCancelled)
-            "-" -> CypherExpressionValues.arithmetic(left, right) { a, b -> a - b }
-            "*" -> CypherExpressionValues.arithmetic(left, right) { a, b -> a * b }
-            "/" -> CypherExpressionValues.arithmetic(left, right) { a, b ->
-                if (b == 0.0) throw CypherException("Division by zero") else a / b
-            }
-            "%" -> CypherExpressionValues.arithmetic(left, right) { a, b -> a % b }
-            "^" -> CypherExpressionValues.arithmetic(left, right) { a, b -> Math.pow(a, b) }
+            "+" -> addValues(left, right, checkCancelled)
+            "-" -> arithmeticValues(left, right) { a, b -> a - b }
+            "*" -> arithmeticValues(left, right) { a, b -> a * b }
+            "/" -> arithmeticValues(left, right) { a, b -> if (b == 0.0) throw CypherException("Division by zero") else a / b }
+            "%" -> arithmeticValues(left, right) { a, b -> a % b }
+            "^" -> arithmeticValues(left, right) { a, b -> Math.pow(a, b) }
             else -> throw CypherException("Unknown operator: ${expr.op}")
         }
     }
@@ -173,13 +179,14 @@ class ExpressionEvaluator private constructor(
     private fun evaluateUnaryOp(expr: CypherExpr.UnaryOp, bindings: Map<String, Any?>): Any? {
         val value = evaluate(expr.expression, bindings) ?: return null
         return when (expr.op) {
-            "-" -> when (value) {
-                is Int -> -value
-                is Long -> -value
-                is Float -> -value
-                is Double -> -value
-                else -> -CypherExpressionValues.toDouble(value)
-            }
+            "-" ->
+                when (value) {
+                    is Int -> -value
+                    is Long -> -value
+                    is Float -> -value
+                    is Double -> -value
+                    else -> -expressionNumber(value)
+                }
             "+" -> value
             else -> throw CypherException("Unknown unary operator: ${expr.op}")
         }
@@ -196,17 +203,18 @@ class ExpressionEvaluator private constructor(
         return when (expr.op) {
             "=" -> cypherEquals(left, right)
             "<>" -> cypherEquals(left, right)?.not()
-            else -> if (left == null || right == null) {
-                null
-            } else {
-                when (expr.op) {
-                    "<" -> CypherExpressionValues.compareValues(left, right) < 0
-                    ">" -> CypherExpressionValues.compareValues(left, right) > 0
-                    "<=" -> CypherExpressionValues.compareValues(left, right) <= 0
-                    ">=" -> CypherExpressionValues.compareValues(left, right) >= 0
-                    else -> throw CypherException("Unknown comparison: ${expr.op}")
+            else ->
+                if (left == null || right == null) {
+                    null
+                } else {
+                    when (expr.op) {
+                        "<" -> compareExpressionValues(left, right) < 0
+                        ">" -> compareExpressionValues(left, right) > 0
+                        "<=" -> compareExpressionValues(left, right) <= 0
+                        ">=" -> compareExpressionValues(left, right) >= 0
+                        else -> throw CypherException("Unknown comparison: ${expr.op}")
+                    }
                 }
-            }
         }
     }
 
@@ -218,12 +226,14 @@ class ExpressionEvaluator private constructor(
         val left = evaluate(expr.left, bindings) as? String ?: return null
         val right = evaluate(expr.right, bindings) as? String
 
-        return right?.let { when (expr.op) {
-            "STARTS WITH" -> left.startsWith(right)
-            "ENDS WITH" -> left.endsWith(right)
-            "CONTAINS" -> left.contains(right)
-            else -> throw CypherException("Unknown string op: ${expr.op}")
-        } }
+        return right?.let {
+            when (expr.op) {
+                "STARTS WITH" -> left.startsWith(right)
+                "ENDS WITH" -> left.endsWith(right)
+                "CONTAINS" -> left.contains(right)
+                else -> throw CypherException("Unknown string op: ${expr.op}")
+            }
+        }
     }
 
     // ========================================================================
@@ -262,9 +272,10 @@ class ExpressionEvaluator private constructor(
         val testValue = expr.test?.let { evaluate(it, bindings) }
 
         for ((condition, result) in expr.whenClauses) {
-            val matches = if (expr.test != null) {
-                cypherEquals(testValue, evaluate(condition, bindings)) == true
-            } else evaluate(condition, bindings) == true
+            val matches =
+                if (expr.test != null) {
+                    cypherEquals(testValue, evaluate(condition, bindings)) == true
+                } else evaluate(condition, bindings) == true
             if (matches) return evaluate(result, bindings)
         }
 
@@ -275,10 +286,7 @@ class ExpressionEvaluator private constructor(
     // List comprehension: [x IN list WHERE predicate | expression]
     // ========================================================================
 
-    private fun evaluateListComprehension(
-        expr: CypherExpr.ListComprehension,
-        bindings: Map<String, Any?>
-    ): Any? {
+    private fun evaluateListComprehension(expr: CypherExpr.ListComprehension, bindings: Map<String, Any?>): Any? {
         val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
         val results = mutableListOf<Any?>()
 
@@ -294,11 +302,12 @@ class ExpressionEvaluator private constructor(
             }
 
             // Apply mapping if present, otherwise use element
-            val value = if (expr.mapExpr != null) {
-                evaluate(expr.mapExpr, innerBindings)
-            } else {
-                element
-            }
+            val value =
+                if (expr.mapExpr != null) {
+                    evaluate(expr.mapExpr, innerBindings)
+                } else {
+                    element
+                }
             results.add(value)
         }
 
@@ -319,9 +328,7 @@ class ExpressionEvaluator private constructor(
                 val index = key.toInt()
                 when (collection) {
                     is List<*> -> collection.getOrNull(if (index < 0) collection.size + index else index)
-                    is String -> collection.getOrNull(
-                        if (index < 0) collection.length + index else index
-                    )?.toString()
+                    is String -> collection.getOrNull(if (index < 0) collection.length + index else index)?.toString()
                     else -> null
                 }
             }
@@ -361,11 +368,7 @@ class ExpressionEvaluator private constructor(
 
 }
 
-internal fun concatenateLists(
-    left: List<*>,
-    right: List<*>,
-    checkCancelled: (() -> Unit)?
-): List<Any?> {
+internal fun concatenateLists(left: List<*>, right: List<*>, checkCancelled: (() -> Unit)?): List<Any?> {
     if (checkCancelled == null) return left + right
     val result = ArrayList<Any?>(left.size + right.size)
     appendWithCancellation(result, left, checkCancelled)
@@ -374,11 +377,7 @@ internal fun concatenateLists(
     return result
 }
 
-private fun appendWithCancellation(
-    target: MutableList<Any?>,
-    source: List<*>,
-    checkCancelled: () -> Unit
-) {
+private fun appendWithCancellation(target: MutableList<Any?>, source: List<*>, checkCancelled: () -> Unit) {
     if (source is RandomAccess) {
         var start = 0
         while (start < source.size) {
@@ -400,11 +399,7 @@ private fun appendWithCancellation(
 }
 
 @Suppress("ReturnCount")
-private fun evaluateMembership(
-    list: List<*>,
-    element: Any?,
-    checkCancelled: (() -> Unit)?
-): Boolean? {
+private fun evaluateMembership(list: List<*>, element: Any?, checkCancelled: (() -> Unit)?): Boolean? {
     if (list.isEmpty()) return false
     if (element == null) {
         checkCancelled?.invoke()
@@ -423,11 +418,7 @@ private fun evaluateMembership(
 }
 
 @Suppress("ReturnCount")
-private fun evaluateRangeMembership(
-    list: CypherRangeValues,
-    element: Number,
-    checkCancelled: (() -> Unit)?
-): Boolean {
+private fun evaluateRangeMembership(list: CypherRangeValues, element: Number, checkCancelled: (() -> Unit)?): Boolean {
     val target = element.toExactLongOrNull()
     if (target == null) {
         checkCancelled?.invoke()
@@ -458,11 +449,7 @@ private fun evaluateMembershipUntracked(list: List<*>, element: Any): Boolean? {
     return if (containsNullComparison) null else false
 }
 
-private fun evaluateRandomAccessMembership(
-    list: List<*>,
-    element: Any,
-    checkCancelled: () -> Unit
-): Boolean? {
+private fun evaluateRandomAccessMembership(list: List<*>, element: Any, checkCancelled: () -> Unit): Boolean? {
     var containsNullComparison = false
     var start = 0
     while (start < list.size) {
@@ -483,11 +470,7 @@ private fun evaluateRandomAccessMembership(
     return if (containsNullComparison) null else false
 }
 
-private fun evaluateSequentialMembership(
-    list: List<*>,
-    element: Any,
-    checkCancelled: () -> Unit
-): Boolean? {
+private fun evaluateSequentialMembership(list: List<*>, element: Any, checkCancelled: () -> Unit): Boolean? {
     var containsNullComparison = false
     var index = 0
     val iterator = list.listIterator()
@@ -521,10 +504,7 @@ private class JavaCypherRegex(pattern: String) : CompiledCypherRegex {
     }
 }
 
-private class LiteralCypherRegex(
-    private val literal: String,
-    private val prefix: Boolean
-) : CompiledCypherRegex {
+private class LiteralCypherRegex(private val literal: String, private val prefix: Boolean) : CompiledCypherRegex {
     @Suppress("ReturnCount")
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
         if (checkCancelled == null) {
@@ -549,9 +529,7 @@ private class LiteralCypherRegex(
     }
 }
 
-private class AsciiRangeSequenceCypherRegex(
-    private val ranges: IntArray
-) : CompiledCypherRegex {
+private class AsciiRangeSequenceCypherRegex(private val ranges: IntArray) : CompiledCypherRegex {
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
         return if (checkCancelled == null || value.length <= CANCELLATION_POLL_MASK) {
             matchesUnchecked(value)
@@ -654,13 +632,11 @@ private fun String.indexOfJavaRegexLineTerminator(startIndex: Int): Int {
 private fun Char.isJavaRegexLineTerminator(): Boolean =
     this == '\n' || this == '\r' || this == '\u0085' || this == '\u2028' || this == '\u2029'
 
-private class CancellationAwareCharSequence(
-    private val value: String,
-    private val checkCancelled: () -> Unit
-) : CharSequence {
+private class CancellationAwareCharSequence(private val value: String, private val checkCancelled: () -> Unit) : CharSequence {
     private var accesses = 0
 
-    override val length: Int get() = value.length
+    override val length: Int
+        get() = value.length
 
     override fun get(index: Int): Char {
         if (++accesses > CANCELLATION_POLL_MASK) {
@@ -683,12 +659,13 @@ private fun evaluatePredicateFunction(
     checkCancelled: (() -> Unit)?
 ): Any? {
     val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
-    val results = list.mapIndexed { index, element ->
-        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
-        val innerBindings = bindings + (expr.variable to element)
-        val value = expr.predicate?.let { evaluate(it, innerBindings) } ?: element
-        value as? Boolean
-    }
+    val results =
+        list.mapIndexed { index, element ->
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
+            val innerBindings = bindings + (expr.variable to element)
+            val value = expr.predicate?.let { evaluate(it, innerBindings) } ?: element
+            value as? Boolean
+        }
     checkCancelled?.invoke()
     return evaluatePredicateResults(expr.name, results)
 }
@@ -703,167 +680,195 @@ private fun evaluatePredicateResults(name: String, results: List<Boolean?>): Any
     }
 }
 
-private fun evaluateAnyPredicate(results: List<Boolean?>): Boolean? = when {
-    results.any { it == true } -> true
-    results.any { it == null } -> null
-    else -> false
-}
+private fun evaluateAnyPredicate(results: List<Boolean?>): Boolean? =
+    when {
+        results.any { it == true } -> true
+        results.any { it == null } -> null
+        else -> false
+    }
 
-private fun evaluateAllPredicate(results: List<Boolean?>): Boolean? = when {
-    results.any { it == false } -> false
-    results.any { it == null } -> null
-    else -> true
-}
+private fun evaluateAllPredicate(results: List<Boolean?>): Boolean? =
+    when {
+        results.any { it == false } -> false
+        results.any { it == null } -> null
+        else -> true
+    }
 
-private fun evaluateNonePredicate(results: List<Boolean?>): Boolean? = when {
-    results.any { it == true } -> false
-    results.any { it == null } -> null
-    else -> true
-}
+private fun evaluateNonePredicate(results: List<Boolean?>): Boolean? =
+    when {
+        results.any { it == true } -> false
+        results.any { it == null } -> null
+        else -> true
+    }
 
-private fun evaluateSinglePredicate(results: List<Boolean?>): Boolean? = when {
-    results.count { it == true } > 1 -> false
-    results.any { it == null } -> null
-    else -> results.count { it == true } == 1
-}
+private fun evaluateSinglePredicate(results: List<Boolean?>): Boolean? =
+    when {
+        results.count { it == true } > 1 -> false
+        results.any { it == null } -> null
+        else -> results.count { it == true } == 1
+    }
 
-/**
- * AST for Cypher expressions.
- * Produced by the ANTLR-based Cypher parser adapter.
- */
+/** AST for Cypher expressions. Produced by the ANTLR-based Cypher parser adapter. */
 sealed class CypherExpr {
     data class Literal(val value: Any?) : CypherExpr()
+
     data class Variable(val name: String) : CypherExpr()
+
     data class Property(val expression: CypherExpr, val propertyName: String) : CypherExpr() {
         /** Which declared-type method property this names, classified once per node ([methodPropertyKind]). */
         internal var declaredMethodKind: Int = DeclaredTypeProperties.KIND_UNRESOLVED
     }
+
     data class Parameter(val name: String) : CypherExpr()
-    data class FunctionCall(
-        val name: String,
-        val args: List<CypherExpr>,
-        val distinct: Boolean = false
-    ) : CypherExpr()
+
+    data class FunctionCall(val name: String, val args: List<CypherExpr>, val distinct: Boolean = false) : CypherExpr()
+
     data class BinaryOp(val op: String, val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class UnaryOp(val op: String, val expression: CypherExpr) : CypherExpr()
+
     data class Comparison(val op: String, val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class StringOp(val op: String, val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class ListOp(val op: String, val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class RegexMatch(val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class IsNull(val expression: CypherExpr) : CypherExpr()
+
     data class IsNotNull(val expression: CypherExpr) : CypherExpr()
+
     data class Not(val expression: CypherExpr) : CypherExpr()
+
     data class And(val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class Or(val left: CypherExpr, val right: CypherExpr) : CypherExpr()
+
     data class Xor(val left: CypherExpr, val right: CypherExpr) : CypherExpr()
-    data class CaseExpr(
-        val test: CypherExpr?,
-        val whenClauses: List<Pair<CypherExpr, CypherExpr>>,
-        val elseExpr: CypherExpr?
-    ) : CypherExpr()
+
+    data class CaseExpr(val test: CypherExpr?, val whenClauses: List<Pair<CypherExpr, CypherExpr>>, val elseExpr: CypherExpr?) :
+        CypherExpr()
+
     data class ListLiteral(val elements: List<CypherExpr>) : CypherExpr()
+
     data class MapLiteral(val entries: Map<String, CypherExpr>) : CypherExpr()
-    data class ListComprehension(
-        val variable: String,
-        val listExpr: CypherExpr,
-        val predicate: CypherExpr?,
-        val mapExpr: CypherExpr?
-    ) : CypherExpr()
-    data class PredicateFunction(
-        val name: String,
-        val variable: String,
-        val listExpr: CypherExpr,
-        val predicate: CypherExpr?
-    ) : CypherExpr()
+
+    data class ListComprehension(val variable: String, val listExpr: CypherExpr, val predicate: CypherExpr?, val mapExpr: CypherExpr?) :
+        CypherExpr()
+
+    data class PredicateFunction(val name: String, val variable: String, val listExpr: CypherExpr, val predicate: CypherExpr?) :
+        CypherExpr()
+
     data class Subscript(val expression: CypherExpr, val index: CypherExpr) : CypherExpr()
+
     data class Slice(val expression: CypherExpr, val from: CypherExpr?, val to: CypherExpr?) : CypherExpr()
+
     data class Distinct(val expression: CypherExpr) : CypherExpr()
+
     object CountStar : CypherExpr()
 }
 
 /**
  * Render a [CypherExpr] back to a human-readable Cypher string.
  *
- * Used primarily for generating column names in query results when
- * no explicit alias is provided.
+ * Used primarily for generating column names in query results when no explicit alias is provided.
  */
-fun CypherExpr.toCypherString(): String = when (this) {
-    is CypherExpr.Literal -> when (value) {
-        null -> "null"
-        is String -> "'${value.replace("'", "\\'")}'"
-        is Boolean -> value.toString()
-        else -> value.toString()
+fun CypherExpr.toCypherString(): String =
+    when (this) {
+        is CypherExpr.Literal ->
+            when (value) {
+                null -> "null"
+                is String -> "'${value.replace("'", "\\'")}'"
+                is Boolean -> value.toString()
+                else -> value.toString()
+            }
+        is CypherExpr.Variable -> name
+        is CypherExpr.Property -> "${expression.toCypherString()}.$propertyName"
+        is CypherExpr.Parameter -> "\$$name"
+        is CypherExpr.FunctionCall -> {
+            val distinctStr = if (distinct) "DISTINCT " else ""
+            "$name($distinctStr${args.joinToString(", ") { it.toCypherString() }})"
+        }
+        is CypherExpr.BinaryOp,
+        is CypherExpr.UnaryOp,
+        is CypherExpr.Comparison,
+        is CypherExpr.StringOp,
+        is CypherExpr.ListOp,
+        is CypherExpr.RegexMatch,
+        is CypherExpr.IsNull,
+        is CypherExpr.IsNotNull,
+        is CypherExpr.Not,
+        is CypherExpr.And,
+        is CypherExpr.Or,
+        is CypherExpr.Xor,
+        is CypherExpr.Distinct -> renderOperatorExpression()
+        is CypherExpr.CaseExpr,
+        is CypherExpr.ListLiteral,
+        is CypherExpr.MapLiteral,
+        is CypherExpr.ListComprehension,
+        is CypherExpr.PredicateFunction,
+        is CypherExpr.Subscript,
+        is CypherExpr.Slice -> renderCollectionExpression()
+        is CypherExpr.CountStar -> "count(*)"
     }
-    is CypherExpr.Variable -> name
-    is CypherExpr.Property -> "${expression.toCypherString()}.$propertyName"
-    is CypherExpr.Parameter -> "\$$name"
-    is CypherExpr.FunctionCall -> {
-        val distinctStr = if (distinct) "DISTINCT " else ""
-        "$name($distinctStr${args.joinToString(", ") { it.toCypherString() }})"
-    }
-    is CypherExpr.BinaryOp, is CypherExpr.UnaryOp, is CypherExpr.Comparison,
-    is CypherExpr.StringOp, is CypherExpr.ListOp, is CypherExpr.RegexMatch,
-    is CypherExpr.IsNull, is CypherExpr.IsNotNull, is CypherExpr.Not,
-    is CypherExpr.And, is CypherExpr.Or, is CypherExpr.Xor,
-    is CypherExpr.Distinct -> renderOperatorExpression()
-    is CypherExpr.CaseExpr, is CypherExpr.ListLiteral, is CypherExpr.MapLiteral,
-    is CypherExpr.ListComprehension, is CypherExpr.PredicateFunction, is CypherExpr.Subscript,
-    is CypherExpr.Slice -> renderCollectionExpression()
-    is CypherExpr.CountStar -> "count(*)"
-}
 
-private fun CypherExpr.renderOperatorExpression(): String = when (this) {
-    is CypherExpr.BinaryOp -> renderInfix(left, op, right)
-    is CypherExpr.UnaryOp -> "$op${expression.toCypherString()}"
-    is CypherExpr.Comparison -> renderInfix(left, op, right)
-    is CypherExpr.StringOp -> renderInfix(left, op, right)
-    is CypherExpr.ListOp -> renderInfix(left, op, right)
-    is CypherExpr.RegexMatch -> "${left.toCypherString()} =~ ${right.toCypherString()}"
-    is CypherExpr.IsNull -> "${expression.toCypherString()} IS NULL"
-    is CypherExpr.IsNotNull -> "${expression.toCypherString()} IS NOT NULL"
-    is CypherExpr.Not -> "NOT ${expression.toCypherString()}"
-    is CypherExpr.And -> "${left.toCypherString()} AND ${right.toCypherString()}"
-    is CypherExpr.Or -> "${left.toCypherString()} OR ${right.toCypherString()}"
-    is CypherExpr.Xor -> "${left.toCypherString()} XOR ${right.toCypherString()}"
-    is CypherExpr.Distinct -> "DISTINCT ${expression.toCypherString()}"
-    else -> error("Expression does not belong to renderOperatorExpression")
-}
+private fun CypherExpr.renderOperatorExpression(): String =
+    when (this) {
+        is CypherExpr.BinaryOp -> renderInfix(left, op, right)
+        is CypherExpr.UnaryOp -> "$op${expression.toCypherString()}"
+        is CypherExpr.Comparison -> renderInfix(left, op, right)
+        is CypherExpr.StringOp -> renderInfix(left, op, right)
+        is CypherExpr.ListOp -> renderInfix(left, op, right)
+        is CypherExpr.RegexMatch -> "${left.toCypherString()} =~ ${right.toCypherString()}"
+        is CypherExpr.IsNull -> "${expression.toCypherString()} IS NULL"
+        is CypherExpr.IsNotNull -> "${expression.toCypherString()} IS NOT NULL"
+        is CypherExpr.Not -> "NOT ${expression.toCypherString()}"
+        is CypherExpr.And -> "${left.toCypherString()} AND ${right.toCypherString()}"
+        is CypherExpr.Or -> "${left.toCypherString()} OR ${right.toCypherString()}"
+        is CypherExpr.Xor -> "${left.toCypherString()} XOR ${right.toCypherString()}"
+        is CypherExpr.Distinct -> "DISTINCT ${expression.toCypherString()}"
+        else -> error("Expression does not belong to renderOperatorExpression")
+    }
 
-private fun CypherExpr.renderCollectionExpression(): String = when (this) {
-    is CypherExpr.CaseExpr -> renderCaseExpression()
-    is CypherExpr.ListLiteral -> "[${elements.joinToString(", ") { it.toCypherString() }}]"
-    is CypherExpr.MapLiteral -> "{${entries.entries.joinToString(", ") { "${it.key}: ${it.value.toCypherString()}" }}}"
-    is CypherExpr.ListComprehension -> buildString {
-        append("[$variable IN ${listExpr.toCypherString()}")
-        if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
-        if (mapExpr != null) append(" | ${mapExpr.toCypherString()}")
-        append("]")
+private fun CypherExpr.renderCollectionExpression(): String =
+    when (this) {
+        is CypherExpr.CaseExpr -> renderCaseExpression()
+        is CypherExpr.ListLiteral -> "[${elements.joinToString(", ") { it.toCypherString() }}]"
+        is CypherExpr.MapLiteral -> "{${entries.entries.joinToString(", ") { "${it.key}: ${it.value.toCypherString()}" }}}"
+        is CypherExpr.ListComprehension ->
+            buildString {
+                append("[$variable IN ${listExpr.toCypherString()}")
+                if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
+                if (mapExpr != null) append(" | ${mapExpr.toCypherString()}")
+                append("]")
+            }
+        is CypherExpr.PredicateFunction ->
+            buildString {
+                append("${name.lowercase()}($variable IN ${listExpr.toCypherString()}")
+                if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
+                append(")")
+            }
+        is CypherExpr.Subscript -> "${expression.toCypherString()}[${index.toCypherString()}]"
+        is CypherExpr.Slice ->
+            buildString {
+                append("${expression.toCypherString()}[")
+                append(from?.toCypherString() ?: "")
+                append("..")
+                append(to?.toCypherString() ?: "")
+                append("]")
+            }
+        else -> error("Expression does not belong to renderCollectionExpression")
     }
-    is CypherExpr.PredicateFunction -> buildString {
-        append("${name.lowercase()}($variable IN ${listExpr.toCypherString()}")
-        if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
-        append(")")
-    }
-    is CypherExpr.Subscript -> "${expression.toCypherString()}[${index.toCypherString()}]"
-    is CypherExpr.Slice -> buildString {
-        append("${expression.toCypherString()}[")
-        append(from?.toCypherString() ?: "")
-        append("..")
-        append(to?.toCypherString() ?: "")
-        append("]")
-    }
-    else -> error("Expression does not belong to renderCollectionExpression")
-}
 
 private fun CypherExpr.CaseExpr.renderCaseExpression(): String = buildString {
-        append("CASE")
-        if (test != null) append(" ${test.toCypherString()}")
-        for ((cond, result) in whenClauses) {
-            append(" WHEN ${cond.toCypherString()} THEN ${result.toCypherString()}")
-        }
-        if (elseExpr != null) append(" ELSE ${elseExpr.toCypherString()}")
-        append(" END")
+    append("CASE")
+    if (test != null) append(" ${test.toCypherString()}")
+    for ((cond, result) in whenClauses) {
+        append(" WHEN ${cond.toCypherString()} THEN ${result.toCypherString()}")
     }
+    if (elseExpr != null) append(" ELSE ${elseExpr.toCypherString()}")
+    append(" END")
+}
 
-private fun renderInfix(left: CypherExpr, op: String, right: CypherExpr): String =
-    "${left.toCypherString()} $op ${right.toCypherString()}"
+private fun renderInfix(left: CypherExpr, op: String, right: CypherExpr): String = "${left.toCypherString()} $op ${right.toCypherString()}"

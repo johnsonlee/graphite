@@ -107,7 +107,7 @@ internal constructor(
         val bit = 1L shl (block % Long.SIZE_BITS)
         if (verified.get(word) and bit != 0L) return
         val from = block * BLOCK_BYTES
-        val digest = CallSiteOrdinalCodec.digestOf(entries.duplicate().position(from).limit(minOf(from + BLOCK_BYTES, entries.limit())))
+        val digest = callSiteOrdinalDigest(entries.duplicate().position(from).limit(minOf(from + BLOCK_BYTES, entries.limit())))
         val expected = ByteArray(DIGEST_BYTES).also { blockDigests.duplicate().position(block * DIGEST_BYTES).get(it) }
         check(digest.contentEquals(expected)) {
             "graph.callsite-ordinals block $block does not hash to the digest its index holds: " +
@@ -139,7 +139,7 @@ internal constructor(
             return try {
                 FileChannel.open(file, StandardOpenOption.READ).use { channel ->
                     val mapped = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
-                    CallSiteOrdinalCodec.callSiteOrdinalsOf(mapped, binding)
+                    callSiteOrdinalsOf(mapped, binding)
                 } ?: EMPTY.also { logger.warning("Ignoring $file: not the call-site ordinal sidecar graph.metadata binds") }
             } catch (e: IOException) {
                 logger.warning("Ignoring $file: ${e.message}")
@@ -157,14 +157,14 @@ internal constructor(
             val count = bytes.getInt(PREAMBLE_BYTES)
             val originCount = bytes.getInt(PREAMBLE_BYTES + Int.SIZE_BYTES)
             if (count < 0 || originCount < 0) return null
-            val heads = CallSiteOrdinalCodec.callSiteOrdinalBlocks(count.toLong(), BLOCK)
+            val heads = callSiteOrdinalBlocks(count.toLong(), BLOCK)
             val entryBytes = (count.toLong() + originCount) * ENTRY_BYTES
-            val blocks = CallSiteOrdinalCodec.callSiteOrdinalBlocks(entryBytes, BLOCK_BYTES)
+            val blocks = callSiteOrdinalBlocks(entryBytes, BLOCK_BYTES)
             val digestsAt = HEADER_BYTES + heads.toLong() * Int.SIZE_BYTES
             val entriesAt = digestsAt + blocks.toLong() * DIGEST_BYTES
             if (entriesAt + entryBytes != bytes.limit().toLong()) return null
             val index = bytes.duplicate().position(PREAMBLE_BYTES).limit(entriesAt.toInt())
-            if (!CallSiteOrdinalCodec.digestOf(index).contentEquals(binding)) return null
+            if (!callSiteOrdinalDigest(index).contentEquals(binding)) return null
             return CallSiteOrdinals(
                 bytes.duplicate().position(entriesAt.toInt()).slice(),
                 count,

@@ -18,7 +18,8 @@ internal class FilteredNodeLimitExecutor(
     private val directStrings: DirectStringExecutor,
     private val graphSourceScopeApplied: Boolean
 ) {
-    private val sources get() = graphAccess.sources
+    private val sources
+        get() = graphAccess.sources
 
     private data class LimitQuery(
         val shape: FilteredNodeQuery,
@@ -28,12 +29,7 @@ internal class FilteredNodeLimitExecutor(
         val nodeClass: Class<out Node>?
     )
 
-    private data class RoutedQuery(
-        val sources: List<CypherGraph>,
-        val condition: CypherExpr,
-        val persisted: Boolean,
-        val mapped: Boolean
-    )
+    private data class RoutedQuery(val sources: List<CypherGraph>, val condition: CypherExpr, val persisted: Boolean, val mapped: Boolean)
 
     fun tryExecute(clauses: List<CypherClause>, preselectedSources: List<CypherGraph>? = null): CypherResult? {
         if (clauses.size != FILTERED_LIMIT_CLAUSE_COUNT) return null
@@ -43,14 +39,19 @@ internal class FilteredNodeLimitExecutor(
         }
     }
 
-    private fun supportedShape(shape: FilteredNodeQuery): Boolean = !shape.match.optional &&
-        shape.returned.items.none { rowProjection.containsAggregation(it.expression) } &&
-        shape.returned.items.none { (it.expression as? CypherExpr.Variable)?.name == "*" }
+    private fun supportedShape(shape: FilteredNodeQuery): Boolean =
+        !shape.match.optional &&
+            shape.returned.items.none { rowProjection.containsAggregation(it.expression) } &&
+            shape.returned.items.none { (it.expression as? CypherExpr.Variable)?.name == "*" }
 
     private fun compileQuery(shape: FilteredNodeQuery, limit: CypherClause.Limit): LimitQuery? {
         val variable = shape.node.variable ?: return null
         return context.literalLimitCount(limit.count)?.let {
-            LimitQuery(shape, variable, it, shape.returned.items.map { item -> item.alias ?: item.expression.toCypherString() },
+            LimitQuery(
+                shape,
+                variable,
+                it,
+                shape.returned.items.map { item -> item.alias ?: item.expression.toCypherString() },
                 resolveNodeClass(shape.node.labels))
         }
     }
@@ -58,7 +59,8 @@ internal class FilteredNodeLimitExecutor(
     private fun executeQuery(query: LimitQuery, preselected: List<CypherGraph>?): CypherResult? {
         if (query.limit <= 0 || query.nodeClass == null) return CypherResult(query.columns, emptyList())
         val route = route(query, preselected)
-        return if (requiresNormalizedAnnotationValues(query, route)) null else {
+        return if (requiresNormalizedAnnotationValues(query, route)) null
+        else {
             directStringResult(query, route) ?: scan(query, route)
         }
     }
@@ -82,8 +84,9 @@ internal class FilteredNodeLimitExecutor(
         if (query.shape.node.labels.size > 1 || query.shape.node.properties.isNotEmpty()) return null
         val filter = DirectStringFilter.compile(route.condition, query.variable, context.parameters)
         return when {
-            filter != null && !query.shape.returned.distinct -> directStrings.executeDirectStringFilter(
-                spec(query, DirectStringDisjunction(listOf(filter))), query.limit, route.sources, route.persisted)
+            filter != null && !query.shape.returned.distinct ->
+                directStrings.executeDirectStringFilter(
+                    spec(query, DirectStringDisjunction(listOf(filter))), query.limit, route.sources, route.persisted)
             filter != null && stringScanPolicy.hasTypedDirectStringCandidate(checkNotNull(query.nodeClass), filter) ->
                 executeStringPlan(query, route, DirectStringDisjunction(listOf(filter)))
             else -> disjunctiveResult(query, route) ?: conjunctiveResult(query, route) ?: residualResult(query, route)
@@ -91,8 +94,7 @@ internal class FilteredNodeLimitExecutor(
     }
 
     private fun disjunctiveResult(query: LimitQuery, route: RoutedQuery): CypherResult? =
-        DirectStringDisjunction.compile(route.condition, query.variable, context.parameters)
-            ?.let { executeStringPlan(query, route, it) }
+        DirectStringDisjunction.compile(route.condition, query.variable, context.parameters)?.let { executeStringPlan(query, route, it) }
 
     private fun conjunctiveResult(query: LimitQuery, route: RoutedQuery): CypherResult? =
         DirectStringConjunction.compile(route.condition, query.variable, context.parameters)?.let { conjunction ->
@@ -110,10 +112,14 @@ internal class FilteredNodeLimitExecutor(
         val tracker = if (context.workTrackingEnabled) context.workTracker else null
         return { source ->
             val bindings = mutableMapOf<String, Any?>(variable to null)
-            val evaluator = ExpressionEvaluator(parameterResolver = parameters::get, graph = source.graph, checkCancelled = {
-                tracker?.checkCancelled()
-                checkThreadInterrupted { CypherQueryCancelledException() }
-            })
+            val evaluator =
+                ExpressionEvaluator(
+                    parameterResolver = parameters::get,
+                    graph = source.graph,
+                    checkCancelled = {
+                        tracker?.checkCancelled()
+                        checkThreadInterrupted { CypherQueryCancelledException() }
+                    })
             val predicate: (Node) -> Boolean = { node ->
                 bindings[variable] = graphAccess.nodeValue(source, node)
                 evaluator.evaluate(condition, bindings) == true
@@ -130,31 +136,34 @@ internal class FilteredNodeLimitExecutor(
         route: RoutedQuery,
         filter: DirectStringDisjunction,
         predicate: DirectNodePredicateFactory? = null
-    ): CypherResult = if (query.shape.returned.distinct) {
-        directStrings.executeDirectStringDisjunction(spec(query, filter), query.limit, predicate, route.sources, route.mapped)
-    } else {
-        directStrings.executeDirectStringDisjunctionRows(spec(query, filter), query.limit, predicate, route.sources, route.persisted)
-    }
+    ): CypherResult =
+        if (query.shape.returned.distinct) {
+            directStrings.executeDirectStringDisjunction(spec(query, filter), query.limit, predicate, route.sources, route.mapped)
+        } else {
+            directStrings.executeDirectStringDisjunctionRows(spec(query, filter), query.limit, predicate, route.sources, route.persisted)
+        }
 
     private fun scan(query: LimitQuery, route: RoutedQuery): CypherResult {
         val rows = mutableListOf<Map<String, Any?>>()
         val distinct = if (query.shape.returned.distinct) LinkedHashMap<Any, MutableMap<String, Any?>>() else null
         val bindings = mutableMapOf<String, Any?>(query.variable to null)
         val nodeClass = checkNotNull(query.nodeClass)
-        val propertyCandidates = if (query.shape.node.properties.isEmpty()) {
-            graphAccess.qualifiedIdCandidates(nodeClass, route.condition, query.variable, route.sources)
-                ?: graphAccess.dynamicPropertyCandidates(nodeClass, route.condition, query.variable, route.sources)
-        } else null
+        val propertyCandidates =
+            if (query.shape.node.properties.isEmpty()) {
+                graphAccess.qualifiedIdCandidates(nodeClass, route.condition, query.variable, route.sources)
+                    ?: graphAccess.dynamicPropertyCandidates(nodeClass, route.condition, query.variable, route.sources)
+            } else null
         for (candidate in propertyCandidates ?: graphAccess.nodeCandidates(nodeClass, route.sources)) {
             val projected = projectCandidate(query, candidate, bindings)
             if (projected != null) {
-                val complete = if (distinct == null) {
-                    rows.add(projected)
-                    rows.size >= query.limit
-                } else {
-                    CypherDistinctRows.addCypherDistinctRow(distinct, projected, query.limit)
-                    !graphAccess.qualified && distinct.size >= query.limit
-                }
+                val complete =
+                    if (distinct == null) {
+                        rows.add(projected)
+                        rows.size >= query.limit
+                    } else {
+                        addCypherDistinctRow(distinct, projected, query.limit)
+                        !graphAccess.qualified && distinct.size >= query.limit
+                    }
                 if (complete) break
             }
         }

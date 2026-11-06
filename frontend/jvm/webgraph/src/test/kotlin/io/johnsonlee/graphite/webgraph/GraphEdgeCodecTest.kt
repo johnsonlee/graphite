@@ -124,9 +124,9 @@ class GraphEdgeCodecTest : GraphStoreTestFixture() {
             val decodeEdgeV3 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV3") }.apply { isAccessible = true }
 
             val dest = linkedSetOf<String>()
-            GraphValueCodec.collectAnyValueString(EnumValueReference("enum.Owner", "VALUE"), dest)
-            GraphValueCodec.collectAnyValueString(listOf("hello", true), dest)
-            GraphValueCodec.collectAnyValueString(
+            collectGraphValueString(EnumValueReference("enum.Owner", "VALUE"), dest)
+            collectGraphValueString(listOf("hello", true), dest)
+            collectGraphValueString(
                 object {
                     override fun toString() = "fallback"
                 },
@@ -136,18 +136,18 @@ class GraphEdgeCodecTest : GraphStoreTestFixture() {
 
             val baos = ByteArrayOutputStream()
             DataOutputStream(baos).use { dos ->
-                GraphValueCodec.writeAnyValue(dos, listOf("hello", 7), strings)
+                writeGraphValue(dos, listOf("hello", 7), strings)
                 dos.writeByte(99)
                 dos.writeInt(strings.indexOf("fallback"))
             }
             DataInputStream(ByteArrayInputStream(baos.toByteArray())).use { dis ->
-                assertEquals(listOf("hello", 7), GraphValueCodec.readAnyValue(dis, strings, NodeSerializer.FORMAT_VERSION))
-                assertEquals("fallback", GraphValueCodec.readAnyValue(dis, strings, NodeSerializer.FORMAT_VERSION))
+                assertEquals(listOf("hello", 7), readGraphValue(dis, strings, NodeSerializer.FORMAT_VERSION))
+                assertEquals("fallback", readGraphValue(dis, strings, NodeSerializer.FORMAT_VERSION))
             }
 
             val unsupportedOut = ByteArrayOutputStream()
             DataOutputStream(unsupportedOut).use { dos ->
-                GraphValueCodec.writeAnyValue(
+                writeGraphValue(
                     dos,
                     object {
                         override fun toString() = "fallback"
@@ -155,7 +155,7 @@ class GraphEdgeCodecTest : GraphStoreTestFixture() {
                     strings)
             }
             DataInputStream(ByteArrayInputStream(unsupportedOut.toByteArray())).use { dis ->
-                assertEquals("fallback", GraphValueCodec.readAnyValue(dis, strings, NodeSerializer.FORMAT_VERSION))
+                assertEquals("fallback", readGraphValue(dis, strings, NodeSerializer.FORMAT_VERSION))
             }
 
             val from = NodeId(11)
@@ -199,15 +199,15 @@ class GraphEdgeCodecTest : GraphStoreTestFixture() {
             assertTrue(decodeFailure.targetException is IllegalArgumentException)
 
             val boolOut = ByteArrayOutputStream()
-            DataOutputStream(boolOut).use { dos -> GraphValueCodec.writeAnyValue(dos, true, strings) }
+            DataOutputStream(boolOut).use { dos -> writeGraphValue(dos, true, strings) }
             DataInputStream(ByteArrayInputStream(boolOut.toByteArray())).use { dis ->
-                assertEquals(true, GraphValueCodec.readAnyValue(dis, strings, NodeSerializer.FORMAT_VERSION))
+                assertEquals(true, readGraphValue(dis, strings, NodeSerializer.FORMAT_VERSION))
             }
 
             val legacyListOut = ByteArrayOutputStream()
-            DataOutputStream(legacyListOut).use { dos -> GraphValueCodec.writeAnyValue(dos, listOf("hello"), strings) }
+            DataOutputStream(legacyListOut).use { dos -> writeGraphValue(dos, listOf("hello"), strings) }
             DataInputStream(ByteArrayInputStream(legacyListOut.toByteArray())).use { dis ->
-                val legacyFailure = assertFailsWith<IllegalArgumentException> { GraphValueCodec.readAnyValue(dis, strings, 1) }
+                val legacyFailure = assertFailsWith<IllegalArgumentException> { readGraphValue(dis, strings, 1) }
                 assertTrue(legacyFailure.message.orEmpty().contains("Encountered list value"))
             }
         } finally {
@@ -241,7 +241,7 @@ class GraphEdgeCodecTest : GraphStoreTestFixture() {
                 dos.writeByte(99) // unknown tag
                 dos.flush()
                 val dis = DataInputStream(java.io.ByteArrayInputStream(baos.toByteArray()))
-                NodeRecordCodec.readNode(dis, strings)
+                readGraphNode(dis, strings)
             } finally {
                 dir.toFile().deleteRecursively()
             }

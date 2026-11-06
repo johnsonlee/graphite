@@ -35,7 +35,7 @@ class MappedStringPropertyLookupTest : GraphStoreTestFixture() {
     fun `node string collection accepts an iterable batch`() {
         val strings = linkedSetOf<String>()
 
-        NodeRecordCodec.collectNodeStrings(listOf(StringConstant(NodeId(0), "feature-alpha")), strings)
+        collectGraphNodeStrings(listOf(StringConstant(NodeId(0), "feature-alpha")), strings)
 
         assertEquals(setOf("feature-alpha"), strings)
     }

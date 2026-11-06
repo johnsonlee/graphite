@@ -47,7 +47,7 @@ class CallSiteOrdinalPersistenceTest {
             val sidecar =
                 CallSiteOrdinals.load(
                     dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE),
-                    CallSiteOrdinalCodec.readCallSiteOrdinalBinding(dir.resolve("graph.metadata")))
+                    readCallSiteOrdinalBinding(dir.resolve("graph.metadata")))
             assertEquals(565, sidecar.size)
             // Entries 255/256 and 511/512 sit on opposite sides of sidecar blocks.
             for (id in listOf(1027, 1030, 2138, 2141)) assertEquals(allCalls.single { it.id.value == id }.ordinal, sidecar[id])
@@ -79,7 +79,7 @@ class CallSiteOrdinalPersistenceTest {
             val graph = EncounterGraph(calls)
             GraphStore.save(graph, dir)
             assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE)))
-            assertNull(CallSiteOrdinalCodec.readCallSiteOrdinalBinding(dir.resolve("graph.metadata")))
+            assertNull(readCallSiteOrdinalBinding(dir.resolve("graph.metadata")))
             assertRoundTrip(dir, calls)
             assertEquals(0, graph.typedCallSiteScans)
         }
@@ -91,7 +91,7 @@ class CallSiteOrdinalPersistenceTest {
         val input = CallSiteOrdinalPersistenceInput(4)
         listOf(call(9, 3), call(2, 7), call(9, -2, NodeId(2)), call(2, 8)).forEach(input::add)
         val reference =
-            CallSiteOrdinalCodec.encodeCallSiteOrdinals(
+            encodeCallSiteOrdinals(
                 intArrayOf(2, 2, 9, 9), intArrayOf(7, 8, 3, -2), intArrayOf(NO_ORIGIN, NO_ORIGIN, NO_ORIGIN, 2))
         val actual = checkNotNull(input.encode())
         assertContentEquals(reference.bytes, actual.bytes)
@@ -156,12 +156,12 @@ class CallSiteOrdinalPersistenceTest {
         // This is the previous writer's object-based ordering, fed to the unchanged format encoder.
         val sites = calls.filter { it.ordinal != null }.sortedBy { it.id.value }
         val reference =
-            CallSiteOrdinalCodec.encodeCallSiteOrdinals(
+            encodeCallSiteOrdinals(
                 IntArray(sites.size) { sites[it].id.value },
                 IntArray(sites.size) { checkNotNull(sites[it].ordinal) },
                 IntArray(sites.size) { sites[it].origin?.value ?: NO_ORIGIN })
         assertContentEquals(reference.bytes, Files.readAllBytes(dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE)))
-        val binding = CallSiteOrdinalCodec.readCallSiteOrdinalBinding(dir.resolve("graph.metadata"))
+        val binding = readCallSiteOrdinalBinding(dir.resolve("graph.metadata"))
         assertContentEquals(reference.digest, binding)
         val sidecar = CallSiteOrdinals.load(dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE), binding)
         for (site in sites) {

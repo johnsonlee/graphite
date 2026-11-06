@@ -105,7 +105,7 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
             Chunk.ChunkCase.METHODS -> chunk.methods.methodsList.forEach { builder.addMethod(method(it)) }
             Chunk.ChunkCase.TYPE_RELATIONS ->
                 chunk.typeRelations.relationsList.forEach {
-                    builder.addTypeRelation(type(it.subtype), type(it.supertype), IrEnumMapping.typeRelation(it.relation))
+                    builder.addTypeRelation(type(it.subtype), type(it.supertype), typeRelation(it.relation))
                 }
             Chunk.ChunkCase.CLASS_ORIGINS -> chunk.classOrigins.originsList.forEach { builder.addClassOrigin(it.className, it.source) }
             Chunk.ChunkCase.ENUM_VALUES ->
@@ -228,19 +228,19 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
         val to = reference(e.to)
         val edge =
             when (e.kindCase) {
-                io.johnsonlee.graphite.ir.v1.Edge.KindCase.DATA_FLOW -> DataFlowEdge(from, to, IrEnumMapping.dataFlowKind(e.dataFlow.kind))
+                io.johnsonlee.graphite.ir.v1.Edge.KindCase.DATA_FLOW -> DataFlowEdge(from, to, dataFlowKind(e.dataFlow.kind))
                 io.johnsonlee.graphite.ir.v1.Edge.KindCase.RESOURCE ->
-                    ResourceEdge(from, to, IrEnumMapping.resourceRelation(e.resource.kind))
+                    ResourceEdge(from, to, resourceRelation(e.resource.kind))
                 io.johnsonlee.graphite.ir.v1.Edge.KindCase.CALL -> CallEdge(from, to, e.call.isVirtual, e.call.isDynamic)
-                io.johnsonlee.graphite.ir.v1.Edge.KindCase.TYPE -> TypeEdge(from, to, IrEnumMapping.typeRelation(e.type.kind))
+                io.johnsonlee.graphite.ir.v1.Edge.KindCase.TYPE -> TypeEdge(from, to, typeRelation(e.type.kind))
                 io.johnsonlee.graphite.ir.v1.Edge.KindCase.CONTROL_FLOW ->
                     ControlFlowEdge(
                         from,
                         to,
-                        IrEnumMapping.controlFlowKind(e.controlFlow.kind),
+                        controlFlowKind(e.controlFlow.kind),
                         if (e.controlFlow.hasComparison()) {
                             BranchComparison(
-                                IrEnumMapping.comparisonOp(e.controlFlow.comparison.operator),
+                                comparisonOp(e.controlFlow.comparison.operator),
                                 reference(e.controlFlow.comparison.comparand))
                         } else {
                             null

@@ -107,11 +107,11 @@ internal class MappedCallSiteStringIndex(
     internal fun cacheProjectedRows(
         key: CallSiteProjectionKey,
         rows: List<StringPropertyProjectionRow>
-    ): List<StringPropertyProjectionRow> = CallSiteIndexCacheWriter.cacheProjectedRows(this, key, rows)
+    ): List<StringPropertyProjectionRow> = cacheCallSiteProjectionRows(this, key, rows)
 
     @Synchronized
     internal fun cacheMatchingNodeIds(key: CallSiteNodeMatchKey, nodeIds: IntArray) =
-        CallSiteIndexCacheWriter.cacheMatchingNodeIds(this, key, nodeIds)
+        cacheCallSiteMatchingNodeIds(this, key, nodeIds)
 
     fun aggregate(
         predicates: List<StringPropertyPredicate>,
@@ -132,7 +132,7 @@ internal class MappedCallSiteStringIndex(
 
     @Synchronized
     internal fun cacheMatchingStringIds(key: CallSitePredicateKey, result: IntArray) =
-        CallSiteIndexCacheWriter.cacheMatchingStringIds(this, key, result)
+        cacheCallSiteMatchingStringIds(this, key, result)
 
     @Synchronized
     internal fun callSiteTrigramPostings(workConsumer: GraphWorkConsumer?): LongArray? {

@@ -22,11 +22,11 @@ internal class CallSiteOrdinalPersistenceInput(ordinalCount: Int) {
         size++
     }
 
-    fun encode(): CallSiteOrdinalCodec.EncodedCallSiteOrdinals? {
+    fun encode(): EncodedCallSiteOrdinals? {
         check(size == ids.size) { "Call-site ordinal count changed while saving" }
         if (size == 0) return null
         if (!ordered) sortById()
-        return CallSiteOrdinalCodec.encodeCallSiteOrdinals(ids, ordinals, origins)
+        return encodeCallSiteOrdinals(ids, ordinals, origins)
     }
 
     private fun sortById() {

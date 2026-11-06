@@ -167,5 +167,5 @@ internal fun MappedGraphContext.readNodeAt(offset: Long): Node {
             mappedNodeData.get(position + Int.SIZE_BYTES).toInt() == NodeSerializer.TAG_CALL_SITE_NODE
     val ordinals = if (isCallSite) callSiteOrdinals.value else CallSiteOrdinals.EMPTY
     val input = ByteBufferDataInput(mappedNodeData, position)
-    return NodeRecordCodec.readNode(input, stringTable, nodeDataVersion, ordinals)
+    return readGraphNode(input, stringTable, nodeDataVersion, ordinals)
 }

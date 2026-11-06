@@ -35,8 +35,7 @@ internal class FilteredStringCountExecutor(
     private fun executeCount(shape: FilteredNodeQuery): CypherResult? {
         val item = shape.returned.items.single()
         val column = item.alias ?: item.expression.toCypherString()
-        val nodeClass = resolveNodeClass(shape.node.labels)
-            ?: return CypherResult(listOf(column), listOf(mapOf(column to 0L)))
+        val nodeClass = resolveNodeClass(shape.node.labels) ?: return CypherResult(listOf(column), listOf(mapOf(column to 0L)))
         return compilePlan(shape, nodeClass)?.let { plan -> executePlan(plan, column) }
     }
 
@@ -52,13 +51,16 @@ internal class FilteredStringCountExecutor(
         val parameters: Map<String, Any?>
     )
 
-    private fun countOperand(expression: CypherExpr): CountOperand? = when (expression) {
-        CypherExpr.CountStar -> CountOperand(null, distinct = false)
-        is CypherExpr.FunctionCall -> expression.args.singleOrNull()
-            ?.takeIf { expression.name.equals("count", ignoreCase = true) }
-            ?.let { CountOperand(it, expression.distinct) }
-        else -> null
-    }
+    private fun countOperand(expression: CypherExpr): CountOperand? =
+        when (expression) {
+            CypherExpr.CountStar -> CountOperand(null, distinct = false)
+            is CypherExpr.FunctionCall ->
+                expression.args
+                    .singleOrNull()
+                    ?.takeIf { expression.name.equals("count", ignoreCase = true) }
+                    ?.let { CountOperand(it, expression.distinct) }
+            else -> null
+        }
 
     private fun compilePlan(shape: FilteredNodeQuery, nodeClass: Class<out Node>): CountPlan? {
         val operand = countOperand(shape.returned.items.single().expression) ?: return null
@@ -66,50 +68,65 @@ internal class FilteredStringCountExecutor(
         val parameters = context.parameters
         val condition = shape.where.condition
         return DirectStringCandidatePlan.compile(condition, variable, parameters)?.let { candidates ->
-            val exactPredicate = DirectStringFilter.compile(condition, variable, parameters) != null ||
-                DirectStringDisjunction.compile(condition, variable, parameters) != null
-            CountPlan(nodeClass, variable, candidates, condition, operand,
-                exactPredicate && rawCountOperand(operand.expression, variable), parameters)
+            val exactPredicate =
+                DirectStringFilter.compile(condition, variable, parameters) != null ||
+                    DirectStringDisjunction.compile(condition, variable, parameters) != null
+            CountPlan(
+                nodeClass,
+                variable,
+                candidates,
+                condition,
+                operand,
+                exactPredicate && rawCountOperand(operand.expression, variable),
+                parameters)
         }
     }
 
-    private fun rawCountOperand(expression: CypherExpr?, variable: String): Boolean = when (expression) {
-        null -> true
-        is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable) &&
-            expression.propertyName !in QUALIFIED_NODE_PROPERTIES
-        else -> false
-    }
+    private fun rawCountOperand(expression: CypherExpr?, variable: String): Boolean =
+        when (expression) {
+            null -> true
+            is CypherExpr.Property ->
+                expression.expression == CypherExpr.Variable(variable) && expression.propertyName !in QUALIFIED_NODE_PROPERTIES
+            else -> false
+        }
 
     private fun executePlan(plan: CountPlan, column: String): CypherResult {
-        val candidates = sourcePlanner.graphIdEquality(plan.condition, plan.variable)
-            ?.let { id -> sources.filter { it.id == id } } ?: sources
+        val candidates =
+            sourcePlanner.graphIdEquality(plan.condition, plan.variable)?.let { id -> sources.filter { it.id == id } } ?: sources
         val tracker = if (context.workTrackingEnabled) context.workTracker else null
         val parallelism = directStringGraphParallelism(candidates.size)
         val parallelSources = qualified && candidates.size > 1 && parallelism > 1
-        val partials = if (parallelSources && !DirectStringTasks.isWorker) {
-            DirectStringTasks.runDirectStringTasks(candidates.map { source -> { countPartial(source, plan, tracker) } }, parallelism)
-        } else {
-            candidates.map { countPartial(it, plan, tracker) }
-        }
-        val count = if (plan.operand.distinct) {
-            val values = HashSet<Any>()
-            partials.forEach { values.addAll(it.distinctValues.orEmpty()) }
-            values.size.toLong()
-        } else partials.sumOf(CountPartial::count)
+        val partials =
+            if (parallelSources && !isDirectStringWorker) {
+                runDirectStringTasks(candidates.map { source -> { countPartial(source, plan, tracker) } }, parallelism)
+            } else {
+                candidates.map { countPartial(it, plan, tracker) }
+            }
+        val count =
+            if (plan.operand.distinct) {
+                val values = HashSet<Any>()
+                partials.forEach { values.addAll(it.distinctValues.orEmpty()) }
+                values.size.toLong()
+            } else partials.sumOf(CountPartial::count)
         val row = mutableMapOf<String, Any?>(column to count)
         if (qualified) {
-            partials.mapNotNullTo(linkedSetOf()) { partial -> partial.sourceId.takeIf { partial.matchedWhere } }
-                .takeIf { it.isNotEmpty() }?.let { row[INTERNAL_PROVENANCE_KEY] = it }
+            partials
+                .mapNotNullTo(linkedSetOf()) { partial -> partial.sourceId.takeIf { partial.matchedWhere } }
+                .takeIf { it.isNotEmpty() }
+                ?.let { row[INTERNAL_PROVENANCE_KEY] = it }
         }
         return CypherResult(listOf(column), listOf(row))
     }
 
     private fun countPartial(source: CypherGraph, plan: CountPlan, tracker: CypherWorkTracker?): CountPartial {
         if (plan.rawNodes) return exactCountPartial(source, plan, tracker)
-        val evaluator = if (DirectStringTasks.isWorker) {
-            ExpressionEvaluator(parameterResolver = plan.parameters::get, graph = source.graph,
-                checkCancelled = { checkThreadInterrupted { CypherQueryCancelledException() } })
-        } else context.evaluator
+        val evaluator =
+            if (isDirectStringWorker) {
+                ExpressionEvaluator(
+                    parameterResolver = plan.parameters::get,
+                    graph = source.graph,
+                    checkCancelled = { checkThreadInterrupted { CypherQueryCancelledException() } })
+            } else context.evaluator
         val bindings = mutableMapOf<String, Any?>(plan.variable to null)
         val count = CountAccumulator(plan.operand)
         var inspected = 0
@@ -145,9 +162,10 @@ internal class FilteredStringCountExecutor(
         tracker: CypherWorkTracker?,
         count: CountAccumulator
     ) {
-        val aggregate = if (canAggregateProperty(plan.operand, type, properties, filters)) {
-            storageAggregate(source, plan.operand, type, filters, tracker)
-        } else null
+        val aggregate =
+            if (canAggregateProperty(plan.operand, type, properties, filters)) {
+                storageAggregate(source, plan.operand, type, filters, tracker)
+            } else null
         if (aggregate != null) {
             count.addStorage(aggregate)
         } else {
@@ -169,11 +187,12 @@ internal class FilteredStringCountExecutor(
         val supported = operand.expression == null || property in properties
         val scalarValue = property != NODE_VALUE_PROPERTY || type == StringConstant::class.java
         if (!supported || !scalarValue) return false
-        val annotationValue = when {
-            type != AnnotationNode::class.java -> true
-            operand.expression == null -> true
-            else -> property == NODE_CLASS_PROPERTY || property == "name"
-        }
+        val annotationValue =
+            when {
+                type != AnnotationNode::class.java -> true
+                operand.expression == null -> true
+                else -> property == NODE_CLASS_PROPERTY || property == "name"
+            }
         val coercesAnnotation = type == AnnotationNode::class.java && filters.any { it.coercesToString }
         return annotationValue && !coercesAnnotation
     }
@@ -189,8 +208,9 @@ internal class FilteredStringCountExecutor(
         val property = (operand.expression as? CypherExpr.Property)?.propertyName?.takeIf { operand.distinct }
         val predicates = filters.map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
         return if (tracker == null) storage?.aggregateStringPropertyDisjunction(type, predicates, property)
-        else (storage as? WorkAwareStringPropertyDisjunctionAggregation)
-            ?.aggregateStringPropertyDisjunction(type, predicates, property, tracker)
+        else
+            (storage as? WorkAwareStringPropertyDisjunctionAggregation)?.aggregateStringPropertyDisjunction(
+                type, predicates, property, tracker)
     }
 
     private class CountAccumulator(private val operand: CountOperand) {
@@ -208,8 +228,7 @@ internal class FilteredStringCountExecutor(
 
         fun addStorage(aggregate: StringPropertyDisjunctionAggregate) {
             if (aggregate.count > 0L) matchedWhere = true
-            if (values == null) count += aggregate.count
-            else aggregate.distinctValues.orEmpty().mapTo(values, ::cypherValueKey)
+            if (values == null) count += aggregate.count else aggregate.distinctValues.orEmpty().mapTo(values, ::cypherValueKey)
         }
 
         fun result(source: String): CountPartial = CountPartial(source, values?.size?.toLong() ?: count, values, matchedWhere)
