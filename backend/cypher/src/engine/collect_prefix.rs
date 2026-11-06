@@ -97,7 +97,7 @@ impl<'a> CollectPrefixPlan<'a> {
                 return Ok(None);
             }
         }
-        let mut plan = AggPlan::new(self.items, None)?;
+        let mut plan = AggPlan::new(self.items, None, ex.dialect)?;
         plan.prefix_caps = vec![Some(self.cap)];
         let mut acc = GroupAcc {
             first_row: Row::new(),

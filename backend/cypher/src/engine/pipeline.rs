@@ -218,12 +218,32 @@ impl Executor {
         let seed_names = seed
             .map(|row| row.keys().cloned().collect::<Vec<_>>())
             .unwrap_or_default();
-        let validated = crate::validation::resolve_with_bindings_and_dialect(
-            clauses,
-            self.procedures.as_deref(),
-            &seed_names,
-            self.dialect,
-        )?;
+        // Graphite's established queries are dynamically bound. Static M23
+        // admission would change their errors, empty-input behavior and scope.
+        let validated = if self.dialect == crate::CypherDialect::Graphite {
+            let mut legacy = clauses.to_vec();
+            for clause in &mut legacy {
+                if let Clause::Return {
+                    items: Some(items), ..
+                }
+                | Clause::With {
+                    items: Some(items), ..
+                } = clause
+                {
+                    for item in items {
+                        item.source_text = None;
+                    }
+                }
+            }
+            legacy
+        } else {
+            crate::validation::resolve_with_bindings_and_dialect(
+                clauses,
+                self.procedures.as_deref(),
+                &seed_names,
+                self.dialect,
+            )?
+        };
         let clauses = validated.as_slice();
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
@@ -723,7 +743,9 @@ impl Executor {
             (None, Some(l)) => Some(l as usize),
         };
         let aggregated = match &shape.items {
-            Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
+            Some(items) => items
+                .iter()
+                .any(|it| aggregation_in_mode(&it.expr, self.dialect)),
             None => false,
         };
         let items = shape.items.as_deref();
@@ -833,7 +855,9 @@ impl Executor {
             );
         }
         let aggregated = match &shape.items {
-            Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
+            Some(items) => items
+                .iter()
+                .any(|it| aggregation_in_mode(&it.expr, self.dialect)),
             None => false,
         };
         if projected_filter.is_none() {
@@ -901,7 +925,7 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
-            let mut plan = AggPlan::new(items, shape.order.as_deref())?;
+            let mut plan = AggPlan::new(items, shape.order.as_deref(), self.dialect)?;
             plan.prefix_caps = prefix_caps.to_vec();
             let columns = item_names(items);
             let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
@@ -1992,7 +2016,9 @@ pub(super) fn project_row(
     }
     if !distinct || order_before_distinct {
         stash_order_values(ev, row, &mut out, order, columns)?;
-    } else if let (Some(order), Some(items)) = (order, items) {
+    } else if let (crate::CypherDialect::OpenCypherM23, Some(order), Some(items)) =
+        (ev.context().dialect(), order, items)
+    {
         // DISTINCT removes input bindings, but the same projected expression
         // still denotes its output value, even when ORDER BY uses its old spelling.
         for (i, key) in order.iter().enumerate() {
@@ -2110,7 +2136,15 @@ fn collect_prefix_caps(shape: &FusedShape, rest: &[Clause]) -> Vec<Option<usize>
         .collect()
 }
 
+fn aggregation_in_mode(expr: &Expr, dialect: crate::CypherDialect) -> bool {
+    match dialect {
+        crate::CypherDialect::Graphite => crate::eval::legacy_contains_aggregation(expr),
+        crate::CypherDialect::OpenCypherM23 => contains_aggregation(expr),
+    }
+}
+
 struct AggPlan {
+    dialect: crate::CypherDialect,
     /// Rewritten items with aggregation calls replaced by placeholders.
     rewritten: Vec<Expr>,
     aggs: Vec<AggCall>,
@@ -2124,16 +2158,31 @@ impl AggPlan {
         self.aggs
             .iter()
             .enumerate()
-            .map(|(i, agg)| AggregateState::new(agg, self.prefix_caps.get(i).copied().flatten()))
+            .map(|(i, agg)| {
+                AggregateState::with_dialect(
+                    agg,
+                    self.prefix_caps.get(i).copied().flatten(),
+                    self.dialect,
+                )
+            })
             .collect()
     }
 
-    fn new(items: &[ReturnItem], order: Option<&[OrderItem]>) -> CypherResult<AggPlan> {
+    fn new(
+        items: &[ReturnItem],
+        order: Option<&[OrderItem]>,
+        dialect: crate::CypherDialect,
+    ) -> CypherResult<AggPlan> {
         let mut aggs = Vec::new();
         let mut rewritten = Vec::new();
         let mut group_exprs = Vec::new();
         for it in items {
-            if contains_aggregation(&it.expr) {
+            if aggregation_in_mode(&it.expr, dialect) {
+                if dialect == crate::CypherDialect::Graphite {
+                    if let Some(name) = legacy_nested_aggregation_name(&it.expr) {
+                        return Err(CypherError::Aggregation(name));
+                    }
+                }
                 rewritten.push(rewrite_aggs(&it.expr, &mut aggs));
             } else {
                 rewritten.push(it.expr.clone());
@@ -2150,12 +2199,47 @@ impl AggPlan {
                 .collect()
         });
         Ok(AggPlan {
+            dialect,
             rewritten,
             aggs,
             group_exprs,
             prefix_caps: Vec::new(),
             rewritten_order,
         })
+    }
+}
+
+fn legacy_nested_aggregation_name(e: &Expr) -> Option<String> {
+    match e {
+        // At the root an aggregate is a projection, not an error.
+        Expr::CountStar => None,
+        Expr::FunctionCall { name, .. } if is_aggregation_name(name) => None,
+        other => legacy_first_aggregation_name(other),
+    }
+}
+
+fn legacy_first_aggregation_name(e: &Expr) -> Option<String> {
+    match e {
+        Expr::CountStar => Some("count".to_string()),
+        Expr::FunctionCall { name, args, .. } => {
+            if is_aggregation_name(name) {
+                Some(name.to_ascii_lowercase())
+            } else {
+                args.iter().find_map(legacy_first_aggregation_name)
+            }
+        }
+        Expr::Property { expr, .. } => legacy_first_aggregation_name(expr),
+        Expr::Binary { left, right, .. } => {
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
+        }
+        Expr::Unary { expr, .. } => legacy_first_aggregation_name(expr),
+        Expr::Comparison { left, right, .. } => {
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
+        }
+        Expr::StringOp { left, right, .. } => {
+            legacy_first_aggregation_name(left).or_else(|| legacy_first_aggregation_name(right))
+        }
+        _ => None,
     }
 }
 
@@ -2427,7 +2511,7 @@ fn finalize_groups(
         let mut row = Row::new();
         let mut gi = 0;
         for (idx, it) in items.iter().enumerate() {
-            let v = if contains_aggregation(&it.expr) {
+            let v = if aggregation_in_mode(&it.expr, plan.dialect) {
                 ev.eval(&plan.rewritten[idx], &tmp)?
             } else {
                 let v = acc.group_values[gi].clone();
@@ -2543,10 +2627,12 @@ fn project_filtered(
     {
         return Ok((columns, rows));
     }
-    let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
+    let aggregated = items
+        .iter()
+        .any(|it| aggregation_in_mode(&it.expr, ev.context().dialect()));
     let mut out: Vec<Row>;
     if aggregated {
-        let plan = AggPlan::new(items, order)?;
+        let plan = AggPlan::new(items, order, ev.context().dialect())?;
         let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
         for row in rows {
             let mut keyv = Vec::with_capacity(plan.group_exprs.len());

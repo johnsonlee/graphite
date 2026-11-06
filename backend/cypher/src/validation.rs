@@ -1391,7 +1391,8 @@ mod tests {
     }
     #[test]
     fn static_errors_are_reported_on_empty_inputs_and_star_headers_remain_visible() {
-        let executor = crate::engine::Executor::new(vec![], false);
+        let executor = crate::engine::Executor::new(vec![], false)
+            .with_dialect(crate::CypherDialect::OpenCypherM23);
         let result = executor.execute("MATCH (z),(a) RETURN *", None).unwrap();
         assert_eq!(result.columns, vec!["a", "z"]);
         assert!(result.rows.is_empty());
@@ -1478,7 +1479,8 @@ mod tests {
             "InvalidClauseComposition"
         );
         let graph = std::sync::Arc::new(crate::property_graph::PropertyGraph::new());
-        let ex = crate::engine::Executor::property_graph(graph);
+        let ex = crate::engine::Executor::property_graph(graph)
+            .with_dialect(crate::CypherDialect::OpenCypherM23);
         let error = ex
             .execute("MATCH(n) RETURN EXISTS { CREATE (m) RETURN m }", None)
             .unwrap_err();
@@ -1524,7 +1526,8 @@ mod tests {
         assert!(patterns[0].nodes[0].properties_present);
         assert_eq!(crate::render::pattern_to_string(&patterns[0]), "(n {})");
         let graph = std::sync::Arc::new(crate::property_graph::PropertyGraph::new());
-        let ex = crate::engine::Executor::property_graph(graph.clone());
+        let ex = crate::engine::Executor::property_graph(graph.clone())
+            .with_dialect(crate::CypherDialect::OpenCypherM23);
         ex.execute("CREATE (), ()", None).unwrap();
         ex.execute("MATCH () CREATE () WITH * CREATE ()", None)
             .unwrap();

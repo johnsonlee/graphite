@@ -166,3 +166,81 @@ fn correlated_exists_inherits_the_enclosing_dialect_through_projections() {
         );
     }
 }
+
+#[test]
+fn graphite_aggregation_policies_and_unknown_function_errors_remain_compatible() {
+    let legacy = Executor::new(vec![], false);
+    let standard = Executor::new(vec![], false).with_dialect(CypherDialect::OpenCypherM23);
+    let query =
+        "UNWIND ['first', 'zulu', 'alpha'] AS value RETURN min(value) AS low, max(value) AS high";
+    let row = &legacy.execute(query, None).unwrap().rows[0];
+    assert_eq!(row["low"].as_str(), Some("first"));
+    assert_eq!(row["high"].as_str(), Some("first"));
+    let row = &standard.execute(query, None).unwrap().rows[0];
+    assert_eq!(row["low"].as_str(), Some("alpha"));
+    assert_eq!(row["high"].as_str(), Some("zulu"));
+    let query = "UNWIND [1, 2] AS value RETURN sum(value) AS total";
+    assert!(
+        matches!(legacy.execute(query,None).unwrap().rows[0]["total"],Value::Float(n) if n == 3.0)
+    );
+    assert!(matches!(
+        standard.execute(query, None).unwrap().rows[0]["total"],
+        Value::Int(3)
+    ));
+    let query = "UNWIND [1, 2] AS value RETURN count(*) + 1 AS total";
+    assert_eq!(
+        legacy.execute(query, None).unwrap_err().to_string(),
+        "Aggregation function 'count' must be used in RETURN or WITH clause"
+    );
+    assert!(matches!(
+        standard.execute(query, None).unwrap().rows[0]["total"],
+        Value::Int(3)
+    ));
+    assert_eq!(
+        legacy
+            .execute("RETURN nosuchfunction(1)", None)
+            .unwrap_err()
+            .to_string(),
+        "Unknown function: nosuchfunction"
+    );
+    let error = standard
+        .execute("RETURN nosuchfunction(1)", None)
+        .unwrap_err();
+    assert_eq!(error.diagnostic().unwrap().detail, "UnknownFunction");
+}
+
+#[test]
+fn graphite_default_headers_keep_canonical_rendering_and_runtime_binding() {
+    let query = "RETURN 1+2";
+    let expected = "1 + 2".to_string();
+    let legacy = Executor::new(vec![], false);
+    assert_eq!(legacy.execute(query, None).unwrap().columns, vec![expected]);
+    let result = legacy
+        .execute("UNWIND [] AS ignored RETURN nosuchfunction(1)", None)
+        .unwrap();
+    assert!(result.rows.is_empty());
+    assert!(Executor::new(vec![], false)
+        .with_dialect(CypherDialect::OpenCypherM23)
+        .execute("UNWIND [] AS ignored RETURN nosuchfunction(1)", None)
+        .is_err());
+}
+
+#[test]
+fn graphite_nested_collect_slice_keeps_runtime_aggregation_error() {
+    let query = "UNWIND [1,2] AS value RETURN collect(value)[0..1] AS xs";
+    assert_eq!(
+        Executor::new(vec![], false)
+            .execute(query, None)
+            .unwrap_err()
+            .to_string(),
+        "Aggregation function 'collect' must be used in RETURN or WITH clause"
+    );
+    let result = Executor::new(vec![], false)
+        .with_dialect(CypherDialect::OpenCypherM23)
+        .execute(query, None)
+        .unwrap();
+    let Value::List(values) = &result.rows[0]["xs"] else {
+        panic!("list expected")
+    };
+    assert!(matches!(values.as_slice(), [Value::Int(1)]));
+}

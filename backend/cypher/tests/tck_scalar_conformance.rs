@@ -4,8 +4,12 @@ use graphite_cypher::{
     parser, Value,
 };
 
+fn standard() -> Executor {
+    Executor::new(vec![], false).with_dialect(graphite_cypher::CypherDialect::OpenCypherM23)
+}
+
 fn scalar(query: &str) -> Value {
-    let result = Executor::new(vec![], false).execute(query, None).unwrap();
+    let result = standard().execute(query, None).unwrap();
     assert_eq!(result.rows.len(), 1, "{query}");
     assert_eq!(result.columns.len(), 1, "{query}");
     result.rows[0][&result.columns[0]].clone()
@@ -164,9 +168,7 @@ fn float_nan_comparison_is_not_an_integer_divide_error() {
             Value::Bool(false),
         );
     }
-    assert!(Executor::new(vec![], false)
-        .execute("RETURN 1 / 0", None)
-        .is_err());
+    assert!(standard().execute("RETURN 1 / 0", None).is_err());
 }
 #[test]
 fn list_prepend_preserves_scalar_types() {
@@ -203,7 +205,7 @@ fn aggregates_work_inside_complete_projected_expressions() {
 }
 #[test]
 fn aggregate_order_expressions_use_finalized_values_and_aliases() {
-    let ex = Executor::new(vec![], false).with_params(indexmap::IndexMap::from([(
+    let ex = standard().with_params(indexmap::IndexMap::from([(
         "offset".into(),
         Value::Int(10),
     )]));
@@ -232,7 +234,8 @@ fn union_column_contract_is_checked_before_graph_mutation() {
     use std::sync::Arc;
     for union in ["UNION", "UNION ALL"] {
         let graph = Arc::new(PropertyGraph::new());
-        let ex = Executor::property_graph(graph.clone());
+        let ex = Executor::property_graph(graph.clone())
+            .with_dialect(graphite_cypher::CypherDialect::OpenCypherM23);
         let error = ex
             .execute(
                 &format!("CREATE (:A) RETURN 1 AS a {union} RETURN 2 AS b"),
@@ -245,7 +248,7 @@ fn union_column_contract_is_checked_before_graph_mutation() {
         assert_eq!(diagnostic.detail, "DifferentColumnsInUnion");
         assert!(graph.snapshot().nodes.is_empty());
     }
-    let result = Executor::new(vec![], false)
+    let result = standard()
         .execute("RETURN 1 AS a UNION ALL RETURN 2 AS a", None)
         .unwrap();
     assert_eq!(result.rows.len(), 2);
@@ -268,14 +271,14 @@ fn result_headers_preserve_original_expression_spelling_and_unicode_offsets() {
         Some("(12 / 4) * (3 - 2 * 4)")
     );
     assert_eq!(items[1].source_text, None);
-    let result = Executor::new(vec![], false).execute(query, None).unwrap();
+    let result = standard().execute(query, None).unwrap();
     assert_eq!(result.columns, vec!["(12 / 4) * (3 - 2 * 4)", "text"]);
     assert_eq!(
         format!("{:?}", result.rows[0]["(12 / 4) * (3 - 2 * 4)"]),
         "Int(-15)"
     );
     assert_eq!(format!("{:?}", result.rows[0]["text"]), "Str(\"中文\")");
-    let result = Executor::new(vec![], false)
+    let result = standard()
         .execute("WITH 1 AS `x` RETURN `x`", None)
         .unwrap();
     assert_eq!(result.columns, vec!["x"]);
@@ -307,7 +310,7 @@ fn integer_sum_retains_exact_integer_type_and_promotes_only_floating_inputs() {
     );
     same("MATCH (n) RETURN sum(n.value)", Value::Int(0));
     same("UNWIND [1,2.5] AS n RETURN sum(n)", Value::Float(3.5));
-    let error = Executor::new(vec![], false)
+    let error = standard()
         .execute("UNWIND [9223372036854775807,1] AS n RETURN sum(n)", None)
         .unwrap_err();
     let diagnostic = error.diagnostic().unwrap();
@@ -331,7 +334,7 @@ fn percentile_aggregations_use_the_requested_parameter_and_reject_out_of_range_v
     );
     for p in [-1.0, 1.1, 1000.0] {
         for function in ["percentileDisc", "percentileCont"] {
-            let err = Executor::new(vec![], false)
+            let err = standard()
                 .execute(
                     &format!("UNWIND [10.0] AS x RETURN {function}(x,{p})"),
                     None,
@@ -347,7 +350,7 @@ fn percentile_aggregations_use_the_requested_parameter_and_reject_out_of_range_v
 
 #[test]
 fn order_by_expressions_resolve_projected_aliases_before_shadowed_input_bindings() {
-    let ex = Executor::new(vec![], false);
+    let ex = standard();
     let result = ex
         .execute(
             "UNWIND [{num: 1}, {num: 3}, {num: -5}] AS n RETURN n.num AS n ORDER BY n + 2",
@@ -390,7 +393,7 @@ fn range_is_integer_only_checked_at_boundaries_and_cancellable() {
         Value::list(vec![Value::Int(i64::MIN + 1), Value::Int(i64::MIN)]),
     );
     for value in ["true", "0.0", "'1'", "[1]", "{}"] {
-        let err = Executor::new(vec![], false)
+        let err = standard()
             .execute(&format!("RETURN range({value},2)"), None)
             .unwrap_err();
         let d = err.diagnostic().unwrap();
@@ -399,13 +402,11 @@ fn range_is_integer_only_checked_at_boundaries_and_cancellable() {
             ("ArgumentError", "runtime", "InvalidArgumentType")
         );
     }
-    let err = Executor::new(vec![], false)
-        .execute("RETURN range(0,1,0)", None)
-        .unwrap_err();
+    let err = standard().execute("RETURN range(0,1,0)", None).unwrap_err();
     assert_eq!(err.diagnostic().unwrap().detail, "NumberOutOfRange");
     let cancel = graphite_cypher::engine::CancelToken::new();
     cancel.cancel();
-    let ex = Executor::new(vec![], false).with_cancel(cancel);
+    let ex = standard().with_cancel(cancel);
     assert!(matches!(
         graphite_cypher::functions::call("range", &[Value::Int(0), Value::Int(1000)], &ex),
         Err(graphite_cypher::CypherError::Cancelled)
@@ -420,8 +421,8 @@ fn skip_limit_parameters_require_nonnegative_integer_values() {
         (Value::str("1"), "InvalidArgumentType"),
     ] {
         for clause in ["SKIP", "LIMIT"] {
-            let ex = Executor::new(vec![], false)
-                .with_params(indexmap::IndexMap::from([("n".into(), value.clone())]));
+            let ex =
+                standard().with_params(indexmap::IndexMap::from([("n".into(), value.clone())]));
             let err = ex
                 .execute(&format!("RETURN 1 {clause} $n"), None)
                 .unwrap_err();
@@ -436,7 +437,7 @@ fn skip_limit_parameters_require_nonnegative_integer_values() {
 
 #[test]
 fn with_where_sees_input_and_projected_bindings_without_leaking_dropped_variables() {
-    let ex = Executor::new(vec![], false);
+    let ex = standard();
     let query="UNWIND [{name:'A'},{name:'B'},{name:'C'}] AS a WITH a.name AS name WHERE name = 'B' OR a.name = 'C' RETURN * ORDER BY name";
     let result = ex.execute(query, None).unwrap();
     assert_eq!(result.columns, vec!["name"]);
@@ -450,7 +451,8 @@ fn with_where_sees_input_and_projected_bindings_without_leaking_dropped_variable
     );
     assert!(result.rows.iter().all(|r| !r.contains_key("a")));
     let graph = std::sync::Arc::new(graphite_cypher::property_graph::PropertyGraph::new());
-    let ex = Executor::property_graph(graph);
+    let ex =
+        Executor::property_graph(graph).with_dialect(graphite_cypher::CypherDialect::OpenCypherM23);
     ex.execute("CREATE ({name:'A'}),({name:'B'}),({name:'C'})", None)
         .unwrap();
     let result=ex.execute("MATCH (a) WITH a.name AS name WHERE name = 'B' OR a.name = 'C' RETURN name ORDER BY name",None).unwrap();
@@ -483,7 +485,7 @@ fn dynamic_element_access_requires_valid_container_and_index_types() {
         ("RETURN [1]['0']", "InvalidArgumentType"),
         ("RETURN {name:'x'}[0]", "MapElementAccessByNonString"),
     ] {
-        let ex = Executor::new(vec![], false)
+        let ex = standard()
             .with_dialect(graphite_cypher::CypherDialect::OpenCypherM23)
             .with_params(indexmap::IndexMap::from([(
                 "value".into(),
@@ -505,7 +507,7 @@ fn dynamic_element_access_requires_valid_container_and_index_types() {
 #[test]
 fn conversion_functions_preserve_null_and_reject_unsupported_runtime_types() {
     for function in ["toBoolean", "toInteger", "toFloat"] {
-        let err = Executor::new(vec![], false)
+        let err = standard()
             .execute(&format!("UNWIND [1, []] AS x RETURN {function}(x)"), None)
             .unwrap_err();
         let d = err.diagnostic().unwrap();
@@ -526,7 +528,7 @@ fn conversion_functions_preserve_null_and_reject_unsupported_runtime_types() {
 #[test]
 fn distinct_projection_keeps_order_keys_for_equivalent_projected_expressions() {
     for (direction, expected) in [("ASC", "A"), ("DESC", "C")] {
-        let result=Executor::new(vec![],false).execute(&format!("UNWIND [{{name:'A'}},{{name:'A'}},{{name:'B'}},{{name:'C'}},{{name:'C'}}] AS a WITH DISTINCT a.name AS name ORDER BY a.name {direction} LIMIT 1 RETURN name"),None).unwrap();
+        let result=standard().execute(&format!("UNWIND [{{name:'A'}},{{name:'A'}},{{name:'B'}},{{name:'C'}},{{name:'C'}}] AS a WITH DISTINCT a.name AS name ORDER BY a.name {direction} LIMIT 1 RETURN name"),None).unwrap();
         assert_eq!(result.columns, vec!["name"]);
         assert_eq!(result.rows.len(), 1);
         assert_eq!(result.rows[0]["name"].as_str(), Some(expected));

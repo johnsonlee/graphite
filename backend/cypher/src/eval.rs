@@ -101,6 +101,33 @@ pub fn contains_aggregation(e: &Expr) -> bool {
     }
 }
 
+// Historical recursion policy retained for Graphite compatibility.
+pub(crate) fn legacy_contains_aggregation(e: &Expr) -> bool {
+    match e {
+        Expr::CountStar => true,
+        Expr::FunctionCall { name, args, .. } => {
+            is_aggregation_name(name) || args.iter().any(legacy_contains_aggregation)
+        }
+        Expr::Property { expr, .. } => legacy_contains_aggregation(expr),
+        Expr::PredicateFunction {
+            list, predicate, ..
+        } => {
+            legacy_contains_aggregation(list)
+                || predicate
+                    .as_deref()
+                    .is_some_and(legacy_contains_aggregation)
+        }
+        Expr::Binary { left, right, .. } => {
+            legacy_contains_aggregation(left) || legacy_contains_aggregation(right)
+        }
+        Expr::Comparison { left, right, .. } => {
+            legacy_contains_aggregation(left) || legacy_contains_aggregation(right)
+        }
+        Expr::Distinct(inner) => legacy_contains_aggregation(inner),
+        _ => false,
+    }
+}
+
 struct RegexCache {
     map: HashMap<String, Arc<CompiledRegex>>,
     order: Vec<String>,

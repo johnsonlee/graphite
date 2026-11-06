@@ -5,6 +5,16 @@ Technology Compatibility Kit against Graphite's production Rust parser, validato
 matcher and executor. Acquisition, Gherkin expansion, execution and comparison are
 implemented in Rust. No Python environment is required.
 
+## Query compatibility
+
+The TCK selects the public `opencypher-m23` dialect. The default `graphite` mode
+retains established dynamic binding, runtime errors, canonical expression headers,
+formatting and aggregate contracts. In particular, numeric-coercion min/max,
+floating-point sums, historical aggregate-expression recognition and percentile
+behavior remain available in Graphite mode. M23 mode uses static validation,
+typed extrema, integer sums where applicable, aggregate expressions and explicit
+percentile parameters. Both modes share the production engine.
+
 ## Reproduce
 
 ```sh

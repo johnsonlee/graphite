@@ -527,6 +527,30 @@ pub fn count_star(rows: usize) -> Value {
     Value::Int(rows as i64)
 }
 
+/// Graphite retains its historical numeric coercion and first-seen ties.
+pub(crate) fn prefer_extreme(
+    value: &Value,
+    previous: &Value,
+    min: bool,
+    dialect: crate::CypherDialect,
+) -> bool {
+    if dialect == crate::CypherDialect::Graphite {
+        let (a, b) = if min {
+            (to_double(value), to_double(previous))
+        } else {
+            (to_double(previous), to_double(value))
+        };
+        !a.is_nan() && (b.is_nan() || a < b)
+    } else {
+        let order = crate::ordering::compare_order_values(value, previous);
+        if min {
+            order.is_lt()
+        } else {
+            order.is_gt()
+        }
+    }
+}
+
 fn pick_extreme(values: &[&Value], min: bool) -> Value {
     let mut best: Option<&Value> = None;
     for value in values {

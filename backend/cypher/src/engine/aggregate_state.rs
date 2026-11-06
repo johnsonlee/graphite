@@ -5,6 +5,7 @@ use crate::semantics::to_double;
 use std::collections::HashSet;
 
 pub(super) struct AggregateState {
+    dialect: crate::CypherDialect,
     distinct: Option<HashSet<Key>>,
     kind: Kind,
 }
@@ -61,7 +62,16 @@ struct NumberState {
 }
 
 impl AggregateState {
+    #[cfg(test)]
     pub(super) fn new(agg: &AggCall, prefix: Option<usize>) -> Self {
+        Self::with_dialect(agg, prefix, crate::CypherDialect::OpenCypherM23)
+    }
+
+    pub(super) fn with_dialect(
+        agg: &AggCall,
+        prefix: Option<usize>,
+        dialect: crate::CypherDialect,
+    ) -> Self {
         let kind = match agg.name.to_ascii_lowercase().as_str() {
             "count" => Kind::Count(DeferredCount::default()),
             "sum" | "avg" => Kind::Number(Box::new(NumberState {
@@ -90,6 +100,7 @@ impl AggregateState {
             },
         };
         Self {
+            dialect,
             distinct: agg.distinct.then(HashSet::new),
             kind,
         }
@@ -141,12 +152,7 @@ impl AggregateState {
                     return;
                 }
                 let replace = best.as_ref().is_none_or(|previous| {
-                    let order = crate::ordering::compare_order_values(&value, previous);
-                    if *min {
-                        order.is_lt()
-                    } else {
-                        order.is_gt()
-                    }
+                    crate::functions::prefer_extreme(&value, previous, *min, self.dialect)
                 });
                 if replace {
                     *best = Some(value);
@@ -173,7 +179,10 @@ impl AggregateState {
         match self.kind {
             Kind::Count(count) => Ok(Value::Int(count.finish())),
             Kind::Number(state) => {
-                if !state.average && state.non_integer.is_none() {
+                if self.dialect == crate::CypherDialect::OpenCypherM23
+                    && !state.average
+                    && state.non_integer.is_none()
+                {
                     if state.overflow {
                         return Err(CypherError::execution(
                             "ArithmeticError",
@@ -241,7 +250,9 @@ impl AggregateState {
             ))),
             Kind::Inputs { values, weights } => {
                 if weights.iter().all(|w| *w == 1) {
-                    if let Some(parameter) = percentile {
+                    if let Some(parameter) =
+                        percentile.filter(|_| self.dialect == crate::CypherDialect::OpenCypherM23)
+                    {
                         crate::functions::percentile(&agg.name, &values, parameter)
                     } else {
                         aggregate(&agg.name, &values)
@@ -499,10 +510,14 @@ mod tests {
         let clauses = crate::parser::parse("MATCH (n:CallSite) WITH any(x IN collect(n.callee_name) WHERE count(*) > 0) AS flag, collect(n.callee_name) AS names, collect(n.caller_name) AS dropped RETURN names[0..10] AS result").unwrap();
         let (shape, _, consumed) = FusedShape::detect_with(&clauses).unwrap();
         assert_eq!(
-            AggPlan::new(shape.items.as_deref().unwrap(), shape.order.as_deref())
-                .unwrap()
-                .aggs
-                .len(),
+            AggPlan::new(
+                shape.items.as_deref().unwrap(),
+                shape.order.as_deref(),
+                crate::CypherDialect::OpenCypherM23
+            )
+            .unwrap()
+            .aggs
+            .len(),
             4
         );
         assert!(collect_prefix_caps(&shape, &clauses[consumed..]).is_empty());
