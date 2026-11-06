@@ -1,0 +1,588 @@
+apple-corpus-calibration (swift-package-manager)	Set up job	﻿2026-10-08T14:51:06.9009656Z Current runner version: '2.337.0'
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9037878Z ##[group]Runner Image Provisioner
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9038764Z Hosted Compute Agent
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9039358Z Version: 20261002.596
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9040496Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9041232Z Build Date: 2026-10-02T22:28:27Z
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9041945Z Worker ID: {7d8aa854-24ad-4c6b-a293-aec96378770d}
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9042671Z Region: westus
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9043243Z Cloud: Azure
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9043822Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9045784Z ##[group]Operating System
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9046532Z Ubuntu
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9047082Z 24.04.5
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9047628Z LTS
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9048224Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9048779Z ##[group]Runner Image
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9049359Z Image: ubuntu-24.04
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9049994Z Version: 20261004.327.1
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9051100Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9052950Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9053908Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9055110Z ##[group]GITHUB_TOKEN Permissions
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9057368Z Contents: read
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9058188Z Metadata: read
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9058837Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9061035Z Secret source: Actions
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9062038Z Cache mode: write
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9062820Z Prepare workflow directory
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9667778Z Prepare all required actions
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:06.9717114Z Getting action download info
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:07.3502435Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:07.4747370Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:07.7745605Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:08.3369858Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:08.7542405Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+apple-corpus-calibration (swift-package-manager)	Set up job	2026-10-08T14:51:09.3295881Z Complete job name: apple-corpus-calibration (swift-package-manager)
+apple-corpus-calibration (swift-package-manager)	Initialize containers	﻿2026-10-08T14:51:09.3835005Z ##[group]Checking docker version
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.3849188Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6039307Z '1.48'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6060149Z Docker daemon API version: '1.48'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6060707Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6244236Z '1.48'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6256551Z Docker client API version: '1.48'
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6264293Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6267998Z ##[group]Clean up resources from previous jobs
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6274749Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=44c71c"
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6446163Z ##[command]/usr/bin/docker network prune --force --filter "label=44c71c"
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6631136Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6631690Z ##[group]Create local container network
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.6643564Z ##[command]/usr/bin/docker network create --label 44c71c github_network_713064ea6afd4adb964eac10f3104085
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.7206579Z bd5f91c7a155dd1d4c2d706b46de75c07b3dffcc61fa9075c08d4c18f3236c2b
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.7226457Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.7260618Z ##[group]Starting job container
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:09.7292124Z ##[command]/usr/bin/docker pull swift:6.1.3
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:10.6209942Z 6.1.3: Pulling from library/swift
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:10.9017957Z a60ef8ec184e: Already exists
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:10.9055754Z 6d384ac63da7: Pulling fs layer
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:10.9056566Z 23c386ab9005: Pulling fs layer
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:10.9057536Z 934353e7332e: Pulling fs layer
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:11.1075414Z 934353e7332e: Verifying Checksum
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:11.1077601Z 934353e7332e: Download complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:11.5360911Z 6d384ac63da7: Verifying Checksum
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:11.5361894Z 6d384ac63da7: Download complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:17.0594896Z 23c386ab9005: Verifying Checksum
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:17.0595934Z 23c386ab9005: Download complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:19.6005113Z 6d384ac63da7: Pull complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.7937622Z 23c386ab9005: Pull complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8080581Z 934353e7332e: Pull complete
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8124805Z Digest: sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8139089Z Status: Downloaded newer image for swift:6.1.3
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8150316Z docker.io/library/swift:6.1.3
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8260802Z ##[command]/usr/bin/docker create --name ac2db0f3b13247e88a6898fab990ba82_swift613_413a05 --label 44c71c --workdir /__w/graphite/graphite --network github_network_713064ea6afd4adb964eac10f3104085  -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/2.337.0/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" swift:6.1.3 "-f" "/dev/null"
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8597452Z a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:34.8622499Z ##[command]/usr/bin/docker start a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.0846647Z a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.0873833Z ##[command]/usr/bin/docker ps --all --filter id=a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1008698Z a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 Up Less than a second
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1029449Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1165065Z HOME=/github/home
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1165861Z GITHUB_ACTIONS=true
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1166282Z CI=true
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1166929Z PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1168339Z SWIFT_SIGNING_KEY=52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1168734Z SWIFT_PLATFORM=ubuntu24.04
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1168996Z SWIFT_BRANCH=swift-6.1.3-release
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1169270Z SWIFT_VERSION=swift-6.1.3-RELEASE
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1169594Z SWIFT_WEBROOT=https://download.swift.org
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1188958Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1198580Z ##[group]Waiting for all services to be ready
+apple-corpus-calibration (swift-package-manager)	Initialize containers	2026-10-08T14:51:35.1200551Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	﻿2026-10-08T14:51:35.1447584Z ##[group]Run apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1448662Z [36;1mapt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3[0m
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1452745Z shell: sh -e {0}
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1453328Z env:
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1453608Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1453954Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1454246Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1454627Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1454981Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1455569Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:36.6337048Z Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:36.8042232Z Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:37.5980313Z Get:3 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [50.0 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:37.6776056Z Get:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:37.8055037Z Get:5 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1998 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:37.9144943Z Get:6 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:38.1284558Z Get:7 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:38.1864787Z Get:8 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:38.6632749Z Get:9 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1545 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:38.8934063Z Get:10 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1362 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.7094732Z Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.7297547Z Get:12 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.7335389Z Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1702 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.7565994Z Get:14 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [67.4 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.7573225Z Get:15 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2166 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8330321Z Get:16 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2177 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8643084Z Get:17 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8650234Z Get:18 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [671 B]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8652049Z Get:19 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:40.6024635Z Fetched 33.4 MB in 4s (7596 kB/s)
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:41.4007854Z Reading package lists...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.2484677Z Reading package lists...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.4740582Z Building dependency tree...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.4741423Z Reading state information...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6858550Z git is already the newest version (1:2.43.0-1ubuntu7.3).
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6859403Z ca-certificates is already the newest version (20260601~24.04.1).
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6860418Z ca-certificates set to manually installed.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6861551Z The following additional packages will be installed:
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6862781Z   libpython3-stdlib python3-minimal python3.12 python3.12-minimal
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6870761Z Suggested packages:
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6871372Z   python3-doc python3-tk python3-venv python3.12-venv python3.12-doc
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.6872013Z   binfmt-support
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7316757Z The following NEW packages will be installed:
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7329538Z   curl libpython3-stdlib python3 python3-minimal python3.12 python3.12-minimal
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9143470Z 0 upgraded, 6 newly installed, 0 to remove and 4 not upgraded.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9144471Z Need to get 3272 kB of archives.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9146018Z After this operation, 9636 kB of additional disk space will be used.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9147628Z Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.17 [2335 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7117564Z Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-minimal amd64 3.12.3-0ubuntu2.1 [27.4 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7122510Z Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.17 [651 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7343567Z Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-stdlib amd64 3.12.3-0ubuntu2.1 [10.1 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7344899Z Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3 amd64 3.12.3-0ubuntu2.1 [23.0 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7348090Z Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.15 [227 kB]
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:44.7763529Z debconf: delaying package configuration, since apt-utils is not installed
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:44.8100391Z Fetched 3272 kB in 1s (3335 kB/s)
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0843245Z Selecting previously unselected package python3.12-minimal.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0882334Z (Reading database ... 
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0882832Z (Reading database ... 5%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0883275Z (Reading database ... 10%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0883718Z (Reading database ... 15%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0884141Z (Reading database ... 20%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0884559Z (Reading database ... 25%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0884988Z (Reading database ... 30%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0885627Z (Reading database ... 35%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0886063Z (Reading database ... 40%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0886485Z (Reading database ... 45%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0886862Z (Reading database ... 50%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0887132Z (Reading database ... 55%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0887407Z (Reading database ... 60%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.0887675Z (Reading database ... 65%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.1853244Z (Reading database ... 70%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.2950924Z (Reading database ... 75%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3356715Z (Reading database ... 80%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3362404Z (Reading database ... 85%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3373127Z (Reading database ... 90%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3391361Z (Reading database ... 95%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3391900Z (Reading database ... 100%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3392670Z (Reading database ... 16750 files and directories currently installed.)
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3403227Z Preparing to unpack .../python3.12-minimal_3.12.3-1ubuntu0.17_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.3747278Z Unpacking python3.12-minimal (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:45.4400139Z Setting up python3.12-minimal (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2393502Z Selecting previously unselected package python3-minimal.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2414941Z (Reading database ... 
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2417885Z (Reading database ... 5%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2418758Z (Reading database ... 10%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2419199Z (Reading database ... 15%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2419584Z (Reading database ... 20%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2419994Z (Reading database ... 25%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2420435Z (Reading database ... 30%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2420886Z (Reading database ... 35%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2421318Z (Reading database ... 40%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2421753Z (Reading database ... 45%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2422177Z (Reading database ... 50%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2422605Z (Reading database ... 55%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2423041Z (Reading database ... 60%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2423472Z (Reading database ... 65%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2444026Z (Reading database ... 70%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2451030Z (Reading database ... 75%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2470076Z (Reading database ... 80%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2478483Z (Reading database ... 85%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2488238Z (Reading database ... 90%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2505120Z (Reading database ... 95%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2505836Z (Reading database ... 100%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2506458Z (Reading database ... 16761 files and directories currently installed.)
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2515084Z Preparing to unpack .../python3-minimal_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2523771Z Unpacking python3-minimal (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2679009Z Selecting previously unselected package python3.12.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2698861Z Preparing to unpack .../python3.12_3.12.3-1ubuntu0.17_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2706226Z Unpacking python3.12 (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2929820Z Selecting previously unselected package libpython3-stdlib:amd64.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2952004Z Preparing to unpack .../libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.2959435Z Unpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.3132932Z Setting up python3-minimal (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4357032Z Selecting previously unselected package python3.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4379180Z (Reading database ... 
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4379926Z (Reading database ... 5%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4380406Z (Reading database ... 10%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4380874Z (Reading database ... 15%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4381354Z (Reading database ... 20%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4382626Z (Reading database ... 25%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4383498Z (Reading database ... 30%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4384201Z (Reading database ... 35%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4384870Z (Reading database ... 40%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4385729Z (Reading database ... 45%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4386435Z (Reading database ... 50%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4387109Z (Reading database ... 55%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4387775Z (Reading database ... 60%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4388472Z (Reading database ... 65%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4400840Z (Reading database ... 70%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4407630Z (Reading database ... 75%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4426834Z (Reading database ... 80%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4434932Z (Reading database ... 85%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4447416Z (Reading database ... 90%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4462781Z (Reading database ... 95%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4463262Z (Reading database ... 100%
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4463891Z (Reading database ... 16808 files and directories currently installed.)
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4474381Z Preparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4749697Z Unpacking python3 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4898078Z Selecting previously unselected package curl.
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4917298Z Preparing to unpack .../curl_8.5.0-2ubuntu10.15_amd64.deb ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.4924660Z Unpacking curl (8.5.0-2ubuntu10.15) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:46.5113175Z Setting up python3.12 (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:47.3237106Z Setting up curl (8.5.0-2ubuntu10.15) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:47.3254515Z Setting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:47.3273955Z Setting up python3 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:47.3327945Z running python rtupdate hooks for python3.12...
+apple-corpus-calibration (swift-package-manager)	Install preparation dependencies on Linux	2026-10-08T14:51:47.3328745Z running python post-rtupdate hooks for python3.12...
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	﻿2026-10-08T14:51:47.4471325Z ##[group]Run actions/checkout@v7
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4471646Z with:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4471879Z   ref: 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4472211Z   repository: johnsonlee/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4474619Z   token: ***
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4474832Z   ssh-strict: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4475040Z   ssh-user: git
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4475531Z   persist-credentials: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4475859Z   clean: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4476071Z   sparse-checkout-cone-mode: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4476319Z   fetch-depth: 1
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4476516Z   fetch-tags: false
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4476720Z   show-progress: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4476922Z   lfs: false
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4477112Z   submodules: false
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4477314Z   set-safe-directory: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4477562Z   allow-unsafe-pr-checkout: false
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4477811Z env:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4478013Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4478282Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4478554Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4478848Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4479136Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4479449Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.4525985Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6701207Z Syncing repository: johnsonlee/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6703161Z ##[group]Getting Git version info
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6703731Z Working directory is '/__w/graphite/graphite'
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6704527Z [command]/usr/bin/git version
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6704931Z git version 2.43.0
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6706581Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6711873Z Temporarily overriding HOME='/__w/_temp/267c7426-e07f-42d9-816b-dfd3295651b7' before making global git config changes
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6713187Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6717471Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6763105Z Deleting the contents of '/__w/graphite/graphite'
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6769089Z ##[group]Determining repository object format
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6771365Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6772900Z ##[group]Initializing the repository
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6777775Z [command]/usr/bin/git init /__w/graphite/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6823585Z hint: Using 'master' as the name for the initial branch. This default branch name
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6825066Z hint: is subject to change. To configure the initial branch name to use in all
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6826493Z hint: of your new repositories, which will suppress this warning, call:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6827349Z hint: 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6828015Z hint: 	git config --global init.defaultBranch <name>
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6828555Z hint: 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6829068Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6829961Z hint: 'development'. The just-created branch can be renamed via this command:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6830614Z hint: 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6830958Z hint: 	git branch -m <name>
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6842420Z Initialized empty Git repository in /__w/graphite/graphite/.git/
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6865522Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6897356Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6898145Z ##[group]Disabling automatic garbage collection
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6901342Z [command]/usr/bin/git config --local gc.auto 0
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6936469Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6937065Z ##[group]Setting up auth
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6937512Z Removing SSH command configuration
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6943151Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.6978363Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7401631Z Removing HTTP extra header
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7402257Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7440400Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7688995Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7696149Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7734583Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.7984797Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8029305Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git.path /__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8064614Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git/worktrees/*.path /__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8111300Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8149664Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8181797Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8182441Z ##[group]Fetching the repository
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:47.8189719Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8361285Z From https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8362518Z  * branch            357a6206a8a13fa2491d5ecaae16801493a89448 -> FETCH_HEAD
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8387650Z [command]/usr/bin/git rev-parse --verify --quiet 357a6206a8a13fa2491d5ecaae16801493a89448^{object}
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8417564Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8422655Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8423115Z ##[group]Determining the checkout info
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8428033Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8428354Z [command]/usr/bin/git sparse-checkout disable
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8467951Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8519855Z ##[group]Checking out the ref
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.8520764Z [command]/usr/bin/git checkout --progress --force 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9443811Z Note: switching to '357a6206a8a13fa2491d5ecaae16801493a89448'.
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9444350Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9444655Z You are in 'detached HEAD' state. You can look around, make experimental
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9445819Z changes and commit them, and you can discard any commits you make in this
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9446566Z state without impacting any branches by switching back to a branch.
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9446985Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9447266Z If you want to create a new branch to retain commits you create, you may
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9447951Z do so (now or later) by using -c with the switch command. Example:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9448354Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9448589Z   git switch -c <new-branch-name>
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9449043Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9449347Z Or undo this operation with:
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9449738Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9449958Z   git switch -
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9450253Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9450680Z Turn off this advice by setting config variable advice.detachedHead to false
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9451118Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9451682Z HEAD is now at 357a620 Resolve copied framework headers and Swift sendable signatures
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9453155Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9506284Z [command]/usr/bin/git log -1 --format=%H
+apple-corpus-calibration (swift-package-manager)	Run actions/checkout@v7	2026-10-08T14:51:48.9529651Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	﻿2026-10-08T14:51:48.9796790Z ##[group]Run actions/setup-java@v5
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9797121Z with:
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9797324Z   distribution: temurin
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9797555Z   java-version: 17
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9797773Z   java-package: jdk
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9797992Z   check-latest: false
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9798203Z   set-default: true
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9798410Z   verify-signature: false
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9798639Z   server-id: github
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9798855Z   server-username: GITHUB_ACTOR
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9799117Z   server-password: GITHUB_TOKEN
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9799371Z   overwrite-settings: true
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9799604Z   job-status: success
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9801977Z   token: ***
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9802201Z   show-download-progress: false
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9802447Z env:
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9802653Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9802956Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9803182Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9803473Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9803797Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9804110Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:48.9812601Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:49.2464125Z ##[group]Installed distributions
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:49.2626570Z Trying to resolve the latest version from remote
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:49.4842970Z Resolved latest version as 17.0.20+101
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:49.4843635Z Trying to download...
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:49.4845617Z Downloading Java 17.0.20+101 (Temurin-Hotspot) from https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz ...
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:50.5901400Z Extracting Java archive...
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:50.6025505Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /__w/_temp/2edb2fe4-e6b2-477a-8f94-fcee262fdd6a -f /__w/_temp/87b1ae28-ac2e-4243-ab08-d69680d00a87
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2076197Z Java 17.0.20+101 was downloaded
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2076586Z Setting Java 17.0.20+101 as the default
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2086594Z Creating toolchains.xml for JDK version 17 from temurin
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2165829Z Writing to /github/home/.m2/toolchains.xml
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2166596Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2167138Z Java configuration:
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2167748Z   Distribution: temurin
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2168336Z   Version: 17.0.20+101
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2169059Z   Path: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2169493Z 
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2170102Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2210586Z Creating settings.xml with server-id: github
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2211172Z Writing to /github/home/.m2/settings.xml
+apple-corpus-calibration (swift-package-manager)	Run actions/setup-java@v5	2026-10-08T14:51:53.2212521Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	﻿2026-10-08T14:51:53.3009723Z ##[group]Run actions/download-artifact@v8
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3010106Z with:
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3010340Z   name: release-v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3010633Z   path: dry-run
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3010857Z   merge-multiple: false
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3011108Z   repository: johnsonlee/graphite
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3011362Z   run-id: 37794100367
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3011581Z   skip-decompress: false
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3011811Z   digest-mismatch: error
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3012021Z env:
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3012227Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3012498Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3012730Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3013029Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3013320Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3013702Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3014107Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3014480Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3014684Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.3019799Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.5446530Z Downloading single artifact
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.8305994Z Preparing to download the following artifacts:
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:53.8318742Z - release-v2.11.3-apple-validation.3 (ID: 11558358183, Size: 104057364, Expected Digest: sha256:0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345)
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:54.3857604Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/5a22544b-7623-4687-99eb-b5460af5b718/workflow-job-run-812102e3-5da6-5bcb-b604-047e312301bb/artifacts/2a0af7fe4df4bc80dedab45798fdf588a22db20b0469ddbf570e2f402266d1c8.zip
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:54.3876243Z Starting download of artifact to: /__w/graphite/graphite/dry-run
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:54.7370453Z (node:444) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:59.9347862Z (Use `node --trace-deprecation ...` to show where the warning was created)
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:59.9348690Z SHA256 digest of downloaded artifact is 0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:59.9349253Z Artifact download completed successfully.
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:59.9349567Z Total of 1 artifact(s) downloaded
+apple-corpus-calibration (swift-package-manager)	Run actions/download-artifact@v8	2026-10-08T14:51:59.9357081Z Download artifact has finished successfully
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	﻿2026-10-08T14:51:59.9521778Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9522172Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9522475Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9522981Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9523764Z [36;1m(cd "${ASSETS}" && shasum -a 256 -c "${ASSET}.sha256" graphite.jar.sha256)[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9524299Z [36;1mmkdir -p "${RUNNER_TEMP}/calibration-frontend" calibration-results[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9524799Z [36;1mtar -xzf "${ASSETS}/${ASSET}" -C "${RUNNER_TEMP}/calibration-frontend"[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9525722Z [36;1mcp "backend/bench/apple-frontend-corpus-large.json" calibration-results/corpus.json[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9526238Z [36;1mpython3 - <<'PY'[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9526490Z [36;1mimport json, os, pathlib[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9526921Z [36;1moriginal = json.loads(pathlib.Path("calibration-results/corpus.json").read_text())[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9527542Z [36;1munpinned = {**original, "shape": None, "files": None, "ceilings": None, "baselineShapes": {}}[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9528324Z [36;1mpathlib.Path("calibration-results/unpinned-corpus.json").write_text(json.dumps(unpinned, indent=2) + "\n")[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9529025Z [36;1mpathlib.Path("calibration-results/scope.json").write_text(json.dumps({[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9529578Z [36;1m    "purpose": "real-source calibration only", "performanceAcceptance": False,[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9530164Z [36;1m    "revision": os.environ["GITHUB_SHA"], "releaseVersion": os.environ["RELEASE_VERSION"],[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9531079Z [36;1m    "baseline": os.environ["BASELINE_SHA"], "baselinePurpose": "shape calibration only; no paired acceptance", "timedBoundary": "existing compiler index store through IR emission",[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9531998Z [36;1m    "excluded": ["compilation", "import/save timing", "graph load", "server query latency"],[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9532448Z [36;1m}, indent=2) + "\n")[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9532689Z [36;1mPY[0m
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9534368Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9534712Z env:
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9534931Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9535213Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9535914Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9536229Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9536535Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9536923Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9537311Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9537648Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:51:59.9537860Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:52:00.2861860Z graphite-frontend-apple-2.11.3-apple-validation.3-x86_64-unknown-linux-gnu.tar.gz: OK
+apple-corpus-calibration (swift-package-manager)	Verify and unpack the final frontend release asset	2026-10-08T14:52:00.4433730Z graphite.jar: OK
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	﻿2026-10-08T14:52:01.4006052Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4006440Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4006797Z [36;1mpython3 backend/bench/prepare-apple-corpus.py \[0m
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4007385Z [36;1m  --corpus "backend/bench/apple-frontend-corpus-large.json" --out "${RUNNER_TEMP}/corpus" \[0m
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4008090Z [36;1m  --derived-data "${RUNNER_TEMP}/derived-data" --log calibration-results/prepare.log[0m
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4008892Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4009200Z env:
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4009447Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4009736Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4009977Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4010280Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4010580Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4010959Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4011365Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4011735Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4011952Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4955679Z Preparing corpus: git init --quiet /__w/_temp/corpus
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.4991730Z Preparing corpus: git -C /__w/_temp/corpus remote add origin https://github.com/swiftlang/swift-package-manager.git
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:01.5013390Z Preparing corpus: git -C /__w/_temp/corpus fetch --quiet --depth 1 origin 587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:02.9384077Z Preparing corpus: git -C /__w/_temp/corpus checkout --quiet 587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:03.2782984Z Preparing corpus: swift build --package-path /__w/_temp/corpus --jobs 4 -c debug --enable-index-store --force-resolved-versions
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0564883Z error: corpus preparation failed (exit 1); see /__w/graphite/graphite/calibration-results/prepare.log
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0566201Z [38/700] Compiling llvmSupport Mutex.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0566945Z [39/700] Compiling llvmSupport MathExtras.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0567670Z [40/700] Compiling llvmSupport Path.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0568290Z [41/700] Compiling llvmSupport Memory.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0568937Z [42/700] Compiling llvmSupport ManagedStatic.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0569592Z [43/700] Compiling llvmSupport MD5.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0570218Z [44/700] Compiling llvmSupport MemoryBuffer.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0570914Z [45/700] Compiling llvmSupport Locale.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0571548Z [46/700] Compiling llvmSupport Hashing.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0572176Z [47/700] Compiling llvmSupport FormatVariadic.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0572855Z [48/700] Compiling llvmSupport FoldingSet.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0573483Z [49/700] Compiling llvmSupport Host.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0574094Z [50/700] Compiling llvmSupport FileUtilities.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0574782Z [51/700] Compiling llvmSupport ErrorHandling.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0575973Z [52/700] Compiling llvmSupport Errno.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0576903Z [53/700] Compiling llvmSupport Error.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0577590Z [54/700] Compiling llvmSupport ConvertUTF.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0578140Z [55/700] Compiling llvmSupport DJB.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0578646Z [56/700] Compiling llvmSupport Debug.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0579162Z [57/700] Compiling llvmSupport Atomic.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0579778Z [58/700] Compiling llvmSupport ConvertUTFWrapper.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0580396Z [59/700] Compiling llvmSupport Allocator.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0580944Z [60/700] Compiling llvmSupport APSInt.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0581461Z [61/700] Compiling llvmSupport Chrono.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0582046Z [62/700] Compiling llvmDemangle MicrosoftDemangle.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0582608Z [63/700] Compiling llvmSupport APInt.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0583016Z [64/700] Write sources
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0583399Z [65/700] Compiling llvmSupport CommandLine.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0583930Z [66/700] Compiling llvmSupport APFloat.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0584485Z [67/700] Compiling llvmDemangle ItaniumDemangle.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0587640Z [68/700] Compiling llbuildNinja Parser.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0588211Z [69/700] Compiling llbuildNinja Lexer.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0589258Z /__w/_temp/corpus/.build/checkouts/swift-llbuild/lib/Core/SQLiteBuildDB.cpp:28:10: fatal error: 'sqlite3.h' file not found
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0590272Z    28 | #include <sqlite3.h>
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0590701Z       |          ^~~~~~~~~~~
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0591127Z 1 error generated.
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0591580Z [70/700] Compiling llbuildCore SQLiteBuildDB.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0592196Z [70/700] Compiling llbuildCore MakefileDepsParser.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0592738Z [70/700] Compiling llbuildNinja Manifest.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0593271Z [70/700] Compiling llbuildNinja ManifestLoader.cpp
+apple-corpus-calibration (swift-package-manager)	Prepare the pinned real source corpus	2026-10-08T14:52:46.0680180Z ##[error]Process completed with exit code 1.
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	﻿2026-10-08T14:52:46.0771270Z ##[group]Run actions/upload-artifact@v7
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0771619Z with:
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0772005Z   name: apple-corpus-calibration-swift-package-manager-v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0772481Z   path: calibration-results/
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0772737Z   if-no-files-found: error
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0772982Z   retention-days: 30
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0773208Z   compression-level: 6
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0773432Z   overwrite: false
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0773855Z   include-hidden-files: false
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0774108Z   archive: true
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0774307Z env:
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0774513Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0774790Z   DRY_RUN: true
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0775017Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0775627Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0775936Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0776318Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0776775Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0777136Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0777349Z ##[endgroup]
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.0781452Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.3448218Z With the provided path, there will be 5 files uploaded
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.3455836Z Artifact name is valid!
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.3456862Z Root directory input is valid!
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.7290196Z Uploading artifact: apple-corpus-calibration-swift-package-manager-v2.11.3-apple-validation.3.zip
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:46.7336541Z Beginning upload of artifact content to blob storage
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.0346484Z Uploaded bytes 3690
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.1067725Z Finished uploading artifact content to blob storage!
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.1069210Z SHA256 digest of uploaded artifact is 14fb85ed3fd4f1a6219d9ed8b058ffdb0f967347e28c57476b88a4f94b7500c2
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.1070480Z Finalizing artifact upload
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.7188112Z Artifact apple-corpus-calibration-swift-package-manager-v2.11.3-apple-validation.3 successfully finalized. Artifact ID 11558796160
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.7189779Z Artifact apple-corpus-calibration-swift-package-manager-v2.11.3-apple-validation.3 has been successfully uploaded! Final size is 3690 bytes. Artifact ID is 11558796160
+apple-corpus-calibration (swift-package-manager)	Run actions/upload-artifact@v7	2026-10-08T14:52:47.7192188Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37794100367/artifacts/11558796160
+apple-corpus-calibration (swift-package-manager)	Post Run actions/setup-java@v5	﻿2026-10-08T14:52:47.7412819Z Post job cleanup.
+apple-corpus-calibration (swift-package-manager)	Post Run actions/setup-java@v5	2026-10-08T14:52:47.7421442Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	﻿2026-10-08T14:52:48.0029375Z Post job cleanup.
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.0037773Z ##[command]/usr/bin/docker exec  a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2074904Z [command]/usr/bin/git version
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2154919Z git version 2.43.0
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2227393Z Temporarily overriding HOME='/__w/_temp/bcf00cb7-5341-4003-99c6-975832c4c66f' before making global git config changes
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2233508Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2243068Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2316998Z Removing SSH command configuration
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2324504Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2372265Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2644039Z Removing HTTP extra header
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2646818Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2700048Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2984222Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.2991583Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3026691Z includeif.gitdir:/__w/graphite/graphite/.git.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3028135Z includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3029284Z includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3030353Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3038714Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3071521Z /__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3084078Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git.path \/__w\/_temp\/git\-credentials\-7a5a9608\-a24b\-4dd6\-a212\-8f308b8757b6\.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3131654Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3167046Z /__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3197716Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-7a5a9608\-a24b\-4dd6\-a212\-8f308b8757b6\.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3221020Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3249513Z /github/runner_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3259909Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-7a5a9608\-a24b\-4dd6\-a212\-8f308b8757b6\.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3299234Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3329749Z /github/runner_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3345901Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-7a5a9608\-a24b\-4dd6\-a212\-8f308b8757b6\.config
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3388146Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swift-package-manager)	Post Run actions/checkout@v7	2026-10-08T14:52:48.3627297Z Removing credentials config '/__w/_temp/git-credentials-7a5a9608-a24b-4dd6-a212-8f308b8757b6.config'
+apple-corpus-calibration (swift-package-manager)	Stop containers	﻿2026-10-08T14:52:48.3786780Z Stop and remove container: ac2db0f3b13247e88a6898fab990ba82_swift613_413a05
+apple-corpus-calibration (swift-package-manager)	Stop containers	2026-10-08T14:52:48.3791313Z ##[command]/usr/bin/docker rm --force a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Stop containers	2026-10-08T14:52:48.6065152Z a8d2106976b8261dfa3e1d43f6dced4bd8f76806db306a3c26313388b9289f31
+apple-corpus-calibration (swift-package-manager)	Stop containers	2026-10-08T14:52:48.6097591Z Remove container network: github_network_713064ea6afd4adb964eac10f3104085
+apple-corpus-calibration (swift-package-manager)	Stop containers	2026-10-08T14:52:48.6102364Z ##[command]/usr/bin/docker network rm github_network_713064ea6afd4adb964eac10f3104085
+apple-corpus-calibration (swift-package-manager)	Stop containers	2026-10-08T14:52:48.7228791Z github_network_713064ea6afd4adb964eac10f3104085
+apple-corpus-calibration (swift-package-manager)	Complete job	﻿2026-10-08T14:52:48.7310066Z Cleaning up orphan processes

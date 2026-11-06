@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MemberTypeKey
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraph
@@ -1499,9 +1500,9 @@ object GraphStore {
         val methods = graph.methods(MethodPattern())
             .associateBy { it.identity }
 
-        // Collect enum values - we can't enumerate all enum keys from Graph interface,
-        // so we extract from EnumConstant nodes
-        val enumValues = mutableMapOf<String, List<Any?>>()
+        // Declaration-only cases have no EnumConstant node. Fill any missing
+        // entries from graphs that expose enum arguments through point lookups.
+        val enumValues = (graph as? EnumValueIndexSource)?.enumValueIndex().orEmpty().toMutableMap()
         graph.nodes(EnumConstant::class.java).forEach { ec ->
             val key = "${ec.enumType.className}#${ec.enumName}"
             if (key !in enumValues) {

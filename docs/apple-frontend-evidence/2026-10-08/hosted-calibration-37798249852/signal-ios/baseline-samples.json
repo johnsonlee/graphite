@@ -1,0 +1,116 @@
+[
+  {
+    "benchmark": "apple.frontend.wall",
+    "primaryMetric": {
+      "score": 28062.418,
+      "scoreUnit": "ms/op",
+      "scoreConfidence": [
+        26661.809,
+        30964.288
+      ],
+      "rawData": [
+        [
+          26915.104,
+          28062.418,
+          26661.809,
+          28192.716,
+          30964.288
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "signal-ios"
+    },
+    "mode": "sequential-run",
+    "files": 2594,
+    "shape": {
+      "files": 2594,
+      "types": 6718,
+      "methods": 31695,
+      "fields": 27524,
+      "callSites": 156129,
+      "constants": 34428,
+      "annotations": 4943,
+      "nodes": 357780,
+      "edges": 169184,
+      "strings": 111202
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "26fefc73e304793c78d76e50fa3955ec7e6c45368d16688b3b8fa6789ad81b55"
+    },
+    "input": "xcodeproj",
+    "verified": {
+      "command": "java -jar '/Users/runner/work/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-iOS.git",
+      "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
+      "submodules": {
+        "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+        "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+      }
+    },
+    "samples": "calibration-results/baseline-samples.json.samples.jsonl",
+    "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+  },
+  {
+    "benchmark": "apple.frontend.rss",
+    "primaryMetric": {
+      "score": 766.062,
+      "scoreUnit": "MiB",
+      "scoreConfidence": [
+        762.094,
+        776.656
+      ],
+      "rawData": [
+        [
+          764.5,
+          776.656,
+          768.516,
+          766.062,
+          762.094
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "signal-ios"
+    },
+    "mode": "sequential-run",
+    "files": 2594,
+    "shape": {
+      "files": 2594,
+      "types": 6718,
+      "methods": 31695,
+      "fields": 27524,
+      "callSites": 156129,
+      "constants": 34428,
+      "annotations": 4943,
+      "nodes": 357780,
+      "edges": 169184,
+      "strings": 111202
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "26fefc73e304793c78d76e50fa3955ec7e6c45368d16688b3b8fa6789ad81b55"
+    },
+    "input": "xcodeproj",
+    "verified": {
+      "command": "java -jar '/Users/runner/work/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-iOS.git",
+      "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
+      "submodules": {
+        "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+        "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+      }
+    },
+    "samples": "calibration-results/baseline-samples.json.samples.jsonl",
+    "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+  }
+]

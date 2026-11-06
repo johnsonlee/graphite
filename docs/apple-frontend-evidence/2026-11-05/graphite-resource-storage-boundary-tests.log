@@ -1,0 +1,161 @@
+[0/1] Planning build
+[1/1] Compiling plugin GenerateManual
+[2/2] Compiling plugin GenerateDoccReference
+[3/3] Compiling plugin SwiftProtobufPlugin
+Building for debugging...
+[3/10] Write sources
+[6/10] Write swift-version-6D90EC345980CB45.txt
+[8/83] Compiling SwiftProtobuf Google_Protobuf_Any+Extensions.swift
+[9/83] Compiling SwiftProtobuf Google_Protobuf_Any+Registry.swift
+[10/83] Compiling SwiftProtobuf Google_Protobuf_Duration+Extensions.swift
+[11/83] Compiling SwiftProtobuf Google_Protobuf_FieldMask+Extensions.swift
+[12/83] Compiling SwiftProtobuf Google_Protobuf_ListValue+Extensions.swift
+[13/83] Compiling SwiftProtobuf Google_Protobuf_NullValue+Extensions.swift
+[14/83] Compiling SwiftProtobuf Google_Protobuf_Struct+Extensions.swift
+[15/83] Compiling SwiftProtobuf Google_Protobuf_Timestamp+Extensions.swift
+[16/83] Compiling SwiftProtobuf Google_Protobuf_Value+Extensions.swift
+[17/83] Compiling SwiftProtobuf Google_Protobuf_Wrappers+Extensions.swift
+[18/83] Compiling SwiftProtobuf HashVisitor.swift
+[19/83] Compiling SwiftProtobuf Internal.swift
+[20/83] Compiling SwiftProtobuf JSONDecoder.swift
+[21/83] Compiling SwiftProtobuf JSONDecodingError.swift
+[22/83] Compiling SwiftProtobuf JSONDecodingOptions.swift
+[23/83] Compiling SwiftProtobuf JSONEncoder.swift
+[24/83] Compiling SwiftProtobuf JSONEncodingError.swift
+[25/83] Compiling SwiftProtobuf JSONEncodingOptions.swift
+[26/83] Compiling SwiftProtobuf JSONEncodingVisitor.swift
+[27/83] Compiling SwiftProtobuf JSONMapEncodingVisitor.swift
+[28/83] Compiling SwiftProtobuf JSONScanner.swift
+[29/83] Compiling SwiftProtobuf MathUtils.swift
+[30/83] Compiling SwiftProtobuf Message+AnyAdditions.swift
+[31/83] Compiling SwiftProtobuf Message+BinaryAdditions.swift
+[32/83] Compiling SwiftProtobuf Message+BinaryAdditions_Data.swift
+[33/83] Compiling SwiftProtobuf Message+FieldMask.swift
+[34/83] Compiling SwiftProtobuf Message+JSONAdditions.swift
+[35/83] Compiling SwiftProtobuf Message+JSONAdditions_Data.swift
+[36/83] Compiling SwiftProtobuf Message+JSONArrayAdditions.swift
+[37/83] Compiling SwiftProtobuf Message+JSONArrayAdditions_Data.swift
+[38/83] Compiling SwiftProtobuf Message+TextFormatAdditions.swift
+[39/83] Compiling SwiftProtobuf Message.swift
+[40/83] Compiling SwiftProtobuf MessageExtension.swift
+[41/83] Compiling SwiftProtobuf NameMap.swift
+[42/83] Compiling SwiftProtobuf PathDecoder.swift
+[43/83] Compiling SwiftProtobuf PathVisitor.swift
+[44/83] Compiling SwiftProtobuf ProtoNameProviding.swift
+[45/83] Compiling SwiftProtobuf ProtobufAPIVersionCheck.swift
+[46/83] Compiling SwiftProtobuf ProtobufMap.swift
+[47/83] Compiling SwiftProtobuf SelectiveVisitor.swift
+[48/83] Compiling SwiftProtobuf SimpleExtensionMap.swift
+[49/83] Compiling SwiftProtobuf StringUtils.swift
+[50/83] Compiling SwiftProtobuf SwiftProtobufContiguousBytes.swift
+[51/83] Compiling SwiftProtobuf SwiftProtobufError.swift
+[52/83] Compiling SwiftProtobuf TextFormatDecoder.swift
+[53/83] Compiling SwiftProtobuf TextFormatDecodingError.swift
+[54/83] Compiling SwiftProtobuf TextFormatDecodingOptions.swift
+[55/83] Compiling SwiftProtobuf TextFormatEncoder.swift
+[56/106] Compiling SwiftProtobuf AnyMessageStorage.swift
+[57/106] Compiling SwiftProtobuf AnyUnpackError.swift
+[58/106] Compiling SwiftProtobuf AsyncMessageSequence.swift
+[59/106] Compiling SwiftProtobuf BinaryDecoder.swift
+[60/106] Compiling SwiftProtobuf BinaryDecodingError.swift
+[61/106] Compiling SwiftProtobuf BinaryDecodingOptions.swift
+[62/106] Compiling SwiftProtobuf BinaryDelimited.swift
+[63/106] Compiling SwiftProtobuf BinaryEncoder.swift
+[64/106] Compiling SwiftProtobuf BinaryEncodingError.swift
+[65/106] Compiling SwiftProtobuf BinaryEncodingOptions.swift
+[66/106] Compiling SwiftProtobuf BinaryEncodingSizeVisitor.swift
+[67/106] Compiling SwiftProtobuf BinaryEncodingVisitor.swift
+[68/106] Compiling SwiftProtobuf BytecodeInterpreter.swift
+[69/106] Compiling SwiftProtobuf BytecodeReader.swift
+[70/106] Compiling SwiftProtobuf CustomJSONCodable.swift
+[71/106] Compiling SwiftProtobuf Decoder.swift
+[72/106] Compiling SwiftProtobuf DoubleParser.swift
+[73/106] Compiling SwiftProtobuf Enum.swift
+[74/106] Compiling SwiftProtobuf ExtensibleMessage.swift
+[75/106] Compiling SwiftProtobuf ExtensionFieldValueSet.swift
+[76/106] Compiling SwiftProtobuf ExtensionFields.swift
+[77/106] Compiling SwiftProtobuf ExtensionMap.swift
+[78/106] Compiling SwiftProtobuf FieldTag.swift
+[79/106] Compiling SwiftProtobuf FieldTypes.swift
+[80/106] Emitting module SwiftProtobuf
+[81/106] Compiling SwiftProtobuf TextFormatEncodingOptions.swift
+[82/106] Compiling SwiftProtobuf TextFormatEncodingVisitor.swift
+[83/106] Compiling SwiftProtobuf TextFormatScanner.swift
+[84/106] Compiling SwiftProtobuf TimeUtils.swift
+[85/106] Compiling SwiftProtobuf UnknownStorage.swift
+[86/106] Compiling SwiftProtobuf UnsafeRawPointer+Shims.swift
+[87/106] Compiling SwiftProtobuf Varint.swift
+[88/106] Compiling SwiftProtobuf Version.swift
+[89/106] Compiling SwiftProtobuf Visitor.swift
+[90/106] Compiling SwiftProtobuf WireFormat.swift
+[91/106] Compiling SwiftProtobuf ZigZag.swift
+[92/106] Compiling SwiftProtobuf any.pb.swift
+[93/106] Compiling SwiftProtobuf api.pb.swift
+[94/106] Compiling SwiftProtobuf descriptor.pb.swift
+[95/106] Compiling SwiftProtobuf duration.pb.swift
+[96/106] Compiling SwiftProtobuf empty.pb.swift
+[97/106] Compiling SwiftProtobuf field_mask.pb.swift
+[98/106] Compiling SwiftProtobuf source_context.pb.swift
+[99/106] Compiling SwiftProtobuf struct.pb.swift
+[100/106] Compiling SwiftProtobuf timestamp.pb.swift
+[101/106] Compiling SwiftProtobuf type.pb.swift
+[102/106] Compiling SwiftProtobuf wrappers.pb.swift
+[103/106] Compiling SwiftProtobuf resource_bundle_accessor.swift
+[104/108] Emitting module GraphiteFrontend
+[105/108] Compiling GraphiteFrontend Emitter.swift
+[106/109] Compiling GraphiteFrontend Frontend.swift
+[107/116] Emitting module graphite_frontend_apple
+[108/116] Compiling graphite_frontend_apple main.swift
+[108/116] Write Objects.LinkFileList
+[110/116] Compiling GraphiteFrontendTests EmitterObjcExtensionTests.swift
+[111/117] Compiling GraphiteFrontendTests ClangUSRTests.swift
+[112/117] Emitting module GraphiteFrontendTests
+[113/117] Compiling GraphiteFrontendTests AppleResourceIntegrationTests.swift
+[114/117] Compiling GraphiteFrontendTests SourceDiscoveryTests.swift
+[114/118] Write Objects.LinkFileList
+[115/118] Linking graphite-frontend-apple
+[116/118] Applying graphite-frontend-apple
+[117/118] Linking graphite-frontend-applePackageTests
+Build complete! (22.92s)
+Test Suite 'Selected tests' started at 2026-11-05 02:48:16.239.
+Test Suite 'graphite-frontend-applePackageTests.xctest' started at 2026-11-05 02:48:16.240.
+Test Suite 'AppleResourceIntegrationTests' started at 2026-11-05 02:48:16.240.
+Test Case '-[GraphiteFrontendTests.AppleResourceIntegrationTests testDifferentBuildVariantsWithOneBundleIdentityAreRejected]' started.
+Test Case '-[GraphiteFrontendTests.AppleResourceIntegrationTests testDifferentBuildVariantsWithOneBundleIdentityAreRejected]' passed (0.004 seconds).
+Test Case '-[GraphiteFrontendTests.AppleResourceIntegrationTests testSelectedBundlesSurviveTheFrontendWireFormatWithTheirTypesAndScope]' started.
+Building for debugging...
+[0/2] Write sources
+[1/2] Write swift-version-6D90EC345980CB45.txt
+[3/4] Compiling Probe Probe.swift
+[4/4] Emitting module Probe
+Build complete! (1.13s)
+Test Case '-[GraphiteFrontendTests.AppleResourceIntegrationTests testSelectedBundlesSurviveTheFrontendWireFormatWithTheirTypesAndScope]' passed (2.445 seconds).
+Test Suite 'AppleResourceIntegrationTests' passed at 2026-11-05 02:48:18.689.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 2.449 (2.449) seconds
+Test Suite 'graphite-frontend-applePackageTests.xctest' passed at 2026-11-05 02:48:18.689.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 2.449 (2.449) seconds
+Test Suite 'Selected tests' passed at 2026-11-05 02:48:18.689.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 2.449 (2.450) seconds
+objc[4446]: Class DTXDecompressionException is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20911d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af630). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXService is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091200) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af658). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXBlockCompressorFactory is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912a0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af6f8). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXBlockCompressorLibCompression is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091250) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af6a8). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXRemoteInvocationReceipt is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912f0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af748). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXProxyChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091340) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af798). One of the two will be used. Which one is undefined.
+objc[4446]: Class _DTXProxy is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091368) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af7c0). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXMachTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20913e0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af838). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091430) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af888). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXResourceTracker is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091480) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af8d8). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXProxyRequestHandler is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20914d0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af928). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXConnection is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091520) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af978). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091548) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017af9a0). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXSocketTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20915c0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afa18). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXSharedMemoryTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091610) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afa68). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXMessageParser is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091660) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afab8). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXMessageTransmitter is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20916d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afb30). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXMessage is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091700) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afb58). One of the two will be used. Which one is undefined.
+objc[4446]: Class DTXFileDescriptorTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091750) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1017afba8). One of the two will be used. Which one is undefined.
+◇ Test run started.
+↳ Testing Library Version: 6.1.3 (1d1f7e489c9c606)
+↳ Target Platform: arm64-apple-macosx
+✔ Test run with 0 tests passed after 0.001 seconds.

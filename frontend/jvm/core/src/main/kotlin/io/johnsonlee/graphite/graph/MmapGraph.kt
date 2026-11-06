@@ -70,7 +70,7 @@ class MmapGraph internal constructor(
     override val resources: ResourceAccessor,
     private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY,
     private val analysisCompleteness: AnalysisCompleteness? = null
-) : Graph, Closeable, PackedBranchMetadataSource {
+) : Graph, EnumValueIndexSource, Closeable, PackedBranchMetadataSource {
     override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
 
     override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
@@ -191,6 +191,8 @@ class MmapGraph internal constructor(
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValuesMap["$enumClass#$enumName"]
+
+    override fun enumValueIndex(): Map<String, List<Any?>> = enumValuesMap
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()

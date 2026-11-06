@@ -135,6 +135,37 @@ impl<'a> GroupedWithPlan<'a> {
                 return Ok(None);
             }
         }
+        // Count every contributing source before applying the literal predicate
+        // and output bound, but only materialize surviving rows. The original
+        // projection still owns output names and hidden provenance keys.
+        let minimum = self.predicate.map(|predicate| {
+            let Expr::Comparison { right, .. } = predicate else {
+                unreachable!("build proves an integer count predicate")
+            };
+            let Expr::Literal(Literal::Int(minimum)) = right.as_ref() else {
+                unreachable!("build proves a nonnegative literal")
+            };
+            *minimum
+        });
+        let grouped_columns = item_names(self.with_items);
+        if let Some(grouped) = super::super::fastpath::bounded_call_site_groups(
+            ex,
+            self.property,
+            &grouped_columns,
+            self.limit,
+            minimum,
+            false,
+        )? {
+            let ev = Evaluator::new(ex, &ex.params);
+            let (columns, rows) = project(&ev, grouped.rows, Some(self.return_items), false, None)?;
+            ex.cancel.check()?;
+            return Ok(Some(QueryResult {
+                columns,
+                rows,
+                compact: None,
+                more: false,
+            }));
+        }
         // All sources are proven first; the shared group fast path therefore
         // cannot take its raw fallback or alter generic malformed-input behavior.
         let grouped_clauses = [

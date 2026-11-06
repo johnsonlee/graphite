@@ -1,0 +1,123 @@
+{
+  "scope": "Correctness-only comparison of five actual source headers; declaration facts, not a performance benchmark or graph-wide completeness claim.",
+  "signalCommit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+  "podsCommit": "77c21193e6b5e4f8cbd86abaf46631fd242322f4",
+  "headers": [
+    {
+      "path": "LibMobileCoin/Artifacts/include/attest.h",
+      "sha256": "7a78235e05548698385871b87b5d134db306a98ed8b1b5b38afec687b9842fa3",
+      "before": 0,
+      "after": 33
+    },
+    {
+      "path": "SQLCipher/sqlite3.h",
+      "sha256": "6ca976709285f1410025d68feaf0237d8f87df9021cdb069c4dd9cf57c69972f",
+      "before": 0,
+      "after": 536
+    },
+    {
+      "path": "SSZipArchive/SSZipArchive/minizip/mz_strm.h",
+      "sha256": "d5cfa901286f247d06a19e77c7c09c98a581bec939664e2ac31e363f8bd6b275",
+      "before": 0,
+      "after": 56
+    },
+    {
+      "path": "libwebp/src/webp/decode.h",
+      "sha256": "00ee3d5716a5c334fc82b794356b8065276224d7ad484cf0fde71e62e642dd45",
+      "before": 0,
+      "after": 83
+    },
+    {
+      "path": "libwebp/src/webp/mux_types.h",
+      "sha256": "624d40af94f4b842ccdd8dcc14a198b40703e167e4323719d2d16320c941f81b",
+      "before": 0,
+      "after": 5
+    }
+  ],
+  "sourceSpelledAssertions": [
+    {
+      "column": 9,
+      "line": 80,
+      "name": "mz_stream_read_uint16",
+      "parameters": [
+        "void *",
+        "uint16_t *"
+      ],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/SSZipArchive/SSZipArchive/minizip/mz_strm.h",
+      "returns": "int32_t",
+      "source": "int32_t mz_stream_read_uint16(void *stream, uint16_t *value);"
+    },
+    {
+      "column": 6,
+      "line": 223,
+      "name": "mc_attest_ake_is_attested",
+      "parameters": [
+        "const McAttestAke *",
+        "bool *"
+      ],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/LibMobileCoin/Artifacts/include/attest.h",
+      "returns": "bool",
+      "source": "bool mc_attest_ake_is_attested("
+    },
+    {
+      "column": 16,
+      "line": 3762,
+      "name": "sqlite3_open16",
+      "parameters": [
+        "const void *",
+        "sqlite3 **"
+      ],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/SQLCipher/sqlite3.h",
+      "returns": "int",
+      "source": "SQLITE_API int sqlite3_open16("
+    },
+    {
+      "column": 18,
+      "line": 60,
+      "name": "bytes",
+      "parameters": [],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/libwebp/src/webp/mux_types.h",
+      "returns": "const uint8_t *",
+      "source": "  const uint8_t* bytes;"
+    },
+    {
+      "column": 10,
+      "line": 61,
+      "name": "size",
+      "parameters": [],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/libwebp/src/webp/mux_types.h",
+      "returns": "size_t",
+      "source": "  size_t size;"
+    },
+    {
+      "column": 24,
+      "line": 177,
+      "name": "WebPIsRGBMode",
+      "parameters": [
+        "WEBP_CSP_MODE"
+      ],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/libwebp/src/webp/decode.h",
+      "returns": "int",
+      "source": "static WEBP_INLINE int WebPIsRGBMode(WEBP_CSP_MODE mode) {"
+    },
+    {
+      "column": 17,
+      "line": 202,
+      "name": "colorspace",
+      "parameters": [],
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/libwebp/src/webp/decode.h",
+      "returns": "WEBP_CSP_MODE",
+      "source": "  WEBP_CSP_MODE colorspace;  // Colorspace."
+    }
+  ],
+  "limits": [
+    "No conditional preprocessing; MobileCoin MC_NONNULL expands to _Nonnull under Clang but source-level facts do not infer the macro expansion.",
+    "Compound declarators, branch-dependent SSZipArchive braces, nonliteral linkage macros, non-C scopes and general C/C++ semantics are not validated by this comparison."
+  ],
+  "commit": "8f96c98b",
+  "frontendReleaseSha256": "69de30e0d2f2ddf72f53d69743fe240166a7eacc4ba1acee755d4bd0b85618a2",
+  "swiftUnitTests": {
+    "tests": 69,
+    "failures": 0
+  }
+}

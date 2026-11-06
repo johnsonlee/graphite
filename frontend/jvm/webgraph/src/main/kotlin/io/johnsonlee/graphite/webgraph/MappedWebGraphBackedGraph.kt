@@ -19,6 +19,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.DeclaredTypeBinding
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
@@ -177,6 +178,7 @@ internal class MappedWebGraphBackedGraph(
     /** The build's completeness evidence, read on first use; absent for a graph saved without it. */
     private val analysisCompleteness: Lazy<AnalysisCompleteness?> = lazyOf(null)
 ) : Graph,
+    EnumValueIndexSource,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
     StreamingMethodLookup,
@@ -2184,6 +2186,8 @@ internal class MappedWebGraphBackedGraph(
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]
+
+    override fun enumValueIndex(): Map<String, List<Any?>> = metadata.value.enumValues
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.value.memberAnnotations["$className#$memberName"] ?: emptyMap()

@@ -1,0 +1,24 @@
+{
+  "purpose": "correctness only, no performance measurement",
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-resources-v3-safe-e2e/bin/graphite",
+    "build",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios",
+    "--scheme",
+    "Signal",
+    "--destination",
+    "generic/platform=iOS Simulator",
+    "--derived-data",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived",
+    "--resource-bundle",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Signal.app",
+    "--allow-partial",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-resources-v3-safe-e2e/graphs/signal.graphite"
+  ],
+  "binarySha256": {
+    "graphite-frontend-apple": "f59439a148560bc1e0f0cddc80cf133d2a607ce4c6e25cf09c08c58768822923",
+    "graphite": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5"
+  },
+  "jar": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-013cd57c-ci-jar/graphite.jar"
+}

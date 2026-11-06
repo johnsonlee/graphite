@@ -1,0 +1,45 @@
+{
+  "artifacts": "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-swiftpm-local-index-union",
+  "controlRevision": "eae182125e42cc14c024da9a320e8f98397fdd09",
+  "distinctUSRs": 39677,
+  "hashes": {
+    "describe.json": "a5eee5ed0e2d6bcbc71aa3a19068e7e00289f192b8221159d88d7d73419dd47b",
+    "dump-package.json": "c7b967ea8decfd27a829208f700f2ffa9032f3f100d714ab261db3c698d29150",
+    "index-library.txt": "1a84cc24948f25c001f37530516b85525e3168397bd4c1ca4f9b80b3c6a318c4",
+    "model": "4c164658e2c07ecd49cb00736d773658f1fd4e925d7eb0939fb08c9b60174604",
+    "model.json": "20c0da71174398318254379bf7bd93e1cf497107dc224475a71f5c27ffeebd80",
+    "objects.rsp": "1cb2dff87e07a4652fd4c9457217f96ea6ace752ace05e0701b1c7cd05d816f4",
+    "oracle-model-differences.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+    "oracle-occurrences.jsonl": "ab5213b67514c339aaf14f768ee4dd59ea853aade2d6fca1afe5ca393d07fa56",
+    "oracle-records.json": "6a4f6eb57689852699260418756ab0a53294eba4aa276cedee88d41f59401eb5",
+    "oracle.json": "1c88ae15fa77df2c6dfc382dfaa83468a43919b46d754decdddb88e8a1da5990",
+    "selected-paths.json": "53b5a2f281e1cd71702a301a91fec48b5f0bbd2f275d4c3e390e8d40621fc123",
+    "shared-models.json": "c1739ebbe45504a046af61c55b056321bf079af9080a4f53bf884ce0997d6028"
+  },
+  "indexLibrary": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib",
+  "indexLibrarySha256": "0728a3997fa6304a1e8f9431d3909793a0ff828b49f6a0ef9d0d39a18c7f202b",
+  "oracleModelDifferences": {},
+  "packageLockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b",
+  "purpose": "Correctness only; one existing macOS SwiftPM checkout. Does not replace the independent fresh dual-root Linux run.",
+  "selectedFiles": 483,
+  "shared": {
+    "Sources/PackageDescription/PackageDescriptionSerialization.swift": {
+      "calls": 0,
+      "members": 308,
+      "types": 76
+    },
+    "Sources/PackageLoading/ContextModel.swift": {
+      "calls": 26,
+      "members": 18,
+      "types": 8
+    },
+    "Sources/PackagePlugin/PluginMessages.swift": {
+      "calls": 0,
+      "members": 266,
+      "types": 78
+    }
+  },
+  "sourceCommit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+  "sourceRoot": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm",
+  "verified": true
+}

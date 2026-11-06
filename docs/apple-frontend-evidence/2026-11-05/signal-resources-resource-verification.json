@@ -1,0 +1,321 @@
+{
+  "purpose": "correctness only; explicitly permitted partial resource inventory",
+  "localizedQuery": "MATCH (r:ResourceValue) WHERE r.key = 'DATABASE_VIEW_OVERLAY_TITLE' AND r.profile = 'en' RETURN r.path, r.key, r.value, r.profile",
+  "localizedResult": {
+    "columns": [
+      "r.path",
+      "r.key",
+      "r.value",
+      "r.profile"
+    ],
+    "rows": [
+      {
+        "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+        "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+        "r.value": "Optimizing Database",
+        "r.profile": "en"
+      }
+    ],
+    "rowCount": 1
+  },
+  "typedInfoQuery": "MATCH (r:ResourceValue) WHERE r.path = 'org.whispersystems.signal/Info.plist' RETURN r.key, r.value ORDER BY r.key",
+  "typedInfoResult": {
+    "columns": [
+      "r.key",
+      "r.value"
+    ],
+    "rows": [
+      {
+        "r.key": "BGTaskSchedulerPermittedIdentifiers",
+        "r.value": [
+          "MessageFetchBGRefreshTask"
+        ]
+      },
+      {
+        "r.key": "BuildMachineOSBuild",
+        "r.value": "23D56"
+      },
+      {
+        "r.key": "CFBundleDevelopmentRegion",
+        "r.value": "en"
+      },
+      {
+        "r.key": "CFBundleDisplayName",
+        "r.value": "Signal"
+      },
+      {
+        "r.key": "CFBundleExecutable",
+        "r.value": "Signal"
+      },
+      {
+        "r.key": "CFBundleIdentifier",
+        "r.value": "org.whispersystems.signal"
+      },
+      {
+        "r.key": "CFBundleInfoDictionaryVersion",
+        "r.value": "6.0"
+      },
+      {
+        "r.key": "CFBundleName",
+        "r.value": "Signal"
+      },
+      {
+        "r.key": "CFBundlePackageType",
+        "r.value": "APPL"
+      },
+      {
+        "r.key": "CFBundleShortVersionString",
+        "r.value": "7.19.1"
+      },
+      {
+        "r.key": "CFBundleSignature",
+        "r.value": "????"
+      },
+      {
+        "r.key": "CFBundleSupportedPlatforms",
+        "r.value": [
+          "iPhoneSimulator"
+        ]
+      },
+      {
+        "r.key": "CFBundleVersion",
+        "r.value": "0"
+      },
+      {
+        "r.key": "DTCompiler",
+        "r.value": "com.apple.compilers.llvm.clang.1_0"
+      },
+      {
+        "r.key": "DTPlatformBuild",
+        "r.value": "21F77"
+      },
+      {
+        "r.key": "DTPlatformName",
+        "r.value": "iphonesimulator"
+      },
+      {
+        "r.key": "DTPlatformVersion",
+        "r.value": "17.5"
+      },
+      {
+        "r.key": "DTSDKBuild",
+        "r.value": "21F77"
+      },
+      {
+        "r.key": "DTSDKName",
+        "r.value": "iphonesimulator17.5"
+      },
+      {
+        "r.key": "DTXcode",
+        "r.value": "1540"
+      },
+      {
+        "r.key": "DTXcodeBuild",
+        "r.value": "15F31d"
+      },
+      {
+        "r.key": "ITSAppUsesNonExemptEncryption",
+        "r.value": false
+      },
+      {
+        "r.key": "LOGS_EMAIL",
+        "r.value": "support@signal.org"
+      },
+      {
+        "r.key": "LSApplicationCategoryType",
+        "r.value": "public.app-category.social-networking"
+      },
+      {
+        "r.key": "LSApplicationQueriesSchemes",
+        "r.value": [
+          "maps",
+          "comgooglemaps",
+          "mailto"
+        ]
+      },
+      {
+        "r.key": "LSRequiresIPhoneOS",
+        "r.value": true
+      },
+      {
+        "r.key": "MinimumOSVersion",
+        "r.value": "14.0"
+      },
+      {
+        "r.key": "NSAppleMusicUsageDescription",
+        "r.value": "Signal needs to use Apple Music to play media attachments."
+      },
+      {
+        "r.key": "NSBonjourServices",
+        "r.value": [
+          "_sgnl-new-device._tcp"
+        ]
+      },
+      {
+        "r.key": "NSCameraUsageDescription",
+        "r.value": "Signal uses your camera to take photos and for video calls."
+      },
+      {
+        "r.key": "NSContactsUsageDescription",
+        "r.value": "Signal uses your contacts to find users you know. We do not store your contacts on the server."
+      },
+      {
+        "r.key": "NSFaceIDUsageDescription",
+        "r.value": "Signal's Screen Lock uses Face ID."
+      },
+      {
+        "r.key": "NSLocalNetworkUsageDescription",
+        "r.value": "Signal uses the local network to allow you to directly transfer your account to a new phone. It will not be used unless you explicitly choose to initiate a transfer to a new device."
+      },
+      {
+        "r.key": "NSLocationWhenInUseUsageDescription",
+        "r.value": "Signal needs access to your location in order to share your current location."
+      },
+      {
+        "r.key": "NSMicrophoneUsageDescription",
+        "r.value": "Signal needs access to your microphone to make and receive phone calls and record voice messages."
+      },
+      {
+        "r.key": "NSPhotoLibraryAddUsageDescription",
+        "r.value": "Signal will save photos to your library."
+      },
+      {
+        "r.key": "NSPhotoLibraryUsageDescription",
+        "r.value": "Signal will let you choose which photos from your library to send."
+      },
+      {
+        "r.key": "NSUserActivityTypes",
+        "r.value": [
+          "INSendMessageIntent",
+          "INStartCallIntent"
+        ]
+      },
+      {
+        "r.key": "OWSBundleIDPrefix",
+        "r.value": "org.whispersystems"
+      },
+      {
+        "r.key": "OWSMerchantID",
+        "r.value": "org.signalfoundation"
+      },
+      {
+        "r.key": "PHPhotoLibraryPreventAutomaticLimitedAccessAlert",
+        "r.value": true
+      },
+      {
+        "r.key": "UIBackgroundModes",
+        "r.value": [
+          "audio",
+          "fetch",
+          "remote-notification",
+          "voip"
+        ]
+      },
+      {
+        "r.key": "UIDeviceFamily",
+        "r.value": [
+          1,
+          2
+        ]
+      },
+      {
+        "r.key": "UILaunchStoryboardName",
+        "r.value": "Launch Screen"
+      },
+      {
+        "r.key": "UIRequiredDeviceCapabilities",
+        "r.value": [
+          "armv7"
+        ]
+      },
+      {
+        "r.key": "UIStatusBarStyle",
+        "r.value": "UIStatusBarStyleLightContent"
+      },
+      {
+        "r.key": "UISupportedInterfaceOrientations",
+        "r.value": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      },
+      {
+        "r.key": "UISupportedInterfaceOrientations~ipad",
+        "r.value": [
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      },
+      {
+        "r.key": "UIViewControllerBasedStatusBarAppearance",
+        "r.value": true
+      }
+    ],
+    "rowCount": 49
+  },
+  "retainedInfoKeys": [
+    "BGTaskSchedulerPermittedIdentifiers",
+    "BuildMachineOSBuild",
+    "CFBundleDevelopmentRegion",
+    "CFBundleDisplayName",
+    "CFBundleExecutable",
+    "CFBundleIdentifier",
+    "CFBundleInfoDictionaryVersion",
+    "CFBundleName",
+    "CFBundlePackageType",
+    "CFBundleShortVersionString",
+    "CFBundleSignature",
+    "CFBundleSupportedPlatforms",
+    "CFBundleVersion",
+    "DTCompiler",
+    "DTPlatformBuild",
+    "DTPlatformName",
+    "DTPlatformVersion",
+    "DTSDKBuild",
+    "DTSDKName",
+    "DTXcode",
+    "DTXcodeBuild",
+    "ITSAppUsesNonExemptEncryption",
+    "LOGS_EMAIL",
+    "LSApplicationCategoryType",
+    "LSApplicationQueriesSchemes",
+    "LSRequiresIPhoneOS",
+    "MinimumOSVersion",
+    "NSAppleMusicUsageDescription",
+    "NSBonjourServices",
+    "NSCameraUsageDescription",
+    "NSContactsUsageDescription",
+    "NSFaceIDUsageDescription",
+    "NSLocalNetworkUsageDescription",
+    "NSLocationWhenInUseUsageDescription",
+    "NSMicrophoneUsageDescription",
+    "NSPhotoLibraryAddUsageDescription",
+    "NSPhotoLibraryUsageDescription",
+    "NSUserActivityTypes",
+    "OWSBundleIDPrefix",
+    "OWSMerchantID",
+    "PHPhotoLibraryPreventAutomaticLimitedAccessAlert",
+    "UIBackgroundModes",
+    "UIDeviceFamily",
+    "UILaunchStoryboardName",
+    "UIRequiredDeviceCapabilities",
+    "UIStatusBarStyle",
+    "UISupportedInterfaceOrientations",
+    "UISupportedInterfaceOrientations~ipad",
+    "UIViewControllerBasedStatusBarAppearance"
+  ],
+  "unsupportedDictionaryKeys": [
+    "BuildDetails",
+    "CFBundleIcons",
+    "CFBundleIcons~ipad",
+    "CFBundleURLTypes",
+    "NSAppTransportSecurity"
+  ],
+  "allUnsupportedKeysDiagnosed": true,
+  "exactRetainedTypedPlistComparisonPassed": true,
+  "verifyExit": 0,
+  "verifyOutput": "file sha256 ok (024f6f1b800955ab07901cc5878dc97e51dcca83aaa897e752204f593df582c6)\nOK: 19 entries verified in /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-resources-v3-safe-e2e/graphs/signal.graphite\nfingerprint: 84b41785f501c3d8ce6f911bc29e9330c870f04abdeaff3f0cc234f60041fbb4\n"
+}

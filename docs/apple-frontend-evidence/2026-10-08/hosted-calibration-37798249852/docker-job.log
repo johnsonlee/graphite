@@ -1,0 +1,2405 @@
+﻿2026-10-08T15:25:21.9391707Z Current runner version: '2.337.0'
+2026-10-08T15:25:21.9410007Z ##[group]Runner Image Provisioner
+2026-10-08T15:25:21.9410522Z Hosted Compute Agent
+2026-10-08T15:25:21.9411302Z Version: 20261002.596
+2026-10-08T15:25:21.9411692Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T15:25:21.9412149Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T15:25:21.9412607Z Worker ID: {c3900ab6-b543-4259-a37a-7f2d4abf450f}
+2026-10-08T15:25:21.9413047Z Region: centralus
+2026-10-08T15:25:21.9413436Z Cloud: Azure
+2026-10-08T15:25:21.9413774Z ##[endgroup]
+2026-10-08T15:25:21.9414913Z ##[group]Operating System
+2026-10-08T15:25:21.9415419Z Ubuntu
+2026-10-08T15:25:21.9415758Z 24.04.5
+2026-10-08T15:25:21.9416141Z LTS
+2026-10-08T15:25:21.9416462Z ##[endgroup]
+2026-10-08T15:25:21.9416828Z ##[group]Runner Image
+2026-10-08T15:25:21.9417236Z Image: ubuntu-24.04
+2026-10-08T15:25:21.9417592Z Version: 20261004.327.1
+2026-10-08T15:25:21.9418409Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T15:25:21.9419314Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T15:25:21.9419916Z ##[endgroup]
+2026-10-08T15:25:21.9420669Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:25:21.9421943Z Contents: read
+2026-10-08T15:25:21.9422287Z Metadata: read
+2026-10-08T15:25:21.9422723Z Packages: write
+2026-10-08T15:25:21.9423068Z ##[endgroup]
+2026-10-08T15:25:21.9424577Z Secret source: Actions
+2026-10-08T15:25:21.9425170Z Cache mode: write
+2026-10-08T15:25:21.9425668Z Prepare workflow directory
+2026-10-08T15:25:21.9780469Z Prepare all required actions
+2026-10-08T15:25:21.9820471Z Getting action download info
+2026-10-08T15:25:22.2316990Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:25:22.3289020Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-08T15:25:22.8298736Z Download action repository 'docker/setup-qemu-action@v4' (SHA:99012661954931238ded8c8b007157a8430204e1)
+2026-10-08T15:25:23.3017224Z Download action repository 'docker/setup-buildx-action@v4' (SHA:f87e5991a6d7451dcb8d9637bfbc97413f497069)
+2026-10-08T15:25:23.8490456Z Download action repository 'docker/login-action@v4' (SHA:dbcb813823bdd20940b903addbd779551569679f)
+2026-10-08T15:25:24.3604427Z Download action repository 'docker/metadata-action@v6' (SHA:dc802804100637a589fabce1cb79ff13a1411302)
+2026-10-08T15:25:24.8748714Z Download action repository 'docker/build-push-action@v7' (SHA:c3c9e263c25d99ce0380d002d59b67737d91b0dc)
+2026-10-08T15:25:25.5693260Z Complete job name: docker
+2026-10-08T15:25:25.6169717Z ##[group]Run actions/checkout@v7
+2026-10-08T15:25:25.6169992Z with:
+2026-10-08T15:25:25.6170141Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:25.6170320Z   repository: johnsonlee/graphite
+2026-10-08T15:25:25.6171718Z   token: ***
+2026-10-08T15:25:25.6171839Z   ssh-strict: true
+2026-10-08T15:25:25.6171973Z   ssh-user: git
+2026-10-08T15:25:25.6172115Z   persist-credentials: true
+2026-10-08T15:25:25.6172263Z   clean: true
+2026-10-08T15:25:25.6172403Z   sparse-checkout-cone-mode: true
+2026-10-08T15:25:25.6172549Z   fetch-depth: 1
+2026-10-08T15:25:25.6172667Z   fetch-tags: false
+2026-10-08T15:25:25.6172789Z   show-progress: true
+2026-10-08T15:25:25.6172920Z   lfs: false
+2026-10-08T15:25:25.6173032Z   submodules: false
+2026-10-08T15:25:25.6173158Z   set-safe-directory: true
+2026-10-08T15:25:25.6173303Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:25:25.6173517Z env:
+2026-10-08T15:25:25.6173640Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:25.6173828Z   DRY_RUN: true
+2026-10-08T15:25:25.6173960Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:25.6174240Z ##[endgroup]
+2026-10-08T15:25:25.6887512Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:25:25.6888797Z ##[group]Getting Git version info
+2026-10-08T15:25:25.6889078Z Working directory is '/home/runner/work/graphite/graphite'
+2026-10-08T15:25:25.6889947Z [command]/usr/bin/git version
+2026-10-08T15:25:25.6973888Z git version 2.55.0
+2026-10-08T15:25:25.6993281Z ##[endgroup]
+2026-10-08T15:25:25.7004266Z Temporarily overriding HOME='/home/runner/work/_temp/823d0f95-af0f-4076-a86f-8dfc8babbfcc' before making global git config changes
+2026-10-08T15:25:25.7004996Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:25:25.7011021Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:25:25.7063035Z Deleting the contents of '/home/runner/work/graphite/graphite'
+2026-10-08T15:25:25.7065916Z ##[group]Determining repository object format
+2026-10-08T15:25:25.7067264Z ##[endgroup]
+2026-10-08T15:25:25.7067611Z ##[group]Initializing the repository
+2026-10-08T15:25:25.7071955Z [command]/usr/bin/git init /home/runner/work/graphite/graphite
+2026-10-08T15:25:25.7170489Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:25:25.7171384Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:25:25.7172069Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:25:25.7172408Z hint: call:
+2026-10-08T15:25:25.7172580Z hint:
+2026-10-08T15:25:25.7172878Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:25:25.7173157Z hint:
+2026-10-08T15:25:25.7173435Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:25:25.7173880Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:25:25.7174525Z hint:
+2026-10-08T15:25:25.7174731Z hint: 	git branch -m <name>
+2026-10-08T15:25:25.7174935Z hint:
+2026-10-08T15:25:25.7175217Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:25:25.7175733Z Initialized empty Git repository in /home/runner/work/graphite/graphite/.git/
+2026-10-08T15:25:25.7183960Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:25:25.7240588Z ##[endgroup]
+2026-10-08T15:25:25.7241077Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:25:25.7244665Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T15:25:25.7291352Z ##[endgroup]
+2026-10-08T15:25:25.7292279Z ##[group]Setting up auth
+2026-10-08T15:25:25.7292680Z Removing SSH command configuration
+2026-10-08T15:25:25.7298723Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:25:25.7335175Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:25:25.7680839Z Removing HTTP extra header
+2026-10-08T15:25:25.7688049Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:25:25.7731969Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:25:25.7932613Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:25:25.7937207Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:25:25.7967816Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:25:25.8164126Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:25:25.8199171Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git.path /home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:25:25.8229298Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:25:25.8260464Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:25:25.8289917Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:25:25.8315553Z ##[endgroup]
+2026-10-08T15:25:25.8320103Z ##[group]Fetching the repository
+2026-10-08T15:25:25.8320539Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:26.8401416Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:25:26.8401879Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:25:26.8410076Z [command]/usr/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:25:26.8437226Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:26.8441060Z ##[endgroup]
+2026-10-08T15:25:26.8441483Z ##[group]Determining the checkout info
+2026-10-08T15:25:26.8441862Z ##[endgroup]
+2026-10-08T15:25:26.8445467Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T15:25:26.8487600Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:25:26.8515729Z ##[group]Checking out the ref
+2026-10-08T15:25:26.8518909Z [command]/usr/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:26.9183456Z Note: switching to '1ba3808f79db8190ecd278a3853ab7a27d5abac9'.
+2026-10-08T15:25:26.9183757Z 
+2026-10-08T15:25:26.9183934Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T15:25:26.9184500Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T15:25:26.9184938Z state without impacting any branches by switching back to a branch.
+2026-10-08T15:25:26.9185203Z 
+2026-10-08T15:25:26.9185367Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T15:25:26.9185810Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T15:25:26.9186035Z 
+2026-10-08T15:25:26.9186138Z   git switch -c <new-branch-name>
+2026-10-08T15:25:26.9186315Z 
+2026-10-08T15:25:26.9186445Z Or undo this operation with:
+2026-10-08T15:25:26.9205067Z 
+2026-10-08T15:25:26.9205481Z   git switch -
+2026-10-08T15:25:26.9205670Z 
+2026-10-08T15:25:26.9206224Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T15:25:26.9206564Z 
+2026-10-08T15:25:26.9206864Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:25:26.9208000Z ##[endgroup]
+2026-10-08T15:25:26.9244952Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T15:25:26.9270322Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:26.9439793Z ##[group]Run actions/download-artifact@v8
+2026-10-08T15:25:26.9439977Z with:
+2026-10-08T15:25:26.9440099Z   pattern: binaries-*-linux-musl
+2026-10-08T15:25:26.9440243Z   merge-multiple: true
+2026-10-08T15:25:26.9440366Z   path: .
+2026-10-08T15:25:26.9440484Z   repository: johnsonlee/graphite
+2026-10-08T15:25:26.9440625Z   run-id: 37798249852
+2026-10-08T15:25:26.9440752Z   skip-decompress: false
+2026-10-08T15:25:26.9440882Z   digest-mismatch: error
+2026-10-08T15:25:26.9441005Z env:
+2026-10-08T15:25:26.9441127Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:26.9441279Z   DRY_RUN: true
+2026-10-08T15:25:26.9441412Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:26.9441566Z ##[endgroup]
+2026-10-08T15:25:27.2486694Z Found 8 artifact(s)
+2026-10-08T15:25:27.2489085Z Filtering artifacts by pattern 'binaries-*-linux-musl'
+2026-10-08T15:25:27.2503366Z Preparing to download the following artifacts:
+2026-10-08T15:25:27.2504329Z - binaries-aarch64-unknown-linux-musl (ID: 11560145752, Size: 3852383, Expected Digest: sha256:0f87cb107f340c06f0b9bb95f44056b781999be9db3808aae190e194a82b0978)
+2026-10-08T15:25:27.2505719Z - binaries-x86_64-unknown-linux-musl (ID: 11558749734, Size: 4057802, Expected Digest: sha256:f15920e644fe6f42c0b2d230842b0bfab5b8a45352188b07321ffe214672ee83)
+2026-10-08T15:25:27.5862427Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/d97cd4f8-f4a6-4c9a-b2b9-fe1ec5b7999f/workflow-job-run-7d9fd67a-aa87-50d6-9e3a-2f626b8c0699/artifacts/35a1104dd4b08af6d0e8860f362cd2b8785b6619939d057f52e89c9aa2a75770.zip
+2026-10-08T15:25:27.5863159Z Starting download of artifact to: /home/runner/work/graphite/graphite
+2026-10-08T15:25:27.6155490Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/d97cd4f8-f4a6-4c9a-b2b9-fe1ec5b7999f/workflow-job-run-39d64521-e151-544d-999e-f3510e4c570c/artifacts/f6e3565b2a9b63457127301b2c6237c1648704117a66b252dbc3688b71d69a7c.zip
+2026-10-08T15:25:27.6156597Z Starting download of artifact to: /home/runner/work/graphite/graphite
+2026-10-08T15:25:28.1239536Z (node:2097) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T15:25:28.1240477Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T15:25:28.5203339Z SHA256 digest of downloaded artifact is 0f87cb107f340c06f0b9bb95f44056b781999be9db3808aae190e194a82b0978
+2026-10-08T15:25:28.5203698Z Artifact download completed successfully.
+2026-10-08T15:25:28.5342066Z SHA256 digest of downloaded artifact is f15920e644fe6f42c0b2d230842b0bfab5b8a45352188b07321ffe214672ee83
+2026-10-08T15:25:28.5342515Z Artifact download completed successfully.
+2026-10-08T15:25:28.5342782Z Total of 2 artifact(s) downloaded
+2026-10-08T15:25:28.5346569Z Download artifact has finished successfully
+2026-10-08T15:25:28.5452341Z ##[group]Run for PAIR in x86_64-unknown-linux-musl:amd64 aarch64-unknown-linux-musl:arm64; do
+2026-10-08T15:25:28.5452772Z [36;1mfor PAIR in x86_64-unknown-linux-musl:amd64 aarch64-unknown-linux-musl:arm64; do[0m
+2026-10-08T15:25:28.5453059Z [36;1m  TARGET=${PAIR%%:*}; ARCH=${PAIR##*:}[0m
+2026-10-08T15:25:28.5453279Z [36;1m  ASSET="graphite-${RELEASE_VERSION}-${TARGET}.tar.gz"[0m
+2026-10-08T15:25:28.5453491Z [36;1m  if [ "${DRY_RUN}" != true ]; then[0m
+2026-10-08T15:25:28.5453743Z [36;1m    gh release download "${RELEASE_TAG}" -p "${ASSET}" -p "${ASSET}.sha256" -D .[0m
+2026-10-08T15:25:28.5454145Z [36;1m  fi[0m
+2026-10-08T15:25:28.5454349Z [36;1m  sha256sum -c "${ASSET}.sha256"[0m
+2026-10-08T15:25:28.5454554Z [36;1m  mkdir -p "release-assets/linux/${ARCH}"[0m
+2026-10-08T15:25:28.5454780Z [36;1m  tar -xzf "${ASSET}" -C "release-assets/linux/${ARCH}" graphite[0m
+2026-10-08T15:25:28.5454982Z [36;1mdone[0m
+2026-10-08T15:25:28.5660477Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:25:28.5660703Z env:
+2026-10-08T15:25:28.5660849Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:28.5661025Z   DRY_RUN: true
+2026-10-08T15:25:28.5661168Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:28.5662641Z   GH_TOKEN: ***
+2026-10-08T15:25:28.5662770Z ##[endgroup]
+2026-10-08T15:25:28.5780738Z graphite-2.11.3-apple-validation.4-x86_64-unknown-linux-musl.tar.gz: OK
+2026-10-08T15:25:28.6410387Z graphite-2.11.3-apple-validation.4-aarch64-unknown-linux-musl.tar.gz: OK
+2026-10-08T15:25:28.7025585Z ##[group]Run docker/setup-qemu-action@v4
+2026-10-08T15:25:28.7025767Z with:
+2026-10-08T15:25:28.7025905Z   image: docker.io/tonistiigi/binfmt:latest
+2026-10-08T15:25:28.7026073Z   platforms: all
+2026-10-08T15:25:28.7026203Z   reset: false
+2026-10-08T15:25:28.7026326Z   cache-image: true
+2026-10-08T15:25:28.7026454Z env:
+2026-10-08T15:25:28.7026586Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:28.7026753Z   DRY_RUN: true
+2026-10-08T15:25:28.7026895Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:28.7027060Z ##[endgroup]
+2026-10-08T15:25:28.8098149Z ##[group]Docker info
+2026-10-08T15:25:28.8134995Z [command]/usr/bin/docker version
+2026-10-08T15:25:28.8902374Z Client: Docker Engine - Community
+2026-10-08T15:25:28.8902728Z  Version:           28.0.4
+2026-10-08T15:25:28.8902950Z  API version:       1.48
+2026-10-08T15:25:28.8904390Z  Go version:        go1.23.7
+2026-10-08T15:25:28.8904640Z  Git commit:        b8034c0
+2026-10-08T15:25:28.8905008Z  Built:             Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:28.8905268Z  OS/Arch:           linux/amd64
+2026-10-08T15:25:28.8905625Z  Context:           default
+2026-10-08T15:25:28.8905770Z 
+2026-10-08T15:25:28.8905875Z Server: Docker Engine - Community
+2026-10-08T15:25:28.8906106Z  Engine:
+2026-10-08T15:25:28.8906329Z   Version:          28.0.4
+2026-10-08T15:25:28.8906574Z   API version:      1.48 (minimum version 1.24)
+2026-10-08T15:25:28.8906874Z   Go version:       go1.23.7
+2026-10-08T15:25:28.8907112Z   Git commit:       6430e49
+2026-10-08T15:25:28.8907370Z   Built:            Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:28.8907680Z   OS/Arch:          linux/amd64
+2026-10-08T15:25:28.8907911Z   Experimental:     false
+2026-10-08T15:25:28.8908178Z  containerd:
+2026-10-08T15:25:28.8908367Z   Version:          v2.3.6
+2026-10-08T15:25:28.8908663Z   GitCommit:        ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:28.8908987Z  runc:
+2026-10-08T15:25:28.8909173Z   Version:          1.5.1
+2026-10-08T15:25:28.8909424Z   GitCommit:        v1.5.1-0-g8f2685a4
+2026-10-08T15:25:28.8909705Z  docker-init:
+2026-10-08T15:25:28.8909901Z   Version:          0.19.0
+2026-10-08T15:25:28.8910142Z   GitCommit:        de40ad0
+2026-10-08T15:25:28.8942529Z [command]/usr/bin/docker info
+2026-10-08T15:25:29.0497089Z Client: Docker Engine - Community
+2026-10-08T15:25:29.0497439Z  Version:    28.0.4
+2026-10-08T15:25:29.0497647Z  Context:    default
+2026-10-08T15:25:29.0497815Z  Debug Mode: false
+2026-10-08T15:25:29.0497946Z  Plugins:
+2026-10-08T15:25:29.0498141Z   buildx: Docker Buildx (Docker Inc.)
+2026-10-08T15:25:29.0498345Z     Version:  v0.37.2
+2026-10-08T15:25:29.0498564Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2026-10-08T15:25:29.0498780Z   compose: Docker Compose (Docker Inc.)
+2026-10-08T15:25:29.0498938Z     Version:  v2.38.2
+2026-10-08T15:25:29.0499110Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2026-10-08T15:25:29.0499249Z 
+2026-10-08T15:25:29.0499298Z Server:
+2026-10-08T15:25:29.0499422Z  Containers: 0
+2026-10-08T15:25:29.0499541Z   Running: 0
+2026-10-08T15:25:29.0499693Z   Paused: 0
+2026-10-08T15:25:29.0499807Z   Stopped: 0
+2026-10-08T15:25:29.0499922Z  Images: 6
+2026-10-08T15:25:29.0500037Z  Server Version: 28.0.4
+2026-10-08T15:25:29.0500176Z  Storage Driver: overlay2
+2026-10-08T15:25:29.0500321Z   Backing Filesystem: extfs
+2026-10-08T15:25:29.0500465Z   Supports d_type: true
+2026-10-08T15:25:29.0500603Z   Using metacopy: false
+2026-10-08T15:25:29.0500740Z   Native Overlay Diff: false
+2026-10-08T15:25:29.0500883Z   userxattr: false
+2026-10-08T15:25:29.0501011Z  Logging Driver: json-file
+2026-10-08T15:25:29.0501155Z  Cgroup Driver: systemd
+2026-10-08T15:25:29.0501287Z  Cgroup Version: 2
+2026-10-08T15:25:29.0501407Z  Plugins:
+2026-10-08T15:25:29.0501523Z   Volume: local
+2026-10-08T15:25:29.0501671Z   Network: bridge host ipvlan macvlan null overlay
+2026-10-08T15:25:29.0501984Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2026-10-08T15:25:29.0502208Z  Swarm: inactive
+2026-10-08T15:25:29.0502750Z  Runtimes: io.containerd.runc.v2 runc
+2026-10-08T15:25:29.0502917Z  Default Runtime: runc
+2026-10-08T15:25:29.0503055Z  Init Binary: docker-init
+2026-10-08T15:25:29.0503241Z  containerd version: ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:29.0503441Z  runc version: v1.5.1-0-g8f2685a4
+2026-10-08T15:25:29.0503591Z  init version: de40ad0
+2026-10-08T15:25:29.0503723Z  Security Options:
+2026-10-08T15:25:29.0503849Z   apparmor
+2026-10-08T15:25:29.0503960Z   seccomp
+2026-10-08T15:25:29.0504220Z    Profile: builtin
+2026-10-08T15:25:29.0504393Z   cgroupns
+2026-10-08T15:25:29.0504535Z  Kernel Version: 6.17.0-1022-azure
+2026-10-08T15:25:29.0504824Z  Operating System: Ubuntu 24.04.5 LTS
+2026-10-08T15:25:29.0504975Z  OSType: linux
+2026-10-08T15:25:29.0505103Z  Architecture: x86_64
+2026-10-08T15:25:29.0505231Z  CPUs: 4
+2026-10-08T15:25:29.0505346Z  Total Memory: 15.61GiB
+2026-10-08T15:25:29.0505482Z  Name: runnervmmprz5
+2026-10-08T15:25:29.0505628Z  ID: 07f0e779-c305-4162-b8ec-c48c30f52fbe
+2026-10-08T15:25:29.0505799Z  Docker Root Dir: /var/lib/docker
+2026-10-08T15:25:29.0505946Z  Debug Mode: false
+2026-10-08T15:25:29.0506075Z  Username: githubactions
+2026-10-08T15:25:29.0506213Z  Experimental: false
+2026-10-08T15:25:29.0506346Z  Insecure Registries:
+2026-10-08T15:25:29.0509242Z   ::1/128
+2026-10-08T15:25:29.0509364Z   127.0.0.0/8
+2026-10-08T15:25:29.0509496Z  Live Restore Enabled: false
+2026-10-08T15:25:29.0509597Z 
+2026-10-08T15:25:29.0520805Z ##[endgroup]
+2026-10-08T15:25:29.0521083Z ##[group]Pulling binfmt Docker image
+2026-10-08T15:25:29.2049392Z Cache hit for: docker.io--tonistiigi--binfmt-latest-linux-x64
+2026-10-08T15:25:30.0199408Z Received 32265039 of 32265039 (100.0%), 47.5 MBs/sec
+2026-10-08T15:25:30.0200277Z Cache Size: ~31 MB (32265039 B)
+2026-10-08T15:25:30.0224265Z [command]/usr/bin/tar -xf /home/runner/work/_temp/215a0c39-ee6a-44fb-8ed6-980d3842308e/cache.tzst -P -C /home/runner/work/graphite/graphite --use-compress-program unzstd
+2026-10-08T15:25:30.1134173Z Cache restored successfully
+2026-10-08T15:25:30.1150439Z Restored docker.io--tonistiigi--binfmt-latest-linux-x64 from GitHub Actions cache
+2026-10-08T15:25:30.6085542Z Cached to hosted tool cache /opt/hostedtoolcache/docker.io--tonistiigi--binfmt/latest/linux-x64
+2026-10-08T15:25:30.6086255Z Image found from cache in /home/runner/.docker/.cache/images/docker.io--tonistiigi--binfmt/latest/linux-x64/image.tar
+2026-10-08T15:25:30.6098019Z [command]/usr/bin/docker load -i /home/runner/.docker/.cache/images/docker.io--tonistiigi--binfmt/latest/linux-x64/image.tar
+2026-10-08T15:25:36.9259964Z Loaded image: tonistiigi/binfmt:latest
+2026-10-08T15:25:36.9381993Z [command]/usr/bin/docker pull docker.io/tonistiigi/binfmt:latest
+2026-10-08T15:25:37.7140173Z latest: Pulling from tonistiigi/binfmt
+2026-10-08T15:25:37.8766981Z Digest: sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+2026-10-08T15:25:37.8771890Z Status: Image is up to date for tonistiigi/binfmt:latest
+2026-10-08T15:25:37.8778737Z docker.io/tonistiigi/binfmt:latest
+2026-10-08T15:25:37.8807707Z [command]/usr/bin/docker save -o /home/runner/work/_temp/docker-actions-toolkit-x8gGyp/749e64100d3fa0c09bdbc8a02e4fb9cb3ee64266f7f661c98371040689abacb3.tar docker.io/tonistiigi/binfmt:latest
+2026-10-08T15:25:38.6210417Z Copying /home/runner/work/_temp/docker-actions-toolkit-x8gGyp/749e64100d3fa0c09bdbc8a02e4fb9cb3ee64266f7f661c98371040689abacb3.tar to /home/runner/.docker/.cache/images/docker.io--tonistiigi--binfmt/latest/linux-x64/image.tar
+2026-10-08T15:25:39.2325417Z Image cached to /home/runner/.docker/.cache/images/docker.io--tonistiigi--binfmt/latest/linux-x64/image.tar
+2026-10-08T15:25:39.2326150Z ##[endgroup]
+2026-10-08T15:25:39.2327164Z ##[group]Image info
+2026-10-08T15:25:39.2338211Z [command]/usr/bin/docker image inspect docker.io/tonistiigi/binfmt:latest
+2026-10-08T15:25:39.2446779Z [
+2026-10-08T15:25:39.2446981Z     {
+2026-10-08T15:25:39.2447310Z         "Id": "sha256:15935d0512bf0a8e5afa1df990d971cf97a619ede08fa60f2d5966a62de6d6b7",
+2026-10-08T15:25:39.2448019Z         "RepoTags": [
+2026-10-08T15:25:39.2448241Z             "tonistiigi/binfmt:latest"
+2026-10-08T15:25:39.2448477Z         ],
+2026-10-08T15:25:39.2448661Z         "RepoDigests": [
+2026-10-08T15:25:39.2449046Z             "tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0"
+2026-10-08T15:25:39.2449449Z         ],
+2026-10-08T15:25:39.2449623Z         "Parent": "",
+2026-10-08T15:25:39.2449848Z         "Comment": "buildkit.dockerfile.v0",
+2026-10-08T15:25:39.2450127Z         "Created": "2026-06-05T19:12:02.167333037Z",
+2026-10-08T15:25:39.2450393Z         "DockerVersion": "",
+2026-10-08T15:25:39.2450771Z         "Author": "",
+2026-10-08T15:25:39.2450969Z         "Config": {
+2026-10-08T15:25:39.2451161Z             "Hostname": "",
+2026-10-08T15:25:39.2451380Z             "Domainname": "",
+2026-10-08T15:25:39.2451597Z             "User": "",
+2026-10-08T15:25:39.2451823Z             "AttachStdin": false,
+2026-10-08T15:25:39.2452065Z             "AttachStdout": false,
+2026-10-08T15:25:39.2452306Z             "AttachStderr": false,
+2026-10-08T15:25:39.2452533Z             "Tty": false,
+2026-10-08T15:25:39.2452748Z             "OpenStdin": false,
+2026-10-08T15:25:39.2452972Z             "StdinOnce": false,
+2026-10-08T15:25:39.2453186Z             "Env": [
+2026-10-08T15:25:39.2453484Z                 "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+2026-10-08T15:25:39.2453874Z                 "QEMU_PRESERVE_ARGV0=1"
+2026-10-08T15:25:39.2454254Z             ],
+2026-10-08T15:25:39.2454440Z             "Cmd": null,
+2026-10-08T15:25:39.2454650Z             "Image": "",
+2026-10-08T15:25:39.2454858Z             "Volumes": {
+2026-10-08T15:25:39.2455068Z                 "/tmp": {}
+2026-10-08T15:25:39.2455272Z             },
+2026-10-08T15:25:39.2455461Z             "WorkingDir": "/",
+2026-10-08T15:25:39.2455701Z             "Entrypoint": [
+2026-10-08T15:25:39.2455917Z                 "/usr/bin/binfmt"
+2026-10-08T15:25:39.2456138Z             ],
+2026-10-08T15:25:39.2456331Z             "OnBuild": null,
+2026-10-08T15:25:39.2456545Z             "Labels": null
+2026-10-08T15:25:39.2456756Z         },
+2026-10-08T15:25:39.2456938Z         "Architecture": "amd64",
+2026-10-08T15:25:39.2457143Z         "Os": "linux",
+2026-10-08T15:25:39.2457277Z         "Size": 85304497,
+2026-10-08T15:25:39.2457415Z         "GraphDriver": {
+2026-10-08T15:25:39.2457549Z             "Data": {
+2026-10-08T15:25:39.2457828Z                 "LowerDir": "/var/lib/docker/overlay2/a80eb3ae9b20b1d1116bc238234da80403a7593919d36b8ef434e283372affa4/diff",
+2026-10-08T15:25:39.2458282Z                 "MergedDir": "/var/lib/docker/overlay2/3ced968d9381e9b6b9c21c371c054c73d64d405a8ecf19444b4fed37ae3f8963/merged",
+2026-10-08T15:25:39.2458727Z                 "UpperDir": "/var/lib/docker/overlay2/3ced968d9381e9b6b9c21c371c054c73d64d405a8ecf19444b4fed37ae3f8963/diff",
+2026-10-08T15:25:39.2459162Z                 "WorkDir": "/var/lib/docker/overlay2/3ced968d9381e9b6b9c21c371c054c73d64d405a8ecf19444b4fed37ae3f8963/work"
+2026-10-08T15:25:39.2459448Z             },
+2026-10-08T15:25:39.2459575Z             "Name": "overlay2"
+2026-10-08T15:25:39.2459717Z         },
+2026-10-08T15:25:39.2459831Z         "RootFS": {
+2026-10-08T15:25:39.2459965Z             "Type": "layers",
+2026-10-08T15:25:39.2460110Z             "Layers": [
+2026-10-08T15:25:39.2460321Z                 "sha256:c747b796d990a647df062f87e24f1ef5e4a90a312cd9c4ae8b7d09667d57befb",
+2026-10-08T15:25:39.2460633Z                 "sha256:6d831b0f477d9df7afe18e5a65c97e8084fef8fe10c2930b65f728ab68d0bb5b"
+2026-10-08T15:25:39.2460858Z             ]
+2026-10-08T15:25:39.2460978Z         },
+2026-10-08T15:25:39.2461091Z         "Metadata": {
+2026-10-08T15:25:39.2461243Z             "LastTagTime": "0001-01-01T00:00:00Z"
+2026-10-08T15:25:39.2461503Z         }
+2026-10-08T15:25:39.2461645Z     }
+2026-10-08T15:25:39.2461759Z ]
+2026-10-08T15:25:39.2462038Z ##[endgroup]
+2026-10-08T15:25:39.2462267Z ##[group]Binfmt version
+2026-10-08T15:25:39.2471702Z [command]/usr/bin/docker run --rm --privileged docker.io/tonistiigi/binfmt:latest --version
+2026-10-08T15:25:40.0176168Z binfmt/e29e7d7 qemu/v10.2.3 go/1.26.4
+2026-10-08T15:25:40.0993433Z ##[endgroup]
+2026-10-08T15:25:40.0993728Z ##[group]Installing QEMU static binaries
+2026-10-08T15:25:40.1003260Z [command]/usr/bin/docker run --rm --privileged docker.io/tonistiigi/binfmt:latest --install all
+2026-10-08T15:25:40.2115834Z installing: riscv64 OK
+2026-10-08T15:25:40.2116146Z installing: ppc64le OK
+2026-10-08T15:25:40.2116359Z installing: mips64le OK
+2026-10-08T15:25:40.2116586Z installing: mips64 OK
+2026-10-08T15:25:40.2116782Z installing: loong64 OK
+2026-10-08T15:25:40.2117290Z installing: arm64 OK
+2026-10-08T15:25:40.2117485Z installing: arm OK
+2026-10-08T15:25:40.2117682Z installing: s390x OK
+2026-10-08T15:25:40.2277622Z {
+2026-10-08T15:25:40.2278022Z   "supported": [
+2026-10-08T15:25:40.2278611Z     "linux/amd64",
+2026-10-08T15:25:40.2278813Z     "linux/amd64/v2",
+2026-10-08T15:25:40.2279039Z     "linux/amd64/v3",
+2026-10-08T15:25:40.2279970Z     "linux/amd64/v4",
+2026-10-08T15:25:40.2280187Z     "linux/arm64",
+2026-10-08T15:25:40.2280381Z     "linux/riscv64",
+2026-10-08T15:25:40.2280580Z     "linux/ppc64le",
+2026-10-08T15:25:40.2280763Z     "linux/s390x",
+2026-10-08T15:25:40.2280948Z     "linux/386",
+2026-10-08T15:25:40.2281144Z     "linux/mips64le",
+2026-10-08T15:25:40.2281336Z     "linux/mips64",
+2026-10-08T15:25:40.2281521Z     "linux/loong64",
+2026-10-08T15:25:40.2281707Z     "linux/arm/v7",
+2026-10-08T15:25:40.2281908Z     "linux/arm/v6"
+2026-10-08T15:25:40.2282092Z   ],
+2026-10-08T15:25:40.2282270Z   "emulators": [
+2026-10-08T15:25:40.2282491Z     "llvm-16-runtime.binfmt",
+2026-10-08T15:25:40.2282738Z     "llvm-17-runtime.binfmt",
+2026-10-08T15:25:40.2282961Z     "llvm-18-runtime.binfmt",
+2026-10-08T15:25:40.2283173Z     "python3.12",
+2026-10-08T15:25:40.2283364Z     "qemu-aarch64",
+2026-10-08T15:25:40.2283563Z     "qemu-arm",
+2026-10-08T15:25:40.2283754Z     "qemu-loongarch64",
+2026-10-08T15:25:40.2283950Z     "qemu-mips64",
+2026-10-08T15:25:40.2284315Z     "qemu-mips64el",
+2026-10-08T15:25:40.2284512Z     "qemu-ppc64le",
+2026-10-08T15:25:40.2284692Z     "qemu-riscv64",
+2026-10-08T15:25:40.2284878Z     "qemu-s390x"
+2026-10-08T15:25:40.2285061Z   ]
+2026-10-08T15:25:40.2285220Z }
+2026-10-08T15:25:40.2840231Z ##[endgroup]
+2026-10-08T15:25:40.2840647Z ##[group]Extracting available platforms
+2026-10-08T15:25:40.4891070Z linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/amd64/v4,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/loong64,linux/arm/v7,linux/arm/v6
+2026-10-08T15:25:40.4892029Z ##[endgroup]
+2026-10-08T15:25:40.5037589Z ##[group]Run docker/setup-buildx-action@v4
+2026-10-08T15:25:40.5037768Z with:
+2026-10-08T15:25:40.5037900Z   driver: docker-container
+2026-10-08T15:25:40.5038042Z   use: true
+2026-10-08T15:25:40.5038161Z   keep-state: false
+2026-10-08T15:25:40.5038294Z   cache-binary: true
+2026-10-08T15:25:40.5038426Z   cleanup: true
+2026-10-08T15:25:40.5038548Z env:
+2026-10-08T15:25:40.5038680Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:40.5038852Z   DRY_RUN: true
+2026-10-08T15:25:40.5038994Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:40.5039163Z ##[endgroup]
+2026-10-08T15:25:40.6178466Z ##[group]Docker info
+2026-10-08T15:25:40.6193905Z [command]/usr/bin/docker version
+2026-10-08T15:25:40.6358868Z Client: Docker Engine - Community
+2026-10-08T15:25:40.6359305Z  Version:           28.0.4
+2026-10-08T15:25:40.6364711Z  API version:       1.48
+2026-10-08T15:25:40.6364983Z  Go version:        go1.23.7
+2026-10-08T15:25:40.6365305Z  Git commit:        b8034c0
+2026-10-08T15:25:40.6365704Z  Built:             Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:40.6366017Z  OS/Arch:           linux/amd64
+2026-10-08T15:25:40.6366293Z  Context:           default
+2026-10-08T15:25:40.6366473Z 
+2026-10-08T15:25:40.6366676Z Server: Docker Engine - Community
+2026-10-08T15:25:40.6366924Z  Engine:
+2026-10-08T15:25:40.6367114Z   Version:          28.0.4
+2026-10-08T15:25:40.6367394Z   API version:      1.48 (minimum version 1.24)
+2026-10-08T15:25:40.6367680Z   Go version:       go1.23.7
+2026-10-08T15:25:40.6367912Z   Git commit:       6430e49
+2026-10-08T15:25:40.6368153Z   Built:            Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:40.6368420Z   OS/Arch:          linux/amd64
+2026-10-08T15:25:40.6368660Z   Experimental:     false
+2026-10-08T15:25:40.6368879Z  containerd:
+2026-10-08T15:25:40.6369073Z   Version:          v2.3.6
+2026-10-08T15:25:40.6369354Z   GitCommit:        ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:40.6369657Z  runc:
+2026-10-08T15:25:40.6369845Z   Version:          1.5.1
+2026-10-08T15:25:40.6370594Z   GitCommit:        v1.5.1-0-g8f2685a4
+2026-10-08T15:25:40.6370853Z  docker-init:
+2026-10-08T15:25:40.6371044Z   Version:          0.19.0
+2026-10-08T15:25:40.6371269Z   GitCommit:        de40ad0
+2026-10-08T15:25:40.6411787Z [command]/usr/bin/docker info
+2026-10-08T15:25:40.6811196Z Client: Docker Engine - Community
+2026-10-08T15:25:40.6811442Z  Version:    28.0.4
+2026-10-08T15:25:40.6811582Z  Context:    default
+2026-10-08T15:25:40.6811718Z  Debug Mode: false
+2026-10-08T15:25:40.6811850Z  Plugins:
+2026-10-08T15:25:40.6811985Z   buildx: Docker Buildx (Docker Inc.)
+2026-10-08T15:25:40.6812147Z     Version:  v0.37.2
+2026-10-08T15:25:40.6812332Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2026-10-08T15:25:40.6812542Z   compose: Docker Compose (Docker Inc.)
+2026-10-08T15:25:40.6812702Z     Version:  v2.38.2
+2026-10-08T15:25:40.6812877Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2026-10-08T15:25:40.6813020Z 
+2026-10-08T15:25:40.6813070Z Server:
+2026-10-08T15:25:40.6813230Z  Containers: 0
+2026-10-08T15:25:40.6813353Z   Running: 0
+2026-10-08T15:25:40.6813475Z   Paused: 0
+2026-10-08T15:25:40.6813592Z   Stopped: 0
+2026-10-08T15:25:40.6813709Z  Images: 7
+2026-10-08T15:25:40.6813832Z  Server Version: 28.0.4
+2026-10-08T15:25:40.6814126Z  Storage Driver: overlay2
+2026-10-08T15:25:40.6814328Z   Backing Filesystem: extfs
+2026-10-08T15:25:40.6814478Z   Supports d_type: true
+2026-10-08T15:25:40.6814618Z   Using metacopy: false
+2026-10-08T15:25:40.6825841Z   Native Overlay Diff: false
+2026-10-08T15:25:40.6826173Z   userxattr: false
+2026-10-08T15:25:40.6826396Z  Logging Driver: json-file
+2026-10-08T15:25:40.6826636Z  Cgroup Driver: systemd
+2026-10-08T15:25:40.6826865Z  Cgroup Version: 2
+2026-10-08T15:25:40.6827082Z  Plugins:
+2026-10-08T15:25:40.6827284Z   Volume: local
+2026-10-08T15:25:40.6827530Z   Network: bridge host ipvlan macvlan null overlay
+2026-10-08T15:25:40.6827947Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2026-10-08T15:25:40.6828866Z  Swarm: inactive
+2026-10-08T15:25:40.6829098Z  Runtimes: io.containerd.runc.v2 runc
+2026-10-08T15:25:40.6829380Z  Default Runtime: runc
+2026-10-08T15:25:40.6829619Z  Init Binary: docker-init
+2026-10-08T15:25:40.6829912Z  containerd version: ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:40.6830265Z  runc version: v1.5.1-0-g8f2685a4
+2026-10-08T15:25:40.6830468Z  init version: de40ad0
+2026-10-08T15:25:40.6830614Z  Security Options:
+2026-10-08T15:25:40.6830745Z   apparmor
+2026-10-08T15:25:40.6830868Z   seccomp
+2026-10-08T15:25:40.6830992Z    Profile: builtin
+2026-10-08T15:25:40.6831191Z   cgroupns
+2026-10-08T15:25:40.6831321Z  Kernel Version: 6.17.0-1022-azure
+2026-10-08T15:25:40.6831488Z  Operating System: Ubuntu 24.04.5 LTS
+2026-10-08T15:25:40.6831648Z  OSType: linux
+2026-10-08T15:25:40.6831783Z  Architecture: x86_64
+2026-10-08T15:25:40.6831988Z  CPUs: 4
+2026-10-08T15:25:40.6832110Z  Total Memory: 15.61GiB
+2026-10-08T15:25:40.6832250Z  Name: runnervmmprz5
+2026-10-08T15:25:40.6832404Z  ID: 07f0e779-c305-4162-b8ec-c48c30f52fbe
+2026-10-08T15:25:40.6832623Z  Docker Root Dir: /var/lib/docker
+2026-10-08T15:25:40.6832819Z  Debug Mode: false
+2026-10-08T15:25:40.6832952Z  Username: githubactions
+2026-10-08T15:25:40.6833098Z  Experimental: false
+2026-10-08T15:25:40.6833240Z  Insecure Registries:
+2026-10-08T15:25:40.6833448Z   ::1/128
+2026-10-08T15:25:40.6833585Z   127.0.0.0/8
+2026-10-08T15:25:40.6833713Z  Live Restore Enabled: false
+2026-10-08T15:25:40.6833811Z 
+2026-10-08T15:25:40.6838326Z ##[endgroup]
+2026-10-08T15:25:40.7326640Z ##[group]Buildx version
+2026-10-08T15:25:40.7349520Z [command]/usr/bin/docker buildx version
+2026-10-08T15:25:40.7701503Z github.com/docker/buildx v0.37.2 2d379c0c3f22da0d2759d132a0ec81ca949098f0
+2026-10-08T15:25:40.7725564Z ##[endgroup]
+2026-10-08T15:25:40.7847986Z ##[group]Inspecting default docker context
+2026-10-08T15:25:40.7958408Z [
+2026-10-08T15:25:40.7958621Z   {
+2026-10-08T15:25:40.7958757Z     "Name": "default",
+2026-10-08T15:25:40.7958931Z     "Metadata": {},
+2026-10-08T15:25:40.7959515Z     "Endpoints": {
+2026-10-08T15:25:40.7959654Z       "docker": {
+2026-10-08T15:25:40.7959815Z         "Host": "unix:///var/run/docker.sock",
+2026-10-08T15:25:40.7960046Z         "SkipTLSVerify": false
+2026-10-08T15:25:40.7960207Z       }
+2026-10-08T15:25:40.7960326Z     },
+2026-10-08T15:25:40.7960458Z     "TLSMaterial": {},
+2026-10-08T15:25:40.7960601Z     "Storage": {
+2026-10-08T15:25:40.7960750Z       "MetadataPath": "<IN MEMORY>",
+2026-10-08T15:25:40.7960953Z       "TLSPath": "<IN MEMORY>"
+2026-10-08T15:25:40.7961101Z     }
+2026-10-08T15:25:40.7961225Z   }
+2026-10-08T15:25:40.7961340Z ]
+2026-10-08T15:25:40.7961692Z ##[endgroup]
+2026-10-08T15:25:40.8346630Z ##[group]Pulling BuildKit image(s)
+2026-10-08T15:25:40.8363915Z [command]/usr/bin/docker pull moby/buildkit:buildx-stable-1
+2026-10-08T15:25:41.3506672Z buildx-stable-1: Pulling from moby/buildkit
+2026-10-08T15:25:41.5123383Z d0c1d894c237: Pulling fs layer
+2026-10-08T15:25:41.5123714Z 7e798cef5121: Pulling fs layer
+2026-10-08T15:25:41.5124162Z 98c91a1a17d1: Pulling fs layer
+2026-10-08T15:25:41.5124408Z c8f0d8a79114: Pulling fs layer
+2026-10-08T15:25:41.5124649Z efab3150af2c: Pulling fs layer
+2026-10-08T15:25:41.5124891Z 19ed272c7ade: Pulling fs layer
+2026-10-08T15:25:41.5125128Z 1d8ab3a073db: Pulling fs layer
+2026-10-08T15:25:41.5125356Z 19ed272c7ade: Waiting
+2026-10-08T15:25:41.5125565Z c8f0d8a79114: Waiting
+2026-10-08T15:25:41.5125767Z 1d8ab3a073db: Waiting
+2026-10-08T15:25:41.5125972Z efab3150af2c: Waiting
+2026-10-08T15:25:41.6445753Z 98c91a1a17d1: Verifying Checksum
+2026-10-08T15:25:41.7380023Z d0c1d894c237: Verifying Checksum
+2026-10-08T15:25:41.7383892Z d0c1d894c237: Download complete
+2026-10-08T15:25:41.7666461Z 7e798cef5121: Download complete
+2026-10-08T15:25:41.7796741Z c8f0d8a79114: Download complete
+2026-10-08T15:25:41.8143872Z d0c1d894c237: Pull complete
+2026-10-08T15:25:41.8978928Z 19ed272c7ade: Verifying Checksum
+2026-10-08T15:25:41.8979282Z 19ed272c7ade: Download complete
+2026-10-08T15:25:41.9310987Z 1d8ab3a073db: Verifying Checksum
+2026-10-08T15:25:41.9311371Z 1d8ab3a073db: Download complete
+2026-10-08T15:25:42.2811563Z efab3150af2c: Verifying Checksum
+2026-10-08T15:25:42.2811816Z efab3150af2c: Download complete
+2026-10-08T15:25:42.9403558Z 7e798cef5121: Pull complete
+2026-10-08T15:25:42.9488336Z 98c91a1a17d1: Pull complete
+2026-10-08T15:25:42.9569440Z c8f0d8a79114: Pull complete
+2026-10-08T15:25:44.6825146Z efab3150af2c: Pull complete
+2026-10-08T15:25:44.6913664Z 19ed272c7ade: Pull complete
+2026-10-08T15:25:44.6991270Z 1d8ab3a073db: Pull complete
+2026-10-08T15:25:44.7019924Z Digest: sha256:cec9f139f45e93c5c69c60f8b07cfad9f43f4ef6b6a6cd917527fea5ff2e3dea
+2026-10-08T15:25:44.7033908Z Status: Downloaded newer image for moby/buildkit:buildx-stable-1
+2026-10-08T15:25:44.7040124Z docker.io/moby/buildkit:buildx-stable-1
+2026-10-08T15:25:44.7055348Z ##[endgroup]
+2026-10-08T15:25:44.7055723Z ##[group]Creating a new builder instance
+2026-10-08T15:25:44.7463694Z [command]/usr/bin/docker buildx create --name builder-6d561185-38fe-4aa0-9c66-ccba60304aa1 --driver docker-container --buildkitd-flags --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host --use
+2026-10-08T15:25:44.7959169Z builder-6d561185-38fe-4aa0-9c66-ccba60304aa1
+2026-10-08T15:25:44.7989946Z ##[endgroup]
+2026-10-08T15:25:44.7990311Z ##[group]Booting builder
+2026-10-08T15:25:44.8011027Z [command]/usr/bin/docker buildx inspect --bootstrap --builder builder-6d561185-38fe-4aa0-9c66-ccba60304aa1
+2026-10-08T15:25:44.8394836Z #1 [internal] booting buildkit
+2026-10-08T15:25:44.9896567Z #1 pulling image moby/buildkit:buildx-stable-1
+2026-10-08T15:25:45.2510841Z #1 pulling image moby/buildkit:buildx-stable-1 0.4s done
+2026-10-08T15:25:45.4029041Z #1 creating container buildx_buildkit_builder-6d561185-38fe-4aa0-9c66-ccba60304aa10
+2026-10-08T15:25:45.5543336Z #1 creating container buildx_buildkit_builder-6d561185-38fe-4aa0-9c66-ccba60304aa10 0.3s done
+2026-10-08T15:25:45.5801030Z #1 DONE 0.7s
+2026-10-08T15:25:45.6064804Z Name:          builder-6d561185-38fe-4aa0-9c66-ccba60304aa1
+2026-10-08T15:25:45.6065826Z Driver:        docker-container
+2026-10-08T15:25:45.6066571Z Last Activity: 2026-10-08 15:25:44 +0000 UTC
+2026-10-08T15:25:45.6066831Z 
+2026-10-08T15:25:45.6066988Z Nodes:
+2026-10-08T15:25:45.6067305Z Name:                  builder-6d561185-38fe-4aa0-9c66-ccba60304aa10
+2026-10-08T15:25:45.6067658Z Endpoint:              unix:///var/run/docker.sock
+2026-10-08T15:25:45.6067939Z Status:                running
+2026-10-08T15:25:45.6068406Z BuildKit daemon flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+2026-10-08T15:25:45.6068884Z BuildKit version:      v0.33.1
+2026-10-08T15:25:45.6069587Z Platforms:             linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/amd64/v4, linux/arm64, linux/riscv64, linux/ppc64le, linux/s390x, linux/386, linux/mips64le, linux/mips64, linux/loong64, linux/arm/v7, linux/arm/v6
+2026-10-08T15:25:45.6070282Z Labels:
+2026-10-08T15:25:45.6070538Z  org.mobyproject.buildkit.worker.executor:         oci
+2026-10-08T15:25:45.6070922Z  org.mobyproject.buildkit.worker.hostname:         26de16ef6ee2
+2026-10-08T15:25:45.6071301Z  org.mobyproject.buildkit.worker.network:          host
+2026-10-08T15:25:45.6071667Z  org.mobyproject.buildkit.worker.oci.process-mode: sandbox
+2026-10-08T15:25:45.6072042Z  org.mobyproject.buildkit.worker.selinux.enabled:  false
+2026-10-08T15:25:45.6072415Z  org.mobyproject.buildkit.worker.snapshotter:      overlayfs
+2026-10-08T15:25:45.6072723Z GC Policy rule#0:
+2026-10-08T15:25:45.6072925Z  All:            false
+2026-10-08T15:25:45.6073238Z  Filters:        type==source.local type==exec.cachemount type==source.git.checkout
+2026-10-08T15:25:45.6073595Z  Keep Duration:  48h0m0s
+2026-10-08T15:25:45.6073810Z  Max Used Space: 488.3MiB
+2026-10-08T15:25:45.6074106Z GC Policy rule#1:
+2026-10-08T15:25:45.6074295Z  All:            false
+2026-10-08T15:25:45.6074496Z  Keep Duration:  1440h0m0s
+2026-10-08T15:25:45.6074713Z  Reserved Space: 9.313GiB
+2026-10-08T15:25:45.6075242Z  Max Used Space: 93.13GiB
+2026-10-08T15:25:45.6075459Z  Min Free Space: 27.01GiB
+2026-10-08T15:25:45.6075667Z GC Policy rule#2:
+2026-10-08T15:25:45.6075853Z  All:            false
+2026-10-08T15:25:45.6076053Z  Reserved Space: 9.313GiB
+2026-10-08T15:25:45.6076258Z  Max Used Space: 93.13GiB
+2026-10-08T15:25:45.6076465Z  Min Free Space: 27.01GiB
+2026-10-08T15:25:45.6076663Z GC Policy rule#3:
+2026-10-08T15:25:45.6076852Z  All:            true
+2026-10-08T15:25:45.6077051Z  Reserved Space: 9.313GiB
+2026-10-08T15:25:45.6077263Z  Max Used Space: 93.13GiB
+2026-10-08T15:25:45.6077473Z  Min Free Space: 27.01GiB
+2026-10-08T15:25:45.6103274Z ##[endgroup]
+2026-10-08T15:25:45.6765552Z ##[group]Inspect builder
+2026-10-08T15:25:45.6767735Z {
+2026-10-08T15:25:45.6767937Z   "nodes": [
+2026-10-08T15:25:45.6768193Z     {
+2026-10-08T15:25:45.6768439Z       "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa10",
+2026-10-08T15:25:45.6768791Z       "endpoint": "unix:///var/run/docker.sock",
+2026-10-08T15:25:45.6769108Z       "status": "running",
+2026-10-08T15:25:45.6769484Z       "buildkitd-flags": "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host",
+2026-10-08T15:25:45.6769861Z       "buildkit": "v0.33.1",
+2026-10-08T15:25:45.6770320Z       "platforms": "linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/amd64/v4,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/loong64,linux/arm/v7,linux/arm/v6",
+2026-10-08T15:25:45.6770855Z       "features": {
+2026-10-08T15:25:45.6771049Z         "Automatically load images to the Docker Engine image store": true,
+2026-10-08T15:25:45.6771270Z         "Cache export": true,
+2026-10-08T15:25:45.6771473Z         "Direct push": true,
+2026-10-08T15:25:45.6771671Z         "Docker exporter": true,
+2026-10-08T15:25:45.6771857Z         "Multi-platform build": true,
+2026-10-08T15:25:45.6772107Z         "OCI exporter": true
+2026-10-08T15:25:45.6772333Z       },
+2026-10-08T15:25:45.6772509Z       "labels": {
+2026-10-08T15:25:45.6773075Z         "org.mobyproject.buildkit.worker.executor": "oci",
+2026-10-08T15:25:45.6773455Z         "org.mobyproject.buildkit.worker.hostname": "26de16ef6ee2",
+2026-10-08T15:25:45.6773838Z         "org.mobyproject.buildkit.worker.network": "host",
+2026-10-08T15:25:45.6774904Z         "org.mobyproject.buildkit.worker.oci.process-mode": "sandbox",
+2026-10-08T15:25:45.6775359Z         "org.mobyproject.buildkit.worker.selinux.enabled": "false",
+2026-10-08T15:25:45.6775770Z         "org.mobyproject.buildkit.worker.snapshotter": "overlayfs"
+2026-10-08T15:25:45.6776134Z       },
+2026-10-08T15:25:45.6776307Z       "gcPolicy": [
+2026-10-08T15:25:45.6776500Z         {
+2026-10-08T15:25:45.6776680Z           "all": false,
+2026-10-08T15:25:45.6776916Z           "filter": [
+2026-10-08T15:25:45.6777220Z             "type==source.local type==exec.cachemount type==source.git.checkout"
+2026-10-08T15:25:45.6777559Z           ],
+2026-10-08T15:25:45.6777760Z           "keepDuration": "48h0m0s",
+2026-10-08T15:25:45.6778013Z           "maxUsedSpace": "488.3MiB"
+2026-10-08T15:25:45.6778245Z         },
+2026-10-08T15:25:45.6778436Z         {
+2026-10-08T15:25:45.6778613Z           "all": false,
+2026-10-08T15:25:45.6778830Z           "keepDuration": "1440h0m0s",
+2026-10-08T15:25:45.6779088Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:45.6779346Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:45.6779623Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:45.6779885Z         },
+2026-10-08T15:25:45.6780061Z         {
+2026-10-08T15:25:45.6780243Z           "all": false,
+2026-10-08T15:25:45.6780475Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:45.6780757Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:45.6781011Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:45.6781241Z         },
+2026-10-08T15:25:45.6781389Z         {
+2026-10-08T15:25:45.6781580Z           "all": true,
+2026-10-08T15:25:45.6781807Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:45.6782305Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:45.6782594Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:45.6782837Z         }
+2026-10-08T15:25:45.6783020Z       ]
+2026-10-08T15:25:45.6783210Z     }
+2026-10-08T15:25:45.6783396Z   ],
+2026-10-08T15:25:45.6783645Z   "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1",
+2026-10-08T15:25:45.6784097Z   "driver": "docker-container",
+2026-10-08T15:25:45.6784383Z   "lastActivity": "2026-10-08T15:25:44.000Z"
+2026-10-08T15:25:45.6784629Z }
+2026-10-08T15:25:45.6785047Z ##[endgroup]
+2026-10-08T15:25:45.6785409Z ##[group]BuildKit version
+2026-10-08T15:25:45.6785605Z builder-6d561185-38fe-4aa0-9c66-ccba60304aa10: v0.33.1
+2026-10-08T15:25:45.6785948Z ##[endgroup]
+2026-10-08T15:25:45.6917840Z ##[group]Run docker/metadata-action@v6
+2026-10-08T15:25:45.6918011Z with:
+2026-10-08T15:25:45.6918229Z   images: ghcr.io/johnsonlee/graphite-explore
+docker.io/johnsonlee/graphite-explore
+
+2026-10-08T15:25:45.6918835Z   tags: type=semver,pattern={{version}},value=v2.11.3-apple-validation.4
+type=semver,pattern={{major}}.{{minor}},value=v2.11.3-apple-validation.4
+type=semver,pattern={{major}},value=v2.11.3-apple-validation.4
+type=raw,value=latest,enable=false
+
+2026-10-08T15:25:45.6919804Z   labels: org.opencontainers.image.title=graphite-explore
+org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+org.opencontainers.image.licenses=Apache-2.0
+
+2026-10-08T15:25:45.6920416Z   context: workflow
+2026-10-08T15:25:45.6921761Z   github-token: ***
+2026-10-08T15:25:45.6921887Z env:
+2026-10-08T15:25:45.6922019Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:45.6922209Z   DRY_RUN: true
+2026-10-08T15:25:45.6922347Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:45.6922513Z ##[endgroup]
+2026-10-08T15:25:46.5495938Z ##[group]Context info
+2026-10-08T15:25:46.5496255Z eventName: workflow_dispatch
+2026-10-08T15:25:46.5496442Z sha: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:46.5497245Z ref: refs/heads/codex/apple-frontend-validation
+2026-10-08T15:25:46.5497430Z workflow: Publish
+2026-10-08T15:25:46.5497561Z action: docker_meta
+2026-10-08T15:25:46.5497775Z actor: johnsonlee
+2026-10-08T15:25:46.5497971Z runNumber: 103
+2026-10-08T15:25:46.5498161Z runId: 37798249852
+2026-10-08T15:25:46.5498449Z commitDate: Thu Oct 08 2026 15:07:17 GMT+0000 (Coordinated Universal Time)
+2026-10-08T15:25:46.5498924Z ##[endgroup]
+2026-10-08T15:25:46.5505240Z ##[group]Processing images input
+2026-10-08T15:25:46.5505535Z name=ghcr.io/johnsonlee/graphite-explore,enable=true
+2026-10-08T15:25:46.5505852Z name=docker.io/johnsonlee/graphite-explore,enable=true
+2026-10-08T15:25:46.5506130Z ##[endgroup]
+2026-10-08T15:25:46.5515584Z ##[group]Processing tags input
+2026-10-08T15:25:46.5516013Z type=semver,pattern={{version}},value=v2.11.3-apple-validation.4,match=,enable=true,priority=900
+2026-10-08T15:25:46.5516589Z type=semver,pattern={{major}}.{{minor}},value=v2.11.3-apple-validation.4,match=,enable=true,priority=900
+2026-10-08T15:25:46.5517105Z type=semver,pattern={{major}},value=v2.11.3-apple-validation.4,match=,enable=true,priority=900
+2026-10-08T15:25:46.5517539Z type=raw,value=latest,enable=false,priority=200
+2026-10-08T15:25:46.5517917Z ##[endgroup]
+2026-10-08T15:25:46.5518145Z ##[group]Processing flavor input
+2026-10-08T15:25:46.5518298Z latest=auto
+2026-10-08T15:25:46.5518416Z prefix=
+2026-10-08T15:25:46.5518532Z prefixLatest=false
+2026-10-08T15:25:46.5518660Z suffix=
+2026-10-08T15:25:46.5518783Z suffixLatest=false
+2026-10-08T15:25:46.5518989Z ##[endgroup]
+2026-10-08T15:25:46.5574541Z ##[group]Docker image version
+2026-10-08T15:25:46.5574791Z 2.11.3-apple-validation.4
+2026-10-08T15:25:46.5575135Z ##[endgroup]
+2026-10-08T15:25:46.5578022Z ##[group]Docker tags
+2026-10-08T15:25:46.5578321Z ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:46.5578720Z docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:46.5579007Z ##[endgroup]
+2026-10-08T15:25:46.5628261Z ##[group]Docker labels
+2026-10-08T15:25:46.5628559Z org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+2026-10-08T15:25:46.5629097Z org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+2026-10-08T15:25:46.5629403Z org.opencontainers.image.licenses=Apache-2.0
+2026-10-08T15:25:46.5629822Z org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:46.5630338Z org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+2026-10-08T15:25:46.5630733Z org.opencontainers.image.title=graphite-explore
+2026-10-08T15:25:46.5631453Z org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+2026-10-08T15:25:46.5631860Z org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:46.5632283Z ##[endgroup]
+2026-10-08T15:25:46.5632591Z ##[group]Annotations
+2026-10-08T15:25:46.5632913Z manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+2026-10-08T15:25:46.5633373Z manifest:org.opencontainers.image.description=Structured codebase context for LLMs
+2026-10-08T15:25:46.5633682Z manifest:org.opencontainers.image.licenses=Apache-2.0
+2026-10-08T15:25:46.5634082Z manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:46.5634426Z manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+2026-10-08T15:25:46.5634715Z manifest:org.opencontainers.image.title=graphite
+2026-10-08T15:25:46.5635010Z manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+2026-10-08T15:25:46.5635312Z manifest:org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:46.5635629Z ##[endgroup]
+2026-10-08T15:25:46.5639961Z ##[group]JSON output
+2026-10-08T15:25:46.5640200Z {
+2026-10-08T15:25:46.5640372Z   "tags": [
+2026-10-08T15:25:46.5640655Z     "ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4",
+2026-10-08T15:25:46.5641067Z     "docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5641575Z   ],
+2026-10-08T15:25:46.5641782Z   "tag-names": [
+2026-10-08T15:25:46.5642001Z     "2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5642145Z   ],
+2026-10-08T15:25:46.5642259Z   "labels": {
+2026-10-08T15:25:46.5642434Z     "org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:46.5642771Z     "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:46.5643106Z     "org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:46.5643410Z     "org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:46.5643919Z     "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5644476Z     "org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:46.5644919Z     "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5645401Z     "org.opencontainers.image.version": "2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5645719Z   },
+2026-10-08T15:25:46.5645845Z   "annotations": [
+2026-10-08T15:25:46.5646069Z     "manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:46.5646434Z     "manifest:org.opencontainers.image.description=Structured codebase context for LLMs",
+2026-10-08T15:25:46.5646797Z     "manifest:org.opencontainers.image.licenses=Apache-2.0",
+2026-10-08T15:25:46.5647138Z     "manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:46.5647538Z     "manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5647830Z     "manifest:org.opencontainers.image.title=graphite",
+2026-10-08T15:25:46.5648108Z     "manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5648414Z     "manifest:org.opencontainers.image.version=2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5648626Z   ]
+2026-10-08T15:25:46.5648735Z }
+2026-10-08T15:25:46.5648946Z ##[endgroup]
+2026-10-08T15:25:46.5649238Z ##[group]Bake file definition (tags)
+2026-10-08T15:25:46.5649494Z {
+2026-10-08T15:25:46.5649665Z   "target": {
+2026-10-08T15:25:46.5649880Z     "docker-metadata-action": {
+2026-10-08T15:25:46.5650110Z       "tags": [
+2026-10-08T15:25:46.5650401Z         "ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4",
+2026-10-08T15:25:46.5650849Z         "docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5651114Z       ],
+2026-10-08T15:25:46.5651238Z       "args": {
+2026-10-08T15:25:46.5651594Z         "DOCKER_META_IMAGES": "ghcr.io/johnsonlee/graphite-explore,docker.io/johnsonlee/graphite-explore",
+2026-10-08T15:25:46.5652020Z         "DOCKER_META_VERSION": "2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5652336Z       }
+2026-10-08T15:25:46.5652488Z     }
+2026-10-08T15:25:46.5652601Z   }
+2026-10-08T15:25:46.5652709Z }
+2026-10-08T15:25:46.5652903Z ##[endgroup]
+2026-10-08T15:25:46.5653299Z ##[group]Bake file definition (labels)
+2026-10-08T15:25:46.5653559Z {
+2026-10-08T15:25:46.5653761Z   "target": {
+2026-10-08T15:25:46.5654072Z     "docker-metadata-action": {
+2026-10-08T15:25:46.5654332Z       "labels": {
+2026-10-08T15:25:46.5654578Z         "org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:46.5654956Z         "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:46.5655343Z         "org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:46.5655667Z         "org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:46.5656048Z         "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5656380Z         "org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:46.5656702Z         "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5657016Z         "org.opencontainers.image.version": "2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5657342Z       }
+2026-10-08T15:25:46.5657454Z     }
+2026-10-08T15:25:46.5657561Z   }
+2026-10-08T15:25:46.5657669Z }
+2026-10-08T15:25:46.5657859Z ##[endgroup]
+2026-10-08T15:25:46.5658088Z ##[group]Bake file definition (annotations)
+2026-10-08T15:25:46.5658252Z {
+2026-10-08T15:25:46.5658357Z   "target": {
+2026-10-08T15:25:46.5658499Z     "docker-metadata-action": {
+2026-10-08T15:25:46.5658653Z       "annotations": [
+2026-10-08T15:25:46.5658849Z         "manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:46.5659166Z         "manifest:org.opencontainers.image.description=Structured codebase context for LLMs",
+2026-10-08T15:25:46.5659535Z         "manifest:org.opencontainers.image.licenses=Apache-2.0",
+2026-10-08T15:25:46.5660054Z         "manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:46.5661090Z         "manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5661694Z         "manifest:org.opencontainers.image.title=graphite",
+2026-10-08T15:25:46.5662331Z         "manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:46.5683841Z         "manifest:org.opencontainers.image.version=2.11.3-apple-validation.4"
+2026-10-08T15:25:46.5684288Z       ]
+2026-10-08T15:25:46.5684405Z     }
+2026-10-08T15:25:46.5684519Z   }
+2026-10-08T15:25:46.5684632Z }
+2026-10-08T15:25:46.5684899Z ##[endgroup]
+2026-10-08T15:25:46.5837114Z ##[group]Run docker/build-push-action@v7
+2026-10-08T15:25:46.5837291Z with:
+2026-10-08T15:25:46.5837414Z   context: .
+2026-10-08T15:25:46.5837548Z   file: backend/explore/Dockerfile
+2026-10-08T15:25:46.5837708Z   platforms: linux/amd64
+2026-10-08T15:25:46.5837846Z   load: true
+2026-10-08T15:25:46.5837971Z   tags: graphite-explore:smoke
+2026-10-08T15:25:46.5838152Z   build-args: VERSION=v2.11.3-apple-validation.4
+
+2026-10-08T15:25:46.5838340Z   no-cache: false
+2026-10-08T15:25:46.5838473Z   pull: false
+2026-10-08T15:25:46.5838596Z   push: false
+2026-10-08T15:25:46.5839885Z   github-token: ***
+2026-10-08T15:25:46.5840009Z env:
+2026-10-08T15:25:46.5840141Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:46.5840304Z   DRY_RUN: true
+2026-10-08T15:25:46.5840444Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:46.5840654Z   DOCKER_METADATA_OUTPUT_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:46.5841098Z   DOCKER_METADATA_OUTPUT_TAGS: ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:46.5841519Z   DOCKER_METADATA_OUTPUT_TAG_NAMES: 2.11.3-apple-validation.4
+2026-10-08T15:25:46.5842711Z   DOCKER_METADATA_OUTPUT_LABELS: org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+org.opencontainers.image.licenses=Apache-2.0
+org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+org.opencontainers.image.title=graphite-explore
+org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:46.5845107Z   DOCKER_METADATA_OUTPUT_ANNOTATIONS: manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+manifest:org.opencontainers.image.description=Structured codebase context for LLMs
+manifest:org.opencontainers.image.licenses=Apache-2.0
+manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.title=graphite
+manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:46.5848705Z   DOCKER_METADATA_OUTPUT_JSON: {"tags":["ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4","docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4"],"tag-names":["2.11.3-apple-validation.4"],"labels":{"org.opencontainers.image.created":"2026-10-08T15:25:46.551Z","org.opencontainers.image.description":"Interactive web visualization for Graphite static analysis graphs","org.opencontainers.image.licenses":"Apache-2.0","org.opencontainers.image.revision":"1ba3808f79db8190ecd278a3853ab7a27d5abac9","org.opencontainers.image.source":"https://github.com/johnsonlee/graphite","org.opencontainers.image.title":"graphite-explore","org.opencontainers.image.url":"https://github.com/johnsonlee/graphite","org.opencontainers.image.version":"2.11.3-apple-validation.4"},"annotations":["manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z","manifest:org.opencontainers.image.description=Structured codebase context for LLMs","manifest:org.opencontainers.image.licenses=Apache-2.0","manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9","manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.title=graphite","manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.version=2.11.3-apple-validation.4"]}
+2026-10-08T15:25:46.5851705Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_TAGS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-tags.json
+2026-10-08T15:25:46.5852342Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_LABELS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-labels.json
+2026-10-08T15:25:46.5852888Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_ANNOTATIONS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-annotations.json
+2026-10-08T15:25:46.5853407Z   DOCKER_METADATA_OUTPUT_BAKE_FILE: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake.json
+2026-10-08T15:25:46.5853720Z ##[endgroup]
+2026-10-08T15:25:46.7332688Z ##[group]GitHub Actions runtime token ACs
+2026-10-08T15:25:46.7336765Z refs/heads/codex/apple-frontend-validation: read/write
+2026-10-08T15:25:46.7337068Z refs/heads/main: read
+2026-10-08T15:25:46.7337414Z ##[endgroup]
+2026-10-08T15:25:46.7337727Z ##[group]Docker info
+2026-10-08T15:25:46.7362138Z [command]/usr/bin/docker version
+2026-10-08T15:25:46.7544514Z Client: Docker Engine - Community
+2026-10-08T15:25:46.7545065Z  Version:           28.0.4
+2026-10-08T15:25:46.7545553Z  API version:       1.48
+2026-10-08T15:25:46.7548727Z  Go version:        go1.23.7
+2026-10-08T15:25:46.7549124Z  Git commit:        b8034c0
+2026-10-08T15:25:46.7549474Z  Built:             Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:46.7549807Z  OS/Arch:           linux/amd64
+2026-10-08T15:25:46.7550082Z  Context:           default
+2026-10-08T15:25:46.7550250Z 
+2026-10-08T15:25:46.7550362Z Server: Docker Engine - Community
+2026-10-08T15:25:46.7550604Z  Engine:
+2026-10-08T15:25:46.7550786Z   Version:          28.0.4
+2026-10-08T15:25:46.7551040Z   API version:      1.48 (minimum version 1.24)
+2026-10-08T15:25:46.7551340Z   Go version:       go1.23.7
+2026-10-08T15:25:46.7551625Z   Git commit:       6430e49
+2026-10-08T15:25:46.7551871Z   Built:            Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:46.7552140Z   OS/Arch:          linux/amd64
+2026-10-08T15:25:46.7552407Z   Experimental:     false
+2026-10-08T15:25:46.7552678Z  containerd:
+2026-10-08T15:25:46.7552873Z   Version:          v2.3.6
+2026-10-08T15:25:46.7553191Z   GitCommit:        ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:46.7553528Z  runc:
+2026-10-08T15:25:46.7553718Z   Version:          1.5.1
+2026-10-08T15:25:46.7553953Z   GitCommit:        v1.5.1-0-g8f2685a4
+2026-10-08T15:25:46.7554410Z  docker-init:
+2026-10-08T15:25:46.7554610Z   Version:          0.19.0
+2026-10-08T15:25:46.7554865Z   GitCommit:        de40ad0
+2026-10-08T15:25:46.7638001Z [command]/usr/bin/docker info
+2026-10-08T15:25:46.8109329Z Client: Docker Engine - Community
+2026-10-08T15:25:46.8109754Z  Version:    28.0.4
+2026-10-08T15:25:46.8110447Z  Context:    default
+2026-10-08T15:25:46.8110834Z  Debug Mode: false
+2026-10-08T15:25:46.8111068Z  Plugins:
+2026-10-08T15:25:46.8111266Z   buildx: Docker Buildx (Docker Inc.)
+2026-10-08T15:25:46.8111518Z     Version:  v0.37.2
+2026-10-08T15:25:46.8111785Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2026-10-08T15:25:46.8112093Z   compose: Docker Compose (Docker Inc.)
+2026-10-08T15:25:46.8112335Z     Version:  v2.38.2
+2026-10-08T15:25:46.8112608Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2026-10-08T15:25:46.8112817Z 
+2026-10-08T15:25:46.8112892Z Server:
+2026-10-08T15:25:46.8113057Z  Containers: 1
+2026-10-08T15:25:46.8113231Z   Running: 1
+2026-10-08T15:25:46.8113400Z   Paused: 0
+2026-10-08T15:25:46.8113567Z   Stopped: 0
+2026-10-08T15:25:46.8113737Z  Images: 8
+2026-10-08T15:25:46.8113909Z  Server Version: 28.0.4
+2026-10-08T15:25:46.8114224Z  Storage Driver: overlay2
+2026-10-08T15:25:46.8114443Z   Backing Filesystem: extfs
+2026-10-08T15:25:46.8114662Z   Supports d_type: true
+2026-10-08T15:25:46.8114876Z   Using metacopy: false
+2026-10-08T15:25:46.8115085Z   Native Overlay Diff: false
+2026-10-08T15:25:46.8115307Z   userxattr: false
+2026-10-08T15:25:46.8115502Z  Logging Driver: json-file
+2026-10-08T15:25:46.8115763Z  Cgroup Driver: systemd
+2026-10-08T15:25:46.8115966Z  Cgroup Version: 2
+2026-10-08T15:25:46.8116150Z  Plugins:
+2026-10-08T15:25:46.8116321Z   Volume: local
+2026-10-08T15:25:46.8116540Z   Network: bridge host ipvlan macvlan null overlay
+2026-10-08T15:25:46.8117178Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2026-10-08T15:25:46.8117503Z  Swarm: inactive
+2026-10-08T15:25:46.8117759Z  Runtimes: io.containerd.runc.v2 runc
+2026-10-08T15:25:46.8118015Z  Default Runtime: runc
+2026-10-08T15:25:46.8118227Z  Init Binary: docker-init
+2026-10-08T15:25:46.8118506Z  containerd version: ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:46.8118810Z  runc version: v1.5.1-0-g8f2685a4
+2026-10-08T15:25:46.8119044Z  init version: de40ad0
+2026-10-08T15:25:46.8119248Z  Security Options:
+2026-10-08T15:25:46.8119437Z   apparmor
+2026-10-08T15:25:46.8119607Z   seccomp
+2026-10-08T15:25:46.8119783Z    Profile: builtin
+2026-10-08T15:25:46.8119971Z   cgroupns
+2026-10-08T15:25:46.8120155Z  Kernel Version: 6.17.0-1022-azure
+2026-10-08T15:25:46.8120403Z  Operating System: Ubuntu 24.04.5 LTS
+2026-10-08T15:25:46.8120639Z  OSType: linux
+2026-10-08T15:25:46.8120831Z  Architecture: x86_64
+2026-10-08T15:25:46.8121022Z  CPUs: 4
+2026-10-08T15:25:46.8121225Z  Total Memory: 15.61GiB
+2026-10-08T15:25:46.8121439Z  Name: runnervmmprz5
+2026-10-08T15:25:46.8121659Z  ID: 07f0e779-c305-4162-b8ec-c48c30f52fbe
+2026-10-08T15:25:46.8121835Z  Docker Root Dir: /var/lib/docker
+2026-10-08T15:25:46.8121980Z  Debug Mode: false
+2026-10-08T15:25:46.8122177Z  Username: githubactions
+2026-10-08T15:25:46.8122347Z  Experimental: false
+2026-10-08T15:25:46.8122480Z  Insecure Registries:
+2026-10-08T15:25:46.8122643Z   ::1/128
+2026-10-08T15:25:46.8122764Z   127.0.0.0/8
+2026-10-08T15:25:46.8122892Z  Live Restore Enabled: false
+2026-10-08T15:25:46.8122990Z 
+2026-10-08T15:25:46.8125012Z ##[endgroup]
+2026-10-08T15:25:46.8125609Z ##[group]Proxy configuration
+2026-10-08T15:25:46.8129037Z No proxy configuration found
+2026-10-08T15:25:46.8129555Z ##[endgroup]
+2026-10-08T15:25:46.8520318Z ##[group]Buildx version
+2026-10-08T15:25:46.8542416Z [command]/usr/bin/docker buildx version
+2026-10-08T15:25:46.8897530Z github.com/docker/buildx v0.37.2 2d379c0c3f22da0d2759d132a0ec81ca949098f0
+2026-10-08T15:25:46.8924869Z ##[endgroup]
+2026-10-08T15:25:46.8925275Z ##[group]Builder info
+2026-10-08T15:25:46.9598096Z {
+2026-10-08T15:25:46.9598455Z   "nodes": [
+2026-10-08T15:25:46.9598806Z     {
+2026-10-08T15:25:46.9599257Z       "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa10",
+2026-10-08T15:25:46.9599716Z       "endpoint": "unix:///var/run/docker.sock",
+2026-10-08T15:25:46.9600107Z       "status": "running",
+2026-10-08T15:25:46.9600653Z       "buildkitd-flags": "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host",
+2026-10-08T15:25:46.9601638Z       "buildkit": "v0.33.1",
+2026-10-08T15:25:46.9602355Z       "platforms": "linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/amd64/v4,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/loong64,linux/arm/v7,linux/arm/v6",
+2026-10-08T15:25:46.9603061Z       "features": {
+2026-10-08T15:25:46.9603355Z         "Automatically load images to the Docker Engine image store": true,
+2026-10-08T15:25:46.9603724Z         "Cache export": true,
+2026-10-08T15:25:46.9603951Z         "Direct push": true,
+2026-10-08T15:25:46.9604592Z         "Docker exporter": true,
+2026-10-08T15:25:46.9604836Z         "Multi-platform build": true,
+2026-10-08T15:25:46.9605087Z         "OCI exporter": true
+2026-10-08T15:25:46.9605319Z       },
+2026-10-08T15:25:46.9605446Z       "labels": {
+2026-10-08T15:25:46.9605714Z         "org.mobyproject.buildkit.worker.executor": "oci",
+2026-10-08T15:25:46.9605994Z         "org.mobyproject.buildkit.worker.hostname": "26de16ef6ee2",
+2026-10-08T15:25:46.9606352Z         "org.mobyproject.buildkit.worker.network": "host",
+2026-10-08T15:25:46.9606687Z         "org.mobyproject.buildkit.worker.oci.process-mode": "sandbox",
+2026-10-08T15:25:46.9607018Z         "org.mobyproject.buildkit.worker.selinux.enabled": "false",
+2026-10-08T15:25:46.9607276Z         "org.mobyproject.buildkit.worker.snapshotter": "overlayfs"
+2026-10-08T15:25:46.9607539Z       },
+2026-10-08T15:25:46.9607700Z       "gcPolicy": [
+2026-10-08T15:25:46.9608055Z         {
+2026-10-08T15:25:46.9608196Z           "all": false,
+2026-10-08T15:25:46.9608413Z           "filter": [
+2026-10-08T15:25:46.9608641Z             "type==source.local type==exec.cachemount type==source.git.checkout"
+2026-10-08T15:25:46.9608859Z           ],
+2026-10-08T15:25:46.9609038Z           "keepDuration": "48h0m0s",
+2026-10-08T15:25:46.9609262Z           "maxUsedSpace": "488.3MiB"
+2026-10-08T15:25:46.9609492Z         },
+2026-10-08T15:25:46.9609628Z         {
+2026-10-08T15:25:46.9609786Z           "all": false,
+2026-10-08T15:25:46.9609995Z           "keepDuration": "1440h0m0s",
+2026-10-08T15:25:46.9610167Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:46.9610333Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:46.9610502Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:46.9610751Z         },
+2026-10-08T15:25:46.9610871Z         {
+2026-10-08T15:25:46.9611059Z           "all": false,
+2026-10-08T15:25:46.9611225Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:46.9611472Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:46.9611637Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:46.9611835Z         },
+2026-10-08T15:25:46.9612004Z         {
+2026-10-08T15:25:46.9612173Z           "all": true,
+2026-10-08T15:25:46.9612321Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:46.9612487Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:46.9612651Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:46.9612815Z         }
+2026-10-08T15:25:46.9612940Z       ]
+2026-10-08T15:25:46.9613069Z     }
+2026-10-08T15:25:46.9613178Z   ],
+2026-10-08T15:25:46.9613331Z   "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1",
+2026-10-08T15:25:46.9613568Z   "driver": "docker-container",
+2026-10-08T15:25:46.9613816Z   "lastActivity": "2026-10-08T15:25:44.000Z"
+2026-10-08T15:25:46.9614289Z }
+2026-10-08T15:25:46.9614694Z ##[endgroup]
+2026-10-08T15:25:47.0715955Z [command]/usr/bin/docker buildx build --build-arg VERSION=v2.11.3-apple-validation.4 --file backend/explore/Dockerfile --iidfile /home/runner/work/_temp/docker-actions-toolkit-Z4BF9N/build-iidfile-3fd710a483.txt --platform linux/amd64 --tag graphite-explore:smoke --load --metadata-file /home/runner/work/_temp/docker-actions-toolkit-Z4BF9N/build-metadata-b94c40fdb4.json .
+2026-10-08T15:25:47.3156152Z #0 building with "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1" instance using docker-container driver
+2026-10-08T15:25:47.3156473Z 
+2026-10-08T15:25:47.3156562Z #1 [internal] load build definition from Dockerfile
+2026-10-08T15:25:47.3157323Z #1 transferring dockerfile: 1.53kB done
+2026-10-08T15:25:47.3157586Z #1 DONE 0.0s
+2026-10-08T15:25:47.3157708Z 
+2026-10-08T15:25:47.3157873Z #2 [auth] docker/dockerfile:pull token for registry-1.docker.io
+2026-10-08T15:25:47.4658847Z #2 DONE 0.0s
+2026-10-08T15:25:47.4658980Z 
+2026-10-08T15:25:47.4659162Z #3 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+2026-10-08T15:25:47.7713816Z #3 DONE 0.6s
+2026-10-08T15:25:47.9286386Z 
+2026-10-08T15:25:47.9287314Z #4 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+2026-10-08T15:25:47.9287824Z #4 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e done
+2026-10-08T15:25:47.9301432Z #4 sha256:96918c57e42509b97f10c074d80672ecdbd3bb7dcd38c1bd95960cf291207416 6.29MB / 11.98MB 0.2s
+2026-10-08T15:25:48.0858658Z #4 sha256:96918c57e42509b97f10c074d80672ecdbd3bb7dcd38c1bd95960cf291207416 11.98MB / 11.98MB 0.2s done
+2026-10-08T15:25:48.0859206Z #4 extracting sha256:96918c57e42509b97f10c074d80672ecdbd3bb7dcd38c1bd95960cf291207416 0.1s done
+2026-10-08T15:25:48.0859467Z #4 DONE 0.3s
+2026-10-08T15:25:48.2753157Z 
+2026-10-08T15:25:48.2753736Z #5 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2026-10-08T15:25:48.5057351Z #5 DONE 0.4s
+2026-10-08T15:25:48.6625199Z 
+2026-10-08T15:25:48.6625768Z #6 [internal] load .dockerignore
+2026-10-08T15:25:48.6626044Z #6 transferring context: 176B done
+2026-10-08T15:25:48.6654779Z #6 DONE 0.0s
+2026-10-08T15:25:48.7861061Z 
+2026-10-08T15:25:48.7861631Z #7 [internal] load build context
+2026-10-08T15:25:48.7862006Z #7 transferring context: 11.46MB 0.1s done
+2026-10-08T15:25:48.7862338Z #7 DONE 0.1s
+2026-10-08T15:25:48.7862469Z 
+2026-10-08T15:25:48.7862782Z #8 [1/3] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+2026-10-08T15:25:48.7863280Z #8 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab done
+2026-10-08T15:25:48.8879596Z #8 sha256:96ed2737ae312e0bc637b40783f7c2f23416cb72ca957aa01855f1614278e64b 0B / 143.35kB 0.2s
+2026-10-08T15:25:49.0234308Z #8 sha256:96ed2737ae312e0bc637b40783f7c2f23416cb72ca957aa01855f1614278e64b 143.35kB / 143.35kB 0.2s done
+2026-10-08T15:25:49.0234798Z #8 sha256:dcaa5a89b0ccda4b283e16d0b4d0891cd93d5fe05c6798f7806781a6a2d84354 314B / 314B 0.2s done
+2026-10-08T15:25:49.0235204Z #8 sha256:b839dfae01f66e15c6a8b63520557ed315bdfe036342fa7a0c537259f10d7a9a 351B / 351B 0.2s done
+2026-10-08T15:25:49.0235571Z #8 sha256:dd64bf2dd177757451a98fcdc999a339c35dee5d9872d8f4dc69c8f3c4dd0112 80B / 80B 0.2s done
+2026-10-08T15:25:49.0235937Z #8 sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 123B / 123B 0.1s done
+2026-10-08T15:25:49.1746365Z #8 sha256:52630fc75a18675c530ed9eba5f55eca09b03e91bd5bc15307918bbc1a7e7296 162B / 162B 0.1s done
+2026-10-08T15:25:49.1746812Z #8 sha256:7c12895b777bcaa8ccae0605b4de635b68fc32d60fa08f421dc3818bf55ee212 188B / 188B 0.1s done
+2026-10-08T15:25:49.1747203Z #8 sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a 67B / 67B 0.1s done
+2026-10-08T15:25:49.1747556Z #8 sha256:39dc083afc39bd8dc43d456fe7ff7d39292e593bb2769972c11bb2e5f9119386 0B / 445.71kB 0.2s
+2026-10-08T15:25:49.3586647Z #8 sha256:39dc083afc39bd8dc43d456fe7ff7d39292e593bb2769972c11bb2e5f9119386 445.71kB / 445.71kB 0.2s done
+2026-10-08T15:25:49.3587126Z #8 sha256:bf7a4185f01524837d19abde915ffde84e64368b250f5b5e9f6f75aea62a11d4 29.00kB / 29.00kB 0.2s done
+2026-10-08T15:25:49.3587495Z #8 sha256:990a9c434e5e0f11549a8d4a41a1991e621b04e30cd63269adbc97b1dc38fd7e 12.48kB / 12.48kB 0.1s done
+2026-10-08T15:25:49.3587862Z #8 sha256:a5789fc40e828c4e7467626e3f69ec5dea8e5da22fe660db8ae6d16f777b0bbf 83.90kB / 83.90kB 0.2s done
+2026-10-08T15:25:49.3588248Z #8 extracting sha256:a5789fc40e828c4e7467626e3f69ec5dea8e5da22fe660db8ae6d16f777b0bbf done
+2026-10-08T15:25:49.3588723Z #8 extracting sha256:990a9c434e5e0f11549a8d4a41a1991e621b04e30cd63269adbc97b1dc38fd7e done
+2026-10-08T15:25:49.3589359Z #8 extracting sha256:39dc083afc39bd8dc43d456fe7ff7d39292e593bb2769972c11bb2e5f9119386 0.1s done
+2026-10-08T15:25:49.3589607Z #8 DONE 0.7s
+2026-10-08T15:25:49.4919005Z 
+2026-10-08T15:25:49.4920106Z #8 [1/3] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+2026-10-08T15:25:49.4921054Z #8 extracting sha256:bf7a4185f01524837d19abde915ffde84e64368b250f5b5e9f6f75aea62a11d4 done
+2026-10-08T15:25:49.4922636Z #8 extracting sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a done
+2026-10-08T15:25:49.4923259Z #8 extracting sha256:7c12895b777bcaa8ccae0605b4de635b68fc32d60fa08f421dc3818bf55ee212 done
+2026-10-08T15:25:49.4923801Z #8 extracting sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 done
+2026-10-08T15:25:49.4924409Z #8 extracting sha256:52630fc75a18675c530ed9eba5f55eca09b03e91bd5bc15307918bbc1a7e7296 done
+2026-10-08T15:25:49.4924863Z #8 extracting sha256:dd64bf2dd177757451a98fcdc999a339c35dee5d9872d8f4dc69c8f3c4dd0112 done
+2026-10-08T15:25:49.4925203Z #8 extracting sha256:b839dfae01f66e15c6a8b63520557ed315bdfe036342fa7a0c537259f10d7a9a done
+2026-10-08T15:25:49.4925624Z #8 extracting sha256:dcaa5a89b0ccda4b283e16d0b4d0891cd93d5fe05c6798f7806781a6a2d84354 done
+2026-10-08T15:25:49.4925964Z #8 extracting sha256:96ed2737ae312e0bc637b40783f7c2f23416cb72ca957aa01855f1614278e64b done
+2026-10-08T15:25:49.4926202Z #8 DONE 0.7s
+2026-10-08T15:25:49.4926711Z 
+2026-10-08T15:25:49.4926798Z #9 [2/3] WORKDIR /app
+2026-10-08T15:25:49.4926990Z #9 DONE 0.1s
+2026-10-08T15:25:49.7245477Z 
+2026-10-08T15:25:49.7245976Z #10 [3/3] COPY --chmod=0755 release-assets/linux/amd64/graphite /app/graphite
+2026-10-08T15:25:49.7246234Z #10 DONE 0.1s
+2026-10-08T15:25:49.7246309Z 
+2026-10-08T15:25:49.7246375Z #11 exporting to docker image format
+2026-10-08T15:25:49.7246533Z #11 exporting layers
+2026-10-08T15:25:49.8750566Z #11 exporting layers 0.3s done
+2026-10-08T15:25:50.0503631Z #11 exporting manifest sha256:7a6e1d097ff7969cd5ba29d2b70d9b4e00ec39566f2f524074ee887fc7efb366 done
+2026-10-08T15:25:50.0504213Z #11 exporting config sha256:8dce7a04c1b7a5f5e74cd0faa64e8d0a93ef31dfb51999e8ee191ee1409bcdb8 done
+2026-10-08T15:25:50.0504570Z #11 sending tarball
+2026-10-08T15:25:50.2137534Z #11 sending tarball 0.3s done
+2026-10-08T15:25:50.2137815Z #11 DONE 0.6s
+2026-10-08T15:25:50.2137946Z 
+2026-10-08T15:25:50.2138038Z #12 importing to docker
+2026-10-08T15:25:50.2138321Z #12 loading layer 947f0db2429d 97B / 97B 0.3s done
+2026-10-08T15:25:50.2138650Z #12 loading layer ea8482a4374f 4.18MB / 4.18MB 0.1s done
+2026-10-08T15:25:50.2138924Z #12 DONE 0.3s
+2026-10-08T15:25:50.2139038Z 
+2026-10-08T15:25:50.2139143Z #13 resolving provenance for metadata file
+2026-10-08T15:25:50.2139395Z #13 DONE 0.0s
+2026-10-08T15:25:50.2212497Z ##[group]ImageID
+2026-10-08T15:25:50.2212747Z sha256:8dce7a04c1b7a5f5e74cd0faa64e8d0a93ef31dfb51999e8ee191ee1409bcdb8
+2026-10-08T15:25:50.2213194Z ##[endgroup]
+2026-10-08T15:25:50.2213546Z ##[group]Digest
+2026-10-08T15:25:50.2213855Z sha256:7a6e1d097ff7969cd5ba29d2b70d9b4e00ec39566f2f524074ee887fc7efb366
+2026-10-08T15:25:50.2214832Z ##[endgroup]
+2026-10-08T15:25:50.2215146Z ##[group]Metadata
+2026-10-08T15:25:50.2220542Z ::stop-commands::***
+2026-10-08T15:25:50.2220735Z {
+2026-10-08T15:25:50.2220914Z   "buildx.build.provenance": {
+2026-10-08T15:25:50.2221072Z     "builder": {
+2026-10-08T15:25:50.2221197Z       "id": ""
+2026-10-08T15:25:50.2221382Z     },
+2026-10-08T15:25:50.2221572Z     "buildType": "https://mobyproject.org/buildkit@v1",
+2026-10-08T15:25:50.2221768Z     "materials": [
+2026-10-08T15:25:50.2221894Z       {
+2026-10-08T15:25:50.2222032Z         "uri": "pkg:docker/docker/dockerfile@1.7",
+2026-10-08T15:25:50.2222209Z         "digest": {
+2026-10-08T15:25:50.2222418Z           "sha256": "a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e"
+2026-10-08T15:25:50.2222646Z         }
+2026-10-08T15:25:50.2222761Z       },
+2026-10-08T15:25:50.2223094Z       {
+2026-10-08T15:25:50.2223326Z         "uri": "pkg:docker/gcr.io/distroless/static-debian12@nonroot?platform=linux%2Famd64",
+2026-10-08T15:25:50.2223591Z         "digest": {
+2026-10-08T15:25:50.2223801Z           "sha256": "afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab"
+2026-10-08T15:25:50.2224342Z         }
+2026-10-08T15:25:50.2224545Z       }
+2026-10-08T15:25:50.2224713Z     ],
+2026-10-08T15:25:50.2224892Z     "invocation": {
+2026-10-08T15:25:50.2225100Z       "configSource": {
+2026-10-08T15:25:50.2225325Z         "entryPoint": "Dockerfile"
+2026-10-08T15:25:50.2225584Z       },
+2026-10-08T15:25:50.2225767Z       "parameters": {
+2026-10-08T15:25:50.2225983Z         "frontend": "gateway.v0",
+2026-10-08T15:25:50.2226215Z         "args": {
+2026-10-08T15:25:50.2226462Z           "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:50.2226776Z           "cmdline": "docker/dockerfile:1.7",
+2026-10-08T15:25:50.2227096Z           "source": "docker/dockerfile:1.7"
+2026-10-08T15:25:50.2227304Z         },
+2026-10-08T15:25:50.2227437Z         "locals": [
+2026-10-08T15:25:50.2227576Z           {
+2026-10-08T15:25:50.2227695Z             "name": "context"
+2026-10-08T15:25:50.2227838Z           },
+2026-10-08T15:25:50.2227954Z           {
+2026-10-08T15:25:50.2228074Z             "name": "dockerfile"
+2026-10-08T15:25:50.2228214Z           }
+2026-10-08T15:25:50.2228321Z         ],
+2026-10-08T15:25:50.2228437Z         "root": {
+2026-10-08T15:25:50.2228567Z           "configSource": {
+2026-10-08T15:25:50.2228885Z             "path": "Dockerfile"
+2026-10-08T15:25:50.2229059Z           },
+2026-10-08T15:25:50.2229195Z           "request": {
+2026-10-08T15:25:50.2229325Z             "args": {
+2026-10-08T15:25:50.2229505Z               "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:50.2229715Z               "vcs:localdir:context": ".",
+2026-10-08T15:25:50.2229920Z               "vcs:localdir:dockerfile": "backend/explore",
+2026-10-08T15:25:50.2230159Z               "vcs:revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:50.2230399Z               "vcs:source": "https://github.com/johnsonlee/graphite"
+2026-10-08T15:25:50.2230602Z             }
+2026-10-08T15:25:50.2230735Z           }
+2026-10-08T15:25:50.2230843Z         },
+2026-10-08T15:25:50.2230986Z         "compatibilityVersion": 30
+2026-10-08T15:25:50.2231139Z       },
+2026-10-08T15:25:50.2231265Z       "environment": {
+2026-10-08T15:25:50.2231410Z         "github_actor": "johnsonlee",
+2026-10-08T15:25:50.2231596Z         "github_actor_id": "2344882",
+2026-10-08T15:25:50.2231780Z         "github_event_name": "workflow_dispatch",
+2026-10-08T15:25:50.2231973Z         "github_event_payload": {
+2026-10-08T15:25:50.2232139Z           "inputs": {
+2026-10-08T15:25:50.2232295Z             "calibrate_apple": "true",
+2026-10-08T15:25:50.2232468Z             "tag": "v2.11.3-apple-validation.4"
+2026-10-08T15:25:50.2232630Z           },
+2026-10-08T15:25:50.2232790Z           "ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:50.2232998Z           "repository": {
+2026-10-08T15:25:50.2233141Z             "allow_forking": true,
+2026-10-08T15:25:50.2233396Z             "archive_url": "https://api.github.com/repos/johnsonlee/graphite/{archive_format}{/ref}",
+2026-10-08T15:25:50.2242487Z             "archived": false,
+2026-10-08T15:25:50.2242827Z             "assignees_url": "https://api.github.com/repos/johnsonlee/graphite/assignees{/user}",
+2026-10-08T15:25:50.2243219Z             "blobs_url": "https://api.github.com/repos/johnsonlee/graphite/git/blobs{/sha}",
+2026-10-08T15:25:50.2243562Z             "branches_url": "https://api.github.com/repos/johnsonlee/graphite/branches{/branch}",
+2026-10-08T15:25:50.2243883Z             "clone_url": "https://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:50.2244501Z             "collaborators_url": "https://api.github.com/repos/johnsonlee/graphite/collaborators{/collaborator}",
+2026-10-08T15:25:50.2245115Z             "comments_url": "https://api.github.com/repos/johnsonlee/graphite/comments{/number}",
+2026-10-08T15:25:50.2245691Z             "commits_url": "https://api.github.com/repos/johnsonlee/graphite/commits{/sha}",
+2026-10-08T15:25:50.2246051Z             "compare_url": "https://api.github.com/repos/johnsonlee/graphite/compare/{base}...{head}",
+2026-10-08T15:25:50.2246407Z             "contents_url": "https://api.github.com/repos/johnsonlee/graphite/contents/{+path}",
+2026-10-08T15:25:50.2246767Z             "contributors_url": "https://api.github.com/repos/johnsonlee/graphite/contributors",
+2026-10-08T15:25:50.2247045Z             "created_at": "2026-01-24T07:28:51Z",
+2026-10-08T15:25:50.2247240Z             "default_branch": "main",
+2026-10-08T15:25:50.2247501Z             "deployments_url": "https://api.github.com/repos/johnsonlee/graphite/deployments",
+2026-10-08T15:25:50.2247803Z             "description": "Structured codebase context for LLMs",
+2026-10-08T15:25:50.2248020Z             "disabled": false,
+2026-10-08T15:25:50.2248260Z             "downloads_url": "https://api.github.com/repos/johnsonlee/graphite/downloads",
+2026-10-08T15:25:50.2248584Z             "events_url": "https://api.github.com/repos/johnsonlee/graphite/events",
+2026-10-08T15:25:50.2248828Z             "fork": false,
+2026-10-08T15:25:50.2248985Z             "forks": 3,
+2026-10-08T15:25:50.2249146Z             "forks_count": 3,
+2026-10-08T15:25:50.2249376Z             "forks_url": "https://api.github.com/repos/johnsonlee/graphite/forks",
+2026-10-08T15:25:50.2249723Z             "full_name": "johnsonlee/graphite",
+2026-10-08T15:25:50.2250016Z             "git_commits_url": "https://api.github.com/repos/johnsonlee/graphite/git/commits{/sha}",
+2026-10-08T15:25:50.2250366Z             "git_refs_url": "https://api.github.com/repos/johnsonlee/graphite/git/refs{/sha}",
+2026-10-08T15:25:50.2250708Z             "git_tags_url": "https://api.github.com/repos/johnsonlee/graphite/git/tags{/sha}",
+2026-10-08T15:25:50.2251001Z             "git_url": "git://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:50.2251220Z             "has_discussions": false,
+2026-10-08T15:25:50.2251396Z             "has_downloads": false,
+2026-10-08T15:25:50.2251573Z             "has_issues": true,
+2026-10-08T15:25:50.2251729Z             "has_pages": true,
+2026-10-08T15:25:50.2251899Z             "has_projects": true,
+2026-10-08T15:25:50.2252080Z             "has_pull_requests": true,
+2026-10-08T15:25:50.2252256Z             "has_wiki": true,
+2026-10-08T15:25:50.2252447Z             "homepage": "https://johnsonlee.io/graphite/",
+2026-10-08T15:25:50.2252726Z             "hooks_url": "https://api.github.com/repos/johnsonlee/graphite/hooks",
+2026-10-08T15:25:50.2252997Z             "html_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:50.2253208Z             "id": 1141070800,
+2026-10-08T15:25:50.2253364Z             "is_template": false,
+2026-10-08T15:25:50.2253655Z             "issue_comment_url": "https://api.github.com/repos/johnsonlee/graphite/issues/comments{/number}",
+2026-10-08T15:25:50.2254224Z             "issue_events_url": "https://api.github.com/repos/johnsonlee/graphite/issues/events{/number}",
+2026-10-08T15:25:50.2254566Z             "issues_url": "https://api.github.com/repos/johnsonlee/graphite/issues{/number}",
+2026-10-08T15:25:50.2254891Z             "keys_url": "https://api.github.com/repos/johnsonlee/graphite/keys{/key_id}",
+2026-10-08T15:25:50.2255228Z             "labels_url": "https://api.github.com/repos/johnsonlee/graphite/labels{/name}",
+2026-10-08T15:25:50.2255491Z             "language": "Kotlin",
+2026-10-08T15:25:50.2255733Z             "languages_url": "https://api.github.com/repos/johnsonlee/graphite/languages",
+2026-10-08T15:25:50.2255988Z             "license": {
+2026-10-08T15:25:50.2256158Z               "key": "apache-2.0",
+2026-10-08T15:25:50.2256338Z               "name": "Apache License 2.0",
+2026-10-08T15:25:50.2256523Z               "node_id": "MDc6TGljZW5zZTI=",
+2026-10-08T15:25:50.2256715Z               "spdx_id": "Apache-2.0",
+2026-10-08T15:25:50.2256923Z               "url": "https://api.github.com/licenses/apache-2.0"
+2026-10-08T15:25:50.2257231Z             },
+2026-10-08T15:25:50.2257440Z             "merges_url": "https://api.github.com/repos/johnsonlee/graphite/merges",
+2026-10-08T15:25:50.2257784Z             "milestones_url": "https://api.github.com/repos/johnsonlee/graphite/milestones{/number}",
+2026-10-08T15:25:50.2258058Z             "mirror_url": null,
+2026-10-08T15:25:50.2258214Z             "name": "graphite",
+2026-10-08T15:25:50.2258386Z             "node_id": "R_kgDORANb0A",
+2026-10-08T15:25:50.2258721Z             "notifications_url": "https://api.github.com/repos/johnsonlee/graphite/notifications{?since,all,participating}",
+2026-10-08T15:25:50.2259058Z             "open_issues": 4,
+2026-10-08T15:25:50.2259213Z             "open_issues_count": 4,
+2026-10-08T15:25:50.2259388Z             "owner": {
+2026-10-08T15:25:50.2259623Z               "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:50.2259931Z               "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:50.2260237Z               "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:50.2260572Z               "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:50.2260893Z               "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:50.2261159Z               "gravatar_id": "",
+2026-10-08T15:25:50.2261473Z               "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:50.2261658Z               "id": 2344882,
+2026-10-08T15:25:50.2261808Z               "login": "johnsonlee",
+2026-10-08T15:25:50.2261979Z               "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:50.2262213Z               "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:50.2262529Z               "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:50.2262832Z               "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:50.2263043Z               "site_admin": false,
+2026-10-08T15:25:50.2263274Z               "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:50.2263601Z               "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:50.2263840Z               "type": "User",
+2026-10-08T15:25:50.2264179Z               "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:50.2264377Z               "user_view_type": "public"
+2026-10-08T15:25:50.2264643Z             },
+2026-10-08T15:25:50.2264852Z             "private": false,
+2026-10-08T15:25:50.2265104Z             "pull_request_creation_policy": "all",
+2026-10-08T15:25:50.2265408Z             "pulls_url": "https://api.github.com/repos/johnsonlee/graphite/pulls{/number}",
+2026-10-08T15:25:50.2265657Z             "pushed_at": "2026-10-08T15:08:17Z",
+2026-10-08T15:25:50.2265907Z             "releases_url": "https://api.github.com/repos/johnsonlee/graphite/releases{/id}",
+2026-10-08T15:25:50.2266144Z             "size": 5735,
+2026-10-08T15:25:50.2266315Z             "ssh_url": "git@github.com:johnsonlee/graphite.git",
+2026-10-08T15:25:50.2266509Z             "stargazers_count": 15,
+2026-10-08T15:25:50.2266741Z             "stargazers_url": "https://api.github.com/repos/johnsonlee/graphite/stargazers",
+2026-10-08T15:25:50.2267055Z             "statuses_url": "https://api.github.com/repos/johnsonlee/graphite/statuses/{sha}",
+2026-10-08T15:25:50.2267372Z             "subscribers_url": "https://api.github.com/repos/johnsonlee/graphite/subscribers",
+2026-10-08T15:25:50.2267690Z             "subscription_url": "https://api.github.com/repos/johnsonlee/graphite/subscription",
+2026-10-08T15:25:50.2267966Z             "svn_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:50.2268230Z             "tags_url": "https://api.github.com/repos/johnsonlee/graphite/tags",
+2026-10-08T15:25:50.2268608Z             "teams_url": "https://api.github.com/repos/johnsonlee/graphite/teams",
+2026-10-08T15:25:50.2268825Z             "topics": [
+2026-10-08T15:25:50.2268963Z               "ai-agents",
+2026-10-08T15:25:50.2269107Z               "android",
+2026-10-08T15:25:50.2269247Z               "bytecode",
+2026-10-08T15:25:50.2269388Z               "code-graph",
+2026-10-08T15:25:50.2269540Z               "code-intelligence",
+2026-10-08T15:25:50.2269694Z               "cypher",
+2026-10-08T15:25:50.2269836Z               "developer-tools",
+2026-10-08T15:25:50.2269983Z               "jvm",
+2026-10-08T15:25:50.2270113Z               "llm",
+2026-10-08T15:25:50.2270238Z               "mcp",
+2026-10-08T15:25:50.2270372Z               "static-analysis"
+2026-10-08T15:25:50.2270513Z             ],
+2026-10-08T15:25:50.2270716Z             "trees_url": "https://api.github.com/repos/johnsonlee/graphite/git/trees{/sha}",
+2026-10-08T15:25:50.2270968Z             "updated_at": "2026-10-08T10:34:02Z",
+2026-10-08T15:25:50.2271182Z             "url": "https://api.github.com/repos/johnsonlee/graphite",
+2026-10-08T15:25:50.2271386Z             "visibility": "public",
+2026-10-08T15:25:50.2271542Z             "watchers": 15,
+2026-10-08T15:25:50.2271686Z             "watchers_count": 15,
+2026-10-08T15:25:50.2271853Z             "web_commit_signoff_required": false
+2026-10-08T15:25:50.2272018Z           },
+2026-10-08T15:25:50.2272138Z           "sender": {
+2026-10-08T15:25:50.2272425Z             "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:50.2272711Z             "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:50.2272995Z             "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:50.2273290Z             "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:50.2273589Z             "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:50.2273812Z             "gravatar_id": "",
+2026-10-08T15:25:50.2274190Z             "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:50.2274467Z             "id": 2344882,
+2026-10-08T15:25:50.2274720Z             "login": "johnsonlee",
+2026-10-08T15:25:50.2274981Z             "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:50.2275335Z             "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:50.2275665Z             "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:50.2276037Z             "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:50.2276242Z             "site_admin": false,
+2026-10-08T15:25:50.2276463Z             "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:50.2276768Z             "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:50.2277000Z             "type": "User",
+2026-10-08T15:25:50.2277177Z             "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:50.2277369Z             "user_view_type": "public"
+2026-10-08T15:25:50.2277519Z           },
+2026-10-08T15:25:50.2277668Z           "workflow": ".github/workflows/publish.yml"
+2026-10-08T15:25:50.2277837Z         },
+2026-10-08T15:25:50.2277963Z         "github_job": "docker",
+2026-10-08T15:25:50.2278157Z         "github_ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:50.2278398Z         "github_ref_name": "codex/apple-frontend-validation",
+2026-10-08T15:25:50.2278596Z         "github_ref_protected": "false",
+2026-10-08T15:25:50.2278758Z         "github_ref_type": "branch",
+2026-10-08T15:25:50.2278936Z         "github_repository": "johnsonlee/graphite",
+2026-10-08T15:25:50.2279121Z         "github_repository_id": "1141070800",
+2026-10-08T15:25:50.2279300Z         "github_repository_owner": "johnsonlee",
+2026-10-08T15:25:50.2279485Z         "github_repository_owner_id": "2344882",
+2026-10-08T15:25:50.2279769Z         "github_run_attempt": "1",
+2026-10-08T15:25:50.2279924Z         "github_run_id": "37798249852",
+2026-10-08T15:25:50.2280087Z         "github_run_number": "103",
+2026-10-08T15:25:50.2280243Z         "github_runner_arch": "X64",
+2026-10-08T15:25:50.2280423Z         "github_runner_environment": "github-hosted",
+2026-10-08T15:25:50.2280613Z         "github_runner_image_os": "ubuntu24",
+2026-10-08T15:25:50.2280800Z         "github_runner_image_version": "20261004.327.1",
+2026-10-08T15:25:50.2281006Z         "github_runner_name": "GitHub Actions 1000036998",
+2026-10-08T15:25:50.2281192Z         "github_runner_os": "Linux",
+2026-10-08T15:25:50.2281409Z         "github_runner_tracking_id": "github_817f9a08-8526-49f5-8c36-960aae9bb9b8",
+2026-10-08T15:25:50.2281653Z         "github_server_url": "https://github.com",
+2026-10-08T15:25:50.2281842Z         "github_triggering_actor": "johnsonlee",
+2026-10-08T15:25:50.2282016Z         "github_workflow": "Publish",
+2026-10-08T15:25:50.2282333Z         "github_workflow_ref": "johnsonlee/graphite/.github/workflows/publish.yml@refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:50.2282714Z         "github_workflow_sha": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:50.2282924Z         "platform": "linux/amd64"
+2026-10-08T15:25:50.2283073Z       }
+2026-10-08T15:25:50.2283188Z     }
+2026-10-08T15:25:50.2283296Z   },
+2026-10-08T15:25:50.2283701Z   "buildx.build.ref": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1/builder-6d561185-38fe-4aa0-9c66-ccba60304aa10/d1i0c657qv8cfi5zxw6n6owq4",
+2026-10-08T15:25:50.2284346Z   "containerimage.config.digest": "sha256:8dce7a04c1b7a5f5e74cd0faa64e8d0a93ef31dfb51999e8ee191ee1409bcdb8",
+2026-10-08T15:25:50.2284646Z   "containerimage.descriptor": {
+2026-10-08T15:25:50.2284857Z     "mediaType": "application/vnd.oci.image.manifest.v1+json",
+2026-10-08T15:25:50.2285169Z     "digest": "sha256:7a6e1d097ff7969cd5ba29d2b70d9b4e00ec39566f2f524074ee887fc7efb366",
+2026-10-08T15:25:50.2285438Z     "size": 2934,
+2026-10-08T15:25:50.2285573Z     "annotations": {
+2026-10-08T15:25:50.2285757Z       "org.opencontainers.image.created": "2026-10-08T15:25:49Z"
+2026-10-08T15:25:50.2285948Z     },
+2026-10-08T15:25:50.2286064Z     "platform": {
+2026-10-08T15:25:50.2286198Z       "architecture": "amd64",
+2026-10-08T15:25:50.2286344Z       "os": "linux"
+2026-10-08T15:25:50.2286468Z     }
+2026-10-08T15:25:50.2286575Z   },
+2026-10-08T15:25:50.2286808Z   "containerimage.digest": "sha256:7a6e1d097ff7969cd5ba29d2b70d9b4e00ec39566f2f524074ee887fc7efb366",
+2026-10-08T15:25:50.2287117Z   "image.name": "docker.io/library/graphite-explore:smoke"
+2026-10-08T15:25:50.2287301Z }
+2026-10-08T15:25:50.2287667Z ::***::
+2026-10-08T15:25:50.2287912Z ##[endgroup]
+2026-10-08T15:25:50.2288124Z ##[group]Reference
+2026-10-08T15:25:50.2288409Z builder-6d561185-38fe-4aa0-9c66-ccba60304aa1/builder-6d561185-38fe-4aa0-9c66-ccba60304aa10/d1i0c657qv8cfi5zxw6n6owq4
+2026-10-08T15:25:50.2288800Z ##[endgroup]
+2026-10-08T15:25:50.2289015Z ##[group]Check build summary support
+2026-10-08T15:25:50.2289286Z Build summary supported!
+2026-10-08T15:25:50.2289514Z ##[endgroup]
+2026-10-08T15:25:50.2349145Z ##[group]Run docker run --rm --entrypoint /app/graphite graphite-explore:smoke --version | grep -F "${RELEASE_VERSION}"
+2026-10-08T15:25:50.2349625Z [36;1mdocker run --rm --entrypoint /app/graphite graphite-explore:smoke --version | grep -F "${RELEASE_VERSION}"[0m
+2026-10-08T15:25:50.2349981Z [36;1mdocker run --rm graphite-explore:smoke --help | grep -F -- '--graph'[0m
+2026-10-08T15:25:50.2402364Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:25:50.2402522Z env:
+2026-10-08T15:25:50.2402665Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:50.2402832Z   DRY_RUN: true
+2026-10-08T15:25:50.2402981Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.2403191Z   DOCKER_METADATA_OUTPUT_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.2403605Z   DOCKER_METADATA_OUTPUT_TAGS: ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:50.2404351Z   DOCKER_METADATA_OUTPUT_TAG_NAMES: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.2405628Z   DOCKER_METADATA_OUTPUT_LABELS: org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+org.opencontainers.image.licenses=Apache-2.0
+org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+org.opencontainers.image.title=graphite-explore
+org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:50.2408133Z   DOCKER_METADATA_OUTPUT_ANNOTATIONS: manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+manifest:org.opencontainers.image.description=Structured codebase context for LLMs
+manifest:org.opencontainers.image.licenses=Apache-2.0
+manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.title=graphite
+manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:50.2411729Z   DOCKER_METADATA_OUTPUT_JSON: {"tags":["ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4","docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4"],"tag-names":["2.11.3-apple-validation.4"],"labels":{"org.opencontainers.image.created":"2026-10-08T15:25:46.551Z","org.opencontainers.image.description":"Interactive web visualization for Graphite static analysis graphs","org.opencontainers.image.licenses":"Apache-2.0","org.opencontainers.image.revision":"1ba3808f79db8190ecd278a3853ab7a27d5abac9","org.opencontainers.image.source":"https://github.com/johnsonlee/graphite","org.opencontainers.image.title":"graphite-explore","org.opencontainers.image.url":"https://github.com/johnsonlee/graphite","org.opencontainers.image.version":"2.11.3-apple-validation.4"},"annotations":["manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z","manifest:org.opencontainers.image.description=Structured codebase context for LLMs","manifest:org.opencontainers.image.licenses=Apache-2.0","manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9","manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.title=graphite","manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.version=2.11.3-apple-validation.4"]}
+2026-10-08T15:25:50.2414713Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_TAGS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-tags.json
+2026-10-08T15:25:50.2415220Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_LABELS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-labels.json
+2026-10-08T15:25:50.2415895Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_ANNOTATIONS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-annotations.json
+2026-10-08T15:25:50.2416408Z   DOCKER_METADATA_OUTPUT_BAKE_FILE: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake.json
+2026-10-08T15:25:50.2416720Z ##[endgroup]
+2026-10-08T15:25:50.4391528Z graphite 2.11.3-apple-validation.4
+2026-10-08T15:25:50.6194485Z       --graph <GRAPHS>
+2026-10-08T15:25:50.6247546Z ##[group]Run docker/build-push-action@v7
+2026-10-08T15:25:50.6247727Z with:
+2026-10-08T15:25:50.6247845Z   context: .
+2026-10-08T15:25:50.6247979Z   file: backend/explore/Dockerfile
+2026-10-08T15:25:50.6248148Z   platforms: linux/amd64,linux/arm64
+2026-10-08T15:25:50.6248302Z   push: false
+2026-10-08T15:25:50.6248608Z   tags: ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:50.6250051Z   labels: org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+org.opencontainers.image.licenses=Apache-2.0
+org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+org.opencontainers.image.title=graphite-explore
+org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:50.6251161Z   build-args: VERSION=v2.11.3-apple-validation.4
+
+2026-10-08T15:25:50.6251373Z   cache-from: type=gha
+2026-10-08T15:25:50.6251518Z   cache-to: type=gha,mode=max
+2026-10-08T15:25:50.6251673Z   load: false
+2026-10-08T15:25:50.6251796Z   no-cache: false
+2026-10-08T15:25:50.6251922Z   pull: false
+2026-10-08T15:25:50.6253258Z   github-token: ***
+2026-10-08T15:25:50.6253387Z env:
+2026-10-08T15:25:50.6253523Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:50.6253688Z   DRY_RUN: true
+2026-10-08T15:25:50.6253833Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.6254288Z   DOCKER_METADATA_OUTPUT_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.6254715Z   DOCKER_METADATA_OUTPUT_TAGS: ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4
+2026-10-08T15:25:50.6255125Z   DOCKER_METADATA_OUTPUT_TAG_NAMES: 2.11.3-apple-validation.4
+2026-10-08T15:25:50.6256304Z   DOCKER_METADATA_OUTPUT_LABELS: org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
+org.opencontainers.image.licenses=Apache-2.0
+org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+org.opencontainers.image.title=graphite-explore
+org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:50.6258437Z   DOCKER_METADATA_OUTPUT_ANNOTATIONS: manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z
+manifest:org.opencontainers.image.description=Structured codebase context for LLMs
+manifest:org.opencontainers.image.licenses=Apache-2.0
+manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9
+manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.title=graphite
+manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite
+manifest:org.opencontainers.image.version=2.11.3-apple-validation.4
+2026-10-08T15:25:50.6262149Z   DOCKER_METADATA_OUTPUT_JSON: {"tags":["ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4","docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4"],"tag-names":["2.11.3-apple-validation.4"],"labels":{"org.opencontainers.image.created":"2026-10-08T15:25:46.551Z","org.opencontainers.image.description":"Interactive web visualization for Graphite static analysis graphs","org.opencontainers.image.licenses":"Apache-2.0","org.opencontainers.image.revision":"1ba3808f79db8190ecd278a3853ab7a27d5abac9","org.opencontainers.image.source":"https://github.com/johnsonlee/graphite","org.opencontainers.image.title":"graphite-explore","org.opencontainers.image.url":"https://github.com/johnsonlee/graphite","org.opencontainers.image.version":"2.11.3-apple-validation.4"},"annotations":["manifest:org.opencontainers.image.created=2026-10-08T15:25:46.551Z","manifest:org.opencontainers.image.description=Structured codebase context for LLMs","manifest:org.opencontainers.image.licenses=Apache-2.0","manifest:org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9","manifest:org.opencontainers.image.source=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.title=graphite","manifest:org.opencontainers.image.url=https://github.com/johnsonlee/graphite","manifest:org.opencontainers.image.version=2.11.3-apple-validation.4"]}
+2026-10-08T15:25:50.6265761Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_TAGS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-tags.json
+2026-10-08T15:25:50.6266267Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_LABELS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-labels.json
+2026-10-08T15:25:50.6266796Z   DOCKER_METADATA_OUTPUT_BAKE_FILE_ANNOTATIONS: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake-annotations.json
+2026-10-08T15:25:50.6267303Z   DOCKER_METADATA_OUTPUT_BAKE_FILE: /home/runner/work/_temp/docker-actions-toolkit-1TN2sT/docker-metadata-action-bake.json
+2026-10-08T15:25:50.6267614Z ##[endgroup]
+2026-10-08T15:25:50.7869135Z ##[group]GitHub Actions runtime token ACs
+2026-10-08T15:25:50.7874825Z refs/heads/codex/apple-frontend-validation: read/write
+2026-10-08T15:25:50.7875126Z refs/heads/main: read
+2026-10-08T15:25:50.7875475Z ##[endgroup]
+2026-10-08T15:25:50.7875790Z ##[group]Docker info
+2026-10-08T15:25:50.7907679Z [command]/usr/bin/docker version
+2026-10-08T15:25:50.8081061Z Client: Docker Engine - Community
+2026-10-08T15:25:50.8081734Z  Version:           28.0.4
+2026-10-08T15:25:50.8083023Z  API version:       1.48
+2026-10-08T15:25:50.8083335Z  Go version:        go1.23.7
+2026-10-08T15:25:50.8083711Z  Git commit:        b8034c0
+2026-10-08T15:25:50.8084313Z  Built:             Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:50.8084709Z  OS/Arch:           linux/amd64
+2026-10-08T15:25:50.8085111Z  Context:           default
+2026-10-08T15:25:50.8085377Z 
+2026-10-08T15:25:50.8085600Z Server: Docker Engine - Community
+2026-10-08T15:25:50.8085965Z  Engine:
+2026-10-08T15:25:50.8086271Z   Version:          28.0.4
+2026-10-08T15:25:50.8086646Z   API version:      1.48 (minimum version 1.24)
+2026-10-08T15:25:50.8087051Z   Go version:       go1.23.7
+2026-10-08T15:25:50.8087440Z   Git commit:       6430e49
+2026-10-08T15:25:50.8087799Z   Built:            Tue Mar 25 15:07:16 2025
+2026-10-08T15:25:50.8088200Z   OS/Arch:          linux/amd64
+2026-10-08T15:25:50.8088558Z   Experimental:     false
+2026-10-08T15:25:50.8088904Z  containerd:
+2026-10-08T15:25:50.8089220Z   Version:          v2.3.6
+2026-10-08T15:25:50.8089622Z   GitCommit:        ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:50.8090047Z  runc:
+2026-10-08T15:25:50.8090354Z   Version:          1.5.1
+2026-10-08T15:25:50.8090718Z   GitCommit:        v1.5.1-0-g8f2685a4
+2026-10-08T15:25:50.8091093Z  docker-init:
+2026-10-08T15:25:50.8091414Z   Version:          0.19.0
+2026-10-08T15:25:50.8091753Z   GitCommit:        de40ad0
+2026-10-08T15:25:50.8112792Z [command]/usr/bin/docker info
+2026-10-08T15:25:50.8525864Z Client: Docker Engine - Community
+2026-10-08T15:25:50.8526539Z  Version:    28.0.4
+2026-10-08T15:25:50.8526819Z  Context:    default
+2026-10-08T15:25:50.8527082Z  Debug Mode: false
+2026-10-08T15:25:50.8527323Z  Plugins:
+2026-10-08T15:25:50.8527564Z   buildx: Docker Buildx (Docker Inc.)
+2026-10-08T15:25:50.8527836Z     Version:  v0.37.2
+2026-10-08T15:25:50.8528162Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2026-10-08T15:25:50.8528480Z   compose: Docker Compose (Docker Inc.)
+2026-10-08T15:25:50.8528750Z     Version:  v2.38.2
+2026-10-08T15:25:50.8529034Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2026-10-08T15:25:50.8529283Z 
+2026-10-08T15:25:50.8529442Z Server:
+2026-10-08T15:25:50.8529665Z  Containers: 1
+2026-10-08T15:25:50.8529895Z   Running: 1
+2026-10-08T15:25:50.8530122Z   Paused: 0
+2026-10-08T15:25:50.8530702Z   Stopped: 0
+2026-10-08T15:25:50.8530928Z  Images: 9
+2026-10-08T15:25:50.8531155Z  Server Version: 28.0.4
+2026-10-08T15:25:50.8531404Z  Storage Driver: overlay2
+2026-10-08T15:25:50.8531655Z   Backing Filesystem: extfs
+2026-10-08T15:25:50.8531909Z   Supports d_type: true
+2026-10-08T15:25:50.8532156Z   Using metacopy: false
+2026-10-08T15:25:50.8532403Z   Native Overlay Diff: false
+2026-10-08T15:25:50.8532657Z   userxattr: false
+2026-10-08T15:25:50.8532904Z  Logging Driver: json-file
+2026-10-08T15:25:50.8533272Z  Cgroup Driver: systemd
+2026-10-08T15:25:50.8533513Z  Cgroup Version: 2
+2026-10-08T15:25:50.8533745Z  Plugins:
+2026-10-08T15:25:50.8533967Z   Volume: local
+2026-10-08T15:25:50.8534805Z   Network: bridge host ipvlan macvlan null overlay
+2026-10-08T15:25:50.8535179Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2026-10-08T15:25:50.8535499Z  Swarm: inactive
+2026-10-08T15:25:50.8535752Z  Runtimes: io.containerd.runc.v2 runc
+2026-10-08T15:25:50.8536024Z  Default Runtime: runc
+2026-10-08T15:25:50.8536278Z  Init Binary: docker-init
+2026-10-08T15:25:50.8536572Z  containerd version: ee2735368117d2eb259779949d5e75cdafec9761
+2026-10-08T15:25:50.8536881Z  runc version: v1.5.1-0-g8f2685a4
+2026-10-08T15:25:50.8537145Z  init version: de40ad0
+2026-10-08T15:25:50.8537390Z  Security Options:
+2026-10-08T15:25:50.8537626Z   apparmor
+2026-10-08T15:25:50.8537848Z   seccomp
+2026-10-08T15:25:50.8538074Z    Profile: builtin
+2026-10-08T15:25:50.8538351Z   cgroupns
+2026-10-08T15:25:50.8546196Z  Kernel Version: 6.17.0-1022-azure
+2026-10-08T15:25:50.8546520Z  Operating System: Ubuntu 24.04.5 LTS
+2026-10-08T15:25:50.8546772Z  OSType: linux
+2026-10-08T15:25:50.8546971Z  Architecture: x86_64
+2026-10-08T15:25:50.8547175Z  CPUs: 4
+2026-10-08T15:25:50.8547353Z  Total Memory: 15.61GiB
+2026-10-08T15:25:50.8547565Z  Name: runnervmmprz5
+2026-10-08T15:25:50.8547772Z  ID: 07f0e779-c305-4162-b8ec-c48c30f52fbe
+2026-10-08T15:25:50.8547948Z  Docker Root Dir: /var/lib/docker
+2026-10-08T15:25:50.8548108Z  Debug Mode: false
+2026-10-08T15:25:50.8548251Z  Username: githubactions
+2026-10-08T15:25:50.8548396Z  Experimental: false
+2026-10-08T15:25:50.8548537Z  Insecure Registries:
+2026-10-08T15:25:50.8548709Z   ::1/128
+2026-10-08T15:25:50.8548824Z   127.0.0.0/8
+2026-10-08T15:25:50.8548957Z  Live Restore Enabled: false
+2026-10-08T15:25:50.8549056Z 
+2026-10-08T15:25:50.8566409Z ##[endgroup]
+2026-10-08T15:25:50.8566808Z ##[group]Proxy configuration
+2026-10-08T15:25:50.8570056Z No proxy configuration found
+2026-10-08T15:25:50.8570687Z ##[endgroup]
+2026-10-08T15:25:50.8968710Z ##[group]Buildx version
+2026-10-08T15:25:50.8983237Z [command]/usr/bin/docker buildx version
+2026-10-08T15:25:50.9337741Z github.com/docker/buildx v0.37.2 2d379c0c3f22da0d2759d132a0ec81ca949098f0
+2026-10-08T15:25:50.9365514Z ##[endgroup]
+2026-10-08T15:25:50.9365805Z ##[group]Builder info
+2026-10-08T15:25:51.0066883Z {
+2026-10-08T15:25:51.0067155Z   "nodes": [
+2026-10-08T15:25:51.0067394Z     {
+2026-10-08T15:25:51.0067625Z       "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa10",
+2026-10-08T15:25:51.0067867Z       "endpoint": "unix:///var/run/docker.sock",
+2026-10-08T15:25:51.0068071Z       "status": "running",
+2026-10-08T15:25:51.0068388Z       "buildkitd-flags": "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host",
+2026-10-08T15:25:51.0068705Z       "buildkit": "v0.33.1",
+2026-10-08T15:25:51.0069154Z       "platforms": "linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/amd64/v4,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/loong64,linux/arm/v7,linux/arm/v6",
+2026-10-08T15:25:51.0069603Z       "features": {
+2026-10-08T15:25:51.0069808Z         "Automatically load images to the Docker Engine image store": true,
+2026-10-08T15:25:51.0070036Z         "Cache export": true,
+2026-10-08T15:25:51.0070209Z         "Direct push": true,
+2026-10-08T15:25:51.0070363Z         "Docker exporter": true,
+2026-10-08T15:25:51.0070530Z         "Multi-platform build": true,
+2026-10-08T15:25:51.0070950Z         "OCI exporter": true
+2026-10-08T15:25:51.0071093Z       },
+2026-10-08T15:25:51.0071215Z       "labels": {
+2026-10-08T15:25:51.0071394Z         "org.mobyproject.buildkit.worker.executor": "oci",
+2026-10-08T15:25:51.0071645Z         "org.mobyproject.buildkit.worker.hostname": "26de16ef6ee2",
+2026-10-08T15:25:51.0071905Z         "org.mobyproject.buildkit.worker.network": "host",
+2026-10-08T15:25:51.0072164Z         "org.mobyproject.buildkit.worker.oci.process-mode": "sandbox",
+2026-10-08T15:25:51.0072550Z         "org.mobyproject.buildkit.worker.selinux.enabled": "false",
+2026-10-08T15:25:51.0072813Z         "org.mobyproject.buildkit.worker.snapshotter": "overlayfs"
+2026-10-08T15:25:51.0073017Z       },
+2026-10-08T15:25:51.0073137Z       "gcPolicy": [
+2026-10-08T15:25:51.0073267Z         {
+2026-10-08T15:25:51.0073387Z           "all": false,
+2026-10-08T15:25:51.0073526Z           "filter": [
+2026-10-08T15:25:51.0073729Z             "type==source.local type==exec.cachemount type==source.git.checkout"
+2026-10-08T15:25:51.0073961Z           ],
+2026-10-08T15:25:51.0074471Z           "keepDuration": "48h0m0s",
+2026-10-08T15:25:51.0074697Z           "maxUsedSpace": "488.3MiB"
+2026-10-08T15:25:51.0074845Z         },
+2026-10-08T15:25:51.0074960Z         {
+2026-10-08T15:25:51.0075075Z           "all": false,
+2026-10-08T15:25:51.0075219Z           "keepDuration": "1440h0m0s",
+2026-10-08T15:25:51.0075384Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:51.0075547Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:51.0075762Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:51.0075993Z         },
+2026-10-08T15:25:51.0076166Z         {
+2026-10-08T15:25:51.0076346Z           "all": false,
+2026-10-08T15:25:51.0076564Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:51.0076782Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:51.0076943Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:51.0077100Z         },
+2026-10-08T15:25:51.0077213Z         {
+2026-10-08T15:25:51.0077335Z           "all": true,
+2026-10-08T15:25:51.0077476Z           "reservedSpace": "9.313GiB",
+2026-10-08T15:25:51.0077638Z           "maxUsedSpace": "93.13GiB",
+2026-10-08T15:25:51.0077798Z           "minFreeSpace": "27.01GiB"
+2026-10-08T15:25:51.0077942Z         }
+2026-10-08T15:25:51.0078056Z       ]
+2026-10-08T15:25:51.0078169Z     }
+2026-10-08T15:25:51.0078278Z   ],
+2026-10-08T15:25:51.0078435Z   "name": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1",
+2026-10-08T15:25:51.0078638Z   "driver": "docker-container",
+2026-10-08T15:25:51.0078905Z   "lastActivity": "2026-10-08T15:25:47.000Z"
+2026-10-08T15:25:51.0079101Z }
+2026-10-08T15:25:51.0079528Z ##[endgroup]
+2026-10-08T15:25:51.1205358Z [command]/usr/bin/docker buildx build --build-arg VERSION=v2.11.3-apple-validation.4 --cache-from type=gha --cache-to type=gha,mode=max --file backend/explore/Dockerfile --iidfile /home/runner/work/_temp/docker-actions-toolkit-1Zevur/build-iidfile-b5759ca0a8.txt --label org.opencontainers.image.created=2026-10-08T15:25:46.551Z --label org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs --label org.opencontainers.image.licenses=Apache-2.0 --label org.opencontainers.image.revision=1ba3808f79db8190ecd278a3853ab7a27d5abac9 --label org.opencontainers.image.source=https://github.com/johnsonlee/graphite --label org.opencontainers.image.title=graphite-explore --label org.opencontainers.image.url=https://github.com/johnsonlee/graphite --label org.opencontainers.image.version=2.11.3-apple-validation.4 --platform linux/amd64,linux/arm64 --attest type=provenance,mode=max,builder-id=https://github.com/johnsonlee/graphite/actions/runs/37798249852/attempts/1 --tag ghcr.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4 --tag docker.io/johnsonlee/graphite-explore:2.11.3-apple-validation.4 --metadata-file /home/runner/work/_temp/docker-actions-toolkit-1Zevur/build-metadata-6d4705d180.json .
+2026-10-08T15:25:51.3090047Z #0 building with "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1" instance using docker-container driver
+2026-10-08T15:25:51.3090498Z 
+2026-10-08T15:25:51.3090632Z #1 [internal] load build definition from Dockerfile
+2026-10-08T15:25:51.3090961Z #1 transferring dockerfile: 1.53kB done
+2026-10-08T15:25:51.3091217Z #1 DONE 0.0s
+2026-10-08T15:25:51.3091294Z 
+2026-10-08T15:25:51.3091499Z #2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+2026-10-08T15:25:51.3091797Z #2 DONE 0.1s
+2026-10-08T15:25:51.5537808Z 
+2026-10-08T15:25:51.5538581Z #3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+2026-10-08T15:25:51.5539485Z #3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e done
+2026-10-08T15:25:51.5539790Z #3 CACHED
+2026-10-08T15:25:51.5539871Z 
+2026-10-08T15:25:51.5540013Z #4 [linux/amd64 internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2026-10-08T15:25:51.5540253Z #4 DONE 0.0s
+2026-10-08T15:25:51.5540327Z 
+2026-10-08T15:25:51.5540402Z #5 [internal] load .dockerignore
+2026-10-08T15:25:51.5540564Z #5 transferring context: 176B done
+2026-10-08T15:25:51.5540720Z #5 DONE 0.0s
+2026-10-08T15:25:51.5540790Z 
+2026-10-08T15:25:51.5540923Z #6 [linux/arm64 internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2026-10-08T15:25:51.5951901Z #6 DONE 0.2s
+2026-10-08T15:25:51.7750765Z 
+2026-10-08T15:25:51.7751332Z #7 [internal] load build context
+2026-10-08T15:25:51.7751647Z #7 DONE 0.0s
+2026-10-08T15:25:51.7751726Z 
+2026-10-08T15:25:51.7751826Z #8 [internal] load build context
+2026-10-08T15:25:51.7751980Z #8 DONE 0.0s
+2026-10-08T15:25:51.7752054Z 
+2026-10-08T15:25:51.7752331Z #9 [linux/amd64 1/3] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+2026-10-08T15:25:51.7752844Z #9 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab done
+2026-10-08T15:25:51.7753155Z #9 DONE 0.0s
+2026-10-08T15:25:51.7753240Z 
+2026-10-08T15:25:51.7753473Z #10 [linux/arm64 1/3] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+2026-10-08T15:25:51.7753961Z #10 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab done
+2026-10-08T15:25:51.7754439Z #10 DONE 0.0s
+2026-10-08T15:25:51.7754512Z 
+2026-10-08T15:25:51.7754607Z #11 importing cache manifest from gha:16187819632653289681
+2026-10-08T15:25:51.8643351Z #11 DONE 0.2s
+2026-10-08T15:25:51.9672929Z 
+2026-10-08T15:25:51.9673646Z #8 [internal] load build context
+2026-10-08T15:25:51.9674704Z #8 transferring context: 10.58MB 0.1s done
+2026-10-08T15:25:52.1222843Z #8 DONE 0.1s
+2026-10-08T15:25:52.1223041Z 
+2026-10-08T15:25:52.1223143Z #7 [internal] load build context
+2026-10-08T15:25:52.1223425Z #7 transferring context: 11.46MB 0.1s done
+2026-10-08T15:25:52.1223689Z #7 DONE 0.1s
+2026-10-08T15:25:52.1223799Z 
+2026-10-08T15:25:52.1223933Z #12 [linux/amd64 2/3] WORKDIR /app
+2026-10-08T15:25:52.1224341Z #12 CACHED
+2026-10-08T15:25:52.1224454Z 
+2026-10-08T15:25:52.1224691Z #13 [linux/amd64 3/3] COPY --chmod=0755 release-assets/linux/amd64/graphite /app/graphite
+2026-10-08T15:25:52.1225067Z #13 CACHED
+2026-10-08T15:25:52.1225165Z 
+2026-10-08T15:25:52.1225257Z #14 [linux/arm64 2/3] WORKDIR /app
+2026-10-08T15:25:52.1621653Z #14 CACHED
+2026-10-08T15:25:52.2951542Z 
+2026-10-08T15:25:52.2952260Z #14 [linux/arm64 2/3] WORKDIR /app
+2026-10-08T15:25:52.2952696Z #14 sha256:f665a57542bcc78400abfb6fa0865eaf98d672f3bf9e1c6e40ba897db1937ac5 97B / 97B 0.1s done
+2026-10-08T15:25:52.4837530Z #14 sha256:4db96f2c7ae9e90f3fd5e91cf947d19cced1d8a778d12923113f62c7fff3ec3e 143.35kB / 143.35kB 0.2s done
+2026-10-08T15:25:52.4838052Z #14 sha256:f7c03e5221c3717bfa68250498f74132c03d9d7271f301c9b2a9cfc00fc6e231 83.90kB / 83.90kB 0.2s done
+2026-10-08T15:25:52.4838507Z #14 extracting sha256:f7c03e5221c3717bfa68250498f74132c03d9d7271f301c9b2a9cfc00fc6e231 done
+2026-10-08T15:25:52.4839190Z #14 extracting sha256:990a9c434e5e0f11549a8d4a41a1991e621b04e30cd63269adbc97b1dc38fd7e done
+2026-10-08T15:25:52.4839656Z #14 extracting sha256:39dc083afc39bd8dc43d456fe7ff7d39292e593bb2769972c11bb2e5f9119386 0.1s done
+2026-10-08T15:25:52.4840088Z #14 DONE 0.5s
+2026-10-08T15:25:52.6652366Z 
+2026-10-08T15:25:52.6652856Z #14 [linux/arm64 2/3] WORKDIR /app
+2026-10-08T15:25:52.6653341Z #14 extracting sha256:bf7a4185f01524837d19abde915ffde84e64368b250f5b5e9f6f75aea62a11d4 done
+2026-10-08T15:25:52.6653723Z #14 extracting sha256:2780920e5dbfbe103d03a583ed75345306e572ec5a48cb10361f046767d9f29a done
+2026-10-08T15:25:52.6701089Z #14 extracting sha256:7c12895b777bcaa8ccae0605b4de635b68fc32d60fa08f421dc3818bf55ee212 done
+2026-10-08T15:25:52.6701463Z #14 extracting sha256:3214acf345c0cc6bbdb56b698a41ccdefc624a09d6beb0d38b5de0b2303ecaf4 done
+2026-10-08T15:25:52.6701847Z #14 extracting sha256:52630fc75a18675c530ed9eba5f55eca09b03e91bd5bc15307918bbc1a7e7296 done
+2026-10-08T15:25:52.6702216Z #14 extracting sha256:dd64bf2dd177757451a98fcdc999a339c35dee5d9872d8f4dc69c8f3c4dd0112 done
+2026-10-08T15:25:52.6702570Z #14 extracting sha256:b839dfae01f66e15c6a8b63520557ed315bdfe036342fa7a0c537259f10d7a9a done
+2026-10-08T15:25:52.6702909Z #14 extracting sha256:dcaa5a89b0ccda4b283e16d0b4d0891cd93d5fe05c6798f7806781a6a2d84354 done
+2026-10-08T15:25:52.6703259Z #14 extracting sha256:4db96f2c7ae9e90f3fd5e91cf947d19cced1d8a778d12923113f62c7fff3ec3e done
+2026-10-08T15:25:52.6703605Z #14 extracting sha256:f665a57542bcc78400abfb6fa0865eaf98d672f3bf9e1c6e40ba897db1937ac5 done
+2026-10-08T15:25:52.6703863Z #14 DONE 0.5s
+2026-10-08T15:25:52.6703941Z 
+2026-10-08T15:25:52.6704227Z #15 [linux/arm64 3/3] COPY --chmod=0755 release-assets/linux/arm64/graphite /app/graphite
+2026-10-08T15:25:52.6740830Z #15 DONE 0.2s
+2026-10-08T15:25:52.8262234Z 
+2026-10-08T15:25:52.8263036Z #16 exporting to GitHub Actions Cache
+2026-10-08T15:25:52.8263392Z #16 preparing build cache for export
+2026-10-08T15:25:53.0383507Z #16 preparing build cache for export 0.4s done
+2026-10-08T15:25:53.0383798Z #16 sending cache export
+2026-10-08T15:25:53.6861446Z #16 writing layer sha256:6ee46c7b2b2b0fdf2e367e43758b355abc836e614974cfc12de6755a4616fb31
+2026-10-08T15:25:54.5151777Z #16 writing layer sha256:6ee46c7b2b2b0fdf2e367e43758b355abc836e614974cfc12de6755a4616fb31 0.8s done
+2026-10-08T15:25:54.7250663Z #16 writing layer sha256:86ae27f6bf208a96101ba880cbab37e94c6950e7b5381133c6ead5e76ba06ba1
+2026-10-08T15:25:55.0494623Z #16 writing layer sha256:86ae27f6bf208a96101ba880cbab37e94c6950e7b5381133c6ead5e76ba06ba1 0.3s done
+2026-10-08T15:25:55.9937415Z #16 writing layer sha256:e0ff9e582c5370b8a3899e70a45b1acf90dfbf07c40d269a526f756884abf27b
+2026-10-08T15:25:56.6754756Z #16 writing layer sha256:e0ff9e582c5370b8a3899e70a45b1acf90dfbf07c40d269a526f756884abf27b 0.7s done
+2026-10-08T15:25:57.2132537Z #16 sending cache export 4.2s done
+2026-10-08T15:25:57.2132887Z #16 DONE 4.5s
+2026-10-08T15:25:57.2279812Z 
+2026-10-08T15:25:57.2280431Z #17 resolving provenance for metadata file
+2026-10-08T15:25:57.2280821Z #17 DONE 0.0s
+2026-10-08T15:25:57.2281537Z WARNING: No output specified with docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push or to load image into docker use --load
+2026-10-08T15:25:57.2345376Z ##[group]Metadata
+2026-10-08T15:25:57.2349168Z ::stop-commands::***
+2026-10-08T15:25:57.2349482Z {
+2026-10-08T15:25:57.2349727Z   "buildx.build.provenance/linux/amd64": {
+2026-10-08T15:25:57.2350035Z     "builder": {
+2026-10-08T15:25:57.2350462Z       "id": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/attempts/1"
+2026-10-08T15:25:57.2350836Z     },
+2026-10-08T15:25:57.2351077Z     "buildType": "https://mobyproject.org/buildkit@v1",
+2026-10-08T15:25:57.2351370Z     "materials": [
+2026-10-08T15:25:57.2351570Z       {
+2026-10-08T15:25:57.2351785Z         "uri": "pkg:docker/docker/dockerfile@1.7",
+2026-10-08T15:25:57.2352074Z         "digest": {
+2026-10-08T15:25:57.2352660Z           "sha256": "a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e"
+2026-10-08T15:25:57.2353026Z         }
+2026-10-08T15:25:57.2353223Z       },
+2026-10-08T15:25:57.2353398Z       {
+2026-10-08T15:25:57.2353728Z         "uri": "pkg:docker/gcr.io/distroless/static-debian12@nonroot?platform=linux%2Famd64",
+2026-10-08T15:25:57.2356746Z         "digest": {
+2026-10-08T15:25:57.2357090Z           "sha256": "afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab"
+2026-10-08T15:25:57.2357460Z         }
+2026-10-08T15:25:57.2357639Z       }
+2026-10-08T15:25:57.2357994Z     ],
+2026-10-08T15:25:57.2358178Z     "invocation": {
+2026-10-08T15:25:57.2358394Z       "configSource": {
+2026-10-08T15:25:57.2358625Z         "entryPoint": "Dockerfile"
+2026-10-08T15:25:57.2358861Z       },
+2026-10-08T15:25:57.2359046Z       "parameters": {
+2026-10-08T15:25:57.2359300Z         "frontend": "gateway.v0",
+2026-10-08T15:25:57.2359532Z         "args": {
+2026-10-08T15:25:57.2359788Z           "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2360135Z           "cmdline": "docker/dockerfile:1.7",
+2026-10-08T15:25:57.2360500Z           "label:org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:57.2361097Z           "label:org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:57.2361664Z           "label:org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:57.2362154Z           "label:org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2362765Z           "label:org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2363242Z           "label:org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:57.2363700Z           "label:org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2364366Z           "label:org.opencontainers.image.version": "2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2364752Z           "source": "docker/dockerfile:1.7"
+2026-10-08T15:25:57.2364935Z         },
+2026-10-08T15:25:57.2365073Z         "locals": [
+2026-10-08T15:25:57.2365214Z           {
+2026-10-08T15:25:57.2365346Z             "name": "context"
+2026-10-08T15:25:57.2365509Z           },
+2026-10-08T15:25:57.2365628Z           {
+2026-10-08T15:25:57.2365772Z             "name": "dockerfile"
+2026-10-08T15:25:57.2365923Z           }
+2026-10-08T15:25:57.2366050Z         ],
+2026-10-08T15:25:57.2366168Z         "root": {
+2026-10-08T15:25:57.2366319Z           "configSource": {
+2026-10-08T15:25:57.2366470Z             "path": "Dockerfile"
+2026-10-08T15:25:57.2366631Z           },
+2026-10-08T15:25:57.2366751Z           "request": {
+2026-10-08T15:25:57.2366903Z             "args": {
+2026-10-08T15:25:57.2367087Z               "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2367358Z               "label:org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:57.2367761Z               "label:org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:57.2368134Z               "label:org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:57.2368434Z               "label:org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2368775Z               "label:org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2369089Z               "label:org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:57.2369386Z               "label:org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2369700Z               "label:org.opencontainers.image.version": "2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2369935Z               "vcs:localdir:context": ".",
+2026-10-08T15:25:57.2370131Z               "vcs:localdir:dockerfile": "backend/explore",
+2026-10-08T15:25:57.2370494Z               "vcs:revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2370789Z               "vcs:source": "https://github.com/johnsonlee/graphite"
+2026-10-08T15:25:57.2371002Z             }
+2026-10-08T15:25:57.2371137Z           }
+2026-10-08T15:25:57.2371252Z         },
+2026-10-08T15:25:57.2371395Z         "compatibilityVersion": 30
+2026-10-08T15:25:57.2371565Z       },
+2026-10-08T15:25:57.2371685Z       "environment": {
+2026-10-08T15:25:57.2371843Z         "github_actor": "johnsonlee",
+2026-10-08T15:25:57.2372113Z         "github_actor_id": "2344882",
+2026-10-08T15:25:57.2372290Z         "github_event_name": "workflow_dispatch",
+2026-10-08T15:25:57.2372487Z         "github_event_payload": {
+2026-10-08T15:25:57.2372653Z           "inputs": {
+2026-10-08T15:25:57.2372802Z             "calibrate_apple": "true",
+2026-10-08T15:25:57.2372995Z             "tag": "v2.11.3-apple-validation.4"
+2026-10-08T15:25:57.2373165Z           },
+2026-10-08T15:25:57.2373347Z           "ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2373567Z           "repository": {
+2026-10-08T15:25:57.2373730Z             "allow_forking": true,
+2026-10-08T15:25:57.2374140Z             "archive_url": "https://api.github.com/repos/johnsonlee/graphite/{archive_format}{/ref}",
+2026-10-08T15:25:57.2374565Z             "archived": false,
+2026-10-08T15:25:57.2374885Z             "assignees_url": "https://api.github.com/repos/johnsonlee/graphite/assignees{/user}",
+2026-10-08T15:25:57.2375223Z             "blobs_url": "https://api.github.com/repos/johnsonlee/graphite/git/blobs{/sha}",
+2026-10-08T15:25:57.2375583Z             "branches_url": "https://api.github.com/repos/johnsonlee/graphite/branches{/branch}",
+2026-10-08T15:25:57.2375889Z             "clone_url": "https://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:57.2376238Z             "collaborators_url": "https://api.github.com/repos/johnsonlee/graphite/collaborators{/collaborator}",
+2026-10-08T15:25:57.2376619Z             "comments_url": "https://api.github.com/repos/johnsonlee/graphite/comments{/number}",
+2026-10-08T15:25:57.2376977Z             "commits_url": "https://api.github.com/repos/johnsonlee/graphite/commits{/sha}",
+2026-10-08T15:25:57.2377321Z             "compare_url": "https://api.github.com/repos/johnsonlee/graphite/compare/{base}...{head}",
+2026-10-08T15:25:57.2377685Z             "contents_url": "https://api.github.com/repos/johnsonlee/graphite/contents/{+path}",
+2026-10-08T15:25:57.2378081Z             "contributors_url": "https://api.github.com/repos/johnsonlee/graphite/contributors",
+2026-10-08T15:25:57.2378398Z             "created_at": "2026-01-24T07:28:51Z",
+2026-10-08T15:25:57.2378588Z             "default_branch": "main",
+2026-10-08T15:25:57.2378844Z             "deployments_url": "https://api.github.com/repos/johnsonlee/graphite/deployments",
+2026-10-08T15:25:57.2379143Z             "description": "Structured codebase context for LLMs",
+2026-10-08T15:25:57.2379354Z             "disabled": false,
+2026-10-08T15:25:57.2379600Z             "downloads_url": "https://api.github.com/repos/johnsonlee/graphite/downloads",
+2026-10-08T15:25:57.2379914Z             "events_url": "https://api.github.com/repos/johnsonlee/graphite/events",
+2026-10-08T15:25:57.2380156Z             "fork": false,
+2026-10-08T15:25:57.2380315Z             "forks": 3,
+2026-10-08T15:25:57.2380456Z             "forks_count": 3,
+2026-10-08T15:25:57.2380679Z             "forks_url": "https://api.github.com/repos/johnsonlee/graphite/forks",
+2026-10-08T15:25:57.2380934Z             "full_name": "johnsonlee/graphite",
+2026-10-08T15:25:57.2381233Z             "git_commits_url": "https://api.github.com/repos/johnsonlee/graphite/git/commits{/sha}",
+2026-10-08T15:25:57.2381574Z             "git_refs_url": "https://api.github.com/repos/johnsonlee/graphite/git/refs{/sha}",
+2026-10-08T15:25:57.2381919Z             "git_tags_url": "https://api.github.com/repos/johnsonlee/graphite/git/tags{/sha}",
+2026-10-08T15:25:57.2382207Z             "git_url": "git://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:57.2382535Z             "has_discussions": false,
+2026-10-08T15:25:57.2382701Z             "has_downloads": false,
+2026-10-08T15:25:57.2382880Z             "has_issues": true,
+2026-10-08T15:25:57.2383051Z             "has_pages": true,
+2026-10-08T15:25:57.2383219Z             "has_projects": true,
+2026-10-08T15:25:57.2383395Z             "has_pull_requests": true,
+2026-10-08T15:25:57.2383558Z             "has_wiki": true,
+2026-10-08T15:25:57.2383752Z             "homepage": "https://johnsonlee.io/graphite/",
+2026-10-08T15:25:57.2384310Z             "hooks_url": "https://api.github.com/repos/johnsonlee/graphite/hooks",
+2026-10-08T15:25:57.2384584Z             "html_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2384791Z             "id": 1141070800,
+2026-10-08T15:25:57.2384950Z             "is_template": false,
+2026-10-08T15:25:57.2385232Z             "issue_comment_url": "https://api.github.com/repos/johnsonlee/graphite/issues/comments{/number}",
+2026-10-08T15:25:57.2385638Z             "issue_events_url": "https://api.github.com/repos/johnsonlee/graphite/issues/events{/number}",
+2026-10-08T15:25:57.2386001Z             "issues_url": "https://api.github.com/repos/johnsonlee/graphite/issues{/number}",
+2026-10-08T15:25:57.2386336Z             "keys_url": "https://api.github.com/repos/johnsonlee/graphite/keys{/key_id}",
+2026-10-08T15:25:57.2386661Z             "labels_url": "https://api.github.com/repos/johnsonlee/graphite/labels{/name}",
+2026-10-08T15:25:57.2386916Z             "language": "Kotlin",
+2026-10-08T15:25:57.2387166Z             "languages_url": "https://api.github.com/repos/johnsonlee/graphite/languages",
+2026-10-08T15:25:57.2387426Z             "license": {
+2026-10-08T15:25:57.2387576Z               "key": "apache-2.0",
+2026-10-08T15:25:57.2387757Z               "name": "Apache License 2.0",
+2026-10-08T15:25:57.2387950Z               "node_id": "MDc6TGljZW5zZTI=",
+2026-10-08T15:25:57.2388141Z               "spdx_id": "Apache-2.0",
+2026-10-08T15:25:57.2388353Z               "url": "https://api.github.com/licenses/apache-2.0"
+2026-10-08T15:25:57.2388553Z             },
+2026-10-08T15:25:57.2388755Z             "merges_url": "https://api.github.com/repos/johnsonlee/graphite/merges",
+2026-10-08T15:25:57.2389090Z             "milestones_url": "https://api.github.com/repos/johnsonlee/graphite/milestones{/number}",
+2026-10-08T15:25:57.2389362Z             "mirror_url": null,
+2026-10-08T15:25:57.2389530Z             "name": "graphite",
+2026-10-08T15:25:57.2389703Z             "node_id": "R_kgDORANb0A",
+2026-10-08T15:25:57.2390036Z             "notifications_url": "https://api.github.com/repos/johnsonlee/graphite/notifications{?since,all,participating}",
+2026-10-08T15:25:57.2390357Z             "open_issues": 4,
+2026-10-08T15:25:57.2390524Z             "open_issues_count": 4,
+2026-10-08T15:25:57.2390681Z             "owner": {
+2026-10-08T15:25:57.2390901Z               "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:57.2391226Z               "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:57.2391531Z               "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:57.2391869Z               "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:57.2392193Z               "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:57.2392450Z               "gravatar_id": "",
+2026-10-08T15:25:57.2392655Z               "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:57.2392863Z               "id": 2344882,
+2026-10-08T15:25:57.2393030Z               "login": "johnsonlee",
+2026-10-08T15:25:57.2393205Z               "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:57.2393467Z               "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:57.2393786Z               "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:57.2394356Z               "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:57.2394586Z               "site_admin": false,
+2026-10-08T15:25:57.2394835Z               "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:57.2395180Z               "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:57.2395439Z               "type": "User",
+2026-10-08T15:25:57.2395663Z               "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:57.2395984Z               "user_view_type": "public"
+2026-10-08T15:25:57.2396140Z             },
+2026-10-08T15:25:57.2396270Z             "private": false,
+2026-10-08T15:25:57.2396438Z             "pull_request_creation_policy": "all",
+2026-10-08T15:25:57.2396690Z             "pulls_url": "https://api.github.com/repos/johnsonlee/graphite/pulls{/number}",
+2026-10-08T15:25:57.2396955Z             "pushed_at": "2026-10-08T15:08:17Z",
+2026-10-08T15:25:57.2397208Z             "releases_url": "https://api.github.com/repos/johnsonlee/graphite/releases{/id}",
+2026-10-08T15:25:57.2397461Z             "size": 5735,
+2026-10-08T15:25:57.2397639Z             "ssh_url": "git@github.com:johnsonlee/graphite.git",
+2026-10-08T15:25:57.2397832Z             "stargazers_count": 15,
+2026-10-08T15:25:57.2398082Z             "stargazers_url": "https://api.github.com/repos/johnsonlee/graphite/stargazers",
+2026-10-08T15:25:57.2398398Z             "statuses_url": "https://api.github.com/repos/johnsonlee/graphite/statuses/{sha}",
+2026-10-08T15:25:57.2398734Z             "subscribers_url": "https://api.github.com/repos/johnsonlee/graphite/subscribers",
+2026-10-08T15:25:57.2400187Z             "subscription_url": "https://api.github.com/repos/johnsonlee/graphite/subscription",
+2026-10-08T15:25:57.2400527Z             "svn_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2400795Z             "tags_url": "https://api.github.com/repos/johnsonlee/graphite/tags",
+2026-10-08T15:25:57.2401077Z             "teams_url": "https://api.github.com/repos/johnsonlee/graphite/teams",
+2026-10-08T15:25:57.2401307Z             "topics": [
+2026-10-08T15:25:57.2401451Z               "ai-agents",
+2026-10-08T15:25:57.2401596Z               "android",
+2026-10-08T15:25:57.2401738Z               "bytecode",
+2026-10-08T15:25:57.2401884Z               "code-graph",
+2026-10-08T15:25:57.2402038Z               "code-intelligence",
+2026-10-08T15:25:57.2402190Z               "cypher",
+2026-10-08T15:25:57.2402338Z               "developer-tools",
+2026-10-08T15:25:57.2402488Z               "jvm",
+2026-10-08T15:25:57.2402619Z               "llm",
+2026-10-08T15:25:57.2402748Z               "mcp",
+2026-10-08T15:25:57.2402885Z               "static-analysis"
+2026-10-08T15:25:57.2403030Z             ],
+2026-10-08T15:25:57.2403233Z             "trees_url": "https://api.github.com/repos/johnsonlee/graphite/git/trees{/sha}",
+2026-10-08T15:25:57.2403483Z             "updated_at": "2026-10-08T10:34:02Z",
+2026-10-08T15:25:57.2403699Z             "url": "https://api.github.com/repos/johnsonlee/graphite",
+2026-10-08T15:25:57.2403902Z             "visibility": "public",
+2026-10-08T15:25:57.2404303Z             "watchers": 15,
+2026-10-08T15:25:57.2404454Z             "watchers_count": 15,
+2026-10-08T15:25:57.2404622Z             "web_commit_signoff_required": false
+2026-10-08T15:25:57.2404788Z           },
+2026-10-08T15:25:57.2404911Z           "sender": {
+2026-10-08T15:25:57.2405112Z             "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:57.2405397Z             "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:57.2405680Z             "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:57.2405977Z             "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:57.2406275Z             "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:57.2406602Z             "gravatar_id": "",
+2026-10-08T15:25:57.2406781Z             "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:57.2406962Z             "id": 2344882,
+2026-10-08T15:25:57.2407108Z             "login": "johnsonlee",
+2026-10-08T15:25:57.2407280Z             "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:57.2407516Z             "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:57.2407819Z             "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:57.2408194Z             "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:57.2408428Z             "site_admin": false,
+2026-10-08T15:25:57.2408660Z             "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:57.2408970Z             "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:57.2409208Z             "type": "User",
+2026-10-08T15:25:57.2409392Z             "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:57.2409591Z             "user_view_type": "public"
+2026-10-08T15:25:57.2409750Z           },
+2026-10-08T15:25:57.2409901Z           "workflow": ".github/workflows/publish.yml"
+2026-10-08T15:25:57.2410074Z         },
+2026-10-08T15:25:57.2410197Z         "github_job": "docker",
+2026-10-08T15:25:57.2410399Z         "github_ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2410637Z         "github_ref_name": "codex/apple-frontend-validation",
+2026-10-08T15:25:57.2410843Z         "github_ref_protected": "false",
+2026-10-08T15:25:57.2411009Z         "github_ref_type": "branch",
+2026-10-08T15:25:57.2411189Z         "github_repository": "johnsonlee/graphite",
+2026-10-08T15:25:57.2411376Z         "github_repository_id": "1141070800",
+2026-10-08T15:25:57.2411557Z         "github_repository_owner": "johnsonlee",
+2026-10-08T15:25:57.2411743Z         "github_repository_owner_id": "2344882",
+2026-10-08T15:25:57.2411920Z         "github_run_attempt": "1",
+2026-10-08T15:25:57.2412082Z         "github_run_id": "37798249852",
+2026-10-08T15:25:57.2412243Z         "github_run_number": "103",
+2026-10-08T15:25:57.2412405Z         "github_runner_arch": "X64",
+2026-10-08T15:25:57.2412589Z         "github_runner_environment": "github-hosted",
+2026-10-08T15:25:57.2412777Z         "github_runner_image_os": "ubuntu24",
+2026-10-08T15:25:57.2412970Z         "github_runner_image_version": "20261004.327.1",
+2026-10-08T15:25:57.2413178Z         "github_runner_name": "GitHub Actions 1000036998",
+2026-10-08T15:25:57.2413367Z         "github_runner_os": "Linux",
+2026-10-08T15:25:57.2413588Z         "github_runner_tracking_id": "github_817f9a08-8526-49f5-8c36-960aae9bb9b8",
+2026-10-08T15:25:57.2413836Z         "github_server_url": "https://github.com",
+2026-10-08T15:25:57.2414169Z         "github_triggering_actor": "johnsonlee",
+2026-10-08T15:25:57.2414399Z         "github_workflow": "Publish",
+2026-10-08T15:25:57.2414712Z         "github_workflow_ref": "johnsonlee/graphite/.github/workflows/publish.yml@refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2415067Z         "github_workflow_sha": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2415282Z         "platform": "linux/amd64"
+2026-10-08T15:25:57.2415432Z       }
+2026-10-08T15:25:57.2415572Z     }
+2026-10-08T15:25:57.2415747Z   },
+2026-10-08T15:25:57.2415966Z   "buildx.build.provenance/linux/arm64": {
+2026-10-08T15:25:57.2416139Z     "builder": {
+2026-10-08T15:25:57.2416352Z       "id": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/attempts/1"
+2026-10-08T15:25:57.2416579Z     },
+2026-10-08T15:25:57.2416735Z     "buildType": "https://mobyproject.org/buildkit@v1",
+2026-10-08T15:25:57.2416921Z     "materials": [
+2026-10-08T15:25:57.2417051Z       {
+2026-10-08T15:25:57.2417185Z         "uri": "pkg:docker/docker/dockerfile@1.7",
+2026-10-08T15:25:57.2417355Z         "digest": {
+2026-10-08T15:25:57.2417659Z           "sha256": "a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e"
+2026-10-08T15:25:57.2417884Z         }
+2026-10-08T15:25:57.2417997Z       },
+2026-10-08T15:25:57.2418108Z       {
+2026-10-08T15:25:57.2418305Z         "uri": "pkg:docker/gcr.io/distroless/static-debian12@nonroot?platform=linux%2Farm64",
+2026-10-08T15:25:57.2418539Z         "digest": {
+2026-10-08T15:25:57.2418745Z           "sha256": "afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab"
+2026-10-08T15:25:57.2418972Z         }
+2026-10-08T15:25:57.2419162Z       }
+2026-10-08T15:25:57.2419275Z     ],
+2026-10-08T15:25:57.2419390Z     "invocation": {
+2026-10-08T15:25:57.2419523Z       "configSource": {
+2026-10-08T15:25:57.2419669Z         "entryPoint": "Dockerfile"
+2026-10-08T15:25:57.2419817Z       },
+2026-10-08T15:25:57.2419930Z       "parameters": {
+2026-10-08T15:25:57.2420071Z         "frontend": "gateway.v0",
+2026-10-08T15:25:57.2420218Z         "args": {
+2026-10-08T15:25:57.2420384Z           "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2420581Z           "cmdline": "docker/dockerfile:1.7",
+2026-10-08T15:25:57.2420815Z           "label:org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:57.2421178Z           "label:org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:57.2421520Z           "label:org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:57.2421811Z           "label:org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2422152Z           "label:org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2422446Z           "label:org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:57.2422729Z           "label:org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2423036Z           "label:org.opencontainers.image.version": "2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2423276Z           "source": "docker/dockerfile:1.7"
+2026-10-08T15:25:57.2423439Z         },
+2026-10-08T15:25:57.2423554Z         "locals": [
+2026-10-08T15:25:57.2423683Z           {
+2026-10-08T15:25:57.2423808Z             "name": "context"
+2026-10-08T15:25:57.2423951Z           },
+2026-10-08T15:25:57.2425142Z           {
+2026-10-08T15:25:57.2425399Z             "name": "dockerfile"
+2026-10-08T15:25:57.2425547Z           }
+2026-10-08T15:25:57.2425660Z         ],
+2026-10-08T15:25:57.2425774Z         "root": {
+2026-10-08T15:25:57.2425914Z           "configSource": {
+2026-10-08T15:25:57.2426066Z             "path": "Dockerfile"
+2026-10-08T15:25:57.2426212Z           },
+2026-10-08T15:25:57.2426337Z           "request": {
+2026-10-08T15:25:57.2426473Z             "args": {
+2026-10-08T15:25:57.2426644Z               "build-arg:VERSION": "v2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2426895Z               "label:org.opencontainers.image.created": "2026-10-08T15:25:46.551Z",
+2026-10-08T15:25:57.2427264Z               "label:org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+2026-10-08T15:25:57.2427611Z               "label:org.opencontainers.image.licenses": "Apache-2.0",
+2026-10-08T15:25:57.2427909Z               "label:org.opencontainers.image.revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2428248Z               "label:org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2428548Z               "label:org.opencontainers.image.title": "graphite-explore",
+2026-10-08T15:25:57.2428841Z               "label:org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2429147Z               "label:org.opencontainers.image.version": "2.11.3-apple-validation.4",
+2026-10-08T15:25:57.2429384Z               "vcs:localdir:context": ".",
+2026-10-08T15:25:57.2429576Z               "vcs:localdir:dockerfile": "backend/explore",
+2026-10-08T15:25:57.2429899Z               "vcs:revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2430134Z               "vcs:source": "https://github.com/johnsonlee/graphite"
+2026-10-08T15:25:57.2437628Z             }
+2026-10-08T15:25:57.2437843Z           }
+2026-10-08T15:25:57.2437968Z         },
+2026-10-08T15:25:57.2438107Z         "compatibilityVersion": 30
+2026-10-08T15:25:57.2438266Z       },
+2026-10-08T15:25:57.2438391Z       "environment": {
+2026-10-08T15:25:57.2438542Z         "github_actor": "johnsonlee",
+2026-10-08T15:25:57.2438835Z         "github_actor_id": "2344882",
+2026-10-08T15:25:57.2439017Z         "github_event_name": "workflow_dispatch",
+2026-10-08T15:25:57.2439203Z         "github_event_payload": {
+2026-10-08T15:25:57.2439356Z           "inputs": {
+2026-10-08T15:25:57.2439507Z             "calibrate_apple": "true",
+2026-10-08T15:25:57.2439689Z             "tag": "v2.11.3-apple-validation.4"
+2026-10-08T15:25:57.2439860Z           },
+2026-10-08T15:25:57.2440029Z           "ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2440232Z           "repository": {
+2026-10-08T15:25:57.2440386Z             "allow_forking": true,
+2026-10-08T15:25:57.2440644Z             "archive_url": "https://api.github.com/repos/johnsonlee/graphite/{archive_format}{/ref}",
+2026-10-08T15:25:57.2440911Z             "archived": false,
+2026-10-08T15:25:57.2441151Z             "assignees_url": "https://api.github.com/repos/johnsonlee/graphite/assignees{/user}",
+2026-10-08T15:25:57.2441472Z             "blobs_url": "https://api.github.com/repos/johnsonlee/graphite/git/blobs{/sha}",
+2026-10-08T15:25:57.2441795Z             "branches_url": "https://api.github.com/repos/johnsonlee/graphite/branches{/branch}",
+2026-10-08T15:25:57.2442083Z             "clone_url": "https://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:57.2442408Z             "collaborators_url": "https://api.github.com/repos/johnsonlee/graphite/collaborators{/collaborator}",
+2026-10-08T15:25:57.2442771Z             "comments_url": "https://api.github.com/repos/johnsonlee/graphite/comments{/number}",
+2026-10-08T15:25:57.2443087Z             "commits_url": "https://api.github.com/repos/johnsonlee/graphite/commits{/sha}",
+2026-10-08T15:25:57.2443414Z             "compare_url": "https://api.github.com/repos/johnsonlee/graphite/compare/{base}...{head}",
+2026-10-08T15:25:57.2443751Z             "contents_url": "https://api.github.com/repos/johnsonlee/graphite/contents/{+path}",
+2026-10-08T15:25:57.2444232Z             "contributors_url": "https://api.github.com/repos/johnsonlee/graphite/contributors",
+2026-10-08T15:25:57.2444494Z             "created_at": "2026-01-24T07:28:51Z",
+2026-10-08T15:25:57.2444675Z             "default_branch": "main",
+2026-10-08T15:25:57.2444918Z             "deployments_url": "https://api.github.com/repos/johnsonlee/graphite/deployments",
+2026-10-08T15:25:57.2445195Z             "description": "Structured codebase context for LLMs",
+2026-10-08T15:25:57.2445392Z             "disabled": false,
+2026-10-08T15:25:57.2445626Z             "downloads_url": "https://api.github.com/repos/johnsonlee/graphite/downloads",
+2026-10-08T15:25:57.2445927Z             "events_url": "https://api.github.com/repos/johnsonlee/graphite/events",
+2026-10-08T15:25:57.2446149Z             "fork": false,
+2026-10-08T15:25:57.2446295Z             "forks": 3,
+2026-10-08T15:25:57.2446466Z             "forks_count": 3,
+2026-10-08T15:25:57.2446680Z             "forks_url": "https://api.github.com/repos/johnsonlee/graphite/forks",
+2026-10-08T15:25:57.2446937Z             "full_name": "johnsonlee/graphite",
+2026-10-08T15:25:57.2447207Z             "git_commits_url": "https://api.github.com/repos/johnsonlee/graphite/git/commits{/sha}",
+2026-10-08T15:25:57.2447536Z             "git_refs_url": "https://api.github.com/repos/johnsonlee/graphite/git/refs{/sha}",
+2026-10-08T15:25:57.2447847Z             "git_tags_url": "https://api.github.com/repos/johnsonlee/graphite/git/tags{/sha}",
+2026-10-08T15:25:57.2448339Z             "git_url": "git://github.com/johnsonlee/graphite.git",
+2026-10-08T15:25:57.2448540Z             "has_discussions": false,
+2026-10-08T15:25:57.2448707Z             "has_downloads": false,
+2026-10-08T15:25:57.2448872Z             "has_issues": true,
+2026-10-08T15:25:57.2449030Z             "has_pages": true,
+2026-10-08T15:25:57.2449187Z             "has_projects": true,
+2026-10-08T15:25:57.2449346Z             "has_pull_requests": true,
+2026-10-08T15:25:57.2449509Z             "has_wiki": true,
+2026-10-08T15:25:57.2449694Z             "homepage": "https://johnsonlee.io/graphite/",
+2026-10-08T15:25:57.2450028Z             "hooks_url": "https://api.github.com/repos/johnsonlee/graphite/hooks",
+2026-10-08T15:25:57.2450286Z             "html_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2450477Z             "id": 1141070800,
+2026-10-08T15:25:57.2450626Z             "is_template": false,
+2026-10-08T15:25:57.2450891Z             "issue_comment_url": "https://api.github.com/repos/johnsonlee/graphite/issues/comments{/number}",
+2026-10-08T15:25:57.2451263Z             "issue_events_url": "https://api.github.com/repos/johnsonlee/graphite/issues/events{/number}",
+2026-10-08T15:25:57.2451596Z             "issues_url": "https://api.github.com/repos/johnsonlee/graphite/issues{/number}",
+2026-10-08T15:25:57.2451905Z             "keys_url": "https://api.github.com/repos/johnsonlee/graphite/keys{/key_id}",
+2026-10-08T15:25:57.2452209Z             "labels_url": "https://api.github.com/repos/johnsonlee/graphite/labels{/name}",
+2026-10-08T15:25:57.2452449Z             "language": "Kotlin",
+2026-10-08T15:25:57.2452673Z             "languages_url": "https://api.github.com/repos/johnsonlee/graphite/languages",
+2026-10-08T15:25:57.2452906Z             "license": {
+2026-10-08T15:25:57.2453054Z               "key": "apache-2.0",
+2026-10-08T15:25:57.2453218Z               "name": "Apache License 2.0",
+2026-10-08T15:25:57.2453396Z               "node_id": "MDc6TGljZW5zZTI=",
+2026-10-08T15:25:57.2453568Z               "spdx_id": "Apache-2.0",
+2026-10-08T15:25:57.2453767Z               "url": "https://api.github.com/licenses/apache-2.0"
+2026-10-08T15:25:57.2453950Z             },
+2026-10-08T15:25:57.2454483Z             "merges_url": "https://api.github.com/repos/johnsonlee/graphite/merges",
+2026-10-08T15:25:57.2454799Z             "milestones_url": "https://api.github.com/repos/johnsonlee/graphite/milestones{/number}",
+2026-10-08T15:25:57.2455049Z             "mirror_url": null,
+2026-10-08T15:25:57.2455201Z             "name": "graphite",
+2026-10-08T15:25:57.2455356Z             "node_id": "R_kgDORANb0A",
+2026-10-08T15:25:57.2455659Z             "notifications_url": "https://api.github.com/repos/johnsonlee/graphite/notifications{?since,all,participating}",
+2026-10-08T15:25:57.2455959Z             "open_issues": 4,
+2026-10-08T15:25:57.2456113Z             "open_issues_count": 4,
+2026-10-08T15:25:57.2456267Z             "owner": {
+2026-10-08T15:25:57.2456467Z               "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:57.2456758Z               "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:57.2457043Z               "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:57.2457339Z               "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:57.2457632Z               "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:57.2457859Z               "gravatar_id": "",
+2026-10-08T15:25:57.2458043Z               "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:57.2458226Z               "id": 2344882,
+2026-10-08T15:25:57.2458376Z               "login": "johnsonlee",
+2026-10-08T15:25:57.2458551Z               "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:57.2458785Z               "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:57.2459081Z               "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:57.2459475Z               "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:57.2459687Z               "site_admin": false,
+2026-10-08T15:25:57.2459919Z               "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:57.2460246Z               "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:57.2460482Z               "type": "User",
+2026-10-08T15:25:57.2460663Z               "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:57.2460963Z               "user_view_type": "public"
+2026-10-08T15:25:57.2461119Z             },
+2026-10-08T15:25:57.2461249Z             "private": false,
+2026-10-08T15:25:57.2461487Z             "pull_request_creation_policy": "all",
+2026-10-08T15:25:57.2462086Z             "pulls_url": "https://api.github.com/repos/johnsonlee/graphite/pulls{/number}",
+2026-10-08T15:25:57.2462479Z             "pushed_at": "2026-10-08T15:08:17Z",
+2026-10-08T15:25:57.2462803Z             "releases_url": "https://api.github.com/repos/johnsonlee/graphite/releases{/id}",
+2026-10-08T15:25:57.2463177Z             "size": 5735,
+2026-10-08T15:25:57.2463442Z             "ssh_url": "git@github.com:johnsonlee/graphite.git",
+2026-10-08T15:25:57.2463727Z             "stargazers_count": 15,
+2026-10-08T15:25:57.2463959Z             "stargazers_url": "https://api.github.com/repos/johnsonlee/graphite/stargazers",
+2026-10-08T15:25:57.2464408Z             "statuses_url": "https://api.github.com/repos/johnsonlee/graphite/statuses/{sha}",
+2026-10-08T15:25:57.2464730Z             "subscribers_url": "https://api.github.com/repos/johnsonlee/graphite/subscribers",
+2026-10-08T15:25:57.2465049Z             "subscription_url": "https://api.github.com/repos/johnsonlee/graphite/subscription",
+2026-10-08T15:25:57.2465324Z             "svn_url": "https://github.com/johnsonlee/graphite",
+2026-10-08T15:25:57.2465570Z             "tags_url": "https://api.github.com/repos/johnsonlee/graphite/tags",
+2026-10-08T15:25:57.2465843Z             "teams_url": "https://api.github.com/repos/johnsonlee/graphite/teams",
+2026-10-08T15:25:57.2466060Z             "topics": [
+2026-10-08T15:25:57.2466202Z               "ai-agents",
+2026-10-08T15:25:57.2466343Z               "android",
+2026-10-08T15:25:57.2466483Z               "bytecode",
+2026-10-08T15:25:57.2466629Z               "code-graph",
+2026-10-08T15:25:57.2466778Z               "code-intelligence",
+2026-10-08T15:25:57.2466932Z               "cypher",
+2026-10-08T15:25:57.2467077Z               "developer-tools",
+2026-10-08T15:25:57.2467223Z               "jvm",
+2026-10-08T15:25:57.2467355Z               "llm",
+2026-10-08T15:25:57.2467485Z               "mcp",
+2026-10-08T15:25:57.2467617Z               "static-analysis"
+2026-10-08T15:25:57.2467764Z             ],
+2026-10-08T15:25:57.2467967Z             "trees_url": "https://api.github.com/repos/johnsonlee/graphite/git/trees{/sha}",
+2026-10-08T15:25:57.2468221Z             "updated_at": "2026-10-08T10:34:02Z",
+2026-10-08T15:25:57.2468431Z             "url": "https://api.github.com/repos/johnsonlee/graphite",
+2026-10-08T15:25:57.2468635Z             "visibility": "public",
+2026-10-08T15:25:57.2468794Z             "watchers": 15,
+2026-10-08T15:25:57.2468941Z             "watchers_count": 15,
+2026-10-08T15:25:57.2469109Z             "web_commit_signoff_required": false
+2026-10-08T15:25:57.2469274Z           },
+2026-10-08T15:25:57.2469396Z           "sender": {
+2026-10-08T15:25:57.2469593Z             "avatar_url": "https://avatars.githubusercontent.com/u/2344882?v=4",
+2026-10-08T15:25:57.2469882Z             "events_url": "https://api.github.com/users/johnsonlee/events{/privacy}",
+2026-10-08T15:25:57.2470164Z             "followers_url": "https://api.github.com/users/johnsonlee/followers",
+2026-10-08T15:25:57.2470456Z             "following_url": "https://api.github.com/users/johnsonlee/following{/other_user}",
+2026-10-08T15:25:57.2470851Z             "gists_url": "https://api.github.com/users/johnsonlee/gists{/gist_id}",
+2026-10-08T15:25:57.2471074Z             "gravatar_id": "",
+2026-10-08T15:25:57.2471250Z             "html_url": "https://github.com/johnsonlee",
+2026-10-08T15:25:57.2471429Z             "id": 2344882,
+2026-10-08T15:25:57.2471574Z             "login": "johnsonlee",
+2026-10-08T15:25:57.2471743Z             "node_id": "MDQ6VXNlcjIzNDQ4ODI=",
+2026-10-08T15:25:57.2471972Z             "organizations_url": "https://api.github.com/users/johnsonlee/orgs",
+2026-10-08T15:25:57.2472265Z             "received_events_url": "https://api.github.com/users/johnsonlee/received_events",
+2026-10-08T15:25:57.2472629Z             "repos_url": "https://api.github.com/users/johnsonlee/repos",
+2026-10-08T15:25:57.2472835Z             "site_admin": false,
+2026-10-08T15:25:57.2473057Z             "starred_url": "https://api.github.com/users/johnsonlee/starred{/owner}{/repo}",
+2026-10-08T15:25:57.2473362Z             "subscriptions_url": "https://api.github.com/users/johnsonlee/subscriptions",
+2026-10-08T15:25:57.2473599Z             "type": "User",
+2026-10-08T15:25:57.2473777Z             "url": "https://api.github.com/users/johnsonlee",
+2026-10-08T15:25:57.2473969Z             "user_view_type": "public"
+2026-10-08T15:25:57.2474400Z           },
+2026-10-08T15:25:57.2474549Z           "workflow": ".github/workflows/publish.yml"
+2026-10-08T15:25:57.2474717Z         },
+2026-10-08T15:25:57.2474841Z         "github_job": "docker",
+2026-10-08T15:25:57.2475038Z         "github_ref": "refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2475277Z         "github_ref_name": "codex/apple-frontend-validation",
+2026-10-08T15:25:57.2475474Z         "github_ref_protected": "false",
+2026-10-08T15:25:57.2475641Z         "github_ref_type": "branch",
+2026-10-08T15:25:57.2475820Z         "github_repository": "johnsonlee/graphite",
+2026-10-08T15:25:57.2476003Z         "github_repository_id": "1141070800",
+2026-10-08T15:25:57.2476187Z         "github_repository_owner": "johnsonlee",
+2026-10-08T15:25:57.2476375Z         "github_repository_owner_id": "2344882",
+2026-10-08T15:25:57.2476551Z         "github_run_attempt": "1",
+2026-10-08T15:25:57.2476712Z         "github_run_id": "37798249852",
+2026-10-08T15:25:57.2476878Z         "github_run_number": "103",
+2026-10-08T15:25:57.2477038Z         "github_runner_arch": "X64",
+2026-10-08T15:25:57.2477217Z         "github_runner_environment": "github-hosted",
+2026-10-08T15:25:57.2477407Z         "github_runner_image_os": "ubuntu24",
+2026-10-08T15:25:57.2477598Z         "github_runner_image_version": "20261004.327.1",
+2026-10-08T15:25:57.2477801Z         "github_runner_name": "GitHub Actions 1000036998",
+2026-10-08T15:25:57.2477988Z         "github_runner_os": "Linux",
+2026-10-08T15:25:57.2478208Z         "github_runner_tracking_id": "github_817f9a08-8526-49f5-8c36-960aae9bb9b8",
+2026-10-08T15:25:57.2478453Z         "github_server_url": "https://github.com",
+2026-10-08T15:25:57.2478644Z         "github_triggering_actor": "johnsonlee",
+2026-10-08T15:25:57.2478823Z         "github_workflow": "Publish",
+2026-10-08T15:25:57.2479136Z         "github_workflow_ref": "johnsonlee/graphite/.github/workflows/publish.yml@refs/heads/codex/apple-frontend-validation",
+2026-10-08T15:25:57.2479492Z         "github_workflow_sha": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+2026-10-08T15:25:57.2479703Z         "platform": "linux/amd64"
+2026-10-08T15:25:57.2479854Z       }
+2026-10-08T15:25:57.2479968Z     }
+2026-10-08T15:25:57.2480078Z   },
+2026-10-08T15:25:57.2480395Z   "buildx.build.ref": "builder-6d561185-38fe-4aa0-9c66-ccba60304aa1/builder-6d561185-38fe-4aa0-9c66-ccba60304aa10/xv19wrz0q6mcdeeq5i8d9ppmq"
+2026-10-08T15:25:57.2480747Z }
+2026-10-08T15:25:57.2481189Z ::***::
+2026-10-08T15:25:57.2481491Z ##[endgroup]
+2026-10-08T15:25:57.2481712Z ##[group]Reference
+2026-10-08T15:25:57.2481993Z builder-6d561185-38fe-4aa0-9c66-ccba60304aa1/builder-6d561185-38fe-4aa0-9c66-ccba60304aa10/xv19wrz0q6mcdeeq5i8d9ppmq
+2026-10-08T15:25:57.2482383Z ##[endgroup]
+2026-10-08T15:25:57.2482602Z ##[group]Check build summary support
+2026-10-08T15:25:57.2482955Z Build summary supported!
+2026-10-08T15:25:57.2483180Z ##[endgroup]
+2026-10-08T15:25:57.2549181Z Post job cleanup.
+2026-10-08T15:25:57.4122341Z ##[group]Generating build summary
+2026-10-08T15:25:57.4686336Z exporting build record to /home/runner/work/_temp/docker-actions-toolkit-hBVv7H/export
+2026-10-08T15:25:57.5476991Z [command]/usr/bin/docker buildx history export --builder builder-6d561185-38fe-4aa0-9c66-ccba60304aa1 --output /home/runner/work/_temp/docker-actions-toolkit-hBVv7H/export/johnsonlee~graphite~XV19WR.dockerbuild xv19wrz0q6mcdeeq5i8d9ppmq --finalize
+2026-10-08T15:25:57.6896859Z Build record written to /home/runner/work/_temp/docker-actions-toolkit-hBVv7H/export/johnsonlee~graphite~XV19WR.dockerbuild (34.7 KB)
+2026-10-08T15:25:57.6897819Z Uploading johnsonlee~graphite~XV19WR.dockerbuild as an artifact
+2026-10-08T15:25:57.6902621Z Artifact name is valid!
+2026-10-08T15:25:57.6902923Z Root directory input is valid!
+2026-10-08T15:25:57.9728486Z Uploading artifact: johnsonlee~graphite~XV19WR.dockerbuild
+2026-10-08T15:25:57.9784414Z Beginning upload of artifact content to blob storage
+2026-10-08T15:25:58.1315759Z Uploaded bytes 35530
+2026-10-08T15:25:58.1658348Z Finished uploading artifact content to blob storage!
+2026-10-08T15:25:58.1658883Z SHA256 digest of uploaded artifact is e3e7be5ac557886539efa4b0521f3e0421c1f2d9351ef3a4684ab03062cf99ad
+2026-10-08T15:25:58.1659215Z Finalizing artifact upload
+2026-10-08T15:25:58.5048185Z Artifact johnsonlee~graphite~XV19WR.dockerbuild successfully finalized. Artifact ID 11561355177
+2026-10-08T15:25:58.5049025Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11561355177
+2026-10-08T15:25:58.5072462Z Writing summary
+2026-10-08T15:25:58.5082221Z ##[endgroup]
+2026-10-08T15:25:58.5082712Z ##[group]Removing temp folder /home/runner/work/_temp/docker-actions-toolkit-1Zevur
+2026-10-08T15:25:58.5086412Z ##[endgroup]
+2026-10-08T15:25:58.5086743Z ##[group]Post cache
+2026-10-08T15:25:58.5087346Z State not set
+2026-10-08T15:25:58.5087669Z ##[endgroup]
+2026-10-08T15:25:58.5242640Z Post job cleanup.
+2026-10-08T15:25:58.6859989Z ##[group]Generating build summary
+2026-10-08T15:25:58.7431475Z exporting build record to /home/runner/work/_temp/docker-actions-toolkit-hULznI/export
+2026-10-08T15:25:58.8233541Z [command]/usr/bin/docker buildx history export --builder builder-6d561185-38fe-4aa0-9c66-ccba60304aa1 --output /home/runner/work/_temp/docker-actions-toolkit-hULznI/export/johnsonlee~graphite~D1I0C6.dockerbuild d1i0c657qv8cfi5zxw6n6owq4 --finalize
+2026-10-08T15:25:58.9317119Z Build record written to /home/runner/work/_temp/docker-actions-toolkit-hULznI/export/johnsonlee~graphite~D1I0C6.dockerbuild (29.76 KB)
+2026-10-08T15:25:58.9318177Z Uploading johnsonlee~graphite~D1I0C6.dockerbuild as an artifact
+2026-10-08T15:25:58.9323777Z Artifact name is valid!
+2026-10-08T15:25:58.9325148Z Root directory input is valid!
+2026-10-08T15:25:59.2334938Z Uploading artifact: johnsonlee~graphite~D1I0C6.dockerbuild
+2026-10-08T15:25:59.2364395Z Beginning upload of artifact content to blob storage
+2026-10-08T15:25:59.4854409Z Uploaded bytes 30471
+2026-10-08T15:25:59.5308761Z Finished uploading artifact content to blob storage!
+2026-10-08T15:25:59.5309401Z SHA256 digest of uploaded artifact is f552fbcc7f060c6c95d13419bb1bed021c83236a63fa51aed715821e62dc670b
+2026-10-08T15:25:59.5309876Z Finalizing artifact upload
+2026-10-08T15:25:59.9468041Z Artifact johnsonlee~graphite~D1I0C6.dockerbuild successfully finalized. Artifact ID 11560227852
+2026-10-08T15:25:59.9468928Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11560227852
+2026-10-08T15:25:59.9489114Z Writing summary
+2026-10-08T15:25:59.9497304Z ##[endgroup]
+2026-10-08T15:25:59.9497781Z ##[group]Removing temp folder /home/runner/work/_temp/docker-actions-toolkit-Z4BF9N
+2026-10-08T15:25:59.9502638Z ##[endgroup]
+2026-10-08T15:25:59.9502958Z ##[group]Post cache
+2026-10-08T15:25:59.9503462Z State not set
+2026-10-08T15:25:59.9503777Z ##[endgroup]
+2026-10-08T15:25:59.9629772Z Post job cleanup.
+2026-10-08T15:26:00.0853231Z ##[group]Removing builder
+2026-10-08T15:26:00.1670827Z [command]/usr/bin/docker buildx rm builder-6d561185-38fe-4aa0-9c66-ccba60304aa1
+2026-10-08T15:26:00.5647188Z builder-6d561185-38fe-4aa0-9c66-ccba60304aa1 removed
+2026-10-08T15:26:00.5680531Z ##[endgroup]
+2026-10-08T15:26:00.5681185Z ##[group]Cleaning up certificates
+2026-10-08T15:26:00.5683090Z ##[endgroup]
+2026-10-08T15:26:00.5683355Z ##[group]Post cache
+2026-10-08T15:26:00.5685896Z State not set
+2026-10-08T15:26:00.5686590Z ##[endgroup]
+2026-10-08T15:26:00.5811866Z Post job cleanup.
+2026-10-08T15:26:00.6708143Z ##[group]Post cache
+2026-10-08T15:26:00.6708609Z Caching docker.io--tonistiigi--binfmt-latest-linux-x64 to GitHub Actions cache
+2026-10-08T15:26:00.6831265Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/graphite/graphite --files-from manifest.txt --use-compress-program zstdmt
+2026-10-08T15:26:01.0073218Z Failed to save: Unable to reserve cache with key docker.io--tonistiigi--binfmt-latest-linux-x64, another job may be creating this cache.
+2026-10-08T15:26:01.0101499Z ##[endgroup]
+2026-10-08T15:26:01.0245326Z Post job cleanup.
+2026-10-08T15:26:01.0848493Z [command]/usr/bin/git version
+2026-10-08T15:26:01.0890779Z git version 2.55.0
+2026-10-08T15:26:01.0922964Z Temporarily overriding HOME='/home/runner/work/_temp/abce5d01-2888-4487-8990-9dc5053ac46a' before making global git config changes
+2026-10-08T15:26:01.0923793Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:26:01.0927205Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:26:01.0959210Z Removing SSH command configuration
+2026-10-08T15:26:01.0964592Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:26:01.0997087Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:26:01.1208209Z Removing HTTP extra header
+2026-10-08T15:26:01.1225923Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:26:01.1250764Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:26:01.1467020Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:26:01.1473521Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:26:01.1507500Z includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:26:01.1517556Z includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:26:01.1517879Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:26:01.1518224Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:26:01.1519267Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:26:01.1539772Z /home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:26:01.1547993Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-a489f82a\-9fda\-440e\-86e7\-5c1d44ebd9c6\.config
+2026-10-08T15:26:01.1582822Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:26:01.1606980Z /home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:26:01.1613478Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-a489f82a\-9fda\-440e\-86e7\-5c1d44ebd9c6\.config
+2026-10-08T15:26:01.1648021Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:26:01.1670608Z /github/runner_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:26:01.1676328Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-a489f82a\-9fda\-440e\-86e7\-5c1d44ebd9c6\.config
+2026-10-08T15:26:01.1707909Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:26:01.1729535Z /github/runner_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config
+2026-10-08T15:26:01.1735631Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-a489f82a\-9fda\-440e\-86e7\-5c1d44ebd9c6\.config
+2026-10-08T15:26:01.1768388Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:26:01.1950978Z Removing credentials config '/home/runner/work/_temp/git-credentials-a489f82a-9fda-440e-86e7-5c1d44ebd9c6.config'
+2026-10-08T15:26:01.2078311Z Cleaning up orphan processes

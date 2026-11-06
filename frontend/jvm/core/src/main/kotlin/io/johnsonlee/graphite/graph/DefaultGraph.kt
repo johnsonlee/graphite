@@ -49,7 +49,7 @@ class DefaultGraph private constructor(
     private val edgeCount: Long,
     private val declaredTypeTable: DeclaredTypeTable,
     private val analysisCompleteness: AnalysisCompleteness? = null
-) : Graph, PackedBranchMetadataSource {
+) : Graph, EnumValueIndexSource, PackedBranchMetadataSource {
     override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
 
     override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
@@ -149,6 +149,8 @@ class DefaultGraph private constructor(
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValues["$enumClass#$enumName"]
+
+    override fun enumValueIndex(): Map<String, List<Any?>> = enumValues
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()

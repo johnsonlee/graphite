@@ -1,0 +1,1229 @@
+{
+  "purpose": "One full real Signal app persisted-graph correctness run, including the explicitly selected bundle and its five diagnosed Info.plist omissions.",
+  "signalCommit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+  "artifactSha256": {
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite-frontend-apple": "87d497b9b6c9e0450f49db3aa6d64e0c4ca1178f3d16ea1f4b9627f5811baa29",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite": "6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-013cd57c-ci-jar/graphite.jar": "facf7faadd56b2928cac5cd85e7a182ba0332fc1b70d048aa8ed99e0dd2c2bd5",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-localized-string-flow/FlowProbe.java": "9d656c8e2157675d3d6747221c1353e406e08ad6176b1bdec0d6c2842dab2635",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-localized-string-flow/FlowProbe.class": "33ab9a4b05041e89ee2567fedff1d028b257fc78c336f7f3b280970d260d5c3f",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/invocation.json": "471535ffb74a67afe33ff939d63948c610b01e38ad2dc0a7a98b0a7ee8e5f2a5",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/result.json": "982b9e9bfb10ffe83cad665807abcfd3fa97b37822db5ab7831157a499548a9e",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/build.log": "831c39f7977fd5d9ea1a397d6393d02438f8b6c79a3b3f97aa492001509f93b7",
+    "/Users/johnsonlee/.codex/worktrees/19db/graphite/docs/apple-frontend-evidence/2026-11-05/signal-verification.json": "c7be37b499799604befe064a55dc1661bc7f35986106fd6afeb3c0eec29cb599",
+    "/Users/johnsonlee/.codex/worktrees/19db/graphite/docs/apple-frontend-evidence/2026-11-05/signal-resources-resource-verification.json": "8f0a546d6e31317dc190660163163f0d2876821cf4523b9b117fde4df1b5fdeb",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/check-full.py": "7d35a8562f3eb47d01acdfd7a2e180846ed70ee112d4c3c6c029766c7d06fb4f"
+  },
+  "commands": {
+    "verify": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "verify",
+        "--verbose",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite"
+      ],
+      "exitCode": 0,
+      "stdout": "crc ok    manifest                 1670  META-INF/graphite.manifest\ncrc ok    sha256 ok              265392  forward.graph\ncrc ok    sha256 ok              296866  forward.offsets\ncrc ok    sha256 ok                 841  forward.properties\ncrc ok    sha256 ok                  48  graph.branchdefs\ncrc ok    sha256 ok                  32  graph.callsite-string-content.identity\ncrc ok    sha256 ok            15106828  graph.callsite-string-index\ncrc ok    sha256 ok              221580  graph.classoverview\ncrc ok    sha256 ok                   8  graph.comparisons\ncrc ok    sha256 ok             2243588  graph.labelprefix\ncrc ok    sha256 ok              199849  graph.labels\ncrc ok    sha256 ok             1229307  graph.metadata\ncrc ok    sha256 ok            23078315  graph.nodedata\ncrc ok    sha256 ok             7291643  graph.nodeindex\ncrc ok    sha256 ok             4487176  graph.nodeoffsets\ncrc ok    sha256 ok                   8  graph.resources\ncrc ok    sha256 ok            21557829  graph.strings\ncrc ok    sha256 ok                  32  graph.strings.identity\ncrc ok    sha256 ok             2243796  graph.typeindex\nfile sha256 ok (6826fb8b24701a32b003daa480216ce99a0b148bca8d2e5bcca83e285a4e435d)\nOK: 19 entries verified in /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite\nfingerprint: 48f712c44d6c4bd9af99ca28f5296fb7549709d46ec992b3e8b94c623784448e\n",
+      "stderr": ""
+    },
+    "unpack": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "unpack",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/full-check/unpacked"
+      ],
+      "exitCode": 0,
+      "stdout": "Unpacked 19 entries into /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/full-check/unpacked\n",
+      "stderr": ""
+    },
+    "mapped-flow": {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Xmx8g",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-013cd57c-ci-jar/graphite.jar:/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-localized-string-flow",
+        "FlowProbe",
+        "mapped",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/full-check/unpacked"
+      ],
+      "exitCode": 0,
+      "stdout": "{\"owner\":\"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\",\"formalTypes\":[\"Swift.String\",\"Swift.String?\",\"Swift.String\",\"Swift.String\"],\"formalIds\":[45208,45209,45210,45211],\"callee\":\"Foundation.NSLocalizedString(_:tableName:bundle:value:comment:)(Swift.String,Swift.String?,__C.NSBundle,Swift.String,Swift.String)\",\"line\":26,\"callId\":384021,\"orderedArgumentIds\":[384016,384017,384018,384019,384020],\"argumentBindings\":[{\"localId\":384016,\"assignSourceIds\":[45208],\"slot\":0,\"type\":\"\",\"name\":\"key\"},{\"localId\":384017,\"assignSourceIds\":[45209],\"slot\":1,\"type\":\"\",\"name\":\"tableName\"},{\"localId\":384018,\"assignSourceIds\":[],\"slot\":2,\"type\":\"\",\"name\":\".main.app\"},{\"localId\":384019,\"assignSourceIds\":[45210],\"slot\":3,\"type\":\"\",\"name\":\"value\"},{\"localId\":384020,\"assignSourceIds\":[45211],\"slot\":4,\"type\":\"\",\"name\":\"comment\"}],\"parameterPassSourceIds\":[384016,384017,384018,384019,384020],\"returnNodeId\":384022,\"returnOwner\":\"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\",\"lookupEdgesFromCall\":0}\n",
+      "stderr": ""
+    },
+    "app_delegate": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (m:Method) WHERE m.name = 'application(_:didFinishLaunchingWithOptions:)' RETURN m.class, m.name, m.return_type",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"m.class\",\n    \"m.name\",\n    \"m.return_type\"\n  ],\n  \"rows\": [\n    {\n      \"m.class\": \"Signal.AppDelegate\",\n      \"m.name\": \"application(_:didFinishLaunchingWithOptions:)\",\n      \"m.return_type\": \"Swift.Bool\"\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": ""
+    },
+    "sha": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (m:Method) WHERE m.name = 'computeSHA256Digest(_:)' RETURN m.class, m.parameter_types, m.return_type",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"m.class\",\n    \"m.parameter_types\",\n    \"m.return_type\"\n  ],\n  \"rows\": [\n    {\n      \"m.class\": \"__C.Cryptography\",\n      \"m.parameter_types\": [\n        \"Foundation.Data\"\n      ],\n      \"m.return_type\": \"Foundation.Data?\"\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": ""
+    },
+    "c_types": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (m:Method) WHERE m.name IN ['sqlite3_open16','mz_stream_read_uint16','WebPIsRGBMode'] RETURN m.name, m.parameter_types, m.return_type ORDER BY m.name",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"m.name\",\n    \"m.parameter_types\",\n    \"m.return_type\"\n  ],\n  \"rows\": [\n    {\n      \"m.name\": \"WebPIsRGBMode\",\n      \"m.parameter_types\": [\n        \"WEBP_CSP_MODE\"\n      ],\n      \"m.return_type\": \"int\"\n    },\n    {\n      \"m.name\": \"mz_stream_read_uint16\",\n      \"m.parameter_types\": [\n        \"void *\",\n        \"uint16_t *\"\n      ],\n      \"m.return_type\": \"int32_t\"\n    },\n    {\n      \"m.name\": \"sqlite3_open16\",\n      \"m.parameter_types\": [\n        \"const void *\",\n        \"sqlite3 **\"\n      ],\n      \"m.return_type\": \"int\"\n    }\n  ],\n  \"rowCount\": 3\n}\n",
+      "stderr": ""
+    },
+    "webp_fields": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (f:Field) WHERE f.name IN ['bytes','size'] AND f.class = 'WebPData' RETURN f.class, f.name, f.type ORDER BY f.name",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"f.class\",\n    \"f.name\",\n    \"f.type\"\n  ],\n  \"rows\": [\n    {\n      \"f.class\": \"WebPData\",\n      \"f.name\": \"bytes\",\n      \"f.type\": \"const uint8_t *\"\n    },\n    {\n      \"f.class\": \"WebPData\",\n      \"f.name\": \"size\",\n      \"f.type\": \"size_t\"\n    }\n  ],\n  \"rowCount\": 2\n}\n",
+      "stderr": ""
+    },
+    "localized": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (r:ResourceValue) WHERE r.key = 'DATABASE_VIEW_OVERLAY_TITLE' AND r.profile = 'en' RETURN r.path, r.key, r.value, r.profile",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"r.path\",\n    \"r.key\",\n    \"r.value\",\n    \"r.profile\"\n  ],\n  \"rows\": [\n    {\n      \"r.path\": \"org.whispersystems.signal/en.lproj/Localizable.strings\",\n      \"r.key\": \"DATABASE_VIEW_OVERLAY_TITLE\",\n      \"r.value\": \"Optimizing Database\",\n      \"r.profile\": \"en\"\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": ""
+    },
+    "typedInfo": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (r:ResourceValue) WHERE r.path = 'org.whispersystems.signal/Info.plist' RETURN r.key, r.value ORDER BY r.key",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"r.key\",\n    \"r.value\"\n  ],\n  \"rows\": [\n    {\n      \"r.key\": \"BGTaskSchedulerPermittedIdentifiers\",\n      \"r.value\": [\n        \"MessageFetchBGRefreshTask\"\n      ]\n    },\n    {\n      \"r.key\": \"BuildMachineOSBuild\",\n      \"r.value\": \"23D56\"\n    },\n    {\n      \"r.key\": \"CFBundleDevelopmentRegion\",\n      \"r.value\": \"en\"\n    },\n    {\n      \"r.key\": \"CFBundleDisplayName\",\n      \"r.value\": \"Signal\"\n    },\n    {\n      \"r.key\": \"CFBundleExecutable\",\n      \"r.value\": \"Signal\"\n    },\n    {\n      \"r.key\": \"CFBundleIdentifier\",\n      \"r.value\": \"org.whispersystems.signal\"\n    },\n    {\n      \"r.key\": \"CFBundleInfoDictionaryVersion\",\n      \"r.value\": \"6.0\"\n    },\n    {\n      \"r.key\": \"CFBundleName\",\n      \"r.value\": \"Signal\"\n    },\n    {\n      \"r.key\": \"CFBundlePackageType\",\n      \"r.value\": \"APPL\"\n    },\n    {\n      \"r.key\": \"CFBundleShortVersionString\",\n      \"r.value\": \"7.19.1\"\n    },\n    {\n      \"r.key\": \"CFBundleSignature\",\n      \"r.value\": \"????\"\n    },\n    {\n      \"r.key\": \"CFBundleSupportedPlatforms\",\n      \"r.value\": [\n        \"iPhoneSimulator\"\n      ]\n    },\n    {\n      \"r.key\": \"CFBundleVersion\",\n      \"r.value\": \"0\"\n    },\n    {\n      \"r.key\": \"DTCompiler\",\n      \"r.value\": \"com.apple.compilers.llvm.clang.1_0\"\n    },\n    {\n      \"r.key\": \"DTPlatformBuild\",\n      \"r.value\": \"21F77\"\n    },\n    {\n      \"r.key\": \"DTPlatformName\",\n      \"r.value\": \"iphonesimulator\"\n    },\n    {\n      \"r.key\": \"DTPlatformVersion\",\n      \"r.value\": \"17.5\"\n    },\n    {\n      \"r.key\": \"DTSDKBuild\",\n      \"r.value\": \"21F77\"\n    },\n    {\n      \"r.key\": \"DTSDKName\",\n      \"r.value\": \"iphonesimulator17.5\"\n    },\n    {\n      \"r.key\": \"DTXcode\",\n      \"r.value\": \"1540\"\n    },\n    {\n      \"r.key\": \"DTXcodeBuild\",\n      \"r.value\": \"15F31d\"\n    },\n    {\n      \"r.key\": \"ITSAppUsesNonExemptEncryption\",\n      \"r.value\": false\n    },\n    {\n      \"r.key\": \"LOGS_EMAIL\",\n      \"r.value\": \"support@signal.org\"\n    },\n    {\n      \"r.key\": \"LSApplicationCategoryType\",\n      \"r.value\": \"public.app-category.social-networking\"\n    },\n    {\n      \"r.key\": \"LSApplicationQueriesSchemes\",\n      \"r.value\": [\n        \"maps\",\n        \"comgooglemaps\",\n        \"mailto\"\n      ]\n    },\n    {\n      \"r.key\": \"LSRequiresIPhoneOS\",\n      \"r.value\": true\n    },\n    {\n      \"r.key\": \"MinimumOSVersion\",\n      \"r.value\": \"14.0\"\n    },\n    {\n      \"r.key\": \"NSAppleMusicUsageDescription\",\n      \"r.value\": \"Signal needs to use Apple Music to play media attachments.\"\n    },\n    {\n      \"r.key\": \"NSBonjourServices\",\n      \"r.value\": [\n        \"_sgnl-new-device._tcp\"\n      ]\n    },\n    {\n      \"r.key\": \"NSCameraUsageDescription\",\n      \"r.value\": \"Signal uses your camera to take photos and for video calls.\"\n    },\n    {\n      \"r.key\": \"NSContactsUsageDescription\",\n      \"r.value\": \"Signal uses your contacts to find users you know. We do not store your contacts on the server.\"\n    },\n    {\n      \"r.key\": \"NSFaceIDUsageDescription\",\n      \"r.value\": \"Signal\\u0027s Screen Lock uses Face ID.\"\n    },\n    {\n      \"r.key\": \"NSLocalNetworkUsageDescription\",\n      \"r.value\": \"Signal uses the local network to allow you to directly transfer your account to a new phone. It will not be used unless you explicitly choose to initiate a transfer to a new device.\"\n    },\n    {\n      \"r.key\": \"NSLocationWhenInUseUsageDescription\",\n      \"r.value\": \"Signal needs access to your location in order to share your current location.\"\n    },\n    {\n      \"r.key\": \"NSMicrophoneUsageDescription\",\n      \"r.value\": \"Signal needs access to your microphone to make and receive phone calls and record voice messages.\"\n    },\n    {\n      \"r.key\": \"NSPhotoLibraryAddUsageDescription\",\n      \"r.value\": \"Signal will save photos to your library.\"\n    },\n    {\n      \"r.key\": \"NSPhotoLibraryUsageDescription\",\n      \"r.value\": \"Signal will let you choose which photos from your library to send.\"\n    },\n    {\n      \"r.key\": \"NSUserActivityTypes\",\n      \"r.value\": [\n        \"INSendMessageIntent\",\n        \"INStartCallIntent\"\n      ]\n    },\n    {\n      \"r.key\": \"OWSBundleIDPrefix\",\n      \"r.value\": \"org.whispersystems\"\n    },\n    {\n      \"r.key\": \"OWSMerchantID\",\n      \"r.value\": \"org.signalfoundation\"\n    },\n    {\n      \"r.key\": \"PHPhotoLibraryPreventAutomaticLimitedAccessAlert\",\n      \"r.value\": true\n    },\n    {\n      \"r.key\": \"UIBackgroundModes\",\n      \"r.value\": [\n        \"audio\",\n        \"fetch\",\n        \"remote-notification\",\n        \"voip\"\n      ]\n    },\n    {\n      \"r.key\": \"UIDeviceFamily\",\n      \"r.value\": [\n        1,\n        2\n      ]\n    },\n    {\n      \"r.key\": \"UILaunchStoryboardName\",\n      \"r.value\": \"Launch Screen\"\n    },\n    {\n      \"r.key\": \"UIRequiredDeviceCapabilities\",\n      \"r.value\": [\n        \"armv7\"\n      ]\n    },\n    {\n      \"r.key\": \"UIStatusBarStyle\",\n      \"r.value\": \"UIStatusBarStyleLightContent\"\n    },\n    {\n      \"r.key\": \"UISupportedInterfaceOrientations\",\n      \"r.value\": [\n        \"UIInterfaceOrientationPortrait\",\n        \"UIInterfaceOrientationLandscapeLeft\",\n        \"UIInterfaceOrientationLandscapeRight\"\n      ]\n    },\n    {\n      \"r.key\": \"UISupportedInterfaceOrientations~ipad\",\n      \"r.value\": [\n        \"UIInterfaceOrientationPortraitUpsideDown\",\n        \"UIInterfaceOrientationPortrait\",\n        \"UIInterfaceOrientationLandscapeLeft\",\n        \"UIInterfaceOrientationLandscapeRight\"\n      ]\n    },\n    {\n      \"r.key\": \"UIViewControllerBasedStatusBarAppearance\",\n      \"r.value\": true\n    }\n  ],\n  \"rowCount\": 49\n}\n",
+      "stderr": ""
+    },
+    "flow-formals": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (p:Parameter)-[a:DATAFLOW]->(v:LocalVariable)-[e:DATAFLOW]->(c:CallSite) WHERE c.caller_name = 'OWSLocalizedString(_:tableName:value:comment:)' AND a.kind='ASSIGN' AND e.kind='PARAMETER_PASS' RETURN p.index AS i, p.type AS type, p.method AS owner ORDER BY i",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"i\",\n    \"type\",\n    \"owner\"\n  ],\n  \"rows\": [\n    {\n      \"i\": 0,\n      \"type\": \"Swift.String\",\n      \"owner\": \"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\"\n    },\n    {\n      \"i\": 1,\n      \"type\": \"Swift.String?\",\n      \"owner\": \"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\"\n    },\n    {\n      \"i\": 2,\n      \"type\": \"Swift.String\",\n      \"owner\": \"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\"\n    },\n    {\n      \"i\": 3,\n      \"type\": \"Swift.String\",\n      \"owner\": \"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\"\n    }\n  ],\n  \"rowCount\": 4\n}\n",
+      "stderr": ""
+    },
+    "flow-result": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (c:CallSite)-[e:DATAFLOW]->(r:Return) WHERE c.caller_name='OWSLocalizedString(_:tableName:value:comment:)' AND e.kind='RETURN_VALUE' RETURN c.callee_name AS sourceCall, r.method AS owner",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"sourceCall\",\n    \"owner\"\n  ],\n  \"rows\": [\n    {\n      \"sourceCall\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"owner\": \"SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)\"\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": ""
+    },
+    "flow-lookup": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (c:CallSite)-[e:RESOURCE]->(v:ResourceValue) WHERE e.kind='LOOKUP' RETURN c.caller_name AS caller, c.callee_name AS callee, v.key AS key",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"caller\",\n    \"callee\",\n    \"key\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0\n}\n",
+      "stderr": ""
+    },
+    "flow-resource": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (v:ResourceValue) WHERE v.key='DATABASE_VIEW_OVERLAY_TITLE' AND v.profile='en' RETURN v.path AS path, v.value AS value",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"path\",\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"path\": \"org.whispersystems.signal/en.lproj/Localizable.strings\",\n      \"value\": \"Optimizing Database\"\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": ""
+    },
+    "flow-preservedLocals": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/bin/graphite",
+        "query",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-source-flow-e2e/graphs/signal.graphite",
+        "MATCH (v:LocalVariable)-[e:DATAFLOW]->(c:CallSite) WHERE c.caller_name='OWSLocalizedString(_:tableName:value:comment:)' AND e.kind='PARAMETER_PASS' RETURN v.name AS argument, v.type AS type, c.callee_name AS callee, c.line AS line ORDER BY argument",
+        "-f",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"columns\": [\n    \"argument\",\n    \"type\",\n    \"callee\",\n    \"line\"\n  ],\n  \"rows\": [\n    {\n      \"argument\": \".main.app\",\n      \"type\": \"\",\n      \"callee\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"line\": 26\n    },\n    {\n      \"argument\": \"comment\",\n      \"type\": \"\",\n      \"callee\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"line\": 26\n    },\n    {\n      \"argument\": \"key\",\n      \"type\": \"\",\n      \"callee\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"line\": 26\n    },\n    {\n      \"argument\": \"tableName\",\n      \"type\": \"\",\n      \"callee\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"line\": 26\n    },\n    {\n      \"argument\": \"value\",\n      \"type\": \"\",\n      \"callee\": \"NSLocalizedString(_:tableName:bundle:value:comment:)\",\n      \"line\": 26\n    }\n  ],\n  \"rowCount\": 5\n}\n",
+      "stderr": ""
+    }
+  },
+  "exactQueryResults": {
+    "app_delegate": {
+      "result": {
+        "columns": [
+          "m.class",
+          "m.name",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.class": "Signal.AppDelegate",
+            "m.name": "application(_:didFinishLaunchingWithOptions:)",
+            "m.return_type": "Swift.Bool"
+          }
+        ],
+        "rowCount": 1
+      },
+      "expected": {
+        "columns": [
+          "m.class",
+          "m.name",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.class": "Signal.AppDelegate",
+            "m.name": "application(_:didFinishLaunchingWithOptions:)",
+            "m.return_type": "Swift.Bool"
+          }
+        ],
+        "rowCount": 1
+      },
+      "equal": true
+    },
+    "sha": {
+      "result": {
+        "columns": [
+          "m.class",
+          "m.parameter_types",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.class": "__C.Cryptography",
+            "m.parameter_types": [
+              "Foundation.Data"
+            ],
+            "m.return_type": "Foundation.Data?"
+          }
+        ],
+        "rowCount": 1
+      },
+      "expected": {
+        "columns": [
+          "m.class",
+          "m.parameter_types",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.class": "__C.Cryptography",
+            "m.parameter_types": [
+              "Foundation.Data"
+            ],
+            "m.return_type": "Foundation.Data?"
+          }
+        ],
+        "rowCount": 1
+      },
+      "equal": true
+    },
+    "c_types": {
+      "result": {
+        "columns": [
+          "m.name",
+          "m.parameter_types",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.name": "WebPIsRGBMode",
+            "m.parameter_types": [
+              "WEBP_CSP_MODE"
+            ],
+            "m.return_type": "int"
+          },
+          {
+            "m.name": "mz_stream_read_uint16",
+            "m.parameter_types": [
+              "void *",
+              "uint16_t *"
+            ],
+            "m.return_type": "int32_t"
+          },
+          {
+            "m.name": "sqlite3_open16",
+            "m.parameter_types": [
+              "const void *",
+              "sqlite3 **"
+            ],
+            "m.return_type": "int"
+          }
+        ],
+        "rowCount": 3
+      },
+      "expected": {
+        "columns": [
+          "m.name",
+          "m.parameter_types",
+          "m.return_type"
+        ],
+        "rows": [
+          {
+            "m.name": "WebPIsRGBMode",
+            "m.parameter_types": [
+              "WEBP_CSP_MODE"
+            ],
+            "m.return_type": "int"
+          },
+          {
+            "m.name": "mz_stream_read_uint16",
+            "m.parameter_types": [
+              "void *",
+              "uint16_t *"
+            ],
+            "m.return_type": "int32_t"
+          },
+          {
+            "m.name": "sqlite3_open16",
+            "m.parameter_types": [
+              "const void *",
+              "sqlite3 **"
+            ],
+            "m.return_type": "int"
+          }
+        ],
+        "rowCount": 3
+      },
+      "equal": true
+    },
+    "webp_fields": {
+      "result": {
+        "columns": [
+          "f.class",
+          "f.name",
+          "f.type"
+        ],
+        "rows": [
+          {
+            "f.class": "WebPData",
+            "f.name": "bytes",
+            "f.type": "const uint8_t *"
+          },
+          {
+            "f.class": "WebPData",
+            "f.name": "size",
+            "f.type": "size_t"
+          }
+        ],
+        "rowCount": 2
+      },
+      "expected": {
+        "columns": [
+          "f.class",
+          "f.name",
+          "f.type"
+        ],
+        "rows": [
+          {
+            "f.class": "WebPData",
+            "f.name": "bytes",
+            "f.type": "const uint8_t *"
+          },
+          {
+            "f.class": "WebPData",
+            "f.name": "size",
+            "f.type": "size_t"
+          }
+        ],
+        "rowCount": 2
+      },
+      "equal": true
+    },
+    "localized": {
+      "result": {
+        "columns": [
+          "r.path",
+          "r.key",
+          "r.value",
+          "r.profile"
+        ],
+        "rows": [
+          {
+            "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+            "r.value": "Optimizing Database",
+            "r.profile": "en"
+          }
+        ],
+        "rowCount": 1
+      },
+      "expected": {
+        "columns": [
+          "r.path",
+          "r.key",
+          "r.value",
+          "r.profile"
+        ],
+        "rows": [
+          {
+            "r.path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "r.key": "DATABASE_VIEW_OVERLAY_TITLE",
+            "r.value": "Optimizing Database",
+            "r.profile": "en"
+          }
+        ],
+        "rowCount": 1
+      },
+      "equal": true
+    },
+    "typedInfo": {
+      "result": {
+        "columns": [
+          "r.key",
+          "r.value"
+        ],
+        "rows": [
+          {
+            "r.key": "BGTaskSchedulerPermittedIdentifiers",
+            "r.value": [
+              "MessageFetchBGRefreshTask"
+            ]
+          },
+          {
+            "r.key": "BuildMachineOSBuild",
+            "r.value": "23D56"
+          },
+          {
+            "r.key": "CFBundleDevelopmentRegion",
+            "r.value": "en"
+          },
+          {
+            "r.key": "CFBundleDisplayName",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundleExecutable",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundleIdentifier",
+            "r.value": "org.whispersystems.signal"
+          },
+          {
+            "r.key": "CFBundleInfoDictionaryVersion",
+            "r.value": "6.0"
+          },
+          {
+            "r.key": "CFBundleName",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundlePackageType",
+            "r.value": "APPL"
+          },
+          {
+            "r.key": "CFBundleShortVersionString",
+            "r.value": "7.19.1"
+          },
+          {
+            "r.key": "CFBundleSignature",
+            "r.value": "????"
+          },
+          {
+            "r.key": "CFBundleSupportedPlatforms",
+            "r.value": [
+              "iPhoneSimulator"
+            ]
+          },
+          {
+            "r.key": "CFBundleVersion",
+            "r.value": "0"
+          },
+          {
+            "r.key": "DTCompiler",
+            "r.value": "com.apple.compilers.llvm.clang.1_0"
+          },
+          {
+            "r.key": "DTPlatformBuild",
+            "r.value": "21F77"
+          },
+          {
+            "r.key": "DTPlatformName",
+            "r.value": "iphonesimulator"
+          },
+          {
+            "r.key": "DTPlatformVersion",
+            "r.value": "17.5"
+          },
+          {
+            "r.key": "DTSDKBuild",
+            "r.value": "21F77"
+          },
+          {
+            "r.key": "DTSDKName",
+            "r.value": "iphonesimulator17.5"
+          },
+          {
+            "r.key": "DTXcode",
+            "r.value": "1540"
+          },
+          {
+            "r.key": "DTXcodeBuild",
+            "r.value": "15F31d"
+          },
+          {
+            "r.key": "ITSAppUsesNonExemptEncryption",
+            "r.value": false
+          },
+          {
+            "r.key": "LOGS_EMAIL",
+            "r.value": "support@signal.org"
+          },
+          {
+            "r.key": "LSApplicationCategoryType",
+            "r.value": "public.app-category.social-networking"
+          },
+          {
+            "r.key": "LSApplicationQueriesSchemes",
+            "r.value": [
+              "maps",
+              "comgooglemaps",
+              "mailto"
+            ]
+          },
+          {
+            "r.key": "LSRequiresIPhoneOS",
+            "r.value": true
+          },
+          {
+            "r.key": "MinimumOSVersion",
+            "r.value": "14.0"
+          },
+          {
+            "r.key": "NSAppleMusicUsageDescription",
+            "r.value": "Signal needs to use Apple Music to play media attachments."
+          },
+          {
+            "r.key": "NSBonjourServices",
+            "r.value": [
+              "_sgnl-new-device._tcp"
+            ]
+          },
+          {
+            "r.key": "NSCameraUsageDescription",
+            "r.value": "Signal uses your camera to take photos and for video calls."
+          },
+          {
+            "r.key": "NSContactsUsageDescription",
+            "r.value": "Signal uses your contacts to find users you know. We do not store your contacts on the server."
+          },
+          {
+            "r.key": "NSFaceIDUsageDescription",
+            "r.value": "Signal's Screen Lock uses Face ID."
+          },
+          {
+            "r.key": "NSLocalNetworkUsageDescription",
+            "r.value": "Signal uses the local network to allow you to directly transfer your account to a new phone. It will not be used unless you explicitly choose to initiate a transfer to a new device."
+          },
+          {
+            "r.key": "NSLocationWhenInUseUsageDescription",
+            "r.value": "Signal needs access to your location in order to share your current location."
+          },
+          {
+            "r.key": "NSMicrophoneUsageDescription",
+            "r.value": "Signal needs access to your microphone to make and receive phone calls and record voice messages."
+          },
+          {
+            "r.key": "NSPhotoLibraryAddUsageDescription",
+            "r.value": "Signal will save photos to your library."
+          },
+          {
+            "r.key": "NSPhotoLibraryUsageDescription",
+            "r.value": "Signal will let you choose which photos from your library to send."
+          },
+          {
+            "r.key": "NSUserActivityTypes",
+            "r.value": [
+              "INSendMessageIntent",
+              "INStartCallIntent"
+            ]
+          },
+          {
+            "r.key": "OWSBundleIDPrefix",
+            "r.value": "org.whispersystems"
+          },
+          {
+            "r.key": "OWSMerchantID",
+            "r.value": "org.signalfoundation"
+          },
+          {
+            "r.key": "PHPhotoLibraryPreventAutomaticLimitedAccessAlert",
+            "r.value": true
+          },
+          {
+            "r.key": "UIBackgroundModes",
+            "r.value": [
+              "audio",
+              "fetch",
+              "remote-notification",
+              "voip"
+            ]
+          },
+          {
+            "r.key": "UIDeviceFamily",
+            "r.value": [
+              1,
+              2
+            ]
+          },
+          {
+            "r.key": "UILaunchStoryboardName",
+            "r.value": "Launch Screen"
+          },
+          {
+            "r.key": "UIRequiredDeviceCapabilities",
+            "r.value": [
+              "armv7"
+            ]
+          },
+          {
+            "r.key": "UIStatusBarStyle",
+            "r.value": "UIStatusBarStyleLightContent"
+          },
+          {
+            "r.key": "UISupportedInterfaceOrientations",
+            "r.value": [
+              "UIInterfaceOrientationPortrait",
+              "UIInterfaceOrientationLandscapeLeft",
+              "UIInterfaceOrientationLandscapeRight"
+            ]
+          },
+          {
+            "r.key": "UISupportedInterfaceOrientations~ipad",
+            "r.value": [
+              "UIInterfaceOrientationPortraitUpsideDown",
+              "UIInterfaceOrientationPortrait",
+              "UIInterfaceOrientationLandscapeLeft",
+              "UIInterfaceOrientationLandscapeRight"
+            ]
+          },
+          {
+            "r.key": "UIViewControllerBasedStatusBarAppearance",
+            "r.value": true
+          }
+        ],
+        "rowCount": 49
+      },
+      "expected": {
+        "columns": [
+          "r.key",
+          "r.value"
+        ],
+        "rows": [
+          {
+            "r.key": "BGTaskSchedulerPermittedIdentifiers",
+            "r.value": [
+              "MessageFetchBGRefreshTask"
+            ]
+          },
+          {
+            "r.key": "BuildMachineOSBuild",
+            "r.value": "23D56"
+          },
+          {
+            "r.key": "CFBundleDevelopmentRegion",
+            "r.value": "en"
+          },
+          {
+            "r.key": "CFBundleDisplayName",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundleExecutable",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundleIdentifier",
+            "r.value": "org.whispersystems.signal"
+          },
+          {
+            "r.key": "CFBundleInfoDictionaryVersion",
+            "r.value": "6.0"
+          },
+          {
+            "r.key": "CFBundleName",
+            "r.value": "Signal"
+          },
+          {
+            "r.key": "CFBundlePackageType",
+            "r.value": "APPL"
+          },
+          {
+            "r.key": "CFBundleShortVersionString",
+            "r.value": "7.19.1"
+          },
+          {
+            "r.key": "CFBundleSignature",
+            "r.value": "????"
+          },
+          {
+            "r.key": "CFBundleSupportedPlatforms",
+            "r.value": [
+              "iPhoneSimulator"
+            ]
+          },
+          {
+            "r.key": "CFBundleVersion",
+            "r.value": "0"
+          },
+          {
+            "r.key": "DTCompiler",
+            "r.value": "com.apple.compilers.llvm.clang.1_0"
+          },
+          {
+            "r.key": "DTPlatformBuild",
+            "r.value": "21F77"
+          },
+          {
+            "r.key": "DTPlatformName",
+            "r.value": "iphonesimulator"
+          },
+          {
+            "r.key": "DTPlatformVersion",
+            "r.value": "17.5"
+          },
+          {
+            "r.key": "DTSDKBuild",
+            "r.value": "21F77"
+          },
+          {
+            "r.key": "DTSDKName",
+            "r.value": "iphonesimulator17.5"
+          },
+          {
+            "r.key": "DTXcode",
+            "r.value": "1540"
+          },
+          {
+            "r.key": "DTXcodeBuild",
+            "r.value": "15F31d"
+          },
+          {
+            "r.key": "ITSAppUsesNonExemptEncryption",
+            "r.value": false
+          },
+          {
+            "r.key": "LOGS_EMAIL",
+            "r.value": "support@signal.org"
+          },
+          {
+            "r.key": "LSApplicationCategoryType",
+            "r.value": "public.app-category.social-networking"
+          },
+          {
+            "r.key": "LSApplicationQueriesSchemes",
+            "r.value": [
+              "maps",
+              "comgooglemaps",
+              "mailto"
+            ]
+          },
+          {
+            "r.key": "LSRequiresIPhoneOS",
+            "r.value": true
+          },
+          {
+            "r.key": "MinimumOSVersion",
+            "r.value": "14.0"
+          },
+          {
+            "r.key": "NSAppleMusicUsageDescription",
+            "r.value": "Signal needs to use Apple Music to play media attachments."
+          },
+          {
+            "r.key": "NSBonjourServices",
+            "r.value": [
+              "_sgnl-new-device._tcp"
+            ]
+          },
+          {
+            "r.key": "NSCameraUsageDescription",
+            "r.value": "Signal uses your camera to take photos and for video calls."
+          },
+          {
+            "r.key": "NSContactsUsageDescription",
+            "r.value": "Signal uses your contacts to find users you know. We do not store your contacts on the server."
+          },
+          {
+            "r.key": "NSFaceIDUsageDescription",
+            "r.value": "Signal's Screen Lock uses Face ID."
+          },
+          {
+            "r.key": "NSLocalNetworkUsageDescription",
+            "r.value": "Signal uses the local network to allow you to directly transfer your account to a new phone. It will not be used unless you explicitly choose to initiate a transfer to a new device."
+          },
+          {
+            "r.key": "NSLocationWhenInUseUsageDescription",
+            "r.value": "Signal needs access to your location in order to share your current location."
+          },
+          {
+            "r.key": "NSMicrophoneUsageDescription",
+            "r.value": "Signal needs access to your microphone to make and receive phone calls and record voice messages."
+          },
+          {
+            "r.key": "NSPhotoLibraryAddUsageDescription",
+            "r.value": "Signal will save photos to your library."
+          },
+          {
+            "r.key": "NSPhotoLibraryUsageDescription",
+            "r.value": "Signal will let you choose which photos from your library to send."
+          },
+          {
+            "r.key": "NSUserActivityTypes",
+            "r.value": [
+              "INSendMessageIntent",
+              "INStartCallIntent"
+            ]
+          },
+          {
+            "r.key": "OWSBundleIDPrefix",
+            "r.value": "org.whispersystems"
+          },
+          {
+            "r.key": "OWSMerchantID",
+            "r.value": "org.signalfoundation"
+          },
+          {
+            "r.key": "PHPhotoLibraryPreventAutomaticLimitedAccessAlert",
+            "r.value": true
+          },
+          {
+            "r.key": "UIBackgroundModes",
+            "r.value": [
+              "audio",
+              "fetch",
+              "remote-notification",
+              "voip"
+            ]
+          },
+          {
+            "r.key": "UIDeviceFamily",
+            "r.value": [
+              1,
+              2
+            ]
+          },
+          {
+            "r.key": "UILaunchStoryboardName",
+            "r.value": "Launch Screen"
+          },
+          {
+            "r.key": "UIRequiredDeviceCapabilities",
+            "r.value": [
+              "armv7"
+            ]
+          },
+          {
+            "r.key": "UIStatusBarStyle",
+            "r.value": "UIStatusBarStyleLightContent"
+          },
+          {
+            "r.key": "UISupportedInterfaceOrientations",
+            "r.value": [
+              "UIInterfaceOrientationPortrait",
+              "UIInterfaceOrientationLandscapeLeft",
+              "UIInterfaceOrientationLandscapeRight"
+            ]
+          },
+          {
+            "r.key": "UISupportedInterfaceOrientations~ipad",
+            "r.value": [
+              "UIInterfaceOrientationPortraitUpsideDown",
+              "UIInterfaceOrientationPortrait",
+              "UIInterfaceOrientationLandscapeLeft",
+              "UIInterfaceOrientationLandscapeRight"
+            ]
+          },
+          {
+            "r.key": "UIViewControllerBasedStatusBarAppearance",
+            "r.value": true
+          }
+        ],
+        "rowCount": 49
+      },
+      "equal": true
+    },
+    "flow-formals": {
+      "result": {
+        "columns": [
+          "i",
+          "type",
+          "owner"
+        ],
+        "rows": [
+          {
+            "i": 0,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 1,
+            "type": "Swift.String?",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 2,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 3,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 4
+      },
+      "expected": {
+        "columns": [
+          "i",
+          "type",
+          "owner"
+        ],
+        "rows": [
+          {
+            "i": 0,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 1,
+            "type": "Swift.String?",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 2,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          },
+          {
+            "i": 3,
+            "type": "Swift.String",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 4
+      },
+      "equal": true
+    },
+    "flow-result": {
+      "result": {
+        "columns": [
+          "sourceCall",
+          "owner"
+        ],
+        "rows": [
+          {
+            "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 1
+      },
+      "expected": {
+        "columns": [
+          "sourceCall",
+          "owner"
+        ],
+        "rows": [
+          {
+            "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+          }
+        ],
+        "rowCount": 1
+      },
+      "equal": true
+    },
+    "flow-lookup": {
+      "result": {
+        "columns": [
+          "caller",
+          "callee",
+          "key"
+        ],
+        "rows": [],
+        "rowCount": 0
+      },
+      "expected": {
+        "columns": [
+          "caller",
+          "callee",
+          "key"
+        ],
+        "rows": [],
+        "rowCount": 0
+      },
+      "equal": true
+    },
+    "flow-resource": {
+      "result": {
+        "columns": [
+          "path",
+          "value"
+        ],
+        "rows": [
+          {
+            "path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "value": "Optimizing Database"
+          }
+        ],
+        "rowCount": 1
+      },
+      "expected": {
+        "columns": [
+          "path",
+          "value"
+        ],
+        "rows": [
+          {
+            "path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+            "value": "Optimizing Database"
+          }
+        ],
+        "rowCount": 1
+      },
+      "equal": true
+    },
+    "flow-preservedLocals": {
+      "result": {
+        "columns": [
+          "argument",
+          "type",
+          "callee",
+          "line"
+        ],
+        "rows": [
+          {
+            "argument": ".main.app",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "comment",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "key",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "tableName",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "value",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          }
+        ],
+        "rowCount": 5
+      },
+      "expected": {
+        "columns": [
+          "argument",
+          "type",
+          "callee",
+          "line"
+        ],
+        "rows": [
+          {
+            "argument": ".main.app",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "comment",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "key",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "tableName",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          },
+          {
+            "argument": "value",
+            "type": "",
+            "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+            "line": 26
+          }
+        ],
+        "rowCount": 5
+      },
+      "equal": true
+    }
+  },
+  "passed": true,
+  "flow": {
+    "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "formalTypes": [
+      "Swift.String",
+      "Swift.String?",
+      "Swift.String",
+      "Swift.String"
+    ],
+    "formalIds": [
+      45208,
+      45209,
+      45210,
+      45211
+    ],
+    "callee": "Foundation.NSLocalizedString(_:tableName:bundle:value:comment:)(Swift.String,Swift.String?,__C.NSBundle,Swift.String,Swift.String)",
+    "line": 26,
+    "callId": 384021,
+    "orderedArgumentIds": [
+      384016,
+      384017,
+      384018,
+      384019,
+      384020
+    ],
+    "argumentBindings": [
+      {
+        "localId": 384016,
+        "assignSourceIds": [
+          45208
+        ],
+        "slot": 0,
+        "type": "",
+        "name": "key"
+      },
+      {
+        "localId": 384017,
+        "assignSourceIds": [
+          45209
+        ],
+        "slot": 1,
+        "type": "",
+        "name": "tableName"
+      },
+      {
+        "localId": 384018,
+        "assignSourceIds": [],
+        "slot": 2,
+        "type": "",
+        "name": ".main.app"
+      },
+      {
+        "localId": 384019,
+        "assignSourceIds": [
+          45210
+        ],
+        "slot": 3,
+        "type": "",
+        "name": "value"
+      },
+      {
+        "localId": 384020,
+        "assignSourceIds": [
+          45211
+        ],
+        "slot": 4,
+        "type": "",
+        "name": "comment"
+      }
+    ],
+    "parameterPassSourceIds": [
+      384016,
+      384017,
+      384018,
+      384019,
+      384020
+    ],
+    "returnNodeId": 384022,
+    "returnOwner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "lookupEdgesFromCall": 0
+  },
+  "unpackedSha256": {
+    "META-INF/graphite.manifest": "48f712c44d6c4bd9af99ca28f5296fb7549709d46ec992b3e8b94c623784448e",
+    "backward.graph": "5f23ade68ef92e7a1abb9f8d05dc031749f96c07475fdc43872a1b6501ea4ed3",
+    "backward.offsets": "ca741735cab4b4270f40e5f6d1b1c6dedb76004510afb42d74a7d0f5bafc6dae",
+    "backward.properties": "7993d15dfbc850dc20d962d1c478c1f0016524975603229c7289e49a9be064f8",
+    "forward.graph": "1e7a9c298938e351bc2eb55efade014af0672749f93dd55e84cb575acbf4bce2",
+    "forward.offsets": "46e1c07f5f196425bfbd64f5972a86746bab2fc97a50b86b0a593d28e7bc23fc",
+    "forward.properties": "ff6f5fcbaca5986c251eed23f8f89a12605cb439f752e64e1b61b26749459d07",
+    "graph.branchdefs": "605e03ee9708ec45eb20301b81b1c122c687f58bb295f1d46235b157866b45ad",
+    "graph.callsite-string-content.identity": "3630637502d26f1ecfd4a9e7fdeef6c43a5618654dbd257e6c9acb649fffb133",
+    "graph.callsite-string-index": "7107462b37472fc6644adadafc758809a7b7721b47c0ca08ce440184087009a4",
+    "graph.classoverview": "66a4935b3314a5937388077a915444204cf1e8e5fb6c12be4c99635229dc20f5",
+    "graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "graph.labelprefix": "30d0a9f2d67f7bc6592c7df0a7061a8268ead9aea97a720715f9980a03351791",
+    "graph.labels": "6ccea10df9ca3dc9ae917f446f9e2ee1fddee4a9167f5917612ee37ea3440900",
+    "graph.metadata": "694e6b2a11cabb04c50ea9fc9cdc78371c24d6fd956f242231c4fa688b8aed6d",
+    "graph.nodedata": "89bb8c409279a0a106949429c80b50a5518b38804301635add2e14e7225ace1b",
+    "graph.nodeindex": "41349802485978910d991b14bdd259eb50a4b14227aa43b61cefb6fb69ee40a2",
+    "graph.nodeoffsets": "6f3e35311110080a291872f80822fd2b5058bff3bb7d040fc6090005981fb886",
+    "graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "graph.strings": "04200e7cb42b245a7b5c484c8e6036e4a0865047b62851b5d2b03edb946ca898",
+    "graph.strings.identity": "2a3c3f40129f6aa0c8d7f92f3eba76158a06d8d288a2554b62ba3c9cb246f674",
+    "graph.typeindex": "0f6de263da62cbabb7a59e0afad103c3c193f6c464f22e897bed14ba7a0f74ba"
+  }
+}

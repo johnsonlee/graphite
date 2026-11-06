@@ -102,7 +102,7 @@ jobs:
         # Maven android-all JAR, not a platform SDK (prepareBenchmarkFixtures).
         # Remove only these unused preinstalled toolchains, never workspace,
         # compiler caches, graph outputs, logs, or other retained evidence.
-        for toolchain in /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/.ghcup; do
+        for toolchain in /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL; do
           if [ -d "$toolchain" ]; then
             sudo du -sh -- "$toolchain"
             sudo rm -rf -- "$toolchain"
@@ -148,6 +148,7 @@ jobs:
     - name: Run matched base/head correctness, OOM and timing report
       id: benchmark
       run: |
+        df -h .
         chmod +x controller/graphite-benchmark
         controller/graphite-benchmark run \
           --base-source base --head-source head --harness-source trusted \

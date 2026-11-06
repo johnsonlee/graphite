@@ -1,0 +1,169 @@
+{
+  "query": "MATCH (a:StringConstant) WHERE a.value IN ['application/json', 'Content-Type', 'GET', 'POST'] WITH a MATCH (b:StringConstant) WHERE a.graphId <> b.graphId AND a.value = b.value RETURN a.graphId AS leftGraph, b.graphId AS rightGraph, a.value AS wireLiteral, count(*) AS pairs ORDER BY leftGraph, rightGraph, wireLiteral",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "columns": [
+    "leftGraph",
+    "rightGraph",
+    "wireLiteral",
+    "pairs"
+  ],
+  "rows": [
+    {
+      "leftGraph": "signal-ios",
+      "rightGraph": "signal-server",
+      "wireLiteral": "Content-Type",
+      "pairs": 8,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-ios",
+      "rightGraph": "signal-server",
+      "wireLiteral": "application/json",
+      "pairs": 3,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-ios",
+      "rightGraph": "swiftpm",
+      "wireLiteral": "Content-Type",
+      "pairs": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-ios",
+      "rightGraph": "swiftpm",
+      "wireLiteral": "application/json",
+      "pairs": 12,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-server",
+      "rightGraph": "signal-ios",
+      "wireLiteral": "Content-Type",
+      "pairs": 8,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-server",
+      "rightGraph": "signal-ios",
+      "wireLiteral": "application/json",
+      "pairs": 3,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-server",
+      "rightGraph": "swiftpm",
+      "wireLiteral": "Content-Type",
+      "pairs": 6,
+      "$metadata": {
+        "graphIds": [
+          "signal-server",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "signal-server",
+      "rightGraph": "swiftpm",
+      "wireLiteral": "application/json",
+      "pairs": 4,
+      "$metadata": {
+        "graphIds": [
+          "signal-server",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "swiftpm",
+      "rightGraph": "signal-ios",
+      "wireLiteral": "Content-Type",
+      "pairs": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "swiftpm",
+      "rightGraph": "signal-ios",
+      "wireLiteral": "application/json",
+      "pairs": 12,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "swiftpm",
+      "rightGraph": "signal-server",
+      "wireLiteral": "Content-Type",
+      "pairs": 6,
+      "$metadata": {
+        "graphIds": [
+          "signal-server",
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "leftGraph": "swiftpm",
+      "rightGraph": "signal-server",
+      "wireLiteral": "application/json",
+      "pairs": 4,
+      "$metadata": {
+        "graphIds": [
+          "signal-server",
+          "swiftpm"
+        ]
+      }
+    }
+  ],
+  "graphs": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "mode": "cross-graph",
+  "rowCount": 12,
+  "error": null,
+  "digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99"
+}

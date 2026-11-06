@@ -1,0 +1,9 @@
+{
+  "quantile_method": "nearest-rank",
+  "queries": [],
+  "parity": [],
+  "query_cpu_boundary": "live process CPU delta around each measured request batch",
+  "query_rss_boundary": "wait4 lifetime process peak includes startup/warmup; sampled RSS is supplementary lower bound",
+  "query_resources": [],
+  "ok": true
+}

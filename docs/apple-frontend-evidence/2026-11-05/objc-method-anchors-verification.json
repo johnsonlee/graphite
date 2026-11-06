@@ -1,0 +1,62 @@
+{
+  "purpose": "Correctness only on real Signal source/index; no performance measurements.",
+  "frontend": "/Users/johnsonlee/.codex/worktrees/19db/graphite/frontend/apple/.build/arm64-apple-macosx/release/graphite-frontend-apple",
+  "frontendSha256": "c629eb3c46dedd952f568bde23d9917f6e3b03960c10dbb6f5d61b9fedf8a1c0",
+  "query": "MATCH (m:Method) WHERE m.class = 'SSZipArchive' AND m.name IN ['_dateWithMSDOSFormat:', '_gregorian', 'zipInfo:setAttributesOfItemAtPath:', 'zipInfo:setDate:'] RETURN m.name AS selector, m.parameter_types AS parameters, m.return_type AS returns ORDER BY selector",
+  "baselineGraph": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-final-e2e/graphs/signal.graphite",
+  "candidateGraph": "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-objc-method-anchors/candidate/graph",
+  "actualCommands": [
+    [
+      "/Users/johnsonlee/.codex/worktrees/19db/graphite/frontend/apple/.build/arm64-apple-macosx/release/graphite-frontend-apple",
+      "build",
+      "--index-store",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Index.noindex/DataStore",
+      "--sources",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/SSZipArchive/SSZipArchive/SSZipArchive.m",
+      "--out",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-objc-method-anchors/candidate/SSZipArchive.graphite-ir"
+    ],
+    [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx8g",
+      "-jar",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-013cd57c-ci-jar/graphite.jar",
+      "import",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-objc-method-anchors/candidate/SSZipArchive.graphite-ir",
+      "-o",
+      "/Users/johnsonlee/.codex/benchmarks/apple-validation/nov05-objc-method-anchors/candidate/graph"
+    ]
+  ],
+  "verified": true,
+  "graphRows": [
+    {
+      "selector": "_dateWithMSDOSFormat:",
+      "parameters": [
+        "UInt32"
+      ],
+      "returns": "NSDate *"
+    },
+    {
+      "selector": "_gregorian",
+      "parameters": [],
+      "returns": "NSCalendar *"
+    },
+    {
+      "selector": "zipInfo:setAttributesOfItemAtPath:",
+      "parameters": [
+        "zip_fileinfo *",
+        "NSString *"
+      ],
+      "returns": "void"
+    },
+    {
+      "selector": "zipInfo:setDate:",
+      "parameters": [
+        "zip_fileinfo *",
+        "NSDate *"
+      ],
+      "returns": "void"
+    }
+  ],
+  "reference": "clang.ast.txt, normalizes ARC ownership like other ObjC types in Graphite; Clang built with original Signal compiler response file."
+}

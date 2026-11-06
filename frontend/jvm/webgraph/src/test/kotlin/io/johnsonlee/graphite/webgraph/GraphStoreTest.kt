@@ -48,6 +48,7 @@ import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
@@ -6059,6 +6060,67 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `enum declarations take precedence over node lookups and missing keys use the fallback`() {
+        val type = TypeDescriptor("example.Status")
+        val source = DefaultGraph.Builder()
+            .addNode(EnumConstant(NodeId(1), type, "EXPLICIT"))
+            .addNode(EnumConstant(NodeId(2), type, "REFERENCED"))
+            .addEnumValues(type.className, "EXPLICIT", listOf("fallback"))
+            .addEnumValues(type.className, "REFERENCED", listOf("discovered"))
+            .build()
+        val graph = object : Graph by source, EnumValueIndexSource {
+            override fun enumValueIndex(): Map<String, List<Any?>> =
+                mapOf("example.Status#EXPLICIT" to emptyList())
+        }
+        val dir = Files.createTempDirectory("webgraph-enum-fallback")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+            assertEquals(emptyList<Any?>(), loaded.enumValues(type.className, "EXPLICIT"))
+            assertEquals(listOf("discovered"), loaded.enumValues(type.className, "REFERENCED"))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `declaration-only enum cases survive eager and mapped resaves`() {
+        val type = TypeDescriptor("example.Status")
+        val graph = DefaultGraph.Builder()
+            .addEnumValues(type.className, "PLAIN", emptyList())
+            .addEnumValues(type.className, "PAYLOAD", listOf(7, null, "label"))
+            .addNode(EnumConstant(NodeId(1), type, "UNDECLARED"))
+            .build()
+
+        fun assertDeclarations(loaded: Graph) {
+            assertEquals(emptyList<Any?>(), loaded.enumValues(type.className, "PLAIN"))
+            assertEquals(listOf(7, null, "label"), loaded.enumValues(type.className, "PAYLOAD"))
+            assertNull(loaded.enumValues(type.className, "UNDECLARED"))
+            assertNull(loaded.enumValues(type.className, "MISSING"))
+            assertEquals(listOf("UNDECLARED"), loaded.nodes(EnumConstant::class.java).map { it.enumName }.toList())
+        }
+
+        val dir = Files.createTempDirectory("webgraph-enum-declarations")
+        try {
+            val first = dir.resolve("original")
+            GraphStore.save(graph, first)
+            for (mode in listOf(GraphStore.LoadMode.EAGER, GraphStore.LoadMode.MAPPED)) {
+                val loaded = GraphStore.load(first, mode)
+                val resaved = dir.resolve(mode.name)
+                try {
+                    assertDeclarations(loaded)
+                    GraphStore.save(loaded, resaved)
+                } finally {
+                    (loaded as? Closeable)?.close()
+                }
+                assertDeclarations(GraphStore.load(resaved, GraphStore.LoadMode.EAGER))
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves call sites`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-test")
@@ -7924,6 +7986,7 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir)
             try {
                 assertEquals(2L, loaded.methodCount())
+                assertEquals(listOf(1, "active"), loaded.enumValues("com.example.Status", "ACTIVE"))
                 assertEquals(
                     base.memberAnnotations("com.example.Foo", "bar"),
                     loaded.memberAnnotations("com.example.Foo", "bar")

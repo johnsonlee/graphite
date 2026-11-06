@@ -1,0 +1,4438 @@
+{
+  "kind": "read-only binary/build evidence; no benchmark execution",
+  "variants": {
+    "baseline": {
+      "binary": "/Users/johnsonlee/.codex/benchmarks/apple-validation/main/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "37f91ca120e8435b423671196fa24fe802a7d725056a4b1d1d4a2887052fdef8",
+      "sections": {
+        "__TEXT,__text": {
+          "size": 4988208,
+          "sha256": "51d0c2965245767f9dbfbbf757d80cb7e37eb5d51713191e888c84130ca7de55"
+        },
+        "__TEXT,__stubs": {
+          "size": 2112,
+          "sha256": "3791268aca1e3569ab3f01198d9f3f616c2ab8f7ff51f9ff3c0262830ba0c0e9"
+        },
+        "__TEXT,__stub_helper": {
+          "size": 2136,
+          "sha256": "47b9fc3ccad888197e93369fbdc037612d7e3d2f2b156d9e3c8fd6d427b7665a"
+        },
+        "__TEXT,__gcc_except_tab": {
+          "size": 277196,
+          "sha256": "2f65ac1d7ea4c393fc193af1b8bd8c4c50597815bf3c3d834654bb21ec307801"
+        },
+        "__TEXT,__const": {
+          "size": 578384,
+          "sha256": "cb8427eb65f825b2a6dabc483292644b829975fc9e37f2ede8bd9a04b34252c0"
+        },
+        "__TEXT,__cstring": {
+          "size": 84135,
+          "sha256": "0608ad327cc2a68c39dce67999c8feadf5ea20247d4402128aba3d14234316b6"
+        },
+        "__TEXT,__unwind_info": {
+          "size": 115752,
+          "sha256": "f98c77b7ab1a8c6f67db7e82770e2a3b9c7464b2f74e00559d67541a42bcd1e1"
+        },
+        "__TEXT,__eh_frame": {
+          "size": 657068,
+          "sha256": "48f2e23c154e0cb5c9a27b0bd062ce8ebb178a467d866485a9a91b074e7bf827"
+        },
+        "__DATA_CONST,__got": {
+          "size": 48,
+          "sha256": "d14f2149c5acfe401f1234e54d78f331e7a7580d701c28f154588f1ca01f5f55"
+        },
+        "__DATA_CONST,__mod_init_func": {
+          "size": 8,
+          "sha256": "4c1ae0274ec603c80058334d298ac1c86366a20736df95d49e1a0a5722513350"
+        },
+        "__DATA_CONST,__const": {
+          "size": 339064,
+          "sha256": "088c624ac3a4b13647f12f2e41303d0f177102ffbd26e117bdd1fbc021b5a401"
+        },
+        "__DATA,__la_symbol_ptr": {
+          "size": 1408,
+          "sha256": "af1c4ce694fd0a65b3d3a17b9e39fe483e21a18a49c6af20572192e074d0d810"
+        },
+        "__DATA,__data": {
+          "size": 7800,
+          "sha256": "7ff0276497169554711ca455ddf5e79087ddab16098280f1cac7deb9963bb051"
+        },
+        "__DATA,__thread_vars": {
+          "size": 480,
+          "sha256": "781db0862ae93ab768826e1ae0d395f1ef23ee498be037b23b6526d445a64877"
+        },
+        "__DATA,__thread_data": {
+          "size": 160,
+          "sha256": "caf7ee136d78ab8e344527955608920a7abce37d8853b385277e96b5d543aee4"
+        }
+      },
+      "fingerprints": {
+        "bin-graphite.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 13418177368667624530,
+          "profile": 2040997289075261528,
+          "path": 15162269893553335056,
+          "deps": [
+            [
+              4091053499939819895,
+              "sha2",
+              false,
+              2489533091377293742
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              6004304390849843807,
+              "tikv_jemallocator",
+              false,
+              1400373197141229887
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              14939672306327613587,
+              "graphite_explore",
+              false,
+              5574938902083739002
+            ],
+            [
+              16231582934072186158,
+              "graphite_cypher",
+              false,
+              694721162522047291
+            ],
+            [
+              17205105931452024826,
+              "clap",
+              false,
+              11182363616807235281
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-cli-86030d3ae19816ff/dep-bin-graphite",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_cypher.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 2495208095577192772,
+          "profile": 2040997289075261528,
+          "path": 4465650404705551413,
+          "deps": [
+            [
+              310359321821557790,
+              "regex",
+              false,
+              18333536152978442971
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              17847581527163928910,
+              "indexmap",
+              false,
+              4445170489184397762
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-cypher-be0c417d1c032155/dep-lib-graphite_cypher",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_storage.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 13201930973035428123,
+          "profile": 2040997289075261528,
+          "path": 14945385890245157651,
+          "deps": [
+            [
+              3151952590648112049,
+              "crc32fast",
+              false,
+              15673859767781868278
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              4091053499939819895,
+              "sha2",
+              false,
+              2489533091377293742
+            ],
+            [
+              10968047079748790161,
+              "memmap2",
+              false,
+              11160601316141236691
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-storage-33188aa4eb21be5a/dep-lib-graphite_storage",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_explore.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 8407794914692303723,
+          "profile": 2040997289075261528,
+          "path": 13425312936750750394,
+          "deps": [
+            [
+              310359321821557790,
+              "regex",
+              false,
+              18333536152978442971
+            ],
+            [
+              2145939652136225981,
+              "tokio",
+              false,
+              7765219993445577547
+            ],
+            [
+              3632162862999675140,
+              "tower",
+              false,
+              9211531250398321822
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              5380358770761950913,
+              "tracing_subscriber",
+              false,
+              11106536320071472564
+            ],
+            [
+              6557439603276904804,
+              "serde",
+              false,
+              9518330796174091963
+            ],
+            [
+              9842033052731393846,
+              "axum",
+              false,
+              10510319817272192845
+            ],
+            [
+              10364619138950789809,
+              "anyhow",
+              false,
+              6341332419272767541
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              14063412941180217548,
+              "uuid",
+              false,
+              10294856745698759663
+            ],
+            [
+              14757622794040968908,
+              "tracing",
+              false,
+              8960786839160217842
+            ],
+            [
+              16117757646811882223,
+              "chrono",
+              false,
+              18365345920195014197
+            ],
+            [
+              16231582934072186158,
+              "graphite_cypher",
+              false,
+              694721162522047291
+            ],
+            [
+              17205105931452024826,
+              "clap",
+              false,
+              11182363616807235281
+            ],
+            [
+              17847581527163928910,
+              "indexmap",
+              false,
+              4445170489184397762
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-explore-34814e4064bcfd19/dep-lib-graphite_explore",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-tikv_jemallocator.json": {
+          "rustc": 2833068300835136146,
+          "features": "[\"background_threads_runtime_support\", \"default\"]",
+          "declared_features": "[\"alloc_trait\", \"background_threads\", \"background_threads_runtime_support\", \"debug\", \"default\", \"disable_initial_exec_tls\", \"profiling\", \"stats\", \"unprefixed_malloc_on_supported_platforms\"]",
+          "target": 6283890608923560275,
+          "profile": 2040997289075261528,
+          "path": 16764987389312214788,
+          "deps": [
+            [
+              8418308967883392393,
+              "tikv_jemalloc_sys",
+              false,
+              11090525375810780348
+            ],
+            [
+              10504718112287328430,
+              "libc",
+              false,
+              4308194728852820429
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/tikv-jemallocator-8dd4eab158168b21/dep-lib-tikv_jemallocator",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "run-build-script-build-script-build.json": {
+          "rustc": 2833068300835136146,
+          "features": "",
+          "declared_features": "",
+          "target": 0,
+          "profile": 0,
+          "path": 0,
+          "deps": [
+            [
+              8418308967883392393,
+              "build_script_build",
+              false,
+              7038480534450216930
+            ]
+          ],
+          "local": [
+            {
+              "RerunIfChanged": {
+                "output": "aarch64-apple-darwin/release/build/tikv-jemalloc-sys-436403370256ee3a/output",
+                "paths": [
+                  "jemalloc"
+                ]
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_OVERRIDE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_aarch64-apple-darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_aarch64_apple_darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "HOST_CC",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_ENABLE_DEBUG_OUTPUT",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CRATE_CC_NO_DEFAULTS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "MACOSX_DEPLOYMENT_TARGET",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "HOST_CFLAGS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS_aarch64_apple_darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS_aarch64-apple-darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_MALLOC_CONF",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_PAGE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_HUGEPAGE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_QUANTUM",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_VADDR",
+                "val": null
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 0,
+          "compile_kind": 0
+        },
+        "lib-tikv_jemalloc_sys.json": {
+          "rustc": 2833068300835136146,
+          "features": "[\"background_threads_runtime_support\"]",
+          "declared_features": "[\"background_threads\", \"background_threads_runtime_support\", \"debug\", \"default\", \"disable_cache_oblivious\", \"disable_initial_exec_tls\", \"profiling\", \"stats\", \"unprefixed_malloc_on_supported_platforms\"]",
+          "target": 13178952967786859646,
+          "profile": 2040997289075261528,
+          "path": 10741551747904978588,
+          "deps": [
+            [
+              8418308967883392393,
+              "build_script_build",
+              false,
+              9707904891554235644
+            ],
+            [
+              10504718112287328430,
+              "libc",
+              false,
+              4308194728852820429
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/tikv-jemalloc-sys-404cd491169a7c6b/dep-lib-tikv_jemalloc_sys",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        }
+      },
+      "rustc": {
+        "rustc_fingerprint": 7089223272875743685,
+        "outputs": {
+          "17747080675513052775": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: aarch64-apple-darwin\nrelease: 1.93.0\nLLVM version: 21.1.8\n",
+            "stderr": ""
+          },
+          "6432102384495711296": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "___\nlib___.rlib\nlib___.dylib\nlib___.dylib\nlib___.a\nlib___.dylib\n/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin\noff\npacked\nunpacked\n___\ndebug_assertions\npanic=\"unwind\"\nproc_macro\ntarget_abi=\"\"\ntarget_arch=\"aarch64\"\ntarget_endian=\"little\"\ntarget_env=\"\"\ntarget_family=\"unix\"\ntarget_feature=\"aes\"\ntarget_feature=\"crc\"\ntarget_feature=\"dit\"\ntarget_feature=\"dotprod\"\ntarget_feature=\"dpb\"\ntarget_feature=\"dpb2\"\ntarget_feature=\"fcma\"\ntarget_feature=\"fhm\"\ntarget_feature=\"flagm\"\ntarget_feature=\"fp16\"\ntarget_feature=\"frintts\"\ntarget_feature=\"jsconv\"\ntarget_feature=\"lor\"\ntarget_feature=\"lse\"\ntarget_feature=\"neon\"\ntarget_feature=\"paca\"\ntarget_feature=\"pacg\"\ntarget_feature=\"pan\"\ntarget_feature=\"pmuv3\"\ntarget_feature=\"ras\"\ntarget_feature=\"rcpc\"\ntarget_feature=\"rcpc2\"\ntarget_feature=\"rdm\"\ntarget_feature=\"sb\"\ntarget_feature=\"sha2\"\ntarget_feature=\"sha3\"\ntarget_feature=\"ssbs\"\ntarget_feature=\"vh\"\ntarget_has_atomic=\"128\"\ntarget_has_atomic=\"16\"\ntarget_has_atomic=\"32\"\ntarget_has_atomic=\"64\"\ntarget_has_atomic=\"8\"\ntarget_has_atomic=\"ptr\"\ntarget_os=\"macos\"\ntarget_pointer_width=\"64\"\ntarget_vendor=\"apple\"\nunix\n",
+            "stderr": ""
+          },
+          "7971740275564407648": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "___\nlib___.rlib\nlib___.dylib\nlib___.dylib\nlib___.a\nlib___.dylib\n/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin\noff\npacked\nunpacked\n___\ndebug_assertions\npanic=\"unwind\"\nproc_macro\ntarget_abi=\"\"\ntarget_arch=\"aarch64\"\ntarget_endian=\"little\"\ntarget_env=\"\"\ntarget_family=\"unix\"\ntarget_feature=\"aes\"\ntarget_feature=\"crc\"\ntarget_feature=\"dit\"\ntarget_feature=\"dotprod\"\ntarget_feature=\"dpb\"\ntarget_feature=\"dpb2\"\ntarget_feature=\"fcma\"\ntarget_feature=\"fhm\"\ntarget_feature=\"flagm\"\ntarget_feature=\"fp16\"\ntarget_feature=\"frintts\"\ntarget_feature=\"jsconv\"\ntarget_feature=\"lor\"\ntarget_feature=\"lse\"\ntarget_feature=\"neon\"\ntarget_feature=\"paca\"\ntarget_feature=\"pacg\"\ntarget_feature=\"pan\"\ntarget_feature=\"pmuv3\"\ntarget_feature=\"ras\"\ntarget_feature=\"rcpc\"\ntarget_feature=\"rcpc2\"\ntarget_feature=\"rdm\"\ntarget_feature=\"sb\"\ntarget_feature=\"sha2\"\ntarget_feature=\"sha3\"\ntarget_feature=\"ssbs\"\ntarget_feature=\"vh\"\ntarget_has_atomic=\"128\"\ntarget_has_atomic=\"16\"\ntarget_has_atomic=\"32\"\ntarget_has_atomic=\"64\"\ntarget_has_atomic=\"8\"\ntarget_has_atomic=\"ptr\"\ntarget_os=\"macos\"\ntarget_pointer_width=\"64\"\ntarget_vendor=\"apple\"\nunix\n",
+            "stderr": ""
+          }
+        },
+        "successes": {}
+      }
+    },
+    "candidate": {
+      "binary": "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6",
+      "sections": {
+        "__TEXT,__text": {
+          "size": 5014712,
+          "sha256": "50fd9dc79427b87d074ddbf4999d74e5af7079cd576f1af178cf697d9b235c5d"
+        },
+        "__TEXT,__stubs": {
+          "size": 2124,
+          "sha256": "c40be08a760725b4c9c8967b79ddd2240dc5804e36a7163e7e23e5b15c790e3a"
+        },
+        "__TEXT,__stub_helper": {
+          "size": 2148,
+          "sha256": "f4d59db2fdd1a79b3bf7d706a321e6e2f3a10e29944705154644d9c34dd08fa9"
+        },
+        "__TEXT,__gcc_except_tab": {
+          "size": 278420,
+          "sha256": "9affb200a81096738a95d1182c28618c953b273dfe3cdc245243336e0d3a10b8"
+        },
+        "__TEXT,__const": {
+          "size": 579888,
+          "sha256": "f267fcfd45b92ef5d327cbc752a64c7a44adaa9457811ba1b050115e2f2bc728"
+        },
+        "__TEXT,__cstring": {
+          "size": 84898,
+          "sha256": "c1ece7a755b3145e800b54985cef9f29050df0ef452b6f3d1bd11b58b5f9572f"
+        },
+        "__TEXT,__unwind_info": {
+          "size": 116016,
+          "sha256": "1f08784a4bd33425216d837c5c44901de29506f01a29f28f3123922207a9cf37"
+        },
+        "__TEXT,__eh_frame": {
+          "size": 658796,
+          "sha256": "c6b84b8d742353eed72f323b649fdf0ef2839df22b5f45bb903f3497472f19f9"
+        },
+        "__DATA_CONST,__got": {
+          "size": 48,
+          "sha256": "3c6cbc56ab6d412dc0dc1aa47ffeaff2ce4cf9166d94d33aefea298314b31ed5"
+        },
+        "__DATA_CONST,__mod_init_func": {
+          "size": 8,
+          "sha256": "c624f5af0ca68d7c08457e261ff360feec28418ec1a2fea44226cf1bb872628d"
+        },
+        "__DATA_CONST,__const": {
+          "size": 339800,
+          "sha256": "2ad25ffa4f74737772825df696de65d835ef1bee6c4f73cdcc1f23405b4cb302"
+        },
+        "__DATA,__la_symbol_ptr": {
+          "size": 1416,
+          "sha256": "b2c471c79543da556cc089d2d2ae8cd52fac006eee133b94e4131ac89fcda664"
+        },
+        "__DATA,__data": {
+          "size": 7800,
+          "sha256": "2d9acd0aed14300423f9e1a647e9853ead4e1622b1d105a03aa9f092a754a7d1"
+        },
+        "__DATA,__thread_vars": {
+          "size": 480,
+          "sha256": "781db0862ae93ab768826e1ae0d395f1ef23ee498be037b23b6526d445a64877"
+        },
+        "__DATA,__thread_data": {
+          "size": 160,
+          "sha256": "caf7ee136d78ab8e344527955608920a7abce37d8853b385277e96b5d543aee4"
+        }
+      },
+      "fingerprints": {
+        "bin-graphite.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 13418177368667624530,
+          "profile": 2040997289075261528,
+          "path": 15162269893553335056,
+          "deps": [
+            [
+              4091053499939819895,
+              "sha2",
+              false,
+              2489533091377293742
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              6004304390849843807,
+              "tikv_jemallocator",
+              false,
+              1400373197141229887
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              14939672306327613587,
+              "graphite_explore",
+              false,
+              5574938902083739002
+            ],
+            [
+              16231582934072186158,
+              "graphite_cypher",
+              false,
+              694721162522047291
+            ],
+            [
+              17205105931452024826,
+              "clap",
+              false,
+              11182363616807235281
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-cli-86030d3ae19816ff/dep-bin-graphite",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_cypher.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 2495208095577192772,
+          "profile": 2040997289075261528,
+          "path": 4465650404705551413,
+          "deps": [
+            [
+              310359321821557790,
+              "regex",
+              false,
+              18333536152978442971
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              17847581527163928910,
+              "indexmap",
+              false,
+              4445170489184397762
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-cypher-be0c417d1c032155/dep-lib-graphite_cypher",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_storage.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 13201930973035428123,
+          "profile": 2040997289075261528,
+          "path": 14945385890245157651,
+          "deps": [
+            [
+              3151952590648112049,
+              "crc32fast",
+              false,
+              15673859767781868278
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              4091053499939819895,
+              "sha2",
+              false,
+              2489533091377293742
+            ],
+            [
+              10968047079748790161,
+              "memmap2",
+              false,
+              11160601316141236691
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-storage-33188aa4eb21be5a/dep-lib-graphite_storage",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-graphite_explore.json": {
+          "rustc": 2833068300835136146,
+          "features": "[]",
+          "declared_features": "[]",
+          "target": 8407794914692303723,
+          "profile": 2040997289075261528,
+          "path": 13425312936750750394,
+          "deps": [
+            [
+              310359321821557790,
+              "regex",
+              false,
+              18333536152978442971
+            ],
+            [
+              2145939652136225981,
+              "tokio",
+              false,
+              7765219993445577547
+            ],
+            [
+              3632162862999675140,
+              "tower",
+              false,
+              9211531250398321822
+            ],
+            [
+              4012234191921133045,
+              "thiserror",
+              false,
+              15607654599164435913
+            ],
+            [
+              5330460842384404171,
+              "serde_json",
+              false,
+              2109001502004534211
+            ],
+            [
+              5380358770761950913,
+              "tracing_subscriber",
+              false,
+              11106536320071472564
+            ],
+            [
+              6557439603276904804,
+              "serde",
+              false,
+              9518330796174091963
+            ],
+            [
+              9842033052731393846,
+              "axum",
+              false,
+              10510319817272192845
+            ],
+            [
+              10364619138950789809,
+              "anyhow",
+              false,
+              6341332419272767541
+            ],
+            [
+              11910974697091955563,
+              "rayon",
+              false,
+              8115781543123738886
+            ],
+            [
+              12459942763388630573,
+              "parking_lot",
+              false,
+              13347626407198474497
+            ],
+            [
+              13760554398515215614,
+              "graphite_storage",
+              false,
+              9883679568354949321
+            ],
+            [
+              14063412941180217548,
+              "uuid",
+              false,
+              10294856745698759663
+            ],
+            [
+              14757622794040968908,
+              "tracing",
+              false,
+              8960786839160217842
+            ],
+            [
+              16117757646811882223,
+              "chrono",
+              false,
+              18365345920195014197
+            ],
+            [
+              16231582934072186158,
+              "graphite_cypher",
+              false,
+              694721162522047291
+            ],
+            [
+              17205105931452024826,
+              "clap",
+              false,
+              11182363616807235281
+            ],
+            [
+              17847581527163928910,
+              "indexmap",
+              false,
+              4445170489184397762
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/graphite-explore-34814e4064bcfd19/dep-lib-graphite_explore",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "lib-tikv_jemallocator.json": {
+          "rustc": 2833068300835136146,
+          "features": "[\"background_threads_runtime_support\", \"default\"]",
+          "declared_features": "[\"alloc_trait\", \"background_threads\", \"background_threads_runtime_support\", \"debug\", \"default\", \"disable_initial_exec_tls\", \"profiling\", \"stats\", \"unprefixed_malloc_on_supported_platforms\"]",
+          "target": 6283890608923560275,
+          "profile": 2040997289075261528,
+          "path": 16764987389312214788,
+          "deps": [
+            [
+              8418308967883392393,
+              "tikv_jemalloc_sys",
+              false,
+              11090525375810780348
+            ],
+            [
+              10504718112287328430,
+              "libc",
+              false,
+              4308194728852820429
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/tikv-jemallocator-8dd4eab158168b21/dep-lib-tikv_jemallocator",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        },
+        "run-build-script-build-script-build.json": {
+          "rustc": 2833068300835136146,
+          "features": "",
+          "declared_features": "",
+          "target": 0,
+          "profile": 0,
+          "path": 0,
+          "deps": [
+            [
+              8418308967883392393,
+              "build_script_build",
+              false,
+              7038480534450216930
+            ]
+          ],
+          "local": [
+            {
+              "RerunIfChanged": {
+                "output": "aarch64-apple-darwin/release/build/tikv-jemalloc-sys-436403370256ee3a/output",
+                "paths": [
+                  "jemalloc"
+                ]
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_OVERRIDE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_aarch64-apple-darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_aarch64_apple_darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "HOST_CC",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CC_ENABLE_DEBUG_OUTPUT",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CRATE_CC_NO_DEFAULTS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "MACOSX_DEPLOYMENT_TARGET",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "HOST_CFLAGS",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS_aarch64_apple_darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "CFLAGS_aarch64-apple-darwin",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_MALLOC_CONF",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_PAGE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_HUGEPAGE",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_QUANTUM",
+                "val": null
+              }
+            },
+            {
+              "RerunIfEnvChanged": {
+                "var": "JEMALLOC_SYS_WITH_LG_VADDR",
+                "val": null
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 0,
+          "compile_kind": 0
+        },
+        "lib-tikv_jemalloc_sys.json": {
+          "rustc": 2833068300835136146,
+          "features": "[\"background_threads_runtime_support\"]",
+          "declared_features": "[\"background_threads\", \"background_threads_runtime_support\", \"debug\", \"default\", \"disable_cache_oblivious\", \"disable_initial_exec_tls\", \"profiling\", \"stats\", \"unprefixed_malloc_on_supported_platforms\"]",
+          "target": 13178952967786859646,
+          "profile": 2040997289075261528,
+          "path": 10741551747904978588,
+          "deps": [
+            [
+              8418308967883392393,
+              "build_script_build",
+              false,
+              9707904891554235644
+            ],
+            [
+              10504718112287328430,
+              "libc",
+              false,
+              4308194728852820429
+            ]
+          ],
+          "local": [
+            {
+              "CheckDepInfo": {
+                "dep_info": "aarch64-apple-darwin/release/.fingerprint/tikv-jemalloc-sys-404cd491169a7c6b/dep-lib-tikv_jemalloc_sys",
+                "checksum": false
+              }
+            }
+          ],
+          "rustflags": [],
+          "config": 2069994364910194474,
+          "compile_kind": 551198452465029181
+        }
+      },
+      "rustc": {
+        "rustc_fingerprint": 7089223272875743685,
+        "outputs": {
+          "6432102384495711296": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "___\nlib___.rlib\nlib___.dylib\nlib___.dylib\nlib___.a\nlib___.dylib\n/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin\noff\npacked\nunpacked\n___\ndebug_assertions\npanic=\"unwind\"\nproc_macro\ntarget_abi=\"\"\ntarget_arch=\"aarch64\"\ntarget_endian=\"little\"\ntarget_env=\"\"\ntarget_family=\"unix\"\ntarget_feature=\"aes\"\ntarget_feature=\"crc\"\ntarget_feature=\"dit\"\ntarget_feature=\"dotprod\"\ntarget_feature=\"dpb\"\ntarget_feature=\"dpb2\"\ntarget_feature=\"fcma\"\ntarget_feature=\"fhm\"\ntarget_feature=\"flagm\"\ntarget_feature=\"fp16\"\ntarget_feature=\"frintts\"\ntarget_feature=\"jsconv\"\ntarget_feature=\"lor\"\ntarget_feature=\"lse\"\ntarget_feature=\"neon\"\ntarget_feature=\"paca\"\ntarget_feature=\"pacg\"\ntarget_feature=\"pan\"\ntarget_feature=\"pmuv3\"\ntarget_feature=\"ras\"\ntarget_feature=\"rcpc\"\ntarget_feature=\"rcpc2\"\ntarget_feature=\"rdm\"\ntarget_feature=\"sb\"\ntarget_feature=\"sha2\"\ntarget_feature=\"sha3\"\ntarget_feature=\"ssbs\"\ntarget_feature=\"vh\"\ntarget_has_atomic=\"128\"\ntarget_has_atomic=\"16\"\ntarget_has_atomic=\"32\"\ntarget_has_atomic=\"64\"\ntarget_has_atomic=\"8\"\ntarget_has_atomic=\"ptr\"\ntarget_os=\"macos\"\ntarget_pointer_width=\"64\"\ntarget_vendor=\"apple\"\nunix\n",
+            "stderr": ""
+          },
+          "7971740275564407648": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "___\nlib___.rlib\nlib___.dylib\nlib___.dylib\nlib___.a\nlib___.dylib\n/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin\noff\npacked\nunpacked\n___\ndebug_assertions\npanic=\"unwind\"\nproc_macro\ntarget_abi=\"\"\ntarget_arch=\"aarch64\"\ntarget_endian=\"little\"\ntarget_env=\"\"\ntarget_family=\"unix\"\ntarget_feature=\"aes\"\ntarget_feature=\"crc\"\ntarget_feature=\"dit\"\ntarget_feature=\"dotprod\"\ntarget_feature=\"dpb\"\ntarget_feature=\"dpb2\"\ntarget_feature=\"fcma\"\ntarget_feature=\"fhm\"\ntarget_feature=\"flagm\"\ntarget_feature=\"fp16\"\ntarget_feature=\"frintts\"\ntarget_feature=\"jsconv\"\ntarget_feature=\"lor\"\ntarget_feature=\"lse\"\ntarget_feature=\"neon\"\ntarget_feature=\"paca\"\ntarget_feature=\"pacg\"\ntarget_feature=\"pan\"\ntarget_feature=\"pmuv3\"\ntarget_feature=\"ras\"\ntarget_feature=\"rcpc\"\ntarget_feature=\"rcpc2\"\ntarget_feature=\"rdm\"\ntarget_feature=\"sb\"\ntarget_feature=\"sha2\"\ntarget_feature=\"sha3\"\ntarget_feature=\"ssbs\"\ntarget_feature=\"vh\"\ntarget_has_atomic=\"128\"\ntarget_has_atomic=\"16\"\ntarget_has_atomic=\"32\"\ntarget_has_atomic=\"64\"\ntarget_has_atomic=\"8\"\ntarget_has_atomic=\"ptr\"\ntarget_os=\"macos\"\ntarget_pointer_width=\"64\"\ntarget_vendor=\"apple\"\nunix\n",
+            "stderr": ""
+          },
+          "17747080675513052775": {
+            "success": true,
+            "status": "",
+            "code": 0,
+            "stdout": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: aarch64-apple-darwin\nrelease: 1.93.0\nLLVM version: 21.1.8\n",
+            "stderr": ""
+          }
+        },
+        "successes": {}
+      }
+    }
+  },
+  "rlibComparisons": {
+    "graphite_cypher": {
+      "sha256": [
+        "9f74c0e6d5422bd98bc1bd86cfd9d2434480e26ad416e0c2bb52dcd7e565ec4b",
+        "b1005cd0c7a9acc38b317f8eaa187b899abf45abe30528a276b07a183a8f3bb5"
+      ],
+      "objectCounts": [
+        16,
+        16
+      ],
+      "sameObjectNames": true,
+      "objectsWithChangedSections": 8,
+      "changedTextObjects": 0,
+      "mismatches": [
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.00.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 336,
+                "sha256": "cad73dc5342023c6c881071a7fee7a82918e248cb8a6ce3525fc3d6c4e35eff6"
+              },
+              "candidate": {
+                "size": 336,
+                "sha256": "aa966e19fee19d82d594b8141cbf48a75020883a402fa5f51720867985ca5aa6"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 549,
+                "sha256": "f15822fb89faef5e55b5f3afd1d1ac504374d007d4abc3ca4b8279bc19706be4"
+              },
+              "candidate": {
+                "size": 531,
+                "sha256": "5debd6d6e9735a42eab989c799e92ee6ae583ed80f504c09dee504db67f829b4"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.01.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 2528,
+                "sha256": "b290a543dcf6e0ef2210a9adda431dd109ff980cf913bfd4cdcc87251306625f"
+              },
+              "candidate": {
+                "size": 2528,
+                "sha256": "b53649d1766accd1548d47fe7412aa2b409ee33c81de813d5618c83988ba22b9"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 491,
+                "sha256": "eb72efcd2dedfbdecda2a1ab437c3b8783b58aca0f17ab380a21de89a5f91dc2"
+              },
+              "candidate": {
+                "size": 464,
+                "sha256": "53d32134e56828320ee1e1a2e89b4e77ea0186e8be3b90d6f8f3f4e4ab1cd148"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.02.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 1040,
+                "sha256": "bb166a29b2c5d66b1e5393fe3aa52bcd25ba93ec138d39a12c0e93798d48c0ee"
+              },
+              "candidate": {
+                "size": 1040,
+                "sha256": "7b963ec58c95112f28befa8d71a197c1c9aeff62d940ba093eb1d1e0ca77d459"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 813,
+                "sha256": "bc7cfb3295e91078c3f3bc8923652fed14d3190aef072a97a40abd079f393b9b"
+              },
+              "candidate": {
+                "size": 786,
+                "sha256": "d6eda4ffe4daf40d2e3516eed1edaf2939aec73c2c88dc6212638805e685259e"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.03.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 544,
+                "sha256": "52ea01f643719e42cc527a1893460191561e1cba68a4bc5bde3ddb45e930d6ca"
+              },
+              "candidate": {
+                "size": 544,
+                "sha256": "e9723a949395c6c09a3bafbba5fbed88feacd59fd288c8d9fbc41d52cc5928a3"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 408,
+                "sha256": "3c26aefb9fc2745ef357a57a62323fbe6281aad3eb4f45c140befe0e90f336c8"
+              },
+              "candidate": {
+                "size": 399,
+                "sha256": "648d8b435a8aea6d2a5cba1bb2d9b9e4dac7c05ca6d5d12c8b4254efad272a91"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.06.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 1288,
+                "sha256": "f78693582b914832d9abbe5e81734757c61656026c6e9b71dfd5e3e791943e9d"
+              },
+              "candidate": {
+                "size": 1288,
+                "sha256": "d9b495d76b6c3ffdf38deda042383cb365b43e149e998e593424f8779ea18642"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 318,
+                "sha256": "221186bf40a4851f39d738f0af2ef5f8a68f4d2ddebfece99c0ee8b03f1704dc"
+              },
+              "candidate": {
+                "size": 309,
+                "sha256": "6ca72c000b98c58c712c7cd6fa51ce8103d3a2e3a6f32698e236274af0c1ee82"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.08.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 2104,
+                "sha256": "5c3c04e62a9644c78b807734469b2f77faa596c5281ccf2c10b9ebf866cd9094"
+              },
+              "candidate": {
+                "size": 2104,
+                "sha256": "89b17dfba4deb1af536573f0a2d61ecf49c39f55d17d6171e957dbaff7116901"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 334,
+                "sha256": "4931b345643dcf5a16c413020d2fe80fa8d71f4059204fe4ca5a048a71ddec6b"
+              },
+              "candidate": {
+                "size": 307,
+                "sha256": "65b70a21e5a9dc47135ff6b6860f83348932d3070b43051e63db7d721eb28fb2"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.10.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 1336,
+                "sha256": "358227b0b3d7520b727f014d9b688a45b97fe930c5febec50b961d05544cb272"
+              },
+              "candidate": {
+                "size": 1336,
+                "sha256": "024fe4fea672f43eadff3861e4244bc98fcc5f2dce031ebd0f6763d7d0c91cf0"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 425,
+                "sha256": "98c41c5680b09979814d8a9a26aba3f2c06ae3ff259cfc5cc271dea65763a196"
+              },
+              "candidate": {
+                "size": 398,
+                "sha256": "2e49f7f8fe466917edba92aff6bcc562537f88e856560263f13b0edeb3c17554"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_cypher-be0c417d1c032155.graphite_cypher.4344fce4ad8e5e35-cgu.11.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 856,
+                "sha256": "4f9f9d7b0b1b5c0f1772d254c3880f2f41a4a340e04ccf9f7eb846094d7b3620"
+              },
+              "candidate": {
+                "size": 856,
+                "sha256": "dfa43d0c9ecea120b8373ab268c470532682f127abb7aeee35e98029ab55bdbd"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 700,
+                "sha256": "9234375bebad0d460d7e15218012fd7ab238f16b2d53f372950fedea13aeb66a"
+              },
+              "candidate": {
+                "size": 673,
+                "sha256": "ee9963801b4310cceabbfb1cd4a0f50cae5577e079bacae141094316fe0596e0"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "graphite_storage": {
+      "sha256": [
+        "a3d6784074479a9e98ca3a868607523550d7ccb85b6e0e41d8629020316e21e6",
+        "679a82aea15288dd70cda5122ef729398c098e70980c5a8eb6fac2ff1adffc6f"
+      ],
+      "objectCounts": [
+        16,
+        16
+      ],
+      "sameObjectNames": true,
+      "objectsWithChangedSections": 0,
+      "changedTextObjects": 0,
+      "mismatches": []
+    },
+    "graphite_explore": {
+      "sha256": [
+        "bcaed66320a54e537fcbc15c3ebb8ba3fdc190904d843e91e3bf9a36c0684641",
+        "ac29bc31c20e92829d3b0bdea78e1ac322cb6f8c70d14039e29b5a17a0902e54"
+      ],
+      "objectCounts": [
+        16,
+        16
+      ],
+      "sameObjectNames": true,
+      "objectsWithChangedSections": 5,
+      "changedTextObjects": 0,
+      "mismatches": [
+        {
+          "object": "graphite_explore-34814e4064bcfd19.graphite_explore.f9142a9b04daab4b-cgu.01.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 4616,
+                "sha256": "22a48f4dbe241adf8512e7d453555bc62c952262b8a46102db02ee731cbaafbe"
+              },
+              "candidate": {
+                "size": 4616,
+                "sha256": "f6269399115888e07941dc45a0983a5dcf1a56aee5cafbcfe9b53dbff176f003"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 2224,
+                "sha256": "0b9def8864ff420e428ac70451a0b73240d75a10bc36dc0ecad419871831cf78"
+              },
+              "candidate": {
+                "size": 2206,
+                "sha256": "42776ac857ed9b31750c74ea7c4b68cde597eae72bb556e445a6c0edb60e2576"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_explore-34814e4064bcfd19.graphite_explore.f9142a9b04daab4b-cgu.02.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 1032,
+                "sha256": "b874defc76698b066eebcdc897188c3cc3b7087483d3baf1072f0c6b5fe6d19b"
+              },
+              "candidate": {
+                "size": 1032,
+                "sha256": "cd4067de603d7d7b97251a5ca8f5537470357415d3be403d713b11097d34cf02"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 1114,
+                "sha256": "342d2961d2903652b220910dfc1812c7f4d85cb1217c1507f938db0011f98c27"
+              },
+              "candidate": {
+                "size": 1105,
+                "sha256": "bfb4187bb2841b0ebcd05cc17bbcc82895497c24047203ee7e0ef241f809ad31"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_explore-34814e4064bcfd19.graphite_explore.f9142a9b04daab4b-cgu.07.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 1616,
+                "sha256": "9bcd3bccce2617e03af3839b876e04dca8dc08793cd692689c6e382b3c1d57f5"
+              },
+              "candidate": {
+                "size": 1616,
+                "sha256": "eb3d8d5e2571b3584017dc59281f17686e8c201feafc926e0c1289e5d1251019"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 924,
+                "sha256": "7717ac8b5b3d32a24ea986fa1d288765ab474d5dc18eb76b99dc0e813666e51c"
+              },
+              "candidate": {
+                "size": 915,
+                "sha256": "546ed6aa24b4c1fcb4f9fefb8a9e5898d34b6b0046e5c355d4d83e63ffa26bad"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_explore-34814e4064bcfd19.graphite_explore.f9142a9b04daab4b-cgu.11.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 2544,
+                "sha256": "231c289b7ba3cbf1dcf6291a31cb5007d865d508d9b200bd3d9e4187c5032ec3"
+              },
+              "candidate": {
+                "size": 2544,
+                "sha256": "33d03f5c3972430665c67c89c73a712fd451728e515614f9d67641ad96d9d591"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 1923,
+                "sha256": "3d0f033de4c0326b75ff8b5981391256f36d1be2df1005328380b55ab82764ab"
+              },
+              "candidate": {
+                "size": 1905,
+                "sha256": "ba146634edae9078ab03e424d3b6db607780503b64d3443ef0d2ee49c6ef202d"
+              }
+            }
+          }
+        },
+        {
+          "object": "graphite_explore-34814e4064bcfd19.graphite_explore.f9142a9b04daab4b-cgu.14.rcgu.o",
+          "sections": {
+            "__DATA,__const": {
+              "baseline": {
+                "size": 576,
+                "sha256": "b26f7ef9a4e8d5665846259644252f037f955abff5e66af487966ff24afb1f29"
+              },
+              "candidate": {
+                "size": 576,
+                "sha256": "14a8e061c1418cf1560ed29acaafd9d0a8024005c6a4dbefdee16afcf3a78d4a"
+              }
+            },
+            "__TEXT,__cstring": {
+              "baseline": {
+                "size": 610,
+                "sha256": "07a914f5589c0e7efdf878e124c28b499bc504ef142e86219e45bbea406368d5"
+              },
+              "candidate": {
+                "size": 601,
+                "sha256": "c61643d6f3e1e7f669c83b4edc944f013ef437f4164cc14a09aa443c1c202313"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tikv_jemallocator": {
+      "sha256": [
+        "0d4140a226731ae2c67bf46063b35f2f6aa1d15b1257eec6881495e2708f9464",
+        "0d4140a226731ae2c67bf46063b35f2f6aa1d15b1257eec6881495e2708f9464"
+      ],
+      "objectCounts": [
+        1,
+        1
+      ],
+      "sameObjectNames": true,
+      "objectsWithChangedSections": 0,
+      "changedTextObjects": 0,
+      "mismatches": []
+    },
+    "tikv_jemalloc_sys": {
+      "sha256": [
+        "5c4b44d2f8fddae8a93afcfa077e7b506ae7c70da6f00f5c1297b7c7a2da9def",
+        "cd9b5dd7eec37cdbc4a475554c624c707754f787399a6eff080dec001924cbf0"
+      ],
+      "objectCounts": [
+        64,
+        64
+      ],
+      "sameObjectNames": true,
+      "objectsWithChangedSections": 63,
+      "changedTextObjects": 0,
+      "mismatches": [
+        {
+          "object": "arena.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 9248,
+                "sha256": "ece77219bf35f70106c46a023d2d1268d69d875eff3375040c2c7bb651f1166a"
+              },
+              "candidate": {
+                "size": 9248,
+                "sha256": "aed93a90aa6ab2af1e617527678ad2403c310c51fe4a604bd01db6698d80db45"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 7505,
+                "sha256": "070265dcd581865954130d85773861c3ea8005c6797c4c8272845bc7f8fcdbe6"
+              },
+              "candidate": {
+                "size": 7505,
+                "sha256": "b32bdfc8e138e5f3c40f71539750729d6f99d38043d6a258812a137c8168f12a"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 60992,
+                "sha256": "ba0fda9808cbafb07c6401b6b1c7c2c3a141b1cd02764289bf746083db0cbaa9"
+              },
+              "candidate": {
+                "size": 60992,
+                "sha256": "9e194c2658a41773ac7d30906d6194b60a789ed6443d1c67c70909c3e6735b98"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 20611,
+                "sha256": "829b912f382cac17e6cd31d09f36223b6c771c2cb05e7f408cb833050d3b5adf"
+              },
+              "candidate": {
+                "size": 20602,
+                "sha256": "19ee306f81c9409e2669cf29d4c913be09a6d61cedaebf9cef6ea597ac5c634f"
+              }
+            }
+          }
+        },
+        {
+          "object": "background_thread.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 576,
+                "sha256": "19a04c1d50db04de8a3f3f1a65653f13ecaa02d78d6e414299c73279a8c84fa9"
+              },
+              "candidate": {
+                "size": 576,
+                "sha256": "684cb2d976685f02fecf43ed7ed778144978cbeb4af949b3101d772cedf532e8"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5840,
+                "sha256": "a6f84ab0028cc83330589e97adff4495c6c8aeda4ae60b6d323de55b6f4c0cde"
+              },
+              "candidate": {
+                "size": 5840,
+                "sha256": "41d1b6a0d69065912e12a4b38147c3a25cba269e92f308908ff06f3c66262a5e"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9919,
+                "sha256": "35765eee78938a10da29117ed3b947dd85422a30acbb63d4afc0404303488463"
+              },
+              "candidate": {
+                "size": 9919,
+                "sha256": "0b29947fb7b2c067f0123079e08e35ec0c9af06b3590b0682be7f9bf27820c26"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10921,
+                "sha256": "0ff23a33a916fa36711dad0e21990f78e288b34aba5a39d04497cd27e267c6e1"
+              },
+              "candidate": {
+                "size": 10912,
+                "sha256": "df2a899c7f1eeb475f1d13859dc3f831f0376b189fada9bf1dfabc928e6c3d61"
+              }
+            }
+          }
+        },
+        {
+          "object": "base.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 2464,
+                "sha256": "8bf1ad15a78d6147751ca3fba8fe98be9d311dff55bb4ffddbd2709766cd3d66"
+              },
+              "candidate": {
+                "size": 2464,
+                "sha256": "33285ece5a559140b137f5df667f360deb6e8a289e327cf2b5c14ba4f1656b07"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6485,
+                "sha256": "cdbc8c595df808adf4a546965f0c0b6a77859b8b036782c503a6a69551e6157f"
+              },
+              "candidate": {
+                "size": 6485,
+                "sha256": "ee912331b256cd1e5fc9233917b0830ecc2d2f2b8acc77e7679a741f670c9d9c"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 20913,
+                "sha256": "5f1480f1fd5d1ce587ec296d7073bf3fa9644781bb5bc611a7c75167867e054c"
+              },
+              "candidate": {
+                "size": 20913,
+                "sha256": "465c4a9e2cc6d6c639cc0fdd2c7fcf30b92071af491b9e0b91cddb8ea762efeb"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 13046,
+                "sha256": "693231a181c1acfa498b2bb9d812154578406a97751db192b900c8a680932733"
+              },
+              "candidate": {
+                "size": 13037,
+                "sha256": "694e31ceb51dd82c75018fad68acce0c3145523aa96d81365f03fa36ab80ed5b"
+              }
+            }
+          }
+        },
+        {
+          "object": "bin.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 472,
+                "sha256": "aa0662ca368d8905095797be306b41b4a299b98baf2d964c0f2ea0aa39936fc5"
+              },
+              "candidate": {
+                "size": 472,
+                "sha256": "2ac35860bc26223291874d34fdda1ab05fc73036ea44b6fc7597af4488ce5e39"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5693,
+                "sha256": "00b5e704b1077562952003552a265acbebe3e7bcecdb9c1db3cd7c82b5e7f4c5"
+              },
+              "candidate": {
+                "size": 5693,
+                "sha256": "3c158eef6acf205e8aff9e08a1078c6bca0304d4879b585e645a6ed0108072bf"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 10410,
+                "sha256": "98e4675d0ed891c21d6733d8bfc84413d6db7d0af536c649327165812c1d8431"
+              },
+              "candidate": {
+                "size": 10410,
+                "sha256": "196daa12d2068f6c5b524427c6828d729283f1cfecfd575c6b1814308d1fffe8"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10209,
+                "sha256": "3eada0f66f75b3b15d732c52683120f50c271858e0d92f3e67e7b8c0af7f53fa"
+              },
+              "candidate": {
+                "size": 10200,
+                "sha256": "ed73f09a584c892c9e8dff712c8584d28a98806cac31343aa6f8a909b1e5f831"
+              }
+            }
+          }
+        },
+        {
+          "object": "bin_info.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 116,
+                "sha256": "98b2d8a45795d2def0dd94955b24bdefb9b0286465fb52ca84636993b81c7e82"
+              },
+              "candidate": {
+                "size": 116,
+                "sha256": "09356ce46292795037657d00cf78a8e05076fc889f392d0d39b4831497065395"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 562,
+                "sha256": "eeaa4457c8cf62fc5ff4776380356685ca5b2a3594651496f5b4acedeb76677f"
+              },
+              "candidate": {
+                "size": 562,
+                "sha256": "36d61630390e159b2d2a2c868349c75bf9c0a2223b3abc194cf417909c06b34c"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 932,
+                "sha256": "a1a7b5137a0ea4a54819c76f8e5a0d899aa00913c2c70b528201dcd767a49eb2"
+              },
+              "candidate": {
+                "size": 932,
+                "sha256": "06aa1eedc5332aa9721261dd6699fa8a632c87e5f4fce1152a2250417dd01c9a"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 907,
+                "sha256": "61dff7804639723d83aaabcf515b19a09b06e09fc6c079b86bb10d796a076aae"
+              },
+              "candidate": {
+                "size": 898,
+                "sha256": "0413f96d8271c41d51391170a025e01e8bbcacd86fff2fce67c627974ec886f4"
+              }
+            }
+          }
+        },
+        {
+          "object": "bitmap.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 144,
+                "sha256": "d23c4167d4e0b841890210e2ad036d84c8579aca8fba9311359bda5e6bfb3eb1"
+              },
+              "candidate": {
+                "size": 144,
+                "sha256": "2bc0aad84ed4c9359445fb49b95d45e32ec845c1d8eafc5e9c3304d522cf5889"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 381,
+                "sha256": "758d848e0f7b6f7f4f650c1a5beb3a0af9dc80ce061215a23682340631660ff5"
+              },
+              "candidate": {
+                "size": 381,
+                "sha256": "a66111e30d45721bdd4dbef0d5e783e76c7b1357efd5dd198bdc62d3f2cb3dc2"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 525,
+                "sha256": "157f74c9006efa1eacb36038c936729645727c25176da23b993d2b3aaca2e315"
+              },
+              "candidate": {
+                "size": 525,
+                "sha256": "e2249a266e799fb7c90dc3e49b84c7454acc0ced4eda0c7bdb3bf01328d6710b"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 613,
+                "sha256": "e606fbaef1d305ef90d6d7d64a6aa671060154a31710c92e5b47eba5a3591d65"
+              },
+              "candidate": {
+                "size": 604,
+                "sha256": "0c311270b385ede7cfb524a4618d36bbd2618b22899f1eed4308c3d7a049d5ab"
+              }
+            }
+          }
+        },
+        {
+          "object": "buf_writer.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1596,
+                "sha256": "c06131823651881e24281ed0bf31db98c3a08b8814c006f58fe2c9230bb558ea"
+              },
+              "candidate": {
+                "size": 1596,
+                "sha256": "bab46af7f3ca5f7adc328e665cd7ca103bc6948e5adfe584307991337a5e216d"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6079,
+                "sha256": "e81b60e9035b4cc166ce8b2ebe4bf70d72a0053ca9771435370085acd78a7ac6"
+              },
+              "candidate": {
+                "size": 6079,
+                "sha256": "050224116675b7de59c79d61c56bd2a56085cf0973ce5c8e8f90cc800d329f9e"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 16628,
+                "sha256": "407904c4909fd49904e509e46b26a147793ae30ef506e97e645ab2cf5b5356f4"
+              },
+              "candidate": {
+                "size": 16628,
+                "sha256": "3ae8446608ee0a8c4679818edffc73e015b1631a839fbece53c1c01b84a16a49"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11673,
+                "sha256": "b1e3f0aab4f76f872fac012ca3dd1c1b04ae3106fdd4ac3c04ec2cf129e71fea"
+              },
+              "candidate": {
+                "size": 11664,
+                "sha256": "b69abdd09664d0232bfc6b76b456a5a5254978abe945a39d7569ea79fd0baeca"
+              }
+            }
+          }
+        },
+        {
+          "object": "cache_bin.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 256,
+                "sha256": "c289d50cef6a24d33cb5c00a87b7746836ec984b7d643b1c04ca35f97c71a678"
+              },
+              "candidate": {
+                "size": 256,
+                "sha256": "59936a9aa59e99bfe0dd0dec379e815478d5c9b772dc29e09a25ddbb4659b042"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 562,
+                "sha256": "c0a5d3f7d7e842a6aff2dce7d02581aebd4aed40f02b911ad9da9c21935cb7a8"
+              },
+              "candidate": {
+                "size": 562,
+                "sha256": "193a61a98380c0c65b08e5fea1ed31cbdece5bcaa10b475f9121ae480fbc7b14"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 886,
+                "sha256": "abf52b8e8875a3ad76b6a3c1449afcc6e38c1e1dd081969530b53d66faff0229"
+              },
+              "candidate": {
+                "size": 886,
+                "sha256": "d007b67b30df149c415b80c7a7d99cf89af40b83764d3e1a47ee953d21332feb"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1015,
+                "sha256": "87ddf17e7109d5a1871bb47fd4a60167686c37c031903023c5da000fba5ebb6a"
+              },
+              "candidate": {
+                "size": 1006,
+                "sha256": "10b4afe2ffb83d3167f80ac58866edeeb4281198c133e96f2034f1531e54befb"
+              }
+            }
+          }
+        },
+        {
+          "object": "ckh.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 3044,
+                "sha256": "69b1835123ff2b8d4a91eed2d900094a32f80b5cd4b0da14e5d59e6550335744"
+              },
+              "candidate": {
+                "size": 3044,
+                "sha256": "b334e12dfbf3d91d49ab0ccc34ef998412a182e82c532bb25f3088acd087c9dd"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5990,
+                "sha256": "7387dc8934e2df565aa20e2e702ae725112948b7cd48bd724c4d16c6b4a29a4e"
+              },
+              "candidate": {
+                "size": 5990,
+                "sha256": "c2b63dac59aec07e9475a31a485ab2fb8bbbdd040371496f1e1fd87c7aff2456"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 27654,
+                "sha256": "2dfa52dbbe79552b8987dcf18d8346c349ec8ae260ddaa93142a7928973fed40"
+              },
+              "candidate": {
+                "size": 27654,
+                "sha256": "90d11c694694cb34eb7c694ddf0098f8444bce755c4574b4f19933c2b4e33533"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12188,
+                "sha256": "f3f61cc9ec2a0a58124f5234640e2a3da0ef8d35137973f74d6eb4eda11827e3"
+              },
+              "candidate": {
+                "size": 12179,
+                "sha256": "2c8277ea15201642e575ca06430b255234f95030b70dae37b4cf7e192f54cb8f"
+              }
+            }
+          }
+        },
+        {
+          "object": "counter.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 200,
+                "sha256": "b318a0cd2d4e4f3c34850614870f9f51595d9719b1c5fcafaa1c2ecadfe48740"
+              },
+              "candidate": {
+                "size": 200,
+                "sha256": "d205792a1af6493d0f5b664385d663427a5c8fac3e998b039bbc73fd8433bc11"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5782,
+                "sha256": "0794136087449fc1557e04b7262870e0ca3d57a490949dd4666588249a8efe67"
+              },
+              "candidate": {
+                "size": 5782,
+                "sha256": "237841868db85af0b9c35e8cc9d46524f21fb0bb135d750597e78ce24c0fb092"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9477,
+                "sha256": "f70c888b62016ba89d9239c7626553382260c04e2bb00d52cc2643fa39f91c53"
+              },
+              "candidate": {
+                "size": 9477,
+                "sha256": "d0d936e43fa7f17a4500779c6caa24ec1cf5d56f0d562bd6ed63d5f027201cd5"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10205,
+                "sha256": "582972282b6a2eec64a1687ee4dadf42dbab81fcbdad3e047391d38df4040cb7"
+              },
+              "candidate": {
+                "size": 10196,
+                "sha256": "b48554e7b003279d719aa1d1eb3d9c3786e27baec4ca4d0c3ecd516be864f2ee"
+              }
+            }
+          }
+        },
+        {
+          "object": "ctl.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 23828,
+                "sha256": "1dfc818d25801ab77ac6e3c1c1ce1c4bf2e9e5078c251c60ae11a29f829d7197"
+              },
+              "candidate": {
+                "size": 23828,
+                "sha256": "2ff7c878689464a4adda6589bb7978005bb23422fbc834be346266a1734977b5"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 8013,
+                "sha256": "9a5b179a503f8f71945028bbb47462f172c552ff3aed869992878573e22180a0"
+              },
+              "candidate": {
+                "size": 8013,
+                "sha256": "79bca79c648b89586bca8843604d3d1b3b505747336cc8b213acb7dd50a8d5e9"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 180873,
+                "sha256": "0049416a4575806ba9c182eff497d5c90df89b8562628a7e94e42f264762f97a"
+              },
+              "candidate": {
+                "size": 180873,
+                "sha256": "05b601a7dce18af9460caaf86efd1d91b96e87ab19df05054d055985947cfcd5"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 33178,
+                "sha256": "353f39c193fd20ea4f56030b68ceb1407fd4bc127fb54dd2f6ec8e2f9010673f"
+              },
+              "candidate": {
+                "size": 33169,
+                "sha256": "1649db633992dc806692e0a731114e783769c50dfd617621518139f050c0ab4b"
+              }
+            }
+          }
+        },
+        {
+          "object": "decay.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 708,
+                "sha256": "7b8ee3677391ffea48055b2664e8b95b7efca8bd98bd44335eb8f70128cb66ca"
+              },
+              "candidate": {
+                "size": 708,
+                "sha256": "8ec97875bd5e8f989a6d705bf8c46b3e6b225ad4a88fb153dff3d13bed8f5f59"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5724,
+                "sha256": "03c3f8207e64510dc21c1dd828741473a79c35301100fc0932c28c6f6ae32fcb"
+              },
+              "candidate": {
+                "size": 5724,
+                "sha256": "220d9d5dc1e755bf7c92ead6106a564f1f802ec0657419154bc548c4d43fbd84"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 11485,
+                "sha256": "e862613189735870d0231624e56185dfcfbe07fadf741b8c701e087322b70158"
+              },
+              "candidate": {
+                "size": 11485,
+                "sha256": "5a10cbd6e604511ab548a89baa07990a126558fac0a895e4ed05953317aa2c19"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10785,
+                "sha256": "ec9822f1855faa5c4ee8cbddb70b1015806bb27634b4b42bbccf90700a56716e"
+              },
+              "candidate": {
+                "size": 10776,
+                "sha256": "2040d952c8c59bc41887b9b55309b087310b60f42f88ea9f7916ffca1b9f5cf5"
+              }
+            }
+          }
+        },
+        {
+          "object": "div.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 60,
+                "sha256": "afa6ac5dd8b38ffd7ba66ef71ac2205dd3fa900715396cf2df60725dcbe6192a"
+              },
+              "candidate": {
+                "size": 60,
+                "sha256": "bb6da206967efa6879050bea1851ba46e81557649d1468c415ad4392e9f1e587"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 319,
+                "sha256": "ac7ead244a89edd447d453d217759cbfded141cd924c013244adf1e4297ecd6b"
+              },
+              "candidate": {
+                "size": 319,
+                "sha256": "bebd6512e1b53acb9a8d579b5b33ebab8d256529d2c3c3aada307b2981b55c12"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 232,
+                "sha256": "f6c6aa4277c319dc4558f457be218df2b8b65054c68572082885a960fae66312"
+              },
+              "candidate": {
+                "size": 232,
+                "sha256": "fdcd612af6afe191f8edc35fa7e43e6326143360eb8e83d47af3e35b6cb8a729"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 460,
+                "sha256": "541870420d492305580a5248cb08ed2a2156293944d24d4b451636e46457ebef"
+              },
+              "candidate": {
+                "size": 451,
+                "sha256": "5502eafc1981252281319ea90423cb0158e694e3601f938a8e20694547da9c6f"
+              }
+            }
+          }
+        },
+        {
+          "object": "ecache.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 172,
+                "sha256": "96f2b025810608c8a17bb3ffd4bb9e753302e0110f19735673ebb471547475d5"
+              },
+              "candidate": {
+                "size": 172,
+                "sha256": "08c36500c069138aa75069ff56de835c2930c69e706328fae37a269a5f998d4d"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5693,
+                "sha256": "cf9978c2ab31703e2c2bd12089c4aead8c5818436ad099670f525a2d4acf35d3"
+              },
+              "candidate": {
+                "size": 5693,
+                "sha256": "681d0a3c8b7c6a5918e4ce196c33482e279f7f98eb335c71057329af9b119607"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9302,
+                "sha256": "aaaeb79261685280e56c550791a83d99ba06b2cff4f88c9a14b2d1dcab0cb13f"
+              },
+              "candidate": {
+                "size": 9302,
+                "sha256": "3fcd6f03174344b88a28e6ddbe9a0f03431107398c76ad58aa4c4e83cd567efc"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 9943,
+                "sha256": "bcf598291af33777b542709348128c3baf1a384ac18098fe56006a4316267b38"
+              },
+              "candidate": {
+                "size": 9934,
+                "sha256": "4fa9ad95aa711e6d89cc8f8d07d753d7534d6b5c6181aa3b122c25141d32fa20"
+              }
+            }
+          }
+        },
+        {
+          "object": "edata.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 5444,
+                "sha256": "5be68fab8db8d50d598bda1c7162dc6a57184152003afc60f1e79e6a3e538492"
+              },
+              "candidate": {
+                "size": 5444,
+                "sha256": "84b7e310ffd0b9d6b721d7aba7aec6cda8a5fd4f8eedac2fa79a037bea928bdb"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 1026,
+                "sha256": "53774174cf03d8a60111749562a4bf00c0d2c3d2e72cf90dcd891ae78ce348ba"
+              },
+              "candidate": {
+                "size": 1026,
+                "sha256": "f9b6f2e90ae2bdf7f9a0b12a3926132cd4d56cf59baa4160a3a25164654bff9b"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 43292,
+                "sha256": "28548c8e69c19598d780b403a766f31ffa0c81b37cbb15f5e60f53fa3e0ad62f"
+              },
+              "candidate": {
+                "size": 43292,
+                "sha256": "bf73b1ca3346fd225e14c703478a3d675b57a3c699b90f05d9f7dfe77a336e95"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 2339,
+                "sha256": "ff8d96ff69d7ad9a6140e0c9be6275e09c58319bcc65db2b72ee4cdf495ae638"
+              },
+              "candidate": {
+                "size": 2330,
+                "sha256": "ae8392e06a827c5fbc31f40aed209e4e7a554a378493e6ceecd40e992a6d90d5"
+              }
+            }
+          }
+        },
+        {
+          "object": "edata_cache.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 868,
+                "sha256": "83889562a20b19db7b68c09ad199f0b7550e1f82ac4599c2c9e9f58135eec020"
+              },
+              "candidate": {
+                "size": 868,
+                "sha256": "28a36d91f5adae29ec5c5bb5423d35f1c7349799a664ca40a8eab5b22242c2c3"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5809,
+                "sha256": "5111ee80fae69e205b575781166e572299c1d541d9d2cfd8fc9efe9baf6896a5"
+              },
+              "candidate": {
+                "size": 5809,
+                "sha256": "70a374bb394aabd29dd03ebd4402845586ce38d95c114d3df1bf55848aaa043e"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 12885,
+                "sha256": "fd2ac461ccbabe17ca95819efdbbc2f4576f0c08d8fb760106cf8d47d94bc3e6"
+              },
+              "candidate": {
+                "size": 12885,
+                "sha256": "ab1303f0e542d8ad730c9078d7ca1bd5f90d4c25adb31449fd2ea019732bb4d7"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10818,
+                "sha256": "8769213dabc45446568b45cbc99e0f790514aabcd8056436a9d98aa0535dbaaf"
+              },
+              "candidate": {
+                "size": 10809,
+                "sha256": "c4a11d7bff33db915f2b23f3b06c2d52fa92973730546230da2fa935bbc7a5f6"
+              }
+            }
+          }
+        },
+        {
+          "object": "ehooks.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 980,
+                "sha256": "49ad7ca1e140b7bc33eb23f8e9dc79540ae67aceb816405ce0b6ae55821e4197"
+              },
+              "candidate": {
+                "size": 980,
+                "sha256": "880a0214110de7cfd659c55002286df06d10fd4713c0029826f777bcccd27fb3"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6311,
+                "sha256": "27b2b4cae222bb5f71f625330e7764a1680cfdd0c3ae225efc89b1b85fbb9e06"
+              },
+              "candidate": {
+                "size": 6311,
+                "sha256": "c637810f6a776f0de717d5bf780d653a6678f03e344aa071860d4184471d730b"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 13511,
+                "sha256": "16a83fbf8ec3b28576e2c72c4711543b0268d5f0f0940e036728dbf942185ba2"
+              },
+              "candidate": {
+                "size": 13511,
+                "sha256": "285798ff1b20b06e6e46b021447936cbd2f93f6ec8fc1a5cb6c217c76234da7b"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11896,
+                "sha256": "1419a2bf6f84eeb912bdcb92d49685b13204311f80d759150aff8fb343fc477d"
+              },
+              "candidate": {
+                "size": 11887,
+                "sha256": "22f586fd44a2ef85a2be14060b02c9ca5eefd26db7c42cfa1e70e14b3ef46465"
+              }
+            }
+          }
+        },
+        {
+          "object": "emap.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 2228,
+                "sha256": "e8cf7f17a99ad9c0b9d4a540071a16be02876e5ca73c092620ab2f154c39b46d"
+              },
+              "candidate": {
+                "size": 2228,
+                "sha256": "ee5bfc1a0c94700c0ae1d9e60d97246096af514cf48608d9bf9308f455cf6e03"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6188,
+                "sha256": "c3dc96ad0917d7283d8b5824bb8bb1b9db1ecb57cb6b4261e9f0e60552f22a55"
+              },
+              "candidate": {
+                "size": 6188,
+                "sha256": "1182f4801d998ebfa18e721746044511e55f313d2665ada3f028748083aa9ca3"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 25453,
+                "sha256": "af99a53d49dcaafbb3cae0e5ed2b9eaf1d374888c72cd9c862f4d63168634231"
+              },
+              "candidate": {
+                "size": 25453,
+                "sha256": "8b9f3bc6808938fe6475eeebb1f5c78eb0a81e1a84a120438b868348afa700df"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12314,
+                "sha256": "84b464b702c0e47980fda5fbba20358923a688060b4239c9d348301d2e2d413c"
+              },
+              "candidate": {
+                "size": 12305,
+                "sha256": "6b0d5ad211016ef80e0211f3d693f5280f4d8c5b19b906504abfa3d1cb7ec658"
+              }
+            }
+          }
+        },
+        {
+          "object": "eset.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1108,
+                "sha256": "cd524b5d90c2b30bdadd7721ae64c5939104dc29519a4c102806acd0db5e6e21"
+              },
+              "candidate": {
+                "size": 1108,
+                "sha256": "52a4b6b8e5b2379594479a056cdee5e6f6f69863339dfc04874a7b80920683ea"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 1401,
+                "sha256": "95c1ff4cd6e2a2320a4ac2276e2fa18dec09eac323d4414c31600c47e01f36b3"
+              },
+              "candidate": {
+                "size": 1401,
+                "sha256": "37144030a9ed14fb040ae53da1a2c9849d7bb252f73b170c3f7e078f71f1ae7e"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 7046,
+                "sha256": "5fe65ab2f36711ced682949759823051dd5b59644e7d1306440bce340240bf02"
+              },
+              "candidate": {
+                "size": 7046,
+                "sha256": "04dc32532def7fc81c8c1e3771f0143c7edb3b688a8cce68bda67d17f213143a"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 2769,
+                "sha256": "3a018284fe10e6b3f52dd70e7e2f54ea6916e21eb7d822ba34832324a1e950be"
+              },
+              "candidate": {
+                "size": 2760,
+                "sha256": "3e50c6ddd5e9c6e8d080db538fb78090dae3777036da36be47b1de57144306fb"
+              }
+            }
+          }
+        },
+        {
+          "object": "exp_grow.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 60,
+                "sha256": "c6d2511f377ae566f8999d92d5411c052ebdc700cbf3b1a59c6bc92395c2746a"
+              },
+              "candidate": {
+                "size": 60,
+                "sha256": "3ccc054e96c21eea6002a673a424d937db688954713a1814d7a47f97238703a5"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 257,
+                "sha256": "199b3b1d1a805cefd981295ae8071dc3774cdf13f9fb68a8c78a8d5612ed0aae"
+              },
+              "candidate": {
+                "size": 257,
+                "sha256": "e8549a489da2812f3ba1798f2b916f4eac4df2e89b41b02dfa77eb758553c13b"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 182,
+                "sha256": "74db3e9d31d727b32684776f43bee50dbcf95a6448891bf14744ae6ce090a441"
+              },
+              "candidate": {
+                "size": 182,
+                "sha256": "1300d52b0a7092f349a3a3d65899cabe83fe70d831650825014477453c9aa371"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 436,
+                "sha256": "d6fcebf807a401e33982fb0d65da9ef3048baaa37f8a29fe5e7ce0121cfccf6c"
+              },
+              "candidate": {
+                "size": 427,
+                "sha256": "093fc84a210afd1df015af21d1086800e8ce62ae8ff3592f6e50c11b328da9cd"
+              }
+            }
+          }
+        },
+        {
+          "object": "extent.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 3760,
+                "sha256": "7b0a2942e348dc2b2ed3605012c27837ebe61c3d5a41fef64600f2e1bf4e5dcf"
+              },
+              "candidate": {
+                "size": 3760,
+                "sha256": "78cd89a8e8011c94caaaa06240c9b2f12f3a3fa5f631710a169f6b6575b83719"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6570,
+                "sha256": "df7e132b68b5a26d5af310cb5fb33b86c2bfb25c489c2c66d23a1d238ecf7e48"
+              },
+              "candidate": {
+                "size": 6570,
+                "sha256": "d918df4af2f207d9533b4de57126afc5a5004d3951b6673681d5bed217994dd4"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 32587,
+                "sha256": "2c35e6415432e7732fe86554e258b1df7fddcbba3ee6cfdf65864359f0cc3754"
+              },
+              "candidate": {
+                "size": 32587,
+                "sha256": "f78a4757d9f903c6527c6274561346343c7cc2412628ba0c1219d48661eeb05f"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 14054,
+                "sha256": "81f34f40cab9a407bfe45b2196d2d6555bc50ea91b281c323fa856cbfaac2b35"
+              },
+              "candidate": {
+                "size": 14045,
+                "sha256": "93994b9883089addbde16114798eb2d7f8e1ff1787a0953666b655ad97966f39"
+              }
+            }
+          }
+        },
+        {
+          "object": "extent_dss.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 296,
+                "sha256": "0701d1e87ce6a32be33f8c99daf9f5b1bf17e237115d8b77ee0557de235d33a0"
+              },
+              "candidate": {
+                "size": 296,
+                "sha256": "be28a58da9466fe7a1f3b89140790d538e59084f6074f3a1e28b638024afbb22"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5840,
+                "sha256": "af86684d973789c0b4aa78dc2525a00cea7d5faada47b24b719c8c4f80bc24bb"
+              },
+              "candidate": {
+                "size": 5840,
+                "sha256": "33a51af7dc205f0250c191cd9f726c28fcb489c7b759a4e4509305a71eef1890"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9709,
+                "sha256": "71a046323f3a5fb11d5b03338a43c44ccf379b3a5d2001654fb463aec867aaf7"
+              },
+              "candidate": {
+                "size": 9709,
+                "sha256": "9f9d6c54cc9dd9babd91320aaab2b9d95ecf06c573195a95137fa48ee98fc901"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10488,
+                "sha256": "6edaff5b9d63a446d2a5e01a53279246e1e5b10153a5497d6a683d7db36f90d7"
+              },
+              "candidate": {
+                "size": 10479,
+                "sha256": "6ebcb185d4bb38f2424e074b223f5d56958bddd863532b35b0723d54cf58aa8d"
+              }
+            }
+          }
+        },
+        {
+          "object": "extent_mmap.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 116,
+                "sha256": "4b0b4d7a6b70ef6766e8e8a5b7bba334cb50d424af439b7a676469a4251e5dff"
+              },
+              "candidate": {
+                "size": 116,
+                "sha256": "b7bef30e90d3b209cba50ba46046880f16a46dabae33a07d554ca7fb6a4dc166"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 164,
+                "sha256": "caa07e31c6fa2ffdb10c8cdbcd1cdf70b5519fc19b4463a9b24e34c524985b03"
+              },
+              "candidate": {
+                "size": 164,
+                "sha256": "b284b9c00f83316a756f768e91152a5978dc29880ba8c5599135780715c004f3"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 286,
+                "sha256": "02ecd8904194c94e1f99c230534c9a95206438e1e937bb59172bdcfb159d6e4e"
+              },
+              "candidate": {
+                "size": 286,
+                "sha256": "1aec006393fce9bbfbad942f32ec9b48f31f880c7b624e15b61705a249a810ad"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 478,
+                "sha256": "a37d4657283edc40635355108fa0a25191cdf22e4c98ad06d851beaba1db2944"
+              },
+              "candidate": {
+                "size": 469,
+                "sha256": "5c498209d9921fa8c4fd69c9c94097b8792eb361871e8afdb259112844e56cd3"
+              }
+            }
+          }
+        },
+        {
+          "object": "fxp.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 184,
+                "sha256": "08ffacc420e732c518f42aa923b96eea587b1f9ac1ab4ddd85d84d04db4ddc0b"
+              },
+              "candidate": {
+                "size": 184,
+                "sha256": "1f814f7b382c8bbf99d4a63d11b760742c2d77a0aeb1dffc123159cf933cb007"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 412,
+                "sha256": "dd84fe2a61b60f652cb16febe474ea6b1bd3a3780b9948d072b834c9d8986813"
+              },
+              "candidate": {
+                "size": 412,
+                "sha256": "04743eb6f1eb3bbc8397e51078b347f4041b2463e88da66b5a7bdac5fed23c5c"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 713,
+                "sha256": "73fcc12345fa2c3ee55d0bc5c6f1f0f6677441ccd67e0f789c64013c95cde7b4"
+              },
+              "candidate": {
+                "size": 713,
+                "sha256": "738f702fd5a783f16b713c5539869455d736a7a02a69a4af322f15a155442ccf"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 631,
+                "sha256": "918852e7d7666162118385a2334a9f8798cf0ddf7d1c0e8c0ea7d5c7dd4c9497"
+              },
+              "candidate": {
+                "size": 622,
+                "sha256": "392a88c2c899104103c07d9e602272e1754cb31d02303c1816ec2db7edb46909"
+              }
+            }
+          }
+        },
+        {
+          "object": "hook.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1024,
+                "sha256": "88535a1b7aba8412305db333336a0c631b7ce1212f63505b2cd7a4c1d4bab8f6"
+              },
+              "candidate": {
+                "size": 1024,
+                "sha256": "160c52cec827a87f42ad7fa1c962d0857dd3bdb009f50bcfcdf886d4bcb7a383"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 2909,
+                "sha256": "13aeac72108b56adb988b6e91820698cdf24f537d78929b43692223cf1159e05"
+              },
+              "candidate": {
+                "size": 2909,
+                "sha256": "bef73fdcfd79bb952c3b66d53591465de4b20ea426394c889d779959577f655a"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 8232,
+                "sha256": "5af02a8ced3e50dcbc864cd5755b9689711620cf1f103a0fd4179aec3ea8d3f2"
+              },
+              "candidate": {
+                "size": 8232,
+                "sha256": "04c5ce40a4649d1cd7c45e7f19ead5e24bd89fb122a2c0a2f5d5f785d8b819c1"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 7591,
+                "sha256": "c8d03088753841d92f37f209a23baa095464fc33ca269d2872b05c7bab1ee8ce"
+              },
+              "candidate": {
+                "size": 7582,
+                "sha256": "087961809658b124e7b94040835cba1ab7799d7360ad41d2687bec03cf749abf"
+              }
+            }
+          }
+        },
+        {
+          "object": "hpa.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 2220,
+                "sha256": "40bbb9c0bff386bfcb9396615bea90a92e8fb2482cfdf5e7958ac6b2486ef8cd"
+              },
+              "candidate": {
+                "size": 2220,
+                "sha256": "034c6b676745e635deaf1d62c93848bf27d63d093fcc20b115408733a239e928"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6041,
+                "sha256": "dfba0f9852f47646fc49a91987700c08b36fdacc712d3c91c10885cf83e418b0"
+              },
+              "candidate": {
+                "size": 6041,
+                "sha256": "dfc298778bfdc73431d2f5e29729dcdc77e7e518c71caa8f312f47248fe915ae"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 21052,
+                "sha256": "ef8c519bf0384dd07ba7682fbfa048445e8c7e389fd5e985b12a658e13ff07e8"
+              },
+              "candidate": {
+                "size": 21052,
+                "sha256": "bcb2ba25d0480dc82d587e64cb2b7411f1b69ae6abc07f150f704af1f623ae53"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12342,
+                "sha256": "87fd62e07ce5f20358655d0179b25c4326a35cd3cbd04e96a9b824aab7314439"
+              },
+              "candidate": {
+                "size": 12333,
+                "sha256": "041a0126c763e6f6e82a3d41cadd0d97b69c577ccc96500f16b27e7602f017e5"
+              }
+            }
+          }
+        },
+        {
+          "object": "hpa_hooks.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 312,
+                "sha256": "fa77992aedf4a3de0fc2296c530e619368e55d5dea053c92e51d32b5dc91413b"
+              },
+              "candidate": {
+                "size": 312,
+                "sha256": "0fc2f47537e0d40d7cf81c9f17747ac5ecbf7672344f3d30348f3c4b378a16de"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 319,
+                "sha256": "990ba371a12a4151a1dc4676f0a4dd2aba4b020c7bbcec584c2a4470c11ebc90"
+              },
+              "candidate": {
+                "size": 319,
+                "sha256": "167f69137b473c13ce3611269af834baca3368ffe582396e16dbb29aefcbe999"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 785,
+                "sha256": "f82ee1645ebe65c439340cfa8764cbe9e10707ba634cf1ce8b24b68f118a3213"
+              },
+              "candidate": {
+                "size": 785,
+                "sha256": "fab04d1d33c8551a077934e9d2b77a90d8834bd9510f02b89a51068b528f31f7"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 704,
+                "sha256": "e31d381470b461bab75664f32093063dc2e511d6a08cecb61e645e6feeffe644"
+              },
+              "candidate": {
+                "size": 695,
+                "sha256": "d3bc95737b8be872a2eb84d83b1085175534be8c3c3cde20df1528ccefa95266"
+              }
+            }
+          }
+        },
+        {
+          "object": "hpdata.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 3556,
+                "sha256": "7eff4c9a59e9158ce33be941adbc07b86ebf5d3e6056547745c72d6c3022c77f"
+              },
+              "candidate": {
+                "size": 3556,
+                "sha256": "e8603e445a243531ac7b85732ef251c16d1537a20d9945c0042077a0e625e834"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 821,
+                "sha256": "8dcbae12ce7c27ebea1ca6b813bb2eb9e2cf6c0e6844f64a7958320321a2107d"
+              },
+              "candidate": {
+                "size": 821,
+                "sha256": "1759db7aca12bb397ab859630923637a24497845269f037e6101a21a38145882"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 26304,
+                "sha256": "f59916b37b7e7fb5526dbd46a9b575e9483397fb51c9b4fb82bcb1503235c30a"
+              },
+              "candidate": {
+                "size": 26304,
+                "sha256": "cbb32cdc74e004fde3d3fc291114c66278fa0750a2da6ed93bf0291e21333e52"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 2751,
+                "sha256": "e39512ca3f3156137efdd1e8fcd689117dcfc0f0b3598c4a3a1b7f95462fb637"
+              },
+              "candidate": {
+                "size": 2742,
+                "sha256": "dbf43c2773d0956518b28eff4d3ff5a73ac1cecc738fff68ff985709a43ce2c8"
+              }
+            }
+          }
+        },
+        {
+          "object": "inspect.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 812,
+                "sha256": "21332c03e583bf5be591839cb59a425a303a8d1853361940c076e67efb00b388"
+              },
+              "candidate": {
+                "size": 812,
+                "sha256": "b98bdb4b5b3f731ac63c07ef83f44fbc9d12fbe392f750d681ab0c7c28e60592"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5983,
+                "sha256": "9a06d8bb74af8d32d8d888b4f7717c6586fa00841b79ad3a320bad8a21b2eb60"
+              },
+              "candidate": {
+                "size": 5983,
+                "sha256": "df8d0b6b46e66bdbf1b85078b7fb735556b0597b10491273273031f110852753"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 12696,
+                "sha256": "8c7ae36b9c03e3ea069dbd3e47fba224ac20a87bfa8fe171c6c0ae15630d5814"
+              },
+              "candidate": {
+                "size": 12696,
+                "sha256": "4f2472665f6ae1dff8a66ef749a8a432ab8b23a9a57214d6396d5248b951de77"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11072,
+                "sha256": "8ceab7744685d376c93ec33554f9780a7e73ed6b2f84945866b3e045ae76737f"
+              },
+              "candidate": {
+                "size": 11063,
+                "sha256": "e49a65bdef89db3afccc5e38e1dea22801a29460609c285685ee79a5f32963c9"
+              }
+            }
+          }
+        },
+        {
+          "object": "jemalloc.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 16060,
+                "sha256": "84a6693ea9f7b652d622af4f2289262b8b5ac18a3a60a3e37af03e3425739710"
+              },
+              "candidate": {
+                "size": 16060,
+                "sha256": "32c5ef1166b1c19f6fafb4018c2222d386320daf5acfe184fd55efb9f7a16939"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 7556,
+                "sha256": "cee89c7318a585c8f4cd2d33df0becd51f6b4d0c4084713ab9ca533b3fd213b3"
+              },
+              "candidate": {
+                "size": 7556,
+                "sha256": "1515d5a3e189eed269f00db2d162315ff6c0c404cf3d2c934e76acbcefc7adf0"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 107292,
+                "sha256": "42efaf9205eda9d0e8cf7fd69a1658b938216016e1fefaf096add54aa49281f0"
+              },
+              "candidate": {
+                "size": 107292,
+                "sha256": "4f2e2606862af11caca1c034291330c3354ae0d933a7999c44542e5d7efc58f9"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 21362,
+                "sha256": "72bff16e63418ed815066073e0b084fb6895965189167d9756ab62135410e507"
+              },
+              "candidate": {
+                "size": 21353,
+                "sha256": "d03c59e2fe94f8b4edc2fff0dd52956c2c49968a8eec4722606af5f7481e00a3"
+              }
+            }
+          }
+        },
+        {
+          "object": "large.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 2936,
+                "sha256": "5d426370b606f9330e557c669eb8032a0fa440df1a1407ec27a1483cc68d790f"
+              },
+              "candidate": {
+                "size": 2936,
+                "sha256": "e7fb7a812edaba4fec47b90ed8c0d35b21f1b84f3653f6daae6a0c059b587831"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6782,
+                "sha256": "1f00f5f0d091485009d43eb665092bc68d8dce71434f43e513e54654626b0506"
+              },
+              "candidate": {
+                "size": 6782,
+                "sha256": "fb73a995406bf83f5998469d5e976b36d16dbca814a0256b118df9e50c16f6a1"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 22971,
+                "sha256": "15e51cef47607bed19b42cffd657c4a0ad588d580f3732b78930f42669859f71"
+              },
+              "candidate": {
+                "size": 22971,
+                "sha256": "52713899c6a93c0fb1016e74b878abbb4c94ea3bf82bef86f6f48c6fd8c0955d"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 13815,
+                "sha256": "8b28a580cf9301bccdf68f133e027d5eea1e41fda4f718e2e5e90bc45993d561"
+              },
+              "candidate": {
+                "size": 13806,
+                "sha256": "03ff462d467a28c99d9ef3c69fd2432284990a7e8bb8b89535b2b3661958991d"
+              }
+            }
+          }
+        },
+        {
+          "object": "log.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 200,
+                "sha256": "5fb7ff85e196dc3f30b6c4b7ed625d7f84a3056f9f4e9a4ba59752dde6fcbef0"
+              },
+              "candidate": {
+                "size": 200,
+                "sha256": "97fc7a4a0508ef35ef5ff50776dff4c548779751ac74e8cfbb395c67e6eecea7"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 381,
+                "sha256": "850d307f68cc1cde915f2f01b1c4f81f01571990491f223a04b89fe1d517d8dd"
+              },
+              "candidate": {
+                "size": 381,
+                "sha256": "e36b3d583f6427097dc7ede7486e25ea0ce087aa067768dd3cd4131b81b2e2e7"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 727,
+                "sha256": "6e6ac39cce5922997e943a5bef33a30cadca88c85334392523d7a41c944fd10b"
+              },
+              "candidate": {
+                "size": 727,
+                "sha256": "d916638aef384d0cf9a79ef80c73205e96cea6270d8601ba03acdd85333ceb27"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 824,
+                "sha256": "baf4ccaa153a9be476c28119b6bce71c639a6de4e11d9f9392ef44678b73b2cf"
+              },
+              "candidate": {
+                "size": 815,
+                "sha256": "08a65057113246ad67a598918ae2f748149447c902aee01047a575e85e771f2f"
+              }
+            }
+          }
+        },
+        {
+          "object": "malloc_io.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1348,
+                "sha256": "5a5605eff7f51343e1338e3ec95e4761c46a1b29965787130212b4a10216585f"
+              },
+              "candidate": {
+                "size": 1348,
+                "sha256": "b28d12d94538d4e7f4ceb1e1fb0f7a2a953055499466125bc134d57d5cd3bac4"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 620,
+                "sha256": "c32a45e2977ad7f2570f78f5919594c69225ba7b43c62bdba933ab148f8f0fd6"
+              },
+              "candidate": {
+                "size": 620,
+                "sha256": "254bdc5e81c25a8e5afd3a335cc0f067a429a5dcbc80998d80f7beef8c42ea6d"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 5046,
+                "sha256": "c862eaa779f4071e0c004bf0f97bab9b045e5a06e3aec5745e64a02b8c30638e"
+              },
+              "candidate": {
+                "size": 5046,
+                "sha256": "56b4f60c1828d9f171e0940cccb8bff2c456e917df1f510c7b5680ca281186d2"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1848,
+                "sha256": "2316a9e6bcf9e4082b9c1931057f3b6f07a3e67d9febf436996ab329700d6842"
+              },
+              "candidate": {
+                "size": 1839,
+                "sha256": "78acdaf2973f9284e987b552d705f975bfb921b25898621d41a959994d9cead2"
+              }
+            }
+          }
+        },
+        {
+          "object": "mutex.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 628,
+                "sha256": "faf87e4f13d3dac2ef1b563dd66bf3e15f5ccc41c36f88d12ac9dbc085de497a"
+              },
+              "candidate": {
+                "size": 628,
+                "sha256": "e1bbb244f384a71b9d51546ddf45f54b3ae18e00ea61ada9a7fb2bee7388a171"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5867,
+                "sha256": "9111a06045a3aa4134b5259a34c50c1f86fa5eb817570b3bc553c954a36442c1"
+              },
+              "candidate": {
+                "size": 5867,
+                "sha256": "4e76f877749b2c83aef2b0116993e50de6aba5f29ba5f6ea469c76522d2ff45d"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 11076,
+                "sha256": "65cdfd1d737b8f1bb6dbea4ad2c7694be313dc3a0d745881c6ad366bbe2fc9f7"
+              },
+              "candidate": {
+                "size": 11076,
+                "sha256": "cc748b2f1eaad13cab7a05c313db9f3d4f92ba29a7413ef76813585be58f3a39"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10709,
+                "sha256": "99279d434d7ccdb28b816859fdfa6e886f98a033c73f6b58827565c56b201cc9"
+              },
+              "candidate": {
+                "size": 10700,
+                "sha256": "4ba943c5be38a6d70e32c9b973fe28ea7de99d089bde2ce64dc5cdddaab00b41"
+              }
+            }
+          }
+        },
+        {
+          "object": "nstime.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 892,
+                "sha256": "a618028b94f47afc69077c9f731eb626258219d190207d641fd42acb9cb6ea65"
+              },
+              "candidate": {
+                "size": 892,
+                "sha256": "3f0e36d6d0d0de16e5692e5c89ea6fbcac93aab4e41d4516d68803053c8fc789"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 531,
+                "sha256": "0ce3d9bab1cda9dd14335c4cbca379e38881c93254fe9c5af381543a95719b78"
+              },
+              "candidate": {
+                "size": 531,
+                "sha256": "65e988c88cced127df3589f54a64cb83cac5958b03f3f863d044a1d7c3ae60ef"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 2561,
+                "sha256": "b6bdee5a0f3ee21f456b3b13a9fa1a0ad0237fb6edf2167d4503e19ae0295e59"
+              },
+              "candidate": {
+                "size": 2561,
+                "sha256": "faa7f0623e4e535b6ae7a8942a39a189b008fc82d38eae445d6e58daaca5feb1"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1558,
+                "sha256": "7210a6a81312f71e513905310f888f8ffb89e8680c4abe7f0f89f16fc6992813"
+              },
+              "candidate": {
+                "size": 1549,
+                "sha256": "08d6b86184194bc2595a7317ecabbd4f5a1eec04fff7eb65d55b574be1cd9094"
+              }
+            }
+          }
+        },
+        {
+          "object": "pa.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 996,
+                "sha256": "55647e617af7f7dffa530409058687a2184f39a87a189e4703c6861ff8a37ef4"
+              },
+              "candidate": {
+                "size": 996,
+                "sha256": "0372de2055686125b771ce48e8efc028e643cfdfcfbede777a02085ed258175e"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5898,
+                "sha256": "a298b748a9a6389e9fd3a5c2533e679197544d49a67c454b895cba285152b798"
+              },
+              "candidate": {
+                "size": 5898,
+                "sha256": "648113e25df823fe172f9b709776ddb706eac314b69e4805f40dd4ebded35f0f"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 13379,
+                "sha256": "421074560a3c8e28e1a4399040fdf2bf18e2a1ebdf069bc57c0311bc63ef54af"
+              },
+              "candidate": {
+                "size": 13379,
+                "sha256": "31d295c2c6aeec842f302a9e752ae963272a6f92642f5d4d7a130e4322ef6439"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11217,
+                "sha256": "bafcc70c8b03416f624959951c32febacf57d770ee90c2f033867b4939ccd299"
+              },
+              "candidate": {
+                "size": 11208,
+                "sha256": "bea2556b2f2996842de4106d3ceccda0e381131d9870ac0027cad6e384e94c48"
+              }
+            }
+          }
+        },
+        {
+          "object": "pa_extra.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1216,
+                "sha256": "70f00dd28238875fc5e79645077466c9222bb194ac9b8117e13442e3ac244d26"
+              },
+              "candidate": {
+                "size": 1216,
+                "sha256": "ef749e6edbd94e2556edfa2d7bb0d44d66f22f50a2b7a6c75f92beaba87de24e"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5983,
+                "sha256": "5c342db2e356ba320ec1b3419ab3dc7e9573917640d95e9e81c0af00ec6b9ee9"
+              },
+              "candidate": {
+                "size": 5983,
+                "sha256": "b76b232a773bf7d3a99d10b87da0f8b4991a0b1f1bda6438769cab66703c0b19"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 16266,
+                "sha256": "b134e70ce7c274e3c414617380f0bac620b1588eb2715cdb7dbfd798bf790958"
+              },
+              "candidate": {
+                "size": 16266,
+                "sha256": "cde38fb4f8e63c65ad038d1ad0c3092d7e336a6158d2d216a6ede24c76f98bcd"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11493,
+                "sha256": "ff585aedd1438d3dba95359758e83541d2a4304cedf4856e9114a3b0d3913de3"
+              },
+              "candidate": {
+                "size": 11484,
+                "sha256": "d4182ab7604b6fd27b40eee21433bcde09ca65ca7ecb7a411df4238eb1416b2c"
+              }
+            }
+          }
+        },
+        {
+          "object": "pac.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1748,
+                "sha256": "787322f93e219a69af578f2143a3e0ef5015b4622c81aaf96e8e58f7c694b567"
+              },
+              "candidate": {
+                "size": 1748,
+                "sha256": "a720be84a779917b56d64c482cf4fb1347dadb9cd76c381f91871828e762f796"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6164,
+                "sha256": "820d0e2a3d5974c42fa67435122bc156f1ee20de904f86cf70a94a3af20474cd"
+              },
+              "candidate": {
+                "size": 6164,
+                "sha256": "83b0b5e1f16f9cfa6b1d9f16a05859f7bed1209e429237b6ad18508c187a88af"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 18194,
+                "sha256": "7fb582b721bff3679e381dc92db3bdc9fe3ef1eee3e45400c4df7f0603953d64"
+              },
+              "candidate": {
+                "size": 18194,
+                "sha256": "fe368c59501423c01f87f315560ab2da24b7149904a266562a9a9a982b877758"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12048,
+                "sha256": "968037417e8aea0e4c0ec3c7e6a1dd26ceae78605d389b66b304a53edf0d1426"
+              },
+              "candidate": {
+                "size": 12039,
+                "sha256": "f1b5955daba327dc87dffb9af958994713d7045e43340af5fa6566c69f33bea8"
+              }
+            }
+          }
+        },
+        {
+          "object": "pages.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 956,
+                "sha256": "86ec0a5afe34db49516b6e9a2163ab5df492533e138df0c9bc61e70c85b5987c"
+              },
+              "candidate": {
+                "size": 956,
+                "sha256": "972e5d818b2662fc9ce71bb3792c5cb001707c0ad83d825ed743a5e992c2b5e6"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 536,
+                "sha256": "20c9aaa5c8d6f402b12c5ed1c8be58a4c10ce87655bf7f1542fb9a04e968d8fa"
+              },
+              "candidate": {
+                "size": 536,
+                "sha256": "e8de7aa99c45be80080cebc875a80ce30005c9d3e6fd2c81a17840bf6a4ed667"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 4066,
+                "sha256": "5374a8b1e03a37a208ca8cd2ca6b9a20e32103697e37a9fb5b50a24634f8c110"
+              },
+              "candidate": {
+                "size": 4066,
+                "sha256": "ef3f620247f181289fc9159a81601567cae8a7a3d39bb365a245d29d3abae08d"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1535,
+                "sha256": "131945eeb852c85fd37e5873ee5bb8b0ae9ba83b97e3e75a4822357b1a84dec3"
+              },
+              "candidate": {
+                "size": 1526,
+                "sha256": "e1bd60a022a39fa18279937861c00cb6a14e5f6501d0a6ea9098c139fbcadc73"
+              }
+            }
+          }
+        },
+        {
+          "object": "pai.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 200,
+                "sha256": "f28bcf089856706dce1805f95e4c322c135999e34744e6724ebd1e102f1c06f3"
+              },
+              "candidate": {
+                "size": 200,
+                "sha256": "5820ada0a3be9a7156d873f8e8ef48d8a14e91c0e48e2d5eb2330d621119f19f"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5693,
+                "sha256": "81e0adf3253ff532b2eee48498a04994861792d10bb46d379243a34a08ef711c"
+              },
+              "candidate": {
+                "size": 5693,
+                "sha256": "a6b59a982dac0fa560c3c5ee90888724643eb40388c6c0a2e979d48b305d0f00"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9817,
+                "sha256": "171b462d71c7cbc3fd547c58796d7bc61eb6143746d49333931346e135d77d42"
+              },
+              "candidate": {
+                "size": 9817,
+                "sha256": "4c805831a9275809495dc3e5f3ce3ec1b7373c966af3a874cdf874480556fd28"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10089,
+                "sha256": "15f8050276c5000b575462ad91563eea3e0c679a812e4c4f32721bb3ea1a3da9"
+              },
+              "candidate": {
+                "size": 10080,
+                "sha256": "0662be52c5d7cd213dc6811b2085ad1b98432dfb22df4e2e56940bddad6534af"
+              }
+            }
+          }
+        },
+        {
+          "object": "peak_event.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 468,
+                "sha256": "599d65b02ad8dd4959540bd8f616a281c0e5341b6e1e25055883b0e7c9b69f83"
+              },
+              "candidate": {
+                "size": 468,
+                "sha256": "f395620bb2f4cc33c71eb9c75738bb2df2efdcfdf976d94fb0d0139590d4366f"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5751,
+                "sha256": "13028864b51e1fb7beefdf7be437f241cf11d89c5693380c6239749c7a47122a"
+              },
+              "candidate": {
+                "size": 5751,
+                "sha256": "0c88564ceb26fb12b72a122825f99a679a179f9902ad59f03be92c23ee6e50f2"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 10450,
+                "sha256": "da508929231659910b040bd1cb6ffee2b570096915657e3ca4a05cdeb89a6c72"
+              },
+              "candidate": {
+                "size": 10450,
+                "sha256": "e56b88ab3800693bdcbe8ec7c09c496e67d2c937fdb4ea2f45921926992ed7a8"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10283,
+                "sha256": "7023733b302136482e45f599880846736f36f0696fc7944bdd6f077b6eb2f729"
+              },
+              "candidate": {
+                "size": 10274,
+                "sha256": "e54ef2c0540d5be18dea4058a8652749f6a31d513bb807a10989555a9c3e84b7"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1976,
+                "sha256": "f513ad00739312b41c45ed85487fe8ef459d93cd74eaaea8572cd208ed34221e"
+              },
+              "candidate": {
+                "size": 1976,
+                "sha256": "40bb0b9f6aa7663979759015f76643098d2399bf034e7e9eede4c36dd2cf49d1"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6304,
+                "sha256": "1862903a43e9c9d38bd6450b577c03c30f4fa06919691cb81f80db999e47ba6a"
+              },
+              "candidate": {
+                "size": 6304,
+                "sha256": "0d107005180e2eb45eae2ef356af196f6911f1486a28216feca43333fcebadf1"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 14565,
+                "sha256": "7b911bcec7c87137d4b94a85b01ce0da6fb2aafc9a7a83b571123d1993d4b75f"
+              },
+              "candidate": {
+                "size": 14565,
+                "sha256": "22f10b89929df714f51d18d0cc2b7a75a3bf0a6031171ed7b73206f46420b338"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12828,
+                "sha256": "efac09e37748ea3dcc62484f75ec0df8b22fdf43138d6354939314efe1e67f5e"
+              },
+              "candidate": {
+                "size": 12819,
+                "sha256": "af6db20ac01b020ce648f84a1193cbdddfaf487b475d842c7277591fdce42a70"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof_data.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 3280,
+                "sha256": "17d3b660ed2c2e81b2c91f3699bbae0795031d4f6c83ed2b0f196cc99ea4004c"
+              },
+              "candidate": {
+                "size": 3280,
+                "sha256": "e0ee5ce9b21e4b94ed12ab20e4a98c2332694f41485d60e71469cdfc203ba724"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6891,
+                "sha256": "d46510650755b590202350d28312e21197b85b542b92809c1073dea8b544a972"
+              },
+              "candidate": {
+                "size": 6891,
+                "sha256": "0ae271116b6e4a73f2192a64523fd3f3a933d98d3a508bb08322a5a7a1724f31"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 27315,
+                "sha256": "cf09cea9c2cb5842ffab1cae375038c4e999ca1f1c68281443a8839c5ce5cfb2"
+              },
+              "candidate": {
+                "size": 27315,
+                "sha256": "b77b2f2efff226939db77e5780ca316dbdc67128aa4bee952d06be9572ea24c6"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 14098,
+                "sha256": "47fddd51fb22bc52c367302125d434fd307a96ff00d2b7f0b94b37d1e0efbf77"
+              },
+              "candidate": {
+                "size": 14089,
+                "sha256": "4c7acd56e23051610d13aa3ce8d41d29b4ee06168d24af77df8dcdb29d058a13"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof_log.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 424,
+                "sha256": "5f8b8937ad03c2b2a017e5c189598326d1dcf9f24c2cc6f2c39c358f4b38f554"
+              },
+              "candidate": {
+                "size": 424,
+                "sha256": "068c0389c59704cfea98d43ee2df32c2c742210b5e7c1107dc2f994ad7d5f238"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6679,
+                "sha256": "b638d2ea2d52cb26dbc7e7ffaf9fee02f8784271b5ad91e7daa0da0c66be10d4"
+              },
+              "candidate": {
+                "size": 6679,
+                "sha256": "b03508336bf20931aa279fcb67e947a220a6982d7b9f78ff6b75707c3a701a03"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 12191,
+                "sha256": "3a251616f34cffb66c6582cc89be9e1851b22d55b26f2548b8642c59ec504287"
+              },
+              "candidate": {
+                "size": 12191,
+                "sha256": "f6b773212000637f00ad6f37057a293f621b18beb6bec5dd8b80e5e0c88e9674"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12317,
+                "sha256": "9bb79c4de3571ca1ddc2fa8d65d0b14f26686430135c47d361ef5b756a789064"
+              },
+              "candidate": {
+                "size": 12308,
+                "sha256": "4477b692f4c0729c41b2e5bec329a3d6fd2230f00fabbf0057e06e7857d3f816"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof_recent.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 452,
+                "sha256": "7492592a105ebf8f742cfab33a17fcfaaa957791cedeb60975b5f8146322563e"
+              },
+              "candidate": {
+                "size": 452,
+                "sha256": "854c12e4cba6326f695b7eedf58d4e5825c766ca91a7fad098b071b92a985296"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6420,
+                "sha256": "6f236bc98bdc70e14c9bbc6cd2e438b5a292d734758db0a20bf12e371bef81fa"
+              },
+              "candidate": {
+                "size": 6420,
+                "sha256": "faf4fa5a6834d4103dfa7576712123df7ba4a46c028110b52ae77e8cbb2f989f"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 11575,
+                "sha256": "30b91ca06f7647af6acf96bd169157919b47870b57d1b6ce27410b0fafb06619"
+              },
+              "candidate": {
+                "size": 11575,
+                "sha256": "62589dbb41ee9e089abaf5ec01803fa3d7bbbddde5956d45b265bd5f0f6a43ae"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11778,
+                "sha256": "e3781b3b86b5f026f741d402ecec6122c987fedf3560e8685805455b1b99ed6a"
+              },
+              "candidate": {
+                "size": 11769,
+                "sha256": "f4b3ecddb3960565a3f1e92a7019116347dc842b81d97d325a2f94397eff1cea"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof_stats.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 200,
+                "sha256": "ea045b357936367c622b49fafae5160bec1a35b95a7ff74b2dfcbdecf7069fca"
+              },
+              "candidate": {
+                "size": 200,
+                "sha256": "5c7e80e53d4a9500657e3658d36df7f0140b9cc88c126793ae3c0892a24482a3"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5809,
+                "sha256": "6cd9aeceb482240f412df8dd25b0cc912fca995185fc55fcc671b46985c134f0"
+              },
+              "candidate": {
+                "size": 5809,
+                "sha256": "ec16eb23f779c18c7d9cbd865a6c6f9018a71a075122ce1fa1da621cc776ab4f"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 9449,
+                "sha256": "f2d385a234eb2a37eb819f86dd8b4d2c682346b5966e593fd99c32108e47b666"
+              },
+              "candidate": {
+                "size": 9449,
+                "sha256": "01953c9d0c87b0e9c756e457036afc90ddaf8fb188cc70333eda9bbf868fbd80"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10230,
+                "sha256": "234810a8dd7b1d0d5d0d56dd7297307b0a5784cede5d263b2b960cb7ece215ab"
+              },
+              "candidate": {
+                "size": 10221,
+                "sha256": "d904a83be2aa31fb6e8f6fdb856a6796ba41a1f86a23afaea882e778fa4624f2"
+              }
+            }
+          }
+        },
+        {
+          "object": "prof_sys.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 904,
+                "sha256": "c5e685b85c175c2c934c79ba913c58aa72bbe39a9bef4ddd492a11c405d5bc04"
+              },
+              "candidate": {
+                "size": 904,
+                "sha256": "db06ec434f02b913e684b6be07685fb92f6c7ec8433fab9b0d4df646082e9209"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6362,
+                "sha256": "435556b78748974318c1e68979f0f3eacb57ab51c510f4a14280a9e75b183e81"
+              },
+              "candidate": {
+                "size": 6362,
+                "sha256": "f77eefda68f48a7d4c2a00a972fa4b9d0b75553eb44310d729b22a60edb715fa"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 12718,
+                "sha256": "b1c0852f86fd15217e07844e27ad16d4c7a492d80ec0b2cee7ec6ddaceb02f03"
+              },
+              "candidate": {
+                "size": 12718,
+                "sha256": "363a658c1547b5b03f7b9ceaaffd8abf69b43041a0d36d55596c9ceba7a123c5"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11676,
+                "sha256": "8b7338fe44ba293b80d911c13eae189afdcca2686d7d588fb724d382eb77b0b9"
+              },
+              "candidate": {
+                "size": 11667,
+                "sha256": "f0388446eeb02eeb4cc151917ee09db93b9bf666367d123e496e81ab120b1a76"
+              }
+            }
+          }
+        },
+        {
+          "object": "psset.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1504,
+                "sha256": "94f881912a955371235412e983fd4305db27d4324e76a7dc1eb5c834b9a651dd"
+              },
+              "candidate": {
+                "size": 1504,
+                "sha256": "a810ba6640144f6c389aec78f296b44d65f6b96cf3afbfab02a589f20d636fe8"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 968,
+                "sha256": "c4484abef722909e84c161b2772031a3175f5dcefbe6db76834e5ea3f8282dcd"
+              },
+              "candidate": {
+                "size": 968,
+                "sha256": "183707f1490ff5fd22aec2082e0cc79a0568faf96e8a5c18d6faa3a52e138268"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 7478,
+                "sha256": "db2276694d2e99d4ff2760cb442d228044793efb853038add77cdd32bef81846"
+              },
+              "candidate": {
+                "size": 7478,
+                "sha256": "01ef61974204b0e3c5deaffb3eac5d32f8bfde20be3ba63e1624bcd43f969014"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 2552,
+                "sha256": "da15af16400abbfaed877c6519e26e33c8481b931fd73707337af126cd7109bc"
+              },
+              "candidate": {
+                "size": 2543,
+                "sha256": "aac3fafcc7c59d3fde80f5f4ae873e5dffa5de3786c1d5a6ea9c7e88beb7fd5a"
+              }
+            }
+          }
+        },
+        {
+          "object": "rtree.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 488,
+                "sha256": "7c69e86ba7b7eeeda12cc56f0b371a47927edf2091b73749422a4168c8ecfdb3"
+              },
+              "candidate": {
+                "size": 488,
+                "sha256": "26798944bcd4ea0970318306d18e8543fa50e4143c473c7a12c9bb5ff0c81e55"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5867,
+                "sha256": "cc0c8bcb131ff949038f9809904e5a3e594eae0fa31ad6a7ada87c41a71610ec"
+              },
+              "candidate": {
+                "size": 5867,
+                "sha256": "e9da54ef7216f3958a4571872899b8a8bc75a339b5de127a2d3a700836c2f5c2"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 11203,
+                "sha256": "2498cca3f5e31fdfa523e28e25c5cb8fec2d2bc2868f736d0d8cfaef7cfcc4ad"
+              },
+              "candidate": {
+                "size": 11203,
+                "sha256": "5781ae3b8abcc1c87c21feb5030f7123f41d5c0a1f7306763ac71e3e18adc320"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10609,
+                "sha256": "5dff27bf14054d6665c8088e956997a49070df6d1e88f5360267d395354a369f"
+              },
+              "candidate": {
+                "size": 10600,
+                "sha256": "be9e73d6a0580a32fe5dd45a2a5f59a349dd55b09deb2f785a0c0f4d8b01f71a"
+              }
+            }
+          }
+        },
+        {
+          "object": "safety_check.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 180,
+                "sha256": "88ce5b2b3cf84005e48ad8efcd12c39073e2f91daa1b93ce7b734eef605c5b5e"
+              },
+              "candidate": {
+                "size": 180,
+                "sha256": "677e74cf4c3a93a33661a2c790d375b736314609e4f9d3f1aa587d8b7feddf10"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 350,
+                "sha256": "531f45bbd801b9ea231aa694a7b7ddeff3aae2df9b054b9ba247bd1ccd4d0c6e"
+              },
+              "candidate": {
+                "size": 350,
+                "sha256": "3e7912518679c755e9c86b393a60d06b8a4ff1f867077198ead5181ac86abb51"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 528,
+                "sha256": "c94678d37d5c2dab1e51da26282cd8e6c7030ad3f082b5714472a1801f8beb1f"
+              },
+              "candidate": {
+                "size": 528,
+                "sha256": "8dc0fadbf88b720f2751fe7cae39604d78f333113b97acf3270e7c07a37d74d5"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 641,
+                "sha256": "419bd0a4730577a28e826849434cb889a7b6ff26c0348523d6d38fe8cbc78ef6"
+              },
+              "candidate": {
+                "size": 632,
+                "sha256": "4144cc65a0b7539e7f6abe10b0e43db3b4063e12d2c08fc2f3afc5393aea5569"
+              }
+            }
+          }
+        },
+        {
+          "object": "san.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 716,
+                "sha256": "31f70a28bd802b643f6604cf23cca7ec51cfd58016b09b7dff132b124e1114c8"
+              },
+              "candidate": {
+                "size": 716,
+                "sha256": "02036ed388afc0a06344bd0cebf21ebdf2b4ff75d3998aef3ce65171e1cb7cd9"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6021,
+                "sha256": "92f7d095e502b6b01892edb5df10bd75e426d23a9c7aa5020a8fd498aa2172d7"
+              },
+              "candidate": {
+                "size": 6021,
+                "sha256": "5eb32ed0c6d81c1ffc648a885d64fdcd667bf15599dc2c9975d7a77d4f140cab"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 12110,
+                "sha256": "cb01922090368c6cc3019f388b0d82e5caee3b51f63ec869c9eddfc5f71b2764"
+              },
+              "candidate": {
+                "size": 12110,
+                "sha256": "fa1c2b1de43cf36da0d08b9d4faf74cf5708c3b1c35ece0f6e40d9636499e44e"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10880,
+                "sha256": "824c27a08dc0a337e5aa28a12064490002b4e6b1c21d74c18bc886dee87ff706"
+              },
+              "candidate": {
+                "size": 10871,
+                "sha256": "b4343973326ec2ddaf46b4cf772eccee4331dbba7a0f044f1540bffd816d1b2c"
+              }
+            }
+          }
+        },
+        {
+          "object": "san_bump.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 272,
+                "sha256": "1b3431022db64c22fb147239938c9ec06efbcc108f2e74c0a037edb4960cb9c5"
+              },
+              "candidate": {
+                "size": 272,
+                "sha256": "bff82565bcb0075361025fcd3c1ca8a42281c335a482f82021cca96032e563e7"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5816,
+                "sha256": "04b69ec75b8602ecbba912191f35ce0742daaa2d4af4dc1db891096cb02017bd"
+              },
+              "candidate": {
+                "size": 5816,
+                "sha256": "633b2a73bf88a2d45038c889e9500ed6b3795450082f3955fa7bc3dc8c82adf7"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 10251,
+                "sha256": "b871162d96e3b9177577b947650d1c41f77b5d4a72784a03665a6323e8e218f9"
+              },
+              "candidate": {
+                "size": 10251,
+                "sha256": "dc4b044f06d3f2d00a2a328d7b2fe5713785e0625bd883ec302c6dd4afb2a3dd"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 10368,
+                "sha256": "f7122b0f47118a658a2b7a10a9de3cc1087784e1fcdfd1976b413e9105c0c4cc"
+              },
+              "candidate": {
+                "size": 10359,
+                "sha256": "07214227fd66ac23743bb19964a06df984753f338fd0260d3a3182259320a215"
+              }
+            }
+          }
+        },
+        {
+          "object": "sc.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 388,
+                "sha256": "e267d8765aaf43aab2753ae330d3a2cc2e8e43a10c9c3c31e927de21463b8499"
+              },
+              "candidate": {
+                "size": 388,
+                "sha256": "ab76cbbc258e71f166c8825091d98b302c1dc6a3a397b688c9fe8d4dafb85c41"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 443,
+                "sha256": "86576d15638e17d9cb95bea9fff54bbbfe740127f5813a28da38fabeafc176fa"
+              },
+              "candidate": {
+                "size": 443,
+                "sha256": "9f7f19bae76d7b5f8fe422db8f42958c62e8eb1e428dea4e7463007a1794167a"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 2479,
+                "sha256": "9cf147cabb160fd53a88f421edb547aa0d533b84f8e484ffb1340a68316becdc"
+              },
+              "candidate": {
+                "size": 2479,
+                "sha256": "5f8ad4e14ee80ac806ca794f8bd42ea95a8484ae1f007d095393698d16071dc0"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1087,
+                "sha256": "388f331ab13aff4c2861380aee7b36130dca9c16cd2ed7cd0666b1f974c3210d"
+              },
+              "candidate": {
+                "size": 1078,
+                "sha256": "ab3e134425d49da0c99333705d907c9c91c037c0f6178ed690db69988c811e64"
+              }
+            }
+          }
+        },
+        {
+          "object": "sec.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1456,
+                "sha256": "9d623977065b82571b7cf4af98a52cbd5c57daea975926b2f29cc3314a3f95f6"
+              },
+              "candidate": {
+                "size": 1456,
+                "sha256": "013695cb8f7f68a91324c57e90544171e9ec2185b48d96c6d1d3a2dec8364726"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5867,
+                "sha256": "7e9971f28e5ee3477c95c707190e54d0e36e5a84055152f0aea3db44beea7b4f"
+              },
+              "candidate": {
+                "size": 5867,
+                "sha256": "0af31df87ca58248614f7f87fe116cf1bd66ccd22fa672298284ef37cedccb5b"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 17385,
+                "sha256": "8c254392800675b2de2b17eb361efffcae38287d085bbb3b3241656ecd424051"
+              },
+              "candidate": {
+                "size": 17385,
+                "sha256": "d1885eff1dbef3e8ad2c53b576b0e5854a41c2d46ab99dce3601e6f58a3b3424"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11287,
+                "sha256": "24e6721d8b15eb9575b52c35aa92e4b8a6fd38e0c21a18fc7b8bc76e58926230"
+              },
+              "candidate": {
+                "size": 11278,
+                "sha256": "263489efdedce7216e43a021f0b6900801db21c3a194265ae94183acacf26db2"
+              }
+            }
+          }
+        },
+        {
+          "object": "stats.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 12968,
+                "sha256": "accbc53ba67ce8007afd54601c7c3ccab3d7e17c1c9cad969b4f92252f49cdae"
+              },
+              "candidate": {
+                "size": 12968,
+                "sha256": "22d07d2fb8d22c2327645454db7580d7c52660a87f7f382cf46e7131bfe0db46"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6710,
+                "sha256": "8cfc6a94dc4ab59a6f50d768ebe4f1af27257e43aa4bd08ea12195ce94072b88"
+              },
+              "candidate": {
+                "size": 6710,
+                "sha256": "4d9f5b972a53715fd69406728f7038e5113926d9000551556a9ea4d4822b545a"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 95009,
+                "sha256": "72fcdfb63ceca93bb7bd1567e91dc41aac3e137d31d62432db31e0dba6082262"
+              },
+              "candidate": {
+                "size": 95009,
+                "sha256": "92d687b0e58830a95a229ec8501ed2d10f9089ea8c7c3ed76c667ded2e5cb0fa"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 22742,
+                "sha256": "7b4457667c150616d1b7591ae4ffa24bef30c19475d33cb91d48ae7b5d364f54"
+              },
+              "candidate": {
+                "size": 22733,
+                "sha256": "fe8c65d5111f9d53a24a7a659645c0d5419c4f7d40b450b67f2d1d3a77a83c85"
+              }
+            }
+          }
+        },
+        {
+          "object": "sz.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 532,
+                "sha256": "ce0fb9b223f27b1230636c3a21cfbdde163232138ef6f6aa55170377011f8dd7"
+              },
+              "candidate": {
+                "size": 532,
+                "sha256": "457b4b8e08ebb632bed9b2acf793e8a064be6f6038399220cf3bae2f73aec346"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 536,
+                "sha256": "1602fbd8c4e81293973976b8fb979a7c8bc682479963511ebd761f1feec2b532"
+              },
+              "candidate": {
+                "size": 536,
+                "sha256": "69f22598301bacaa803cd2279db8d04be8e32dc64bc58a7b3b3defbe8c9ece78"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 2219,
+                "sha256": "51b91eec6c7f4e485d734fbea2ae2cd96ad817c96b4db68d634685c1527b4f07"
+              },
+              "candidate": {
+                "size": 2219,
+                "sha256": "8febb98191f2f63d8e6c4d04646bdd8cd16a24c01f501906afb0db4946b3eb86"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 1130,
+                "sha256": "74190fba5039afde9929f33f625fa2fca9f4cbc717442828627c9a4db41aa795"
+              },
+              "candidate": {
+                "size": 1121,
+                "sha256": "fa9dd7d008bc53f334022a4dbfab65d3be0a76218bd47fd86450326021cb23cb"
+              }
+            }
+          }
+        },
+        {
+          "object": "tcache.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 5900,
+                "sha256": "1b155599da4cee7893367177e28439f53b2687fe7971fc9ce232ed35b293321e"
+              },
+              "candidate": {
+                "size": 5900,
+                "sha256": "36b16c2f509f34910b9172b7890debdf7db643b923d65922650d2ad0e709b210"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6717,
+                "sha256": "bdd3565562544e199e82b9b9128b8774002c6732e88630487f0ac26f0a6142b9"
+              },
+              "candidate": {
+                "size": 6717,
+                "sha256": "c43c05fcd4054adccfb1854b00041a2e705e5ccf6f44d78c335165e2f0c3b077"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 40386,
+                "sha256": "ef9288468d7bfa840cf131a6dd12c72d8a8f90430ef76bf9dac08717963ed08f"
+              },
+              "candidate": {
+                "size": 40386,
+                "sha256": "be7726ddbddabeb14cce9323f717f053bc65bb5f9699bb3bc86d1705bff2890b"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 16029,
+                "sha256": "564cedd8b17fb36519721cbf5379acbbf99cbdcd42381ab748caa3f4e201b4ec"
+              },
+              "candidate": {
+                "size": 16020,
+                "sha256": "718c9dd416aae196cef48639e80f77d6f320f50839bb1ff0324164c1c0532004"
+              }
+            }
+          }
+        },
+        {
+          "object": "test_hooks.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 88,
+                "sha256": "036c9ab2e9f841558e9c0655650e0847db8af53484f2a5084bc9c4a89f9dcff6"
+              },
+              "candidate": {
+                "size": 88,
+                "sha256": "7b8b99cb81956d778685d29f1e5618d0bcdf7ac4dbba3612e3b36507d8b27c3a"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 89,
+                "sha256": "c71c646d78e822518a3061faa846756e3523244cbf144cd6fb44a2966c6a2344"
+              },
+              "candidate": {
+                "size": 89,
+                "sha256": "209927b6ce9b27318b64b4ca5ce4a3f7ea3b2bb62c493e0072d2bbe3c9b25e0a"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 379,
+                "sha256": "a09d0dff620a9fd8d9f2a4eb1896a44a6f9fba9ea25209144872d73a52dcd8ab"
+              },
+              "candidate": {
+                "size": 370,
+                "sha256": "906bf5091d846b53f7e5cd6155ceb6b8d426533bff82c8f3c678a6094f31658f"
+              }
+            }
+          }
+        },
+        {
+          "object": "thread_event.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1248,
+                "sha256": "388dd3d006969c96e88ccadea956b89604afadcae0e259247c06191b7e4c1298"
+              },
+              "candidate": {
+                "size": 1248,
+                "sha256": "aa92a7b92c7d4d0a3ff6d565324b8e340a969c3804a3aa33abd5ad12c0cdf659"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 5782,
+                "sha256": "8e9c174dc722fe43d9b067c5000807380d646c3beb42e46e515ecb9bdc747c05"
+              },
+              "candidate": {
+                "size": 5782,
+                "sha256": "a14dfbf54227608044321efae57187695ea0aca084d746e4d59152cb8344a240"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 13789,
+                "sha256": "f2a54f3445bc27bb5a8aec5e1fac200e4a883d7ecddcc6a3ca34c1d4f5e962a0"
+              },
+              "candidate": {
+                "size": 13789,
+                "sha256": "e49ed6da41cbb7bb49e75950bbf240eae3f9df729d483a5520ea4c03b6b457a5"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 11573,
+                "sha256": "e0ea8c692896e7aec2283959a801cebdbafa0fc5cacf30211a08930527474cd8"
+              },
+              "candidate": {
+                "size": 11564,
+                "sha256": "b05105b3dfadb67820024c883b8d99d7aed75ddfb5a470e8ac262ab8187206a3"
+              }
+            }
+          }
+        },
+        {
+          "object": "ticker.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 60,
+                "sha256": "677a04c090ec29d8315ae0173bd5ed65e1af52574b32f5c5cf81077c375aaa71"
+              },
+              "candidate": {
+                "size": 60,
+                "sha256": "d5ad81801ca5163e6fb5845fa085ea0abbcfa47926d72c9fe514ced79ec2af26"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 133,
+                "sha256": "f02a77fe41b0f2308005e3572b6f9ec96fa18804d48566a5077ac781108d028f"
+              },
+              "candidate": {
+                "size": 133,
+                "sha256": "cf1656d88a80b2a8ae69dfda4ae07dbb850928524e3df9d50622e89c90b39fd0"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 102,
+                "sha256": "ba917b104722ce07fdf84052ad4a3afd0d33dbcfa6729075772df23db5288a93"
+              },
+              "candidate": {
+                "size": 102,
+                "sha256": "6620c24b5bd27f3b51a89f9279664cd88f5041c9b008fa9f49b14a2db74dcb0a"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 379,
+                "sha256": "0e0aee6bb87af169e829de63982584cdadf6d21842b43f79c8fcaf2b69504636"
+              },
+              "candidate": {
+                "size": 370,
+                "sha256": "2994aaa8b79df355fb1562dfac4a6326ea842c63f5daf3df5fd9713b0adc0a56"
+              }
+            }
+          }
+        },
+        {
+          "object": "tsd.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 2592,
+                "sha256": "11387e091bdd363b7ec59b409806a0b7c70be3669a908f45843cf64dcd42b4cd"
+              },
+              "candidate": {
+                "size": 2592,
+                "sha256": "49c13ef6e6e313d5f1452e885dcaf53f9ded6c28bd5bb233575a402106ea6dc6"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6157,
+                "sha256": "fdc8c52d3edde535752db84fb6e2bf41feb869ac57c8295d13d197a556eaa370"
+              },
+              "candidate": {
+                "size": 6157,
+                "sha256": "7b77e0805dc933b9fb1e1e777482ad14405ccf0f28d3f47f352aa9b8cc42d657"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 19420,
+                "sha256": "517c59edfe633811d10df241cb9fbf4904921972deee3c77eebd263458384717"
+              },
+              "candidate": {
+                "size": 19420,
+                "sha256": "262378285ce7fdccd777953413633d563e55cd64004a2535c02ca4191af57932"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 12361,
+                "sha256": "89ca77c464e501fdb0e4ef54c17c20e1c70b10907e23618982f5ef1b448d992e"
+              },
+              "candidate": {
+                "size": 12352,
+                "sha256": "c7d5a7d24137271745803ab0ddd40b5abc169299c772ce5a14b8b6d23c5e4271"
+              }
+            }
+          }
+        },
+        {
+          "object": "witness.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 520,
+                "sha256": "72771d5b8b19a3ca4abc18454c0eab30d7185f5ba48bfc8f1211a213ec82c22d"
+              },
+              "candidate": {
+                "size": 520,
+                "sha256": "fc3f4fae1ca1bd16e2a7051dda1b15f34291a156be7ab7dfaaa51d07e66bbd75"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 589,
+                "sha256": "95bc8a122fb28aaa468acf1d56442506d1d3763608c0c83f32e0d87558101a73"
+              },
+              "candidate": {
+                "size": 589,
+                "sha256": "ba361ecbbaa18afed0f7a914563becd51dab2ac7dd73b3d696228818ef15747b"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 1803,
+                "sha256": "af94852eab85c583579de6d7fb5cee8d9fdc98f9351d3a17ce9384f3a0e19b82"
+              },
+              "candidate": {
+                "size": 1803,
+                "sha256": "1d01cb746ed242085047732267275464c078400382f269516596dfe72be9b20e"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 2148,
+                "sha256": "fce6429382d8c30d9b3a347f02df175163ac9f85ca0e4cf3ceaf0bc8c2f9af21"
+              },
+              "candidate": {
+                "size": 2139,
+                "sha256": "5777bde22f990f0f632a176d4ce97609aa623390bdcf8201ab1d3568624c5065"
+              }
+            }
+          }
+        },
+        {
+          "object": "zone.pic.o",
+          "sections": {
+            "__DWARF,__apple_names": {
+              "baseline": {
+                "size": 1940,
+                "sha256": "33d8fa6f7d51864a740f542be4329f2094e962cbbc9e62543057e10253150417"
+              },
+              "candidate": {
+                "size": 1940,
+                "sha256": "1543b1eb5c76d5dce25311ee894c299c18a78c5bd642be78e149f8432109db6c"
+              }
+            },
+            "__DWARF,__apple_types": {
+              "baseline": {
+                "size": 6833,
+                "sha256": "a43bcf024a41770c6f18151a42fe7e91ea6dd61f3ed3d846c824c121f6c2720d"
+              },
+              "candidate": {
+                "size": 6833,
+                "sha256": "546758c49ccf84146685948ded7bd90861662df2bc8552e0322f3a54274826b7"
+              }
+            },
+            "__DWARF,__debug_info": {
+              "baseline": {
+                "size": 17780,
+                "sha256": "2c00c8fa15bb006f36ddf9fd7c79d743f28556a27485b7780e171a889f66fe21"
+              },
+              "candidate": {
+                "size": 17780,
+                "sha256": "6ad94985e934e7f6659d5ffa0540bf687723f46d05fd55248028274e19901c46"
+              }
+            },
+            "__DWARF,__debug_str": {
+              "baseline": {
+                "size": 13001,
+                "sha256": "33670c9d70367314bc7170e870dccca213febd2986ce4119291653ef0c1c5c0b"
+              },
+              "candidate": {
+                "size": 12992,
+                "sha256": "8a5203b2995b3b9bb0cfc0b11068768035fe2e7325accb5158057a8a8c4bb37a"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

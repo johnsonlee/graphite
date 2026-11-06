@@ -24,6 +24,9 @@ use aggregate_state::AggregateState;
 #[path = "grouped_with.rs"]
 mod grouped_with;
 
+#[path = "collect_prefix.rs"]
+mod collect_prefix;
+
 pub type Row = IndexMap<String, Value>;
 
 /// Hidden row key carrying cross-graph provenance (sorted unique graph ids as a list of strings).
@@ -661,6 +664,13 @@ impl Executor {
             Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
             None => false,
         };
+        if projected_filter.is_none() {
+            if let Some(result) =
+                collect_prefix::try_execute(self, ev, &rows, patterns, shape, prefix_caps)?
+            {
+                return Ok(result);
+            }
+        }
         let scan = super::scan::ScanPlan::build(patterns, shape.where_clause.as_ref());
         let hop = if scan.is_none() {
             super::hop::HopPlan::build(patterns, shape.where_clause.as_ref())
@@ -1798,8 +1808,9 @@ struct AggCall {
 }
 
 /// A collect used exclusively through literal, bounded positive slices needs only
-/// that prefix. Still evaluate every argument and merge every graph's provenance.
-/// Any other consumer keeps the ordinary complete collection.
+/// that prefix. The ordinary path still evaluates every argument and merges every
+/// graph's provenance; the direct scalar specialization may omit evaluations only
+/// after every source certifies them total. Other consumers keep complete state.
 fn collect_prefix_caps(shape: &FusedShape, rest: &[Clause]) -> Vec<Option<usize>> {
     if shape.distinct || shape.order.is_some() {
         return Vec::new();

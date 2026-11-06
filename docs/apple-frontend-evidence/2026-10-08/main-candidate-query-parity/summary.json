@@ -1,0 +1,151 @@
+{
+  "diagnosis_only": true,
+  "performance_measurements": false,
+  "main_commit": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+  "graph_paths": {
+    "signal-ios": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-candidate-graph",
+    "swiftpm": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-candidate-graph",
+    "signal-server": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+  },
+  "binaries": {
+    "main": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/main/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "37f91ca120e8435b423671196fa24fe802a7d725056a4b1d1d4a2887052fdef8"
+    },
+    "candidate": {
+      "path": "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6"
+    }
+  },
+  "catalogs": {
+    "main": {
+      "data": "/Users/johnsonlee/.codex/worktrees/19db/graphite",
+      "loadMode": "MAPPED",
+      "count": 3,
+      "totals": {
+        "nodes": 446763,
+        "edges": 238013,
+        "methods": 39170,
+        "callSites": 187447
+      },
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-candidate-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:37.774347Z",
+          "nodes": 331236,
+          "edges": 153346,
+          "methods": 30832,
+          "callSites": 147002
+        },
+        {
+          "id": "signal-server",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:37.798639Z",
+          "nodes": 54571,
+          "edges": 55420,
+          "methods": 3763,
+          "callSites": 15032
+        },
+        {
+          "id": "swiftpm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-candidate-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:37.789229Z",
+          "nodes": 60956,
+          "edges": 29247,
+          "methods": 4575,
+          "callSites": 25413
+        }
+      ]
+    },
+    "candidate": {
+      "data": "/Users/johnsonlee/.codex/worktrees/19db/graphite",
+      "loadMode": "MAPPED",
+      "count": 3,
+      "totals": {
+        "nodes": 446763,
+        "edges": 238013,
+        "methods": 39170,
+        "callSites": 187447
+      },
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-candidate-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:38.595533Z",
+          "nodes": 331236,
+          "edges": 153346,
+          "methods": 30832,
+          "callSites": 147002
+        },
+        {
+          "id": "signal-server",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:38.619667Z",
+          "nodes": 54571,
+          "edges": 55420,
+          "methods": 3763,
+          "callSites": 15032
+        },
+        {
+          "id": "swiftpm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-candidate-graph",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-10-08T14:08:38.610818Z",
+          "nodes": 60956,
+          "edges": 29247,
+          "methods": 4575,
+          "callSites": 25413
+        }
+      ]
+    }
+  },
+  "failures": [],
+  "cases": [
+    {
+      "name": "all-graph-node-census",
+      "parity": true,
+      "main_rows": 3,
+      "candidate_rows": 3,
+      "main_digest": "f21cf7dabcb79f1855bca3082aed47b0fce8354510888d8c31fba1f421035b1f",
+      "candidate_digest": "f21cf7dabcb79f1855bca3082aed47b0fce8354510888d8c31fba1f421035b1f"
+    },
+    {
+      "name": "network-message-call-scan",
+      "parity": true,
+      "main_rows": 3,
+      "candidate_rows": 3,
+      "main_digest": "92ff150ceaf74b2dd1d44770025f661f36186f3232dd5ab90efd1faf8373cf34",
+      "candidate_digest": "92ff150ceaf74b2dd1d44770025f661f36186f3232dd5ab90efd1faf8373cf34"
+    },
+    {
+      "name": "literal-call-provenance",
+      "parity": true,
+      "main_rows": 100,
+      "candidate_rows": 100,
+      "main_digest": "01ca18a0b8ea4ea1d655579b19553699b3cfc7984598e0491c80dff264cbd221",
+      "candidate_digest": "01ca18a0b8ea4ea1d655579b19553699b3cfc7984598e0491c80dff264cbd221"
+    },
+    {
+      "name": "field-type-inventory",
+      "parity": true,
+      "main_rows": 100,
+      "candidate_rows": 100,
+      "main_digest": "6d42d8021b55e1593507d3a27527bfb81c1c80cbc2c56459acf40bee71058308",
+      "candidate_digest": "6d42d8021b55e1593507d3a27527bfb81c1c80cbc2c56459acf40bee71058308"
+    },
+    {
+      "name": "shared-wire-literals-prefiltered",
+      "parity": true,
+      "main_rows": 12,
+      "candidate_rows": 12,
+      "main_digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+      "candidate_digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99"
+    }
+  ]
+}

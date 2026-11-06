@@ -1,0 +1,2588 @@
+{
+  "passed": true,
+  "comparison": "332c0d8 source-equivalent to 0818 vs current; changes exist, NOT exact fact preservation",
+  "allOriginalEdgesPreservedAfterNodeIdRemap": 14661,
+  "sourceFileCount": 181,
+  "sourceTreeSha256": {
+    "CommandLineTool/main.swift": "3871ac074b0a78c0f22998b61546c17b4bc18988c38eb068505790758d79741f",
+    "Sources/Arguments.swift": "9e45dbdd0fbae00a85495417871577272cd375f6a0555addd973a8ce3a8a6624",
+    "Sources/CommandLine.swift": "94fb7ac06f658018f7996245451c6f53fa1ab8229783f48fcb44b9d995c28ead",
+    "Sources/Declaration.swift": "67b0e20a1faf17a81d9247a756d5b528b36b63dcc2d600ead2e91af0f47ba6f0",
+    "Sources/DeclarationType.swift": "34bac58d01e285d1a2cb92b049f3c7d1463df1009b393703413f6b6f5da04eb1",
+    "Sources/EnumAssociable.swift": "7638841d504da16bf33ba5f39329d84fc1356526e9c6e55324288cee4407e057",
+    "Sources/FormatRule.swift": "8baa8b07ffb85c8390871522432e00491296a0d446676e6e2f83b1a091aff8f1",
+    "Sources/Formatter.swift": "b591d8f51fed6b6b5432927524d7b69881fc07a0e6f9ee89f55eafd5847be924",
+    "Sources/FormattingHelpers.swift": "334e8246c15d11792298aa26d01b940c0c8151de4965d050d123199ae037506a",
+    "Sources/GitFileInfo.swift": "1168c077d5aee7644348389e48fb8a1a9ae741b4739a17bb661bc6690029d782",
+    "Sources/GithubActionsLogReporter.swift": "72066f224f595e2c8a04dc30fb51484cfd5879d1924642159374849f4dc4b8b3",
+    "Sources/Globs.swift": "db95843103dbb859c4f466a394b4c56264d8592b8eb517dc412fbfe77fde4859",
+    "Sources/Inference.swift": "030542ed86fc3297f07fd5389e312f58b8d4556a6c69195d89363b07dba9a3b2",
+    "Sources/JSONReporter.swift": "2760fa2ca3675710040572fc3c8fa3b90bcab13b310bc1f94f1a2b460b7bcb22",
+    "Sources/OptionDescriptor.swift": "1f67132e1bb6ab1e93b2cab8075f6e404732b8a0a52f29794d20c34be10ae658",
+    "Sources/Options.swift": "cac01ed1b75ec7108855e37b22f444738bf581c1dcb0e323da298962cbd14256",
+    "Sources/ParsingHelpers.swift": "1eb4154608201e00063e8f485bddacd3494eee771e60073469f6c32c7aa7148c",
+    "Sources/Reporter.swift": "ca17062f234ae7b98612340d1c883327d65bed1214b822ba6e4037d085f2852f",
+    "Sources/RuleRegistry.generated.swift": "ffd53c94da06f6a501f05ba632109785f32a4367f1f97991f6dc0a5c313be890",
+    "Sources/Rules/Acronyms.swift": "ba8fb3a0d552d15888d08b5e3bf9ba8a0a27bddeefb40c83d02666a68cbdcb83",
+    "Sources/Rules/AndOperator.swift": "3478a329fd6d453a8247adc7eeb4d6d73511c101aebe25f9f55a2edc020ef887",
+    "Sources/Rules/AnyObjectProtocol.swift": "7033cce0dce3a910c52ee8897a469b864cd9398775e54d2da48a4a4ad3f234d1",
+    "Sources/Rules/ApplicationMain.swift": "20a316f1430eaefda1843e238e69673fba87817d83fe9a9b57ff2c3c964af3e5",
+    "Sources/Rules/AssertionFailures.swift": "8efbeb8304d986bb93157a00262ad489f03b3fe98f2797cc145f0c5215b676c8",
+    "Sources/Rules/BlankLineAfterImports.swift": "c1896a91c1ab9bba8fa277ee097a9859a01d80ce1434beb1ab149a9e655792fa",
+    "Sources/Rules/BlankLineAfterSwitchCase.swift": "cf060be0991107edaf3ac9196b85b61469a6b4580aa453e2cfd39875e80e066a",
+    "Sources/Rules/BlankLinesAfterGuardStatements.swift": "16a3322cb5207c19c329c4db847214d624277029e1d830afa5140124997cbc84",
+    "Sources/Rules/BlankLinesAroundMark.swift": "063bbfa6c5a42a08d06a118d99147ef354b1952c6db3013d0b35d363e3b828e9",
+    "Sources/Rules/BlankLinesAtEndOfScope.swift": "65003a36a40e960cd83e521b14849fe4866149be0cbb656899a493b3e55b7f8d",
+    "Sources/Rules/BlankLinesAtStartOfScope.swift": "300cfc98dbad3a9204b2e0caa358bd0d36c205cbb3b1212100404b2fb6814582",
+    "Sources/Rules/BlankLinesBetweenChainedFunctions.swift": "f89f9aeb95227575e6657d35bb022fc0902dce1f342cc690a14de70d2a4fdc38",
+    "Sources/Rules/BlankLinesBetweenImports.swift": "4302d655483b0812e64f921bff269757a5af1fa2d095f885555970400c2dbe18",
+    "Sources/Rules/BlankLinesBetweenScopes.swift": "fbf14351159ae6ab82113c831d7726b9666e15ae451d0d77b64c114f0f3c2b10",
+    "Sources/Rules/BlockComments.swift": "287033da56a372a99ea762a1ebc31a53abc78bd3305b3edb40818b3cdc3c4e33",
+    "Sources/Rules/Braces.swift": "65a220260bf42ab8b9a1ebaf3e4881f059f7504d2191fffd8d6f1e0437a59eeb",
+    "Sources/Rules/ConditionalAssignment.swift": "7b144faf0eb07ae7e698d76ed98acbbed34c45a24d79868656a0b8e082c28ab4",
+    "Sources/Rules/ConsecutiveBlankLines.swift": "2a761f1c577eeafd7e06ce6afc7d17a790a8ffaf2fa84537bc3dd4787698d38f",
+    "Sources/Rules/ConsecutiveSpaces.swift": "b5ba2a7a39b786916e1745ab43501ba7926fbc68ec7877ac5f5ffe0f46493ff8",
+    "Sources/Rules/ConsistentSwitchCaseSpacing.swift": "d6fdf7316b2107ca159025bb30c2c66528ba3f202a3ffd0709d0412af96a74ca",
+    "Sources/Rules/DocComments.swift": "fb39dc49dc621a0b2e86824299c04efd1990887889a0208376b5a1b12a4a140d",
+    "Sources/Rules/DocCommentsBeforeModifiers.swift": "b84238d5d1ad3e4eb9af57b1cc523be43c9e776ec0a42b059d4345ce3e90e095",
+    "Sources/Rules/DuplicateImports.swift": "962a6d998ffb1855ec7df3ce93582194e50fffb1bc7aa1366f7ef1151ddbd3d7",
+    "Sources/Rules/ElseOnSameLine.swift": "55211961f175367c391b47047be1bedf26ea483f18a45e7685ddd1ca8404f43a",
+    "Sources/Rules/EmptyBraces.swift": "f0167b2ecc1db97cf185f3c022bae2e019ec23cb4fb4b64ffff99b3bed2639ae",
+    "Sources/Rules/EmptyExtensions.swift": "aaddd767b2f723628f7b7dbed3da9f01de87b4ae92f6efcb1c591cc9a8496bf3",
+    "Sources/Rules/EnumNamespaces.swift": "ad7e66b49aea306b1d25690984de063731ee9299166561d89ff6821f440336d3",
+    "Sources/Rules/EnvironmentEntry.swift": "5fe0c3b0483b5ac464496cb3aa6df45844487cc49ac742bd3374cf908e16f332",
+    "Sources/Rules/ExtensionAccessControl.swift": "0a8296bb66877d32b3cac71ee8de8e0334f84ba8abad1b589e2116749acf00d4",
+    "Sources/Rules/FileHeader.swift": "1e8d7f32476180b9237777d558b633e8891aff243f7336e0804f6c3212ee3f89",
+    "Sources/Rules/FileMacro.swift": "1824c88ef7aba27e878c292c2e28a37768ce618a590ab995a904ede179482b11",
+    "Sources/Rules/GenericExtensions.swift": "c3714a16ecda1c33ba81f4fcbe6ca72b2f3391e4d49c47e8e1030480eb7ae22f",
+    "Sources/Rules/HeaderFileName.swift": "7636270fb0affa699345baa418f27bf4f74d59a6f5bda631fb62b6224f5a336c",
+    "Sources/Rules/HoistAwait.swift": "775209a8ab97a175214b3d9572a2dad5984126f4f2033a296ff32f373590f856",
+    "Sources/Rules/HoistPatternLet.swift": "a7b5c7016dc0e8d2388b9ea5c9302009660efdcc36442330a57909e95a61bd49",
+    "Sources/Rules/HoistTry.swift": "80753952480225150deab03e7691cfdfd236caeb98e22a78d2ce164e0de4e5dd",
+    "Sources/Rules/IfExpressions.swift": "f3261f81a5b8761cdd55035e9d66a5d897bb84402787f52f0f2878b9f8d58304",
+    "Sources/Rules/Indent.swift": "e3c5c4061b72f97c545aa0942f70043597c2ea61280b17a77fa83feba2e21e05",
+    "Sources/Rules/InitCoderUnavailable.swift": "cc92d46774b6472cdb18457e7fe0ac42bd083f1697dd54e9d611afc518e311c6",
+    "Sources/Rules/IsEmpty.swift": "50324f9b49e144e6913031ca45036a141d6db2c224081c085a37a26c82493f4c",
+    "Sources/Rules/LeadingDelimiters.swift": "916255224d90d92bea2b6274c7104dec48585dee6cb6783bbf01033734a30874",
+    "Sources/Rules/LinebreakAtEndOfFile.swift": "885ee983de01fee8ce99cb21835496638b54563ef2da6315a73248e5935e4051",
+    "Sources/Rules/Linebreaks.swift": "4dfad127f549cccd5218d695c0c0d2215f4291ee750e37fc75ffece49dbe2e5b",
+    "Sources/Rules/MarkTypes.swift": "23cb862b6ad3cdd3ad70ba1f7194f9a56582f42ef1845c8f0166964c4dbcf5a7",
+    "Sources/Rules/ModifierOrder.swift": "be73610b69451ac687c2b7ef722a5cf3173ae01e680a6478cec9b2a971e85521",
+    "Sources/Rules/ModifiersOnSameLine.swift": "76ff2c8ad91cea04efe3b53a9f0fc639d3b4b2bc5bf2be594793b03ff0cc0ebe",
+    "Sources/Rules/NoExplicitOwnership.swift": "9fbd4ece30d719e83cf20d553fae372fd36eeaefe884a9f9d786b33c0cc72e01",
+    "Sources/Rules/NoForceTryInTests.swift": "3934404e0cacada74120d0d31d891f42cc84936db0497912029526134d38d3de",
+    "Sources/Rules/NoForceUnwrapInTests.swift": "ff7370eeddae3f84aa01fc0e8700cf5f0e3cecb02d417781d135de9fa2204743",
+    "Sources/Rules/NoGuardInTests.swift": "fc95f958c1a87ae64f7e89ae1a40a6e83981500cfba49cbee967d41d27a6209f",
+    "Sources/Rules/NumberFormatting.swift": "e8e1e911c973c0710bbf9f40803f51a903b13c0349281db99afa7303d181e8a0",
+    "Sources/Rules/OpaqueGenericParameters.swift": "990459f663344af02f95d2aabe15b5a63b38eb95c95fe12472ca825ce125b9e4",
+    "Sources/Rules/OrganizeDeclarations.swift": "7a562a2a18f6fea445229fc291dcd13c8f61eec2c6801697f75cef509e21d962",
+    "Sources/Rules/PreferContains.swift": "3ddc29f46254b41506cab946ce97a080ed0f56d5425db36cfb34cf4a921c2042",
+    "Sources/Rules/PreferCountWhere.swift": "148bbab752d855347f8450022b8ae16516389f85bee1c768d2ef105cdb056399",
+    "Sources/Rules/PreferExplicitFalse.swift": "a43d021636097a7cd6cf7be3abb9d80b4200b08b1ab1a89c9fba943ab5e6a935",
+    "Sources/Rules/PreferFinalClasses.swift": "1109606c410823aa3b58eba6f3b342679df9cdeca70b2bc46a24ff5e01dbfd57",
+    "Sources/Rules/PreferFirstWhere.swift": "b4e428139888985d39e569127f2dabe16d0a0693be356aa29004d7b3f3853832",
+    "Sources/Rules/PreferFlatMap.swift": "05228ba92918f62360c48b9ed3d2e13bbeb5a5a3a69f8ef41df3794f83d42dfb",
+    "Sources/Rules/PreferForLoop.swift": "dfc52579671fff119ce35801d28a83dad32bfd206ba709fbb8139c039ec4f1df",
+    "Sources/Rules/PreferKeyPath.swift": "1117e52a2193d4c5a6ecc2a7902c626cb1bed7409f711dd9018600c6d8859f58",
+    "Sources/Rules/PreferLazyMap.swift": "cc2955a58a6b7f1918d0f72b57622ef6afd04081fb8d15ab22362aa9ff602fa6",
+    "Sources/Rules/PreferMinOverSorted.swift": "32d75d52716fabb622e52e275dd5c40e48f7f99ccd22783bab44c2fe4027ff49",
+    "Sources/Rules/PreferSwiftStringAPI.swift": "694c653cb7465de0c41ad1fdeedd604d308bd5f3567c8012c5fcef9030996e22",
+    "Sources/Rules/PreferSwiftTesting.swift": "87ebe03bde8d7ea0371ce8c6353cac83246abe8152c276e14e3cdf479c9de99b",
+    "Sources/Rules/PrivateStateVariables.swift": "22645f8803c422fbde1f5671862db2eda17926cb03d1130b75de309e1ef2e8ea",
+    "Sources/Rules/PropertyTypes.swift": "ef29712ef5cc9a73cc7c92e7d5ede7d82dac888e4a559a4612b495720c0137df",
+    "Sources/Rules/RedundantAsync.swift": "ace6a94da5bb645ce9c08a3a5379a73beab0cc5a880b75fd4251783708989049",
+    "Sources/Rules/RedundantBackticks.swift": "62fe2abc5a6154355bfce119509658c16e768211beb991c8d7538205f9ae32c4",
+    "Sources/Rules/RedundantBreak.swift": "9e2667b245cced155238883d4d1eeea6239e5ceabcba39eede382184ce1ed8f2",
+    "Sources/Rules/RedundantClosure.swift": "0adeef063879cc11a41e3510ab6d0fc78e4df411587ae428f7f21d95213d3ad3",
+    "Sources/Rules/RedundantEmptyView.swift": "9bb7571b2b4144084d4e5deadf8a5ff1b822b19d9bc948f3f6d7fdfa89f859b1",
+    "Sources/Rules/RedundantEquatable.swift": "70b5e49fbdfdc9a69ba46f6f286cda17852cc4fb27b57cfcdb9a270c8c98c505",
+    "Sources/Rules/RedundantExtendedLifetime.swift": "e66e0477941116c5a785853f4cec9d445274cb0affa2e0ec0a51fc2de6e1ff9e",
+    "Sources/Rules/RedundantExtensionACL.swift": "1980b0313bb90a8be5de0ed9d6af1bacc0c301e6c8b5e32a5d99c78f46e87230",
+    "Sources/Rules/RedundantFileprivate.swift": "73fc3e8be3aacc014264b3169f050c34d73c0ee97aac8c907cfe7d915b2340d0",
+    "Sources/Rules/RedundantGet.swift": "17f51aff1455ecd7ba3a546c739ae9abb99f8da377d77b8f9f235d24953f0e7d",
+    "Sources/Rules/RedundantInit.swift": "8e0fa32b447a9d7ad8f20353097264c7b929170ce4da0218c88d83a9cdfb99df",
+    "Sources/Rules/RedundantInternal.swift": "1dfef7032fe49f376ac6085bca342b9674001a4389ee589d3a10ad473ecc903a",
+    "Sources/Rules/RedundantLet.swift": "68f2d53a4d53ff717feee874e714f4e5601323c37a98dd94c57aefe2289e722e",
+    "Sources/Rules/RedundantLetError.swift": "6bc63d5216af0df70067f74257ca5081a824ebf9d47eafd48a93b197161601d9",
+    "Sources/Rules/RedundantMemberwiseInit.swift": "2cc6916f3e6060ed37816eea6f1f908fa9c5f9c9f9c2b6e49ce702c3f60addb3",
+    "Sources/Rules/RedundantNilInit.swift": "8da8cad23b21b958ffe3f8f46bcdbe1614133fe1e3b775d5e3a23e746a11776c",
+    "Sources/Rules/RedundantObjc.swift": "3867f7a9fa676d775e8c08baff272941b8aa14f161483baf66d6426418c0f7f7",
+    "Sources/Rules/RedundantOptionalBinding.swift": "3ab793c8117a78bf026f3820338d2159bd57fd4ab55480f24d5b01533fb47f84",
+    "Sources/Rules/RedundantParens.swift": "cad883cd12c9d0817f5c6a6ce4b100e888b5d07dbe3c10dda422a6ba3d0f727c",
+    "Sources/Rules/RedundantPattern.swift": "1b5c3c8f731a50717f06ebf01ee821936f04974be9db4596a55083caa358e3db",
+    "Sources/Rules/RedundantProperty.swift": "efd489653f6b26e48f677b4a93cff70af8384c2f572f8b95a781a34e17c4c49a",
+    "Sources/Rules/RedundantPublic.swift": "f2c371533ae316ce795db6f9f8fd9f51ec31493dfd012b23589321a85737ea71",
+    "Sources/Rules/RedundantRawValues.swift": "ea3c390636f1e3dacb454d54263be899288b37415f776ae12469bade31a888bb",
+    "Sources/Rules/RedundantReturn.swift": "da915789e8b72f8677c721be261bfd0a14fa138f560bc6b3e944f237e80cdcec",
+    "Sources/Rules/RedundantSelf.swift": "46669b4e28903c0c44279a057476eaf25dda1b19dd8bff2a672ee74e251cad9b",
+    "Sources/Rules/RedundantSendable.swift": "ceaa5c767ee3b7867ae91bdf67c2e7e1ed308ea18bcc7280f6c7cdb3e83731fa",
+    "Sources/Rules/RedundantStaticSelf.swift": "906dfb45ad6e5b59d4b61e09b3913512ef5d590029814489ecbe3a3bd70e0d0f",
+    "Sources/Rules/RedundantSwiftTestingSuite.swift": "1875388bb386e43c490d4e2851322011044e807e0881e87c8001915082bb90cc",
+    "Sources/Rules/RedundantSwiftUIGroup.swift": "a52764f94fd1c3a08cfb57e832d9eccab1865843b7614659c7c1f633746ee833",
+    "Sources/Rules/RedundantThrows.swift": "2372affb309c081934033535ff2165af89cb81b32624ea9cf8fe6dc9b22783b3",
+    "Sources/Rules/RedundantType.swift": "939eb928308464904c5024934e79be45bd666d1622672de4847a91bafc314fed",
+    "Sources/Rules/RedundantTypedThrows.swift": "8bf5740290f795822247687a79dc6a3468b9288b45e4b385be59724f2abddb63",
+    "Sources/Rules/RedundantVariable.swift": "e4eef331ea5244cdf318d5aa73f38a359b7a246a2bc045182d334b59c4d9bddc",
+    "Sources/Rules/RedundantViewBuilder.swift": "a15afe3aa62d1448b0ee746239303bfc5107897b9be45a97be2340e8670e1043",
+    "Sources/Rules/RedundantVoidReturnType.swift": "3da991a0c0dc307d6455e8954f58ae6fde3c15a167beaf4ce3d0fcc9050fbe64",
+    "Sources/Rules/Semicolons.swift": "97bfa95db038e9f70c36eb3d3be4ef269ccaad42420a0da6d277da92e707efa0",
+    "Sources/Rules/SimplifyGenericConstraints.swift": "eb3d4123ac43604df0289771ab5ed2e939365c483b07880eab509bc5bfd37c61",
+    "Sources/Rules/SinglePropertyPerLine.swift": "b8d92a61ac76f8a47497aebc0de98b99ef33affce4b33ff40874e75a99c7730e",
+    "Sources/Rules/SortDeclarations.swift": "fad10b29e9fc054352b6735db9e1fcee713f4299144f86bf1f6756e6d2b70773",
+    "Sources/Rules/SortImports.swift": "763bfdcc6738556c507d7e324c3b2e5299e2c66132a7f4b2267b03e48d9c4647",
+    "Sources/Rules/SortSwitchCases.swift": "c70213e6802f545d69736797cf76843b7b48cc5ac0ab891eeed9598c3a2012a6",
+    "Sources/Rules/SortTypealiases.swift": "f6f881a18a85c7f78e95e00b52fe70f1cc2440e168e4e4d30d15634dff55ee7f",
+    "Sources/Rules/SortedImports.swift": "84d03e900968288e062edad0cc3a5c110e91270e7c4541d203fefcb5e1cbe501",
+    "Sources/Rules/SortedSwitchCases.swift": "55840d874a9d0a24ee0e39d9f214469cdb55a5516303b7b7f50e0a8a75d97d54",
+    "Sources/Rules/SpaceAroundBraces.swift": "55e42dc1aeae2108e4201df1494361304b69151892d9b1d2a6873d1b7681ade4",
+    "Sources/Rules/SpaceAroundBrackets.swift": "9de7d58c809e96cd468adca20cd0a8fc1997f9f8ab80fea7d931beba9517a6ef",
+    "Sources/Rules/SpaceAroundComments.swift": "81376a35adc21327ffdf9268b149161bd632ebb8e1bbfe73fe9e9c2b2304d2ca",
+    "Sources/Rules/SpaceAroundGenerics.swift": "488f77c26c491308a623fed9862beaf8d41324fc41f371376c996db2ab545f9d",
+    "Sources/Rules/SpaceAroundOperators.swift": "0c3a4f1c360835da39a0c84e9122410b523ba69bc3ce0864a56ea8d9477bb35d",
+    "Sources/Rules/SpaceAroundParens.swift": "06f43b3cb60595b05fbb6ffdc79d066eb8b2c209c6238a3966d50a03bf56349d",
+    "Sources/Rules/SpaceInsideBraces.swift": "b6d5015e4e8a32339eda5cf054a9fdfc74ac239f75d8cda28546c829b41d6783",
+    "Sources/Rules/SpaceInsideBrackets.swift": "31ac2b733435baed1c838d3841429f2894a7d31bf6edda463464b3746112e6fb",
+    "Sources/Rules/SpaceInsideComments.swift": "c08d973b0d0e8e6f6519fba3bd9b8bcb007807f17f3632738d6da0b139423f06",
+    "Sources/Rules/SpaceInsideGenerics.swift": "8b665096cbd3cd6e0317b8778e38102877ec93ba5bd2b001d83e9c386c2e1762",
+    "Sources/Rules/SpaceInsideParens.swift": "fa15370848a581b5b8b0811933de5b2a770cff79240f8f8526f8c0fdb047bab9",
+    "Sources/Rules/Specifiers.swift": "086771bddf78ba56a1e0d2502b4f8fc95dae50e6f20e950611f402ca588467a1",
+    "Sources/Rules/StrongOutlets.swift": "10494f8c480067343d746414092f173993264c80445583237c73f05fea0d3184",
+    "Sources/Rules/StrongifiedSelf.swift": "d8fe5b3c21ffa17205ed86adad8a2cc41c835670b9a755d3db98a58f3176a1bb",
+    "Sources/Rules/SwiftTestingTestCaseNames.swift": "4996cb35f1f52fb14d8c3d31daeecb6a840c49e868e151a15f01d242b6d57c67",
+    "Sources/Rules/TestSuiteAccessControl.swift": "325fa7dd49346dcb3842bbe658bc1d4a984be1ec13317a1695a797531db7e1ee",
+    "Sources/Rules/ThrowingTests.swift": "e769d762828d027777f52fbc5c838b74fb56cee33e289b680cf1b7ff7f60b8ee",
+    "Sources/Rules/Todos.swift": "db5efdc4103814f6c69e888329ff8cd5f77f47209739497db65586c55850cd5c",
+    "Sources/Rules/TrailingClosures.swift": "4e7e4385ed24a7fe7c25ab942cf2ea7de7a8b5ff014e5f64dc155d1f5e645160",
+    "Sources/Rules/TrailingCommas.swift": "2236a4426d08b708b492c23e8576ac0414a35a76e4035c52d1d01839673d2b76",
+    "Sources/Rules/TrailingSpace.swift": "8fe949e22536f3cc0625fd997765be75fa77b05f5400e1463159f3e49f1515f0",
+    "Sources/Rules/TypeSugar.swift": "b534ca21419cf0ba52b9aa05338531c20a653d6a3aea65085b0396d98dc4917a",
+    "Sources/Rules/URLMacro.swift": "641537149477b7d5f4f437dcadd6ac80b15a8f369aa45247abb80b0beb29a7dc",
+    "Sources/Rules/UnusedArguments.swift": "9ce1fc9d55c20a2f8185746869ee8407601a5f76334bf6f4134cd2d0018909f4",
+    "Sources/Rules/UnusedPrivateDeclarations.swift": "df530665131b941835cacc10bb077a5f9eca12d22575c9481f8079f178957499",
+    "Sources/Rules/ValidateTestCases.swift": "8a86cb7ef47f9331fb619aee7cb38c806756279583c55693102a5bdbf7195c98",
+    "Sources/Rules/Void.swift": "be792a9553a1c391eacfc37bcd40bfdc8a814887c46f4f78fd0a2cae3038d91f",
+    "Sources/Rules/Wrap.swift": "2f9c0e00102c4cbfeac608e103e4ac36b01949d011038e568b029e3444fc8062",
+    "Sources/Rules/WrapArguments.swift": "d35cae874c7c49f911ed61d21b69af07855a5841feb1aa2235397426656b866a",
+    "Sources/Rules/WrapAttributes.swift": "ce99e4599ba39da82e433094e3fd9afea837c4c92c06de9eba44aa15a2f02950",
+    "Sources/Rules/WrapCaseBodies.swift": "96cce4c3c2b1913daf29ac76fdfa219b565a550698aa2b5b94e76eeffc709cb8",
+    "Sources/Rules/WrapConditionalBodies.swift": "086b07b916a7da31a1407b2705a682744e50c972e937ed00b68a89fbb36a5943",
+    "Sources/Rules/WrapEnumCases.swift": "e1209b7900ed7c1f7bb7363dd296b30ddf7b71a997a4b9e3bcfb44d4d0a29615",
+    "Sources/Rules/WrapFunctionBodies.swift": "04b53edc0858a7896823c5896b9a015694502e64a8694b404ddecfd2b678053f",
+    "Sources/Rules/WrapGuardStatementBodies.swift": "664335d6dbbe5537182e999e325af0057e5a23b4be16633f4ff1a35077a32f58",
+    "Sources/Rules/WrapIfExpressionBodies.swift": "40e3ddd519a2bb7c1a888980233a314e1292d59fe3084a4b515246e15c05c826",
+    "Sources/Rules/WrapIfStatementBodies.swift": "7d482e18369b2149336a5eaf9ba7fbe6d1ed4ef8c98dc334ed77a23813f2caa8",
+    "Sources/Rules/WrapLoopBodies.swift": "c939e1c2cbc3db6d23ba61bdd119bf911ba47666b4aed492321ea5347e8f7980",
+    "Sources/Rules/WrapMultilineConditionalAssignment.swift": "7f17563db2526e7528eb891a5e6eb791481a1fc1d202f6a346e11513183cf283",
+    "Sources/Rules/WrapMultilineFunctionChains.swift": "9f61e6b37a7f0fda20b1731751516b4c80ca4585857509317723cba4a334f559",
+    "Sources/Rules/WrapMultilineStatementBraces.swift": "a53c46ccc3ddfbe3a4948a745418f8d6b3acd42453162b9d766c3c9823c572c2",
+    "Sources/Rules/WrapPropertyBodies.swift": "a4219244ddd7e35a347edffe8acb2df0a1579d1320da5c3aefe571e04b23d80e",
+    "Sources/Rules/WrapSingleLineComments.swift": "9404e6d186e6cfc906cb561214af7febc282498331a02ebe2083fe8d83016f74",
+    "Sources/Rules/WrapSwitchCases.swift": "d1173b77b81b1282406974d5345c67599335d376476c7dc9f8cf96d39c6089f2",
+    "Sources/Rules/YodaConditions.swift": "2213ca8d993e6a020f69fd06e3c8d322b87c3956fa5297cc1973e43a402862e9",
+    "Sources/SARIFReporter.swift": "7ffaecff6222a44c3ae58f494db32c9058dfeae0008daf99f5694b0bb455d1f2",
+    "Sources/Singularize.swift": "c3603e0d500c10bc139dca224006c3e7069047e092327dad1c3253d818986cfa",
+    "Sources/SwiftFormat.swift": "ddaf5eec9543c4ed810988b7168530361cba30d06a611adf705a6da0b03cfaaa",
+    "Sources/Tokenizer.swift": "2950028f1b1fee4b356ab7279b688ec12d28697ce2c94302afb19aaf9ae21ef4",
+    "Sources/TypeName.swift": "a83be81833cf89ef948744e6c95da62480fea6d941cfcca9f17ca2390a782073",
+    "Sources/XMLReporter.swift": "8ee2b874beb1ad11c4ef49594985aa2a0b1349a9ccf802aa5b5683cc41575d32"
+  },
+  "verified": [
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "all",
+      "type": "[Swift.String]",
+      "instances": 3,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV3allSaySSGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).all : [Swift.String]",
+          "file": "Sources/Inference.swift",
+          "line": 1532,
+          "column": 16,
+          "source": "static let all: [String] = {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "allmanBraces",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 19,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12allmanBracesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).allmanBraces : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 272,
+          "column": 9,
+          "source": "let allmanBraces = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "binaryGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14binaryGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).binaryGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 493,
+          "column": 9,
+          "source": "let binaryGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "byName",
+      "type": "[Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6byNameSDySSAA14OptionInferrerACLLVGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).byName : [Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+          "file": "Sources/Inference.swift",
+          "line": 1544,
+          "column": 16,
+          "source": "static let byName: [String: OptionInferrer] = {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "closingParenPosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 22,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20closingParenPositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).closingParenPosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 393,
+          "column": 9,
+          "source": "let closingParenPosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "decimalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15decimalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).decimalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 489,
+          "column": 9,
+          "source": "let decimalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "elsePosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 22,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12elsePositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).elsePosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1303,
+          "column": 9,
+          "source": "let elsePosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "explicitSelf",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 276,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12explicitSelfAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).explicitSelf : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 680,
+          "column": 9,
+          "source": "let explicitSelf = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "exponentGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16exponentGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).exponentGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 509,
+          "column": 9,
+          "source": "let exponentGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "fractionGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16fractionGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).fractionGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 505,
+          "column": 9,
+          "source": "let fractionGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hexGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11hexGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hexGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 501,
+          "column": 9,
+          "source": "let hexGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hoistPatternLet",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 33,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15hoistPatternLetAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hoistPatternLet : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 513,
+          "column": 9,
+          "source": "let hoistPatternLet = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "ifdefIndent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 29,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11ifdefIndentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).ifdefIndent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 304,
+          "column": 9,
+          "source": "let ifdefIndent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 26,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6indentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 57,
+          "column": 9,
+          "source": "let indent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indentCase",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 22,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10indentCaseAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indentCase : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1327,
+          "column": 9,
+          "source": "let indentCase = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "linebreak",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 7,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV9linebreakAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).linebreak : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 114,
+          "column": 9,
+          "source": "let linebreak = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "noSpaceOperators",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 29,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16noSpaceOperatorsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).noSpaceOperators : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 155,
+          "column": 9,
+          "source": "let noSpaceOperators = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "octalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13octalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).octalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 497,
+          "column": 9,
+          "source": "let octalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "semicolons",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 4,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10semicolonsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).semicolons : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 141,
+          "column": 9,
+          "source": "let semicolons = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "spaceAroundOperatorDeclarations",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 10,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV31spaceAroundOperatorDeclarationsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).spaceAroundOperatorDeclarations : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1285,
+          "column": 9,
+          "source": "let spaceAroundOperatorDeclarations = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "stripUnusedArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 57,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20stripUnusedArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).stripUnusedArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 574,
+          "column": 9,
+          "source": "let stripUnusedArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "trailingCommas",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 10,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14trailingCommasAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).trailingCommas : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 219,
+          "column": 9,
+          "source": "let trailingCommas = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "truncateBlankLines",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 13,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV18truncateBlankLinesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).truncateBlankLines : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 241,
+          "column": 9,
+          "source": "let truncateBlankLines = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseExponent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 11,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV17uppercaseExponentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseExponent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 464,
+          "column": 9,
+          "source": "let uppercaseExponent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseHex",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 12,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12uppercaseHexAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseHex : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 443,
+          "column": 9,
+          "source": "let uppercaseHex = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "useVoid",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 23,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV7useVoidAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).useVoid : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 196,
+          "column": 9,
+          "source": "let useVoid = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13wrapArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 381,
+          "column": 9,
+          "source": "let wrapArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapCollections",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15wrapCollectionsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapCollections : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 389,
+          "column": 9,
+          "source": "let wrapCollections = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapParameters",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14wrapParametersAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapParameters : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 385,
+          "column": 9,
+          "source": "let wrapParameters = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "driver",
+      "type": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat4Tool33_D89618F814EEF8764AEAB544DA1B4682LLV6driverAA0C9ComponentACLLVvp",
+          "demangled": "SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682).driver : SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 101,
+          "column": 9,
+          "source": "let driver = ToolComponent()"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.AutoUpdatingIndex",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingIndexCfd",
+          "demangled": "SwiftFormat.AutoUpdatingIndex.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1045,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.AutoUpdatingRange",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingRangeCfd",
+          "demangled": "SwiftFormat.AutoUpdatingRange.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1090,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.ConditionalCompilationDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat33ConditionalCompilationDeclarationCfd",
+          "demangled": "SwiftFormat.ConditionalCompilationDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 376,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.SimpleDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17SimpleDeclarationCfd",
+          "demangled": "SwiftFormat.SimpleDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 229,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "call_site",
+      "owner": "SwiftFormat.TypeDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat15TypeDeclarationCfd",
+          "demangled": "SwiftFormat.TypeDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 257,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "CommandLineTool.(FileHandleOutputStream in _094BB3E1286DCBA531AFDB0155D8E5B9)",
+      "member": "filehandle",
+      "type": "__C.NSFileHandle",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:15CommandLineTool22FileHandleOutputStream33_094BB3E1286DCBA531AFDB0155D8E5B9LLV10filehandleSo06NSFileE0Cvp",
+          "demangled": "CommandLineTool.(FileHandleOutputStream in _094BB3E1286DCBA531AFDB0155D8E5B9).filehandle : __C.NSFileHandle",
+          "file": "CommandLineTool/main.swift",
+          "line": 67,
+          "column": 22,
+          "source": "private(set) var filehandle: FileHandle"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ArtifactLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "uri",
+      "type": "Foundation.URL",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat16ArtifactLocation33_D89618F814EEF8764AEAB544DA1B4682LLV3uri10Foundation3URLVvp",
+          "demangled": "SwiftFormat.(ArtifactLocation in _D89618F814EEF8764AEAB544DA1B4682).uri : Foundation.URL",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 170,
+          "column": 9,
+          "source": "let uri: URL"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "all",
+      "type": "[Swift.String]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV3allSaySSGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).all : [Swift.String]",
+          "file": "Sources/Inference.swift",
+          "line": 1532,
+          "column": 16,
+          "source": "static let all: [String] = {"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "allmanBraces",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12allmanBracesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).allmanBraces : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 272,
+          "column": 9,
+          "source": "let allmanBraces = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "binaryGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14binaryGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).binaryGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 493,
+          "column": 9,
+          "source": "let binaryGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "byName",
+      "type": "[Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6byNameSDySSAA14OptionInferrerACLLVGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).byName : [Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+          "file": "Sources/Inference.swift",
+          "line": 1544,
+          "column": 16,
+          "source": "static let byName: [String: OptionInferrer] = {"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "closingParenPosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20closingParenPositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).closingParenPosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 393,
+          "column": 9,
+          "source": "let closingParenPosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "decimalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15decimalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).decimalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 489,
+          "column": 9,
+          "source": "let decimalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "elsePosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12elsePositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).elsePosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1303,
+          "column": 9,
+          "source": "let elsePosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "explicitSelf",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12explicitSelfAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).explicitSelf : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 680,
+          "column": 9,
+          "source": "let explicitSelf = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "exponentGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16exponentGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).exponentGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 509,
+          "column": 9,
+          "source": "let exponentGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "fractionGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16fractionGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).fractionGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 505,
+          "column": 9,
+          "source": "let fractionGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hexGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11hexGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hexGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 501,
+          "column": 9,
+          "source": "let hexGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hoistPatternLet",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15hoistPatternLetAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hoistPatternLet : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 513,
+          "column": 9,
+          "source": "let hoistPatternLet = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "ifdefIndent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11ifdefIndentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).ifdefIndent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 304,
+          "column": 9,
+          "source": "let ifdefIndent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6indentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 57,
+          "column": 9,
+          "source": "let indent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indentCase",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10indentCaseAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indentCase : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1327,
+          "column": 9,
+          "source": "let indentCase = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "linebreak",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV9linebreakAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).linebreak : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 114,
+          "column": 9,
+          "source": "let linebreak = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "noSpaceOperators",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16noSpaceOperatorsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).noSpaceOperators : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 155,
+          "column": 9,
+          "source": "let noSpaceOperators = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "octalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13octalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).octalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 497,
+          "column": 9,
+          "source": "let octalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "semicolons",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10semicolonsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).semicolons : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 141,
+          "column": 9,
+          "source": "let semicolons = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "spaceAroundOperatorDeclarations",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV31spaceAroundOperatorDeclarationsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).spaceAroundOperatorDeclarations : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1285,
+          "column": 9,
+          "source": "let spaceAroundOperatorDeclarations = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "stripUnusedArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20stripUnusedArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).stripUnusedArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 574,
+          "column": 9,
+          "source": "let stripUnusedArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "trailingCommas",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14trailingCommasAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).trailingCommas : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 219,
+          "column": 9,
+          "source": "let trailingCommas = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "truncateBlankLines",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV18truncateBlankLinesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).truncateBlankLines : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 241,
+          "column": 9,
+          "source": "let truncateBlankLines = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseExponent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV17uppercaseExponentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseExponent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 464,
+          "column": 9,
+          "source": "let uppercaseExponent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseHex",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12uppercaseHexAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseHex : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 443,
+          "column": 9,
+          "source": "let uppercaseHex = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "useVoid",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV7useVoidAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).useVoid : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 196,
+          "column": 9,
+          "source": "let useVoid = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13wrapArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 381,
+          "column": 9,
+          "source": "let wrapArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapCollections",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15wrapCollectionsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapCollections : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 389,
+          "column": 9,
+          "source": "let wrapCollections = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapParameters",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14wrapParametersAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapParameters : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 385,
+          "column": 9,
+          "source": "let wrapParameters = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Location in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "physicalLocation",
+      "type": "SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat8Location33_D89618F814EEF8764AEAB544DA1B4682LLV08physicalC0AA08PhysicalC0ACLLVvp",
+          "demangled": "SwiftFormat.(Location in _D89618F814EEF8764AEAB544DA1B4682).physicalLocation : SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 148,
+          "column": 9,
+          "source": "let physicalLocation: PhysicalLocation"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Message in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "text",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat7Message33_D89618F814EEF8764AEAB544DA1B4682LLV4textSSvp",
+          "demangled": "SwiftFormat.(Message in _D89618F814EEF8764AEAB544DA1B4682).text : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 138,
+          "column": 9,
+          "source": "let text: String"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "fn",
+      "type": "(SwiftFormat.Formatter, inout SwiftFormat.FormatOptions) -> ()",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat14OptionInferrer33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV2fnyyAA9FormatterC_AA0B7OptionsVztcvp",
+          "demangled": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C).fn : (SwiftFormat.Formatter, inout SwiftFormat.FormatOptions) -> ()",
+          "file": "Sources/Inference.swift",
+          "line": 49,
+          "column": 9,
+          "source": "let fn: (Formatter, inout FormatOptions) -> Void"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(OutputTokensData in _997B993F491113BF6B16275305E674A4)",
+      "member": "tokens",
+      "type": "[SwiftFormat.Token]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat16OutputTokensData33_997B993F491113BF6B16275305E674A4LLV6tokensSayAA5TokenOGvp",
+          "demangled": "SwiftFormat.(OutputTokensData in _997B993F491113BF6B16275305E674A4).tokens : [SwiftFormat.Token]",
+          "file": "Sources/CommandLine.swift",
+          "line": 1383,
+          "column": 9,
+          "source": "let tokens: [Token]"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(OutputTokensData in _997B993F491113BF6B16275305E674A4)",
+      "member": "version",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat16OutputTokensData33_997B993F491113BF6B16275305E674A4LLV7versionSSvp",
+          "demangled": "SwiftFormat.(OutputTokensData in _997B993F491113BF6B16275305E674A4).version : Swift.String",
+          "file": "Sources/CommandLine.swift",
+          "line": 1381,
+          "column": 9,
+          "source": "let version: String"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "artifactLocation",
+      "type": "SwiftFormat.(ArtifactLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat16PhysicalLocation33_D89618F814EEF8764AEAB544DA1B4682LLV08artifactD0AA08ArtifactD0ACLLVvp",
+          "demangled": "SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682).artifactLocation : SwiftFormat.(ArtifactLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 158,
+          "column": 9,
+          "source": "let artifactLocation: ArtifactLocation"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "region",
+      "type": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat16PhysicalLocation33_D89618F814EEF8764AEAB544DA1B4682LLV6regionAA6RegionACLLVvp",
+          "demangled": "SwiftFormat.(PhysicalLocation in _D89618F814EEF8764AEAB544DA1B4682).region : SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 159,
+          "column": 9,
+          "source": "let region: Region"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "endColumn",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Region33_D89618F814EEF8764AEAB544DA1B4682LLV9endColumnSivp",
+          "demangled": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682).endColumn : Swift.Int",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 183,
+          "column": 9,
+          "source": "let endColumn: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "endLine",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Region33_D89618F814EEF8764AEAB544DA1B4682LLV7endLineSivp",
+          "demangled": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682).endLine : Swift.Int",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 182,
+          "column": 9,
+          "source": "let endLine: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "startColumn",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Region33_D89618F814EEF8764AEAB544DA1B4682LLV11startColumnSivp",
+          "demangled": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682).startColumn : Swift.Int",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 181,
+          "column": 9,
+          "source": "let startColumn: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "startLine",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Region33_D89618F814EEF8764AEAB544DA1B4682LLV9startLineSivp",
+          "demangled": "SwiftFormat.(Region in _D89618F814EEF8764AEAB544DA1B4682).startLine : Swift.Int",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 180,
+          "column": 9,
+          "source": "let startLine: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0)",
+      "member": "file",
+      "type": "Swift.String?",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat10ReportItem33_0CFB86F33DF32F5EBC15B88046FB3DF0LLV4fileSSSgvp",
+          "demangled": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0).file : Swift.String?",
+          "file": "Sources/JSONReporter.swift",
+          "line": 69,
+          "column": 9,
+          "source": "let file: String?"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0)",
+      "member": "line",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat10ReportItem33_0CFB86F33DF32F5EBC15B88046FB3DF0LLV4lineSivp",
+          "demangled": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0).line : Swift.Int",
+          "file": "Sources/JSONReporter.swift",
+          "line": 70,
+          "column": 9,
+          "source": "let line: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0)",
+      "member": "reason",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat10ReportItem33_0CFB86F33DF32F5EBC15B88046FB3DF0LLV6reasonSSvp",
+          "demangled": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0).reason : Swift.String",
+          "file": "Sources/JSONReporter.swift",
+          "line": 71,
+          "column": 9,
+          "source": "let reason: String"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0)",
+      "member": "ruleID",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat10ReportItem33_0CFB86F33DF32F5EBC15B88046FB3DF0LLV6ruleIDSSvp",
+          "demangled": "SwiftFormat.(ReportItem in _0CFB86F33DF32F5EBC15B88046FB3DF0).ruleID : Swift.String",
+          "file": "Sources/JSONReporter.swift",
+          "line": 72,
+          "column": 9,
+          "source": "let ruleID: String"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "level",
+      "type": "SwiftFormat.(Level in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Result33_D89618F814EEF8764AEAB544DA1B4682LLV5levelAA5LevelACLLOvp",
+          "demangled": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682).level : SwiftFormat.(Level in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 116,
+          "column": 9,
+          "source": "let level: Level"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "locations",
+      "type": "[SwiftFormat.(Location in _D89618F814EEF8764AEAB544DA1B4682)]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Result33_D89618F814EEF8764AEAB544DA1B4682LLV9locationsSayAA8LocationACLLVGvp",
+          "demangled": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682).locations : [SwiftFormat.(Location in _D89618F814EEF8764AEAB544DA1B4682)]",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 118,
+          "column": 9,
+          "source": "let locations: [Location]"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "message",
+      "type": "SwiftFormat.(Message in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Result33_D89618F814EEF8764AEAB544DA1B4682LLV7messageAA7MessageACLLVvp",
+          "demangled": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682).message : SwiftFormat.(Message in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 117,
+          "column": 9,
+          "source": "let message: Message"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "ruleId",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat6Result33_D89618F814EEF8764AEAB544DA1B4682LLV6ruleIdSSvp",
+          "demangled": "SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682).ruleId : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 115,
+          "column": 9,
+          "source": "let ruleId: String"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "results",
+      "type": "[SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat3Run33_D89618F814EEF8764AEAB544DA1B4682LLV7resultsSayAA6ResultACLLVGvp",
+          "demangled": "SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682).results : [SwiftFormat.(Result in _D89618F814EEF8764AEAB544DA1B4682)]",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 90,
+          "column": 9,
+          "source": "let results: [Result]"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "tool",
+      "type": "SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat3Run33_D89618F814EEF8764AEAB544DA1B4682LLV4toolAA4ToolACLLVvp",
+          "demangled": "SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682).tool : SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 89,
+          "column": 9,
+          "source": "let tool: Tool"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "runs",
+      "type": "[SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682)]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat8SARIFLog33_D89618F814EEF8764AEAB544DA1B4682LLV4runsSayAA3RunACLLVGvp",
+          "demangled": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682).runs : [SwiftFormat.(Run in _D89618F814EEF8764AEAB544DA1B4682)]",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 73,
+          "column": 9,
+          "source": "let runs: [Run]"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "schema",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat8SARIFLog33_D89618F814EEF8764AEAB544DA1B4682LLV6schemaSSvp",
+          "demangled": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682).schema : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 72,
+          "column": 9,
+          "source": "let schema = \"https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json\""
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "version",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat8SARIFLog33_D89618F814EEF8764AEAB544DA1B4682LLV7versionSSvp",
+          "demangled": "SwiftFormat.(SARIFLog in _D89618F814EEF8764AEAB544DA1B4682).version : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 71,
+          "column": 9,
+          "source": "let version: String = \"2.1.0\""
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "driver",
+      "type": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat4Tool33_D89618F814EEF8764AEAB544DA1B4682LLV6driverAA0C9ComponentACLLVvp",
+          "demangled": "SwiftFormat.(Tool in _D89618F814EEF8764AEAB544DA1B4682).driver : SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 101,
+          "column": 9,
+          "source": "let driver = ToolComponent()"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "informationUri",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat13ToolComponent33_D89618F814EEF8764AEAB544DA1B4682LLV14informationUriSSvp",
+          "demangled": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682).informationUri : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 109,
+          "column": 9,
+          "source": "let informationUri = \"https://github.com/nicklockwood/SwiftFormat\""
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "name",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat13ToolComponent33_D89618F814EEF8764AEAB544DA1B4682LLV4nameSSvp",
+          "demangled": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682).name : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 107,
+          "column": 9,
+          "source": "let name = \"SwiftFormat\""
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682)",
+      "member": "version",
+      "type": "Swift.String",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat13ToolComponent33_D89618F814EEF8764AEAB544DA1B4682LLV7versionSSvp",
+          "demangled": "SwiftFormat.(ToolComponent in _D89618F814EEF8764AEAB544DA1B4682).version : Swift.String",
+          "file": "Sources/SARIFReporter.swift",
+          "line": 108,
+          "column": 9,
+          "source": "let version = swiftFormatVersion"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.(WeakAutoUpdatingReference in _21B853806F0609CC2006E9228916E8C1)",
+      "member": "reference",
+      "type": "SwiftFormat.AutoUpdatingReference?",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat25WeakAutoUpdatingReference33_21B853806F0609CC2006E9228916E8C1LLV9referenceAA0deF0_pSgvp",
+          "demangled": "SwiftFormat.(WeakAutoUpdatingReference in _21B853806F0609CC2006E9228916E8C1).reference : SwiftFormat.AutoUpdatingReference?",
+          "file": "Sources/Formatter.swift",
+          "line": 1011,
+          "column": 14,
+          "source": "weak var reference: AutoUpdatingReference?"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1)",
+      "member": "index",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9FormatterC9Directive33_21B853806F0609CC2006E9228916E8C1LLV5indexSivp",
+          "demangled": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1).index : Swift.Int",
+          "file": "Sources/Formatter.swift",
+          "line": 103,
+          "column": 13,
+          "source": "var index: Int // Index of token in the line"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1)",
+      "member": "line",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9FormatterC9Directive33_21B853806F0609CC2006E9228916E8C1LLV4lineSivp",
+          "demangled": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1).line : Swift.Int",
+          "file": "Sources/Formatter.swift",
+          "line": 102,
+          "column": 13,
+          "source": "var line: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1)",
+      "member": "toggle",
+      "type": "Swift.Bool",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9FormatterC9Directive33_21B853806F0609CC2006E9228916E8C1LLV6toggleSbvp",
+          "demangled": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1).toggle : Swift.Bool",
+          "file": "Sources/Formatter.swift",
+          "line": 101,
+          "column": 13,
+          "source": "var toggle: Bool"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1)",
+      "member": "type",
+      "type": "SwiftFormat.Formatter.(DirectiveType in _21B853806F0609CC2006E9228916E8C1)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9FormatterC9Directive33_21B853806F0609CC2006E9228916E8C1LLV4typeAC0D4TypeAELLOvp",
+          "demangled": "SwiftFormat.Formatter.(Directive in _21B853806F0609CC2006E9228916E8C1).type : SwiftFormat.Formatter.(DirectiveType in _21B853806F0609CC2006E9228916E8C1)",
+          "file": "Sources/Formatter.swift",
+          "line": 100,
+          "column": 13,
+          "source": "var type: DirectiveType"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177)",
+      "member": "hashCount",
+      "type": "Swift.Int",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat5TokenO19StringDelimiterType33_EA3178C5A9C48B37A8144845C15E5177LLV9hashCountSivp",
+          "demangled": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177).hashCount : Swift.Int",
+          "file": "Sources/Tokenizer.swift",
+          "line": 213,
+          "column": 13,
+          "source": "var hashCount: Int"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177)",
+      "member": "isMultiline",
+      "type": "Swift.Bool",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat5TokenO19StringDelimiterType33_EA3178C5A9C48B37A8144845C15E5177LLV11isMultilineSbvp",
+          "demangled": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177).isMultiline : Swift.Bool",
+          "file": "Sources/Tokenizer.swift",
+          "line": 212,
+          "column": 13,
+          "source": "var isMultiline: Bool"
+        }
+      ]
+    },
+    {
+      "kind": "field",
+      "owner": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177)",
+      "member": "isRegex",
+      "type": "Swift.Bool",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat5TokenO19StringDelimiterType33_EA3178C5A9C48B37A8144845C15E5177LLV7isRegexSbvp",
+          "demangled": "SwiftFormat.Token.(StringDelimiterType in _EA3178C5A9C48B37A8144845C15E5177).isRegex : Swift.Bool",
+          "file": "Sources/Tokenizer.swift",
+          "line": 211,
+          "column": 13,
+          "source": "var isRegex: Bool"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "all",
+      "type": "[Swift.String]",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV3allSaySSGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).all : [Swift.String]",
+          "file": "Sources/Inference.swift",
+          "line": 1532,
+          "column": 16,
+          "source": "static let all: [String] = {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "allmanBraces",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 13,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12allmanBracesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).allmanBraces : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 272,
+          "column": 9,
+          "source": "let allmanBraces = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "binaryGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14binaryGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).binaryGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 493,
+          "column": 9,
+          "source": "let binaryGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "byName",
+      "type": "[Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6byNameSDySSAA14OptionInferrerACLLVGvpZ",
+          "demangled": "static SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).byName : [Swift.String : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)]",
+          "file": "Sources/Inference.swift",
+          "line": 1544,
+          "column": 16,
+          "source": "static let byName: [String: OptionInferrer] = {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "closingParenPosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 11,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20closingParenPositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).closingParenPosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 393,
+          "column": 9,
+          "source": "let closingParenPosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "decimalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15decimalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).decimalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 489,
+          "column": 9,
+          "source": "let decimalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "elsePosition",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 13,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12elsePositionAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).elsePosition : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1303,
+          "column": 9,
+          "source": "let elsePosition = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "explicitSelf",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 169,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12explicitSelfAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).explicitSelf : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 680,
+          "column": 9,
+          "source": "let explicitSelf = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "exponentGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16exponentGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).exponentGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 509,
+          "column": 9,
+          "source": "let exponentGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "fractionGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16fractionGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).fractionGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 505,
+          "column": 9,
+          "source": "let fractionGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hexGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11hexGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hexGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 501,
+          "column": 9,
+          "source": "let hexGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "hoistPatternLet",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 16,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15hoistPatternLetAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).hoistPatternLet : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 513,
+          "column": 9,
+          "source": "let hoistPatternLet = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "ifdefIndent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 14,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV11ifdefIndentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).ifdefIndent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 304,
+          "column": 9,
+          "source": "let ifdefIndent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 13,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV6indentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 57,
+          "column": 9,
+          "source": "let indent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "indentCase",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 13,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10indentCaseAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).indentCase : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1327,
+          "column": 9,
+          "source": "let indentCase = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "linebreak",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV9linebreakAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).linebreak : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 114,
+          "column": 9,
+          "source": "let linebreak = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "noSpaceOperators",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 17,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV16noSpaceOperatorsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).noSpaceOperators : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 155,
+          "column": 9,
+          "source": "let noSpaceOperators = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "octalGrouping",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13octalGroupingAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).octalGrouping : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 497,
+          "column": 9,
+          "source": "let octalGrouping = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "semicolons",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 3,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV10semicolonsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).semicolons : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 141,
+          "column": 9,
+          "source": "let semicolons = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "spaceAroundOperatorDeclarations",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 6,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV31spaceAroundOperatorDeclarationsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).spaceAroundOperatorDeclarations : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 1285,
+          "column": 9,
+          "source": "let spaceAroundOperatorDeclarations = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "stripUnusedArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 32,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV20stripUnusedArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).stripUnusedArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 574,
+          "column": 9,
+          "source": "let stripUnusedArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "trailingCommas",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 8,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14trailingCommasAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).trailingCommas : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 219,
+          "column": 9,
+          "source": "let trailingCommas = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "truncateBlankLines",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 6,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV18truncateBlankLinesAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).truncateBlankLines : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 241,
+          "column": 9,
+          "source": "let truncateBlankLines = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseExponent",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV17uppercaseExponentAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseExponent : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 464,
+          "column": 9,
+          "source": "let uppercaseExponent = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "uppercaseHex",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 2,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV12uppercaseHexAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).uppercaseHex : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 443,
+          "column": 9,
+          "source": "let uppercaseHex = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "useVoid",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 20,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV7useVoidAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).useVoid : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 196,
+          "column": 9,
+          "source": "let useVoid = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapArguments",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV13wrapArgumentsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapArguments : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 381,
+          "column": 9,
+          "source": "let wrapArguments = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapCollections",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV15wrapCollectionsAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapCollections : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 389,
+          "column": 9,
+          "source": "let wrapCollections = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "member": "wrapParameters",
+      "type": "SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat9Inference33_EF3E11533EA684CF2684A0CFE0E0FE1CLLV14wrapParametersAA14OptionInferrerACLLVvp",
+          "demangled": "SwiftFormat.(Inference in _EF3E11533EA684CF2684A0CFE0E0FE1C).wrapParameters : SwiftFormat.(OptionInferrer in _EF3E11533EA684CF2684A0CFE0E0FE1C)",
+          "file": "Sources/Inference.swift",
+          "line": 385,
+          "column": 9,
+          "source": "let wrapParameters = OptionInferrer { formatter, options in"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.AutoUpdatingIndex",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingIndexCfd",
+          "demangled": "SwiftFormat.AutoUpdatingIndex.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1045,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.AutoUpdatingRange",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingRangeCfd",
+          "demangled": "SwiftFormat.AutoUpdatingRange.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1090,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.ConditionalCompilationDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat33ConditionalCompilationDeclarationCfd",
+          "demangled": "SwiftFormat.ConditionalCompilationDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 376,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.SimpleDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17SimpleDeclarationCfd",
+          "demangled": "SwiftFormat.SimpleDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 229,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "local_variable",
+      "owner": "SwiftFormat.TypeDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat15TypeDeclarationCfd",
+          "demangled": "SwiftFormat.TypeDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 257,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "owner": "SwiftFormat.AutoUpdatingIndex",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingIndexCfd",
+          "demangled": "SwiftFormat.AutoUpdatingIndex.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1045,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "owner": "SwiftFormat.AutoUpdatingRange",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17AutoUpdatingRangeCfd",
+          "demangled": "SwiftFormat.AutoUpdatingRange.deinit",
+          "file": "Sources/Formatter.swift",
+          "line": 1090,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "owner": "SwiftFormat.ConditionalCompilationDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat33ConditionalCompilationDeclarationCfd",
+          "demangled": "SwiftFormat.ConditionalCompilationDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 376,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "owner": "SwiftFormat.SimpleDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat17SimpleDeclarationCfd",
+          "demangled": "SwiftFormat.SimpleDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 229,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "owner": "SwiftFormat.TypeDeclaration",
+      "member": "deinit",
+      "type": "Swift.Void",
+      "instances": 1,
+      "compilerMatches": [
+        {
+          "usr": "s:11SwiftFormat15TypeDeclarationCfd",
+          "demangled": "SwiftFormat.TypeDeclaration.deinit",
+          "file": "Sources/Declaration.swift",
+          "line": 257,
+          "column": 5,
+          "source": "deinit {"
+        }
+      ]
+    }
+  ]
+}

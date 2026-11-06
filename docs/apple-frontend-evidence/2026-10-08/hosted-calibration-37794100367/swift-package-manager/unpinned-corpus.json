@@ -1,0 +1,17 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "kind": "real-source",
+  "label": "swift-package-manager",
+  "repository": "https://github.com/swiftlang/swift-package-manager.git",
+  "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+  "input": "package",
+  "files": null,
+  "shape": null,
+  "ceilings": null,
+  "note": "Real upstream source corpus. Graph shape, file count and bootstrap ceilings are pending measured evidence; the comparator fails closed until the shape is pinned. No synthetic timing is accepted.",
+  "dependencyLock": {
+    "path": "fixtures/swiftpm/Package.resolved",
+    "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+  },
+  "baselineShapes": {}
+}

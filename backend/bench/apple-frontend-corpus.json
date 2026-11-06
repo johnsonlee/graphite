@@ -1,0 +1,58 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "label": "swiftformat",
+  "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+  "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9",
+  "files": 181,
+  "ceilings": {
+    "wallMs": 2000,
+    "rssMiB": 120
+  },
+  "note": "SwiftFormat at the pinned commit: the library under Sources/ and the executable under CommandLineTool/. `shape` is the graph the frontend emits for it (pinned from the first hosted measurement, Linux-X64, swift:6.1); a sample whose shape differs is refused, so changing this pin is the explicit transition when the frontend intentionally emits more or less. The ceilings are 1.5x that measurement (1347 ms wall, 79 MiB peak RSS); they are enforced only when no comparable base exists, since with a paired base the comparison on the one runner decides and a breach is only reported. The candidate shape transition for basic Swift source dataflow is a correctness update based on run 41891824626, not a new performance calibration. Historical single-corpus measurements are retained only as historical observations; representative multi-graph load tests are required for performance acceptance.",
+  "shape": {
+    "files": 181,
+    "types": 147,
+    "methods": 677,
+    "fields": 990,
+    "callSites": 16867,
+    "constants": 3468,
+    "annotations": 18,
+    "nodes": 32880,
+    "edges": 14863,
+    "strings": 7173
+  },
+  "kind": "real-source",
+  "input": "package",
+  "baselineShapes": {
+    "332c0d8a6fec650a6e7979e3dce37aa1a891c03a": {
+      "shape": {
+        "files": 181,
+        "types": 147,
+        "methods": 677,
+        "fields": 990,
+        "callSites": 16867,
+        "constants": 3468,
+        "annotations": 18,
+        "nodes": 32530,
+        "edges": 14655,
+        "strings": 7173
+      },
+      "reason": "Baseline shape is preserved from the pre-dataflow corpus pin. Candidate graph shape was observed in correctness refusal from run 41891824626, job 126793322962: it adds 277 Parameter and 73 Return nodes (350 total) and 208 edges. An independent pre-flow-to-candidate semantic audit on macOS preserves all original nodes, edges, metadata and argument slots and validates every new edge; its platform-specific counts are recorded separately and are not substituted for the hosted Linux pin. Different dataflow coverage is not an equivalent-work performance comparison."
+    },
+    "0818c68ecd084e14e80a978f7940c6d9d03e1a9a": {
+      "shape": {
+        "files": 181,
+        "types": 147,
+        "methods": 677,
+        "fields": 990,
+        "callSites": 16867,
+        "constants": 3468,
+        "annotations": 18,
+        "nodes": 32530,
+        "edges": 14655,
+        "strings": 7173
+      },
+      "reason": "Baseline shape is preserved from the pre-dataflow corpus pin. Candidate graph shape was observed in correctness refusal from run 41891824626, job 126793322962: it adds 277 Parameter and 73 Return nodes (350 total) and 208 edges. An independent pre-flow-to-candidate semantic audit on macOS preserves all original nodes, edges, metadata and argument slots and validates every new edge; its platform-specific counts are recorded separately and are not substituted for the hosted Linux pin. Different dataflow coverage is not an equivalent-work performance comparison."
+    }
+  }
+}

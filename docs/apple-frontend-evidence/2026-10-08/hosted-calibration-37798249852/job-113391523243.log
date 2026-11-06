@@ -1,0 +1,441 @@
+﻿2026-10-08T15:25:21.8198094Z Current runner version: '2.337.0'
+2026-10-08T15:25:21.8226926Z ##[group]Runner Image Provisioner
+2026-10-08T15:25:21.8228087Z Hosted Compute Agent
+2026-10-08T15:25:21.8228957Z Version: 20260901.588
+2026-10-08T15:25:21.8229746Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-08T15:25:21.8230691Z Build Date: 2026-09-01T19:56:44Z
+2026-10-08T15:25:21.8231569Z Worker ID: {06d2a8ee-05cc-4e39-8082-3b16835cdbeb}
+2026-10-08T15:25:21.8232433Z Azure Region: eastus
+2026-10-08T15:25:21.8233247Z ##[endgroup]
+2026-10-08T15:25:21.8234900Z ##[group]Operating System
+2026-10-08T15:25:21.8235777Z Ubuntu
+2026-10-08T15:25:21.8236423Z 24.04.5
+2026-10-08T15:25:21.8237184Z LTS
+2026-10-08T15:25:21.8237933Z ##[endgroup]
+2026-10-08T15:25:21.8238616Z ##[group]Runner Image
+2026-10-08T15:25:21.8239401Z Image: ubuntu-24.04
+2026-10-08T15:25:21.8240109Z Version: 20260927.320.1
+2026-10-08T15:25:21.8242317Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T15:25:21.8244220Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-08T15:25:21.8245567Z ##[endgroup]
+2026-10-08T15:25:21.8246918Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:25:21.8249442Z Contents: read
+2026-10-08T15:25:21.8250116Z Metadata: read
+2026-10-08T15:25:21.8250835Z Packages: read
+2026-10-08T15:25:21.8251483Z ##[endgroup]
+2026-10-08T15:25:21.8253718Z Secret source: Actions
+2026-10-08T15:25:21.8254989Z Cache mode: write
+2026-10-08T15:25:21.8256103Z Prepare workflow directory
+2026-10-08T15:25:21.8924460Z Prepare all required actions
+2026-10-08T15:25:21.8981282Z Getting action download info
+2026-10-08T15:25:22.0665850Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:25:22.3629448Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+2026-10-08T15:25:23.0609743Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-08T15:25:23.7097886Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-08T15:25:24.3750490Z Complete job name: apple-release-smoke (x86_64-unknown-linux-gnu)
+2026-10-08T15:25:24.4115746Z ##[group]Checking docker version
+2026-10-08T15:25:24.4126105Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-10-08T15:25:24.4700387Z '1.48'
+2026-10-08T15:25:24.4711565Z Docker daemon API version: '1.48'
+2026-10-08T15:25:24.4711956Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-10-08T15:25:24.4856460Z '1.48'
+2026-10-08T15:25:24.4868985Z Docker client API version: '1.48'
+2026-10-08T15:25:24.4874255Z ##[endgroup]
+2026-10-08T15:25:24.4875935Z ##[group]Clean up resources from previous jobs
+2026-10-08T15:25:24.4881250Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=c0f035"
+2026-10-08T15:25:24.5013521Z ##[command]/usr/bin/docker network prune --force --filter "label=c0f035"
+2026-10-08T15:25:24.5131060Z ##[endgroup]
+2026-10-08T15:25:24.5131357Z ##[group]Create local container network
+2026-10-08T15:25:24.5139667Z ##[command]/usr/bin/docker network create --label c0f035 github_network_fddd987d82d24a7f88e601103e793cf4
+2026-10-08T15:25:24.5755501Z 798a7e7b0599463c09df0f86bee74c952baf64bc485109b95fe178989c795dc4
+2026-10-08T15:25:24.5774167Z ##[endgroup]
+2026-10-08T15:25:24.5793391Z ##[group]Starting job container
+2026-10-08T15:25:24.5811711Z ##[command]/usr/bin/docker pull swift:6.1.3
+2026-10-08T15:25:24.8247743Z 6.1.3: Pulling from library/swift
+2026-10-08T15:25:24.8998175Z a60ef8ec184e: Pulling fs layer
+2026-10-08T15:25:24.8998653Z 6d384ac63da7: Pulling fs layer
+2026-10-08T15:25:24.8998998Z 23c386ab9005: Pulling fs layer
+2026-10-08T15:25:24.8999333Z 934353e7332e: Pulling fs layer
+2026-10-08T15:25:24.8999651Z 934353e7332e: Waiting
+2026-10-08T15:25:25.0359520Z a60ef8ec184e: Verifying Checksum
+2026-10-08T15:25:25.0360497Z a60ef8ec184e: Download complete
+2026-10-08T15:25:25.0663439Z 934353e7332e: Verifying Checksum
+2026-10-08T15:25:25.0665451Z 934353e7332e: Download complete
+2026-10-08T15:25:25.3515814Z 6d384ac63da7: Verifying Checksum
+2026-10-08T15:25:25.3516788Z 6d384ac63da7: Download complete
+2026-10-08T15:25:26.1956543Z a60ef8ec184e: Pull complete
+2026-10-08T15:25:27.4648974Z 23c386ab9005: Verifying Checksum
+2026-10-08T15:25:27.4649741Z 23c386ab9005: Download complete
+2026-10-08T15:25:39.0931344Z 6d384ac63da7: Pull complete
+2026-10-08T15:25:59.6424633Z 23c386ab9005: Pull complete
+2026-10-08T15:25:59.6509393Z 934353e7332e: Pull complete
+2026-10-08T15:25:59.6539108Z Digest: sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db
+2026-10-08T15:25:59.6554518Z Status: Downloaded newer image for swift:6.1.3
+2026-10-08T15:25:59.6562732Z docker.io/library/swift:6.1.3
+2026-10-08T15:25:59.6633005Z ##[command]/usr/bin/docker create --name c4ed01ed6f384469ae45b6bba1533249_swift613_ce9def --label c0f035 --workdir /__w/graphite/graphite --network github_network_fddd987d82d24a7f88e601103e793cf4  -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/2.337.0/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" swift:6.1.3 "-f" "/dev/null"
+2026-10-08T15:25:59.6904747Z b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:25:59.6927587Z ##[command]/usr/bin/docker start b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:25:59.8557681Z b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:25:59.8574397Z ##[command]/usr/bin/docker ps --all --filter id=b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-10-08T15:25:59.8684005Z b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 Up Less than a second
+2026-10-08T15:25:59.8703203Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:25:59.8809133Z HOME=/github/home
+2026-10-08T15:25:59.8809717Z GITHUB_ACTIONS=true
+2026-10-08T15:25:59.8810165Z CI=true
+2026-10-08T15:25:59.8810666Z PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2026-10-08T15:25:59.8811239Z SWIFT_SIGNING_KEY=52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
+2026-10-08T15:25:59.8811897Z SWIFT_PLATFORM=ubuntu24.04
+2026-10-08T15:25:59.8812366Z SWIFT_BRANCH=swift-6.1.3-release
+2026-10-08T15:25:59.8812820Z SWIFT_VERSION=swift-6.1.3-RELEASE
+2026-10-08T15:25:59.8813365Z SWIFT_WEBROOT=https://download.swift.org
+2026-10-08T15:25:59.8826128Z ##[endgroup]
+2026-10-08T15:25:59.8834259Z ##[group]Waiting for all services to be ready
+2026-10-08T15:25:59.8835716Z ##[endgroup]
+2026-10-08T15:25:59.9118011Z ##[group]Run actions/checkout@v7
+2026-10-08T15:25:59.9118472Z with:
+2026-10-08T15:25:59.9118729Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:59.9118996Z   repository: johnsonlee/graphite
+2026-10-08T15:25:59.9121061Z   token: ***
+2026-10-08T15:25:59.9121256Z   ssh-strict: true
+2026-10-08T15:25:59.9121437Z   ssh-user: git
+2026-10-08T15:25:59.9121623Z   persist-credentials: true
+2026-10-08T15:25:59.9121832Z   clean: true
+2026-10-08T15:25:59.9122023Z   sparse-checkout-cone-mode: true
+2026-10-08T15:25:59.9122235Z   fetch-depth: 1
+2026-10-08T15:25:59.9122409Z   fetch-tags: false
+2026-10-08T15:25:59.9122595Z   show-progress: true
+2026-10-08T15:25:59.9122777Z   lfs: false
+2026-10-08T15:25:59.9122941Z   submodules: false
+2026-10-08T15:25:59.9123119Z   set-safe-directory: true
+2026-10-08T15:25:59.9123330Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:25:59.9123730Z env:
+2026-10-08T15:25:59.9123941Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:59.9124428Z   DRY_RUN: true
+2026-10-08T15:25:59.9124618Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:59.9124842Z ##[endgroup]
+2026-10-08T15:25:59.9174282Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:00.0836514Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:26:00.0838299Z ##[group]Getting Git version info
+2026-10-08T15:26:00.0838742Z Working directory is '/__w/graphite/graphite'
+2026-10-08T15:26:00.0839409Z [command]/usr/bin/git version
+2026-10-08T15:26:00.0839739Z git version 2.43.0
+2026-10-08T15:26:00.0841758Z ##[endgroup]
+2026-10-08T15:26:00.0846794Z Temporarily overriding HOME='/__w/_temp/f0c7de46-6079-486b-a5d5-e34b93c51584' before making global git config changes
+2026-10-08T15:26:00.0848567Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:26:00.0862057Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+2026-10-08T15:26:00.0893534Z Deleting the contents of '/__w/graphite/graphite'
+2026-10-08T15:26:00.0895651Z ##[group]Determining repository object format
+2026-10-08T15:26:00.0897398Z ##[endgroup]
+2026-10-08T15:26:00.0898118Z ##[group]Initializing the repository
+2026-10-08T15:26:00.0900994Z [command]/usr/bin/git init /__w/graphite/graphite
+2026-10-08T15:26:00.0934958Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:26:00.0935847Z hint: is subject to change. To configure the initial branch name to use in all
+2026-10-08T15:26:00.0936823Z hint: of your new repositories, which will suppress this warning, call:
+2026-10-08T15:26:00.0937738Z hint: 
+2026-10-08T15:26:00.0938114Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:26:00.0939566Z hint: 
+2026-10-08T15:26:00.0939976Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:26:00.0940637Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:26:00.0941217Z hint: 
+2026-10-08T15:26:00.0941479Z hint: 	git branch -m <name>
+2026-10-08T15:26:00.0944901Z Initialized empty Git repository in /__w/graphite/graphite/.git/
+2026-10-08T15:26:00.0954668Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:26:00.0991171Z ##[endgroup]
+2026-10-08T15:26:00.0991709Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:26:00.0993377Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T15:26:00.1023786Z ##[endgroup]
+2026-10-08T15:26:00.1025132Z ##[group]Setting up auth
+2026-10-08T15:26:00.1025733Z Removing SSH command configuration
+2026-10-08T15:26:00.1027475Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:26:00.1054409Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:26:00.1278281Z Removing HTTP extra header
+2026-10-08T15:26:00.1279962Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:26:00.1297347Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:26:00.1499798Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:26:00.1503803Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:26:00.1539714Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:26:00.1741058Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:26:00.1778123Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git.path /__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:00.1807341Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git/worktrees/*.path /__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:00.1844078Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:00.1874962Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:00.1901846Z ##[endgroup]
+2026-10-08T15:26:00.1902330Z ##[group]Fetching the repository
+2026-10-08T15:26:00.1907631Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:26:01.0806578Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:26:01.0807327Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:26:01.0827396Z [command]/usr/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:26:01.0853205Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:26:01.0856732Z ##[endgroup]
+2026-10-08T15:26:01.0857298Z ##[group]Determining the checkout info
+2026-10-08T15:26:01.0858392Z ##[endgroup]
+2026-10-08T15:26:01.0861083Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T15:26:01.0896621Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:26:01.0924429Z ##[group]Checking out the ref
+2026-10-08T15:26:01.0927550Z [command]/usr/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:26:01.1680786Z Note: switching to '1ba3808f79db8190ecd278a3853ab7a27d5abac9'.
+2026-10-08T15:26:01.1681114Z 
+2026-10-08T15:26:01.1681385Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T15:26:01.1681923Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T15:26:01.1682459Z state without impacting any branches by switching back to a branch.
+2026-10-08T15:26:01.1682779Z 
+2026-10-08T15:26:01.1682986Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T15:26:01.1683498Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T15:26:01.1683821Z 
+2026-10-08T15:26:01.1683957Z   git switch -c <new-branch-name>
+2026-10-08T15:26:01.1684225Z 
+2026-10-08T15:26:01.1684356Z Or undo this operation with:
+2026-10-08T15:26:01.1684544Z 
+2026-10-08T15:26:01.1684652Z   git switch -
+2026-10-08T15:26:01.1684797Z 
+2026-10-08T15:26:01.1685063Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T15:26:01.1685431Z 
+2026-10-08T15:26:01.1685641Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:26:01.1689362Z ##[endgroup]
+2026-10-08T15:26:01.1747454Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T15:26:01.1760708Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:26:01.2022318Z ##[group]Run actions/setup-java@v5
+2026-10-08T15:26:01.2022556Z with:
+2026-10-08T15:26:01.2022728Z   distribution: temurin
+2026-10-08T15:26:01.2022918Z   java-version: 17
+2026-10-08T15:26:01.2023095Z   java-package: jdk
+2026-10-08T15:26:01.2023273Z   check-latest: false
+2026-10-08T15:26:01.2023446Z   set-default: true
+2026-10-08T15:26:01.2023619Z   verify-signature: false
+2026-10-08T15:26:01.2023813Z   server-id: github
+2026-10-08T15:26:01.2023989Z   server-username: GITHUB_ACTOR
+2026-10-08T15:26:01.2024206Z   server-password: GITHUB_TOKEN
+2026-10-08T15:26:01.2024410Z   overwrite-settings: true
+2026-10-08T15:26:01.2024606Z   job-status: success
+2026-10-08T15:26:01.2026580Z   token: ***
+2026-10-08T15:26:01.2026767Z   show-download-progress: false
+2026-10-08T15:26:01.2027126Z env:
+2026-10-08T15:26:01.2027345Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:26:01.2027740Z   DRY_RUN: true
+2026-10-08T15:26:01.2027933Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:26:01.2028188Z ##[endgroup]
+2026-10-08T15:26:01.2035275Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:01.4052405Z ##[group]Installed distributions
+2026-10-08T15:26:01.4118251Z Trying to resolve the latest version from remote
+2026-10-08T15:26:01.6152965Z Resolved latest version as 17.0.20+101
+2026-10-08T15:26:01.6153331Z Trying to download...
+2026-10-08T15:26:01.6154028Z Downloading Java 17.0.20+101 (Temurin-Hotspot) from https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz ...
+2026-10-08T15:26:02.5433589Z Extracting Java archive...
+2026-10-08T15:26:02.5522695Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /__w/_temp/0190364b-ef12-4053-b26e-175f0d3eaa40 -f /__w/_temp/1210126d-e52e-4203-8771-1488227d680f
+2026-10-08T15:26:06.1059342Z Java 17.0.20+101 was downloaded
+2026-10-08T15:26:06.1059652Z Setting Java 17.0.20+101 as the default
+2026-10-08T15:26:06.1065137Z Creating toolchains.xml for JDK version 17 from temurin
+2026-10-08T15:26:06.1117371Z Writing to /github/home/.m2/toolchains.xml
+2026-10-08T15:26:06.1117808Z 
+2026-10-08T15:26:06.1118205Z Java configuration:
+2026-10-08T15:26:06.1118506Z   Distribution: temurin
+2026-10-08T15:26:06.1118921Z   Version: 17.0.20+101
+2026-10-08T15:26:06.1119284Z   Path: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:06.1119581Z 
+2026-10-08T15:26:06.1120003Z ##[endgroup]
+2026-10-08T15:26:06.1149734Z Creating settings.xml with server-id: github
+2026-10-08T15:26:06.1150227Z Writing to /github/home/.m2/settings.xml
+2026-10-08T15:26:06.1151208Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+2026-10-08T15:26:06.1344817Z ##[group]Run actions/download-artifact@v8
+2026-10-08T15:26:06.1345076Z with:
+2026-10-08T15:26:06.1345262Z   name: release-v2.11.3-apple-validation.4
+2026-10-08T15:26:06.1345490Z   path: dry-run
+2026-10-08T15:26:06.1345670Z   merge-multiple: false
+2026-10-08T15:26:06.1345872Z   repository: johnsonlee/graphite
+2026-10-08T15:26:06.1346077Z   run-id: 37798249852
+2026-10-08T15:26:06.1346256Z   skip-decompress: false
+2026-10-08T15:26:06.1346453Z   digest-mismatch: error
+2026-10-08T15:26:06.1346635Z env:
+2026-10-08T15:26:06.1346812Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:26:06.1347301Z   DRY_RUN: true
+2026-10-08T15:26:06.1347511Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:26:06.1347792Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:06.1348110Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:06.1348388Z   MAVEN_ARGS: -ntp
+2026-10-08T15:26:06.1348563Z ##[endgroup]
+2026-10-08T15:26:06.1352978Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:06.3299034Z Downloading single artifact
+2026-10-08T15:26:06.4939742Z Preparing to download the following artifacts:
+2026-10-08T15:26:06.4940916Z - release-v2.11.3-apple-validation.4 (ID: 11561030466, Size: 104057988, Expected Digest: sha256:eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696)
+2026-10-08T15:26:06.8599207Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/d97cd4f8-f4a6-4c9a-b2b9-fe1ec5b7999f/workflow-job-run-62403cbc-6b52-5f3c-9c5e-772953032411/artifacts/e1c3514b3e1bb853e8a5910771b5177a871dd0ff035ab41479985fced5e029e1.zip
+2026-10-08T15:26:06.8600888Z Starting download of artifact to: /__w/graphite/graphite/dry-run
+2026-10-08T15:26:06.9370699Z (node:179) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T15:26:06.9372641Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T15:26:08.2915623Z SHA256 digest of downloaded artifact is eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696
+2026-10-08T15:26:08.2916107Z Artifact download completed successfully.
+2026-10-08T15:26:08.2916377Z Total of 1 artifact(s) downloaded
+2026-10-08T15:26:08.2938305Z Download artifact has finished successfully
+2026-10-08T15:26:08.3061975Z ##[group]Run set -euo pipefail
+2026-10-08T15:26:08.3062293Z [36;1mset -euo pipefail[0m
+2026-10-08T15:26:08.3062555Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+2026-10-08T15:26:08.3062846Z [36;1mINSTALLED="${RUNNER_TEMP}/apple-release"[0m
+2026-10-08T15:26:08.3063108Z [36;1mmkdir -p "${INSTALLED}"[0m
+2026-10-08T15:26:08.3063423Z [36;1mCLI="graphite-${RELEASE_VERSION}-x86_64-unknown-linux-musl.tar.gz"[0m
+2026-10-08T15:26:08.3063886Z [36;1mAPPLE="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"[0m
+2026-10-08T15:26:08.3064374Z [36;1m(cd "${ASSETS}" && shasum -a 256 -c "${CLI}.sha256" "${APPLE}.sha256" graphite.jar.sha256)[0m
+2026-10-08T15:26:08.3064759Z [36;1mtar -xzf "${ASSETS}/${CLI}" -C "${INSTALLED}"[0m
+2026-10-08T15:26:08.3065064Z [36;1mtar -xzf "${ASSETS}/${APPLE}" -C "${INSTALLED}"[0m
+2026-10-08T15:26:08.3065374Z [36;1mcp "${ASSETS}/graphite.jar" "${INSTALLED}/graphite.jar"[0m
+2026-10-08T15:26:08.3065762Z [36;1m"${INSTALLED}/graphite" --version | grep -F "${RELEASE_VERSION}"[0m
+2026-10-08T15:26:08.3066169Z [36;1mbash .github/scripts/verify-apple-release.sh "${INSTALLED}/graphite" \[0m
+2026-10-08T15:26:08.3066607Z [36;1m  frontend/apple/Fixtures/AcmeShop "${RUNNER_TEMP}/apple-release-check"[0m
+2026-10-08T15:26:08.3069862Z shell: bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:26:08.3070138Z env:
+2026-10-08T15:26:08.3070323Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:26:08.3070556Z   DRY_RUN: true
+2026-10-08T15:26:08.3070775Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:26:08.3071057Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:08.3071371Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:08.3071636Z   MAVEN_ARGS: -ntp
+2026-10-08T15:26:08.3071819Z ##[endgroup]
+2026-10-08T15:26:08.3943150Z graphite-2.11.3-apple-validation.4-x86_64-unknown-linux-musl.tar.gz: OK
+2026-10-08T15:26:08.5178040Z graphite-frontend-apple-2.11.3-apple-validation.4-x86_64-unknown-linux-gnu.tar.gz: OK
+2026-10-08T15:26:08.6350216Z graphite.jar: OK
+2026-10-08T15:26:09.4513183Z graphite 2.11.3-apple-validation.4
+2026-10-08T15:26:09.4669812Z {
+2026-10-08T15:26:09.4670102Z   "name": "apple",
+2026-10-08T15:26:09.4670389Z   "kind": "executable",
+2026-10-08T15:26:09.4670759Z   "path": "/__w/_temp/apple-release/graphite-frontend-apple",
+2026-10-08T15:26:09.4671105Z   "found_via": "next to the graphite executable",
+2026-10-08T15:26:09.4671372Z   "version": "0.1.0",
+2026-10-08T15:26:09.4671601Z   "inputs": [
+2026-10-08T15:26:09.4671781Z     "Package.swift",
+2026-10-08T15:26:09.4671967Z     "xcodeproj",
+2026-10-08T15:26:09.4672148Z     "xcworkspace",
+2026-10-08T15:26:09.4672322Z     "index-store"
+2026-10-08T15:26:09.4672493Z   ],
+2026-10-08T15:26:09.4672651Z   "ir_schema": [
+2026-10-08T15:26:09.4672815Z     1
+2026-10-08T15:26:09.4672969Z   ],
+2026-10-08T15:26:09.4673327Z   "aliases": {
+2026-10-08T15:26:09.4673607Z     "swift": "apple",
+2026-10-08T15:26:09.4673964Z     "ios": "apple",
+2026-10-08T15:26:09.4674263Z     "macos": "apple"
+2026-10-08T15:26:09.4674550Z   },
+2026-10-08T15:26:09.4674810Z   "indexable": [
+2026-10-08T15:26:09.4675154Z     "swift"
+2026-10-08T15:26:09.4675438Z   ],
+2026-10-08T15:26:09.4675684Z   "writes": "ir"
+2026-10-08T15:26:09.4675854Z }
+2026-10-08T15:26:09.4729305Z Running /__w/_temp/apple-release/graphite-frontend-apple build
+2026-10-08T15:26:09.4780608Z {"phase": "swift build", "done": 0, "total": 1}
+2026-10-08T15:26:10.1545028Z Building for debugging...
+2026-10-08T15:26:10.1571874Z [0/7] Write sources
+2026-10-08T15:26:10.2679979Z [2/7] Write swift-version-24593BA9C3E375BF.txt
+2026-10-08T15:26:11.8223400Z [4/11] Emitting module AcmeShop
+2026-10-08T15:26:11.8223797Z [5/11] Compiling AcmeShop CartService.swift
+2026-10-08T15:26:11.8224078Z [6/11] Compiling AcmeShop Models.swift
+2026-10-08T15:26:11.8224354Z [7/11] Compiling AcmeShop PaymentClient.swift
+2026-10-08T15:26:12.0335605Z [8/12] Wrapping AST for AcmeShop for debugging
+2026-10-08T15:26:12.1192700Z [10/14] Compiling AcmeShopTool Tool.swift
+2026-10-08T15:26:12.1193043Z [11/14] Emitting module AcmeShopTool
+2026-10-08T15:26:12.3350811Z [12/15] Wrapping AST for AcmeShopTool for debugging
+2026-10-08T15:26:12.3352840Z [13/15] Write Objects.LinkFileList
+2026-10-08T15:26:12.4723870Z [14/15] Linking acme-tool
+2026-10-08T15:26:12.4740295Z Build complete! (2.34s)
+2026-10-08T15:26:12.4875348Z {"phase": "swift build", "done": 1, "total": 1}
+2026-10-08T15:26:12.4875821Z {"phase": "swift package describe", "done": 0, "total": 1}
+2026-10-08T15:26:12.7005244Z {"phase": "swift package describe", "done": 1, "total": 1}
+2026-10-08T15:26:12.7007875Z {"phase": "index", "done": 0, "total": 4}
+2026-10-08T15:26:12.7152735Z {"phase": "index", "done": 4, "total": 4}
+2026-10-08T15:26:12.7166340Z {"phase": "syntax", "done": 1, "total": 4}
+2026-10-08T15:26:12.7171197Z {"phase": "syntax", "done": 2, "total": 4}
+2026-10-08T15:26:12.7175207Z {"phase": "syntax", "done": 3, "total": 4}
+2026-10-08T15:26:12.7179256Z {"phase": "syntax", "done": 4, "total": 4}
+2026-10-08T15:26:12.7179770Z {"phase": "demangle", "done": 0, "total": 115}
+2026-10-08T15:26:12.7716107Z {"phase": "demangle", "done": 115, "total": 115}
+2026-10-08T15:26:12.7718921Z {"phase": "emit", "done": 0, "total": 1}
+2026-10-08T15:26:12.7740305Z {"phase": "emit", "done": 1, "total": 1}
+2026-10-08T15:26:12.7746409Z graphite-frontend-apple 0.1.0: 4 files, 11 types, 15 methods, 13 fields, 24 call sites, 15 constants, 3 annotations; 68 nodes, 28 edges, 84 strings -> /__w/_temp/apple-release-check/acme.graphite.ir-218.graphite-ir
+2026-10-08T15:26:12.7783225Z Picked up JAVA_TOOL_OPTIONS: -Xmx8g
+2026-10-08T15:26:12.9511650Z Reading IR from: /__w/_temp/apple-release-check/acme.graphite.ir-218.graphite-ir
+2026-10-08T15:26:13.1346705Z IR from graphite-frontend-apple 0.1.0 (swift): 68 nodes, 28 edges, 84 strings
+2026-10-08T15:26:13.1347680Z Saving to: /__w/_temp/apple-release-check/acme.graphite.build-218
+2026-10-08T15:26:13.2967831Z Done.
+2026-10-08T15:26:13.3158100Z Packed 19 entries (83663 bytes) into /__w/_temp/apple-release-check/acme.graphite
+2026-10-08T15:26:13.3158625Z fingerprint: 2bd92ed12a0caedf2021f8300360540ad551771fcef61e52d9b4fe2a443a53d2
+2026-10-08T15:26:13.3159255Z sha256: 716885920995b356dd1973f113279d0bf331850f05d6462cb259fa3bdd78091f (written to /__w/_temp/apple-release-check/acme.graphite.sha256)
+2026-10-08T15:26:13.3184796Z file sha256 ok (716885920995b356dd1973f113279d0bf331850f05d6462cb259fa3bdd78091f)
+2026-10-08T15:26:13.3185486Z OK: 19 entries verified in /__w/_temp/apple-release-check/acme.graphite
+2026-10-08T15:26:13.3186358Z fingerprint: 2bd92ed12a0caedf2021f8300360540ad551771fcef61e52d9b4fe2a443a53d2
+2026-10-08T15:26:13.3216895Z "checkout(order:method:)"
+2026-10-08T15:26:13.3225009Z "init(client:)"
+2026-10-08T15:26:13.3256655Z "payments.charge"
+2026-10-08T15:26:13.3264475Z true
+2026-10-08T15:26:13.3296024Z "checkout(order:method:)"
+2026-10-08T15:26:13.3376888Z ##[group]Run actions/upload-artifact@v7
+2026-10-08T15:26:13.3377641Z with:
+2026-10-08T15:26:13.3377861Z   name: apple-release-check-x86_64-unknown-linux-gnu
+2026-10-08T15:26:13.3378321Z   path: /home/runner/work/_temp/apple-release-check/*.csv
+/home/runner/work/_temp/apple-release-check/*.graphite
+
+2026-10-08T15:26:13.3378724Z   if-no-files-found: warn
+2026-10-08T15:26:13.3378927Z   compression-level: 6
+2026-10-08T15:26:13.3379116Z   overwrite: false
+2026-10-08T15:26:13.3379308Z   include-hidden-files: false
+2026-10-08T15:26:13.3379510Z   archive: true
+2026-10-08T15:26:13.3379676Z env:
+2026-10-08T15:26:13.3379854Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:26:13.3380287Z   DRY_RUN: true
+2026-10-08T15:26:13.3380490Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:26:13.3380765Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:13.3381075Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+2026-10-08T15:26:13.3381376Z   MAVEN_ARGS: -ntp
+2026-10-08T15:26:13.3381553Z ##[endgroup]
+2026-10-08T15:26:13.3385107Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:13.5392412Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-08T15:26:13.5394131Z The least common ancestor is /. This will be the root directory of the artifact
+2026-10-08T15:26:13.5394968Z With the provided path, there will be 3 files uploaded
+2026-10-08T15:26:13.5396407Z Artifact name is valid!
+2026-10-08T15:26:13.5396920Z Root directory input is valid!
+2026-10-08T15:26:13.7552292Z Uploading artifact: apple-release-check-x86_64-unknown-linux-gnu.zip
+2026-10-08T15:26:13.7585672Z Beginning upload of artifact content to blob storage
+2026-10-08T15:26:13.8054757Z Uploaded bytes 745
+2026-10-08T15:26:13.8182960Z Finished uploading artifact content to blob storage!
+2026-10-08T15:26:13.8188812Z SHA256 digest of uploaded artifact is 74eeca232c103477c2a2c7b2bfd34483ab0453e89b25fb1da7a9e9244eacc94b
+2026-10-08T15:26:13.8189483Z Finalizing artifact upload
+2026-10-08T15:26:14.1478763Z Artifact apple-release-check-x86_64-unknown-linux-gnu successfully finalized. Artifact ID 11561435098
+2026-10-08T15:26:14.1479595Z Artifact apple-release-check-x86_64-unknown-linux-gnu has been successfully uploaded! Final size is 745 bytes. Artifact ID is 11561435098
+2026-10-08T15:26:14.1482552Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11561435098
+2026-10-08T15:26:14.1668267Z Post job cleanup.
+2026-10-08T15:26:14.1675130Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:14.3759929Z Post job cleanup.
+2026-10-08T15:26:14.3766487Z ##[command]/usr/bin/docker exec  b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0 sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T15:26:14.5308031Z [command]/usr/bin/git version
+2026-10-08T15:26:14.5327748Z git version 2.43.0
+2026-10-08T15:26:14.5350508Z Temporarily overriding HOME='/__w/_temp/18891217-7ece-40e8-8b15-fe7f09c0f82c' before making global git config changes
+2026-10-08T15:26:14.5351254Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:26:14.5354708Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+2026-10-08T15:26:14.5388619Z Removing SSH command configuration
+2026-10-08T15:26:14.5392455Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:26:14.5423320Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:26:14.5629274Z Removing HTTP extra header
+2026-10-08T15:26:14.5634724Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:26:14.5663555Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:26:14.5869531Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:26:14.5873934Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:26:14.5902977Z includeif.gitdir:/__w/graphite/graphite/.git.path
+2026-10-08T15:26:14.5903770Z includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:26:14.5904388Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:26:14.5905468Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:26:14.5910731Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git.path
+2026-10-08T15:26:14.5948057Z /__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:14.5951274Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git.path \/__w\/_temp\/git\-credentials\-62593a40\-ea1d\-482e\-8b98\-c784c1bbe78e\.config
+2026-10-08T15:26:14.5992381Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:26:14.6014342Z /__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:14.6022183Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-62593a40\-ea1d\-482e\-8b98\-c784c1bbe78e\.config
+2026-10-08T15:26:14.6055069Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:26:14.6078090Z /github/runner_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:14.6086350Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-62593a40\-ea1d\-482e\-8b98\-c784c1bbe78e\.config
+2026-10-08T15:26:14.6119757Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:26:14.6144889Z /github/runner_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config
+2026-10-08T15:26:14.6151705Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-62593a40\-ea1d\-482e\-8b98\-c784c1bbe78e\.config
+2026-10-08T15:26:14.6183216Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:26:14.6371235Z Removing credentials config '/__w/_temp/git-credentials-62593a40-ea1d-482e-8b98-c784c1bbe78e.config'
+2026-10-08T15:26:14.6514523Z Stop and remove container: c4ed01ed6f384469ae45b6bba1533249_swift613_ce9def
+2026-10-08T15:26:14.6518440Z ##[command]/usr/bin/docker rm --force b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:26:17.4545454Z b0c7fd14ee4136f0ecff80f10dea856f72d3d3f9e9058b49422983a7b6a24fe0
+2026-10-08T15:26:17.4574726Z Remove container network: github_network_fddd987d82d24a7f88e601103e793cf4
+2026-10-08T15:26:17.4578517Z ##[command]/usr/bin/docker network rm github_network_fddd987d82d24a7f88e601103e793cf4
+2026-10-08T15:26:17.5447676Z github_network_fddd987d82d24a7f88e601103e793cf4
+2026-10-08T15:26:17.5512218Z Cleaning up orphan processes

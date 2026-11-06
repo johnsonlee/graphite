@@ -11,6 +11,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -41,7 +42,7 @@ internal class WebGraphBackedGraph(
     private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY),
     /** The build's completeness evidence, read on first use; absent for a graph saved without it. */
     private val analysisCompleteness: Lazy<AnalysisCompleteness?> = lazyOf(null)
-) : Graph {
+) : Graph, EnumValueIndexSource {
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>> = nodesById.values.groupBy { it::class.java }
@@ -143,6 +144,8 @@ internal class WebGraphBackedGraph(
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.enumValues["$enumClass#$enumName"]
+
+    override fun enumValueIndex(): Map<String, List<Any?>> = metadata.enumValues
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.memberAnnotations["$className#$memberName"] ?: emptyMap()

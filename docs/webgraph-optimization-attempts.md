@@ -23178,3 +23178,179 @@ measurements of the newly integrated PR head against main. Hosted benchmark-regr
 correctness/completion/OOM proof and any matched post-integration real64 performance acceptance
 remain pending. Existing single-graph diagnostic timings and hosted report-only timings cannot
 substitute. PR: https://github.com/johnsonlee/graphite/pull/199.
+
+### Attempt312 — certify bounded scalar collect prefixes (2026-11-05)
+
+**Hypothesis and boundary.** On the existing real64 corpus, the bounded query
+`MATCH (n:CallSite) WITH collect(n.callee_name) AS names RETURN names[0..10] AS names`
+still constructs a row and merges provenance for every matching CallSite after
+its retained list is full. A two-second CPU sample of the five-query, four-worker,
+64-graph workload shows the `fused_rows` / `stream_match` / provenance path.
+The profiled run is diagnostic only; its perturbed timings are excluded.
+
+Admit only one unfiltered, non-optional CallSite node pattern, an empty seed,
+one non-DISTINCT aggregate of a direct scalar CallSite property, and an existing
+exclusive literal-prefix proof within the existing bounded-row ceiling. Before
+skipping any argument, certify every source's complete selected CallSite frames
+and all four scalar string IDs using the cancellable immutable-graph certificate.
+A failed certificate restores the unchanged ordinary evaluator and error order.
+Evaluate retained values through that evaluator in original source/type-index
+order; preserve every nonempty contributor's sorted, unique provenance even after
+the prefix is full or zero. Other expressions, filters, domains, DISTINCT and
+unbounded consumers remain on the existing path.
+
+**Correctness gates.** Compare complete results and provenance with the disabled
+specialization and a CASE-wrapped eager reference. Cover empty domains, zero and
+cross-source slices, duplicates, malformed later records and queried/unqueried
+SIDs, source first-error order, direct successful entry, and cached/cold proof
+cancellation. A warm-proof access counter verifies omission of the discarded
+suffix; it is a correctness assertion, not a performance measurement. Run the
+complete Cypher suite with the existing native-core and declared-type fixtures,
+certificate cancellation tests, strict workspace Clippy and formatting.
+
+**Source validation result.** All 297 Cypher library tests passed with every
+required persisted fixture, as did the storage certificate interruption/retry
+contract, strict all-target/all-feature workspace Clippy, formatting and diff
+checks. Initial test-helper and lint failures are retained in the validation
+archive. These are correctness results only.
+
+**Predeclared real workload.** Reuse the two sealed real64 graph sets only after
+proving their JVM production/build and construction-harness dependency closures
+unchanged through the rebase. Preserve all enum metadata and string-ID changes.
+The accepted current main consumer is `97488be2`; the immediate pre-optimization
+consumer is `89f2ddd7`. Build each consumer in its own physical Cargo target and
+check source-specific CLI behavior and executable SHA before measurement.
+Use the same 73 global multi-graph query texts, complete typed response oracles,
+four closed-loop workers, two warmups and twenty pressure requests per case.
+Three paired rounds run AB, BA, AB; retain every sample and failure. A separate
+focused parent/candidate comparison uses the same saved head graphs to attribute
+the increment. Report focused and full mixed workloads separately. No single-graph
+performance measurement or synthetic performance substitute is permitted.
+
+**Separate acceptance conclusions.** Require correctness and process stability;
+report per-case p50/p95, all paired-round differences, complete workload time,
+query-stage server CPU and kernel process peak RSS. Loading ends after registry
+readiness and complete first-use consumption; query CPU covers its pressure
+stage, while its kernel RSS includes the declared server lifetime. CPU and RSS
+have independent 5% limits for each paired operation. No construction or loading
+gain offsets a query regression. JVM producer code is unchanged, so its matching
+correctness evidence is reused rather than rebuilding graphs for every query
+experiment. Source/correctness evidence alone does not establish performance
+acceptance. Final measured values, per-metric conclusions and the keep/revert
+decision are sealed in PR #154's local benchmark attachment; initial source
+validation is not a performance-recovery claim.
+
+**Prior evidence correction.** The earlier local run's supposed head native
+program was the baseline program reused from a shared Cargo target. Its JVM
+producers and their enum layout differences are genuine, but its native version
+attribution is invalid. Preserve that run and the original report rather than
+relabeling its observations. New same-code/data and same-data/code controls use
+independently built executables and explicit dataset provenance. This attempt
+retains the cache-isolation guard and the concurrent rebase integration fix;
+it does not remove metadata or weaken late-error detection to obtain speed.
+
+### Attempt313 — materialize only bounded winning CallSite groups (2026-11-05)
+
+**Parent and observed tradeoff.** Retain attempt312 at `152abe6e`: all complete
+real64 responses matched, collect p95 fell from about1.8seconds to about1millisecond,
+and the full mixed query CPU fell approximately60%. All three declared loading and
+query CPU/kernel-peak-RSS pairs met their independent5% bounds. The same workload
+showed higher grouped count/WITH latency: removing the long collect request changed
+the closed-loop in-flight combination. Conservative HTTP interval analysis shows
+group/group overlap in20/20 requests per round rather than2/20. This is evidence of
+changed overlap, not proof of a particular hardware or scheduling cause. A separate
+64-graph CPU sample identifies `grouped_call_site_property` allocation, per-source
+sorting and grouped-WITH projection as the remaining implementation work. Sampled
+run timings are diagnostic and excluded from acceptance.
+
+**Predeclared hypothesis.** After every source proves its complete string dictionary,
+CallSite frames, IDs, property/postings coverage and ordering, accumulate global
+counts in borrowed-text compact state. Retain each group's first source/node encounter.
+Select only the bounded highest-count/first-encounter winners, or the first groups
+passing the already-supported complete global count predicate. Allocate ordinary
+rows, strings and full contributing-graph provenance only for those winners. Use
+certified dictionary and CSR presence to recover provenance, without enumerating
+posting runs for discarded groups. Keep unsupported shapes and failed proofs on the
+unchanged raw/generic path. Do not change data, storage layout, predicate support,
+feature coverage or concurrency to obtain numbers.
+
+**Correctness.** All304 Cypher library tests pass with native-core and every required
+declared-type/inherited fixture; strict workspace all-target/all-feature Clippy,
+format and diff checks pass. New direct-entry and true-generic differential tests
+cover stable ties, every scalar field, late-source winner/threshold changes, exact
+threshold exclusion, complete provenance, empty/zero outputs, malformed/stale/unsorted
+or duplicate index evidence, and cached cancellation. The true generic oracle also
+exposed existing extra-label admission bugs in count/partition fallback. Reject
+additional labels that do not cover the entire proven domain; valid aliases retain
+the strategy and other cases reach the ordinary matcher. This is a correctness
+restriction, not a new label-intersection optimization. Initial failing tests are
+retained; the initial len-zero lint diagnostic survives only in the tool transcript
+because its intermediate file was overwritten. No performance sample was lost.
+
+**Matched validation.** The immediate runtime parent is152abe6e, equivalent to the
+CI-only merge0e82c44a. The accepted current main runtime is97488be2, equivalent to
+CI-only mainc86fe745. Freeze all actual binaries before rebuilding; use independent
+physical targets and record exact source/executable identities. Reuse sealed real64
+production inputs under the already-proven unchanged JVM writer/build closure.
+First measure the incremental parent/candidate on identical saved head graphs, then
+the cumulative candidate against main on the declared base/head graph sets. Preserve
+73 exact global64 query texts, complete typed response checks, four workers, two
+warmups and twenty measured requests per case across AB/BA/AB rounds. Do not compare
+focused five-case absolute values with the full73-case mix. Preserve all earlier
+runs, positive/negative differences and failures.
+
+**Independent conclusions.** Loading includes readiness and all first-use responses;
+query CPU is its complete mixed pressure-stage delta, while kernel RSS is the
+separately declared fresh-server lifetime peak. Check each operation/pair CPU and RSS
+against independent5% limits. Report every case's p50/p95 and paired ranges, complete
+workload time, correctness and stability separately. Source tests establish no
+performance benefit by themselves. Final measured results and the keep/revert decision
+are sealed in the immutable PR154 benchmark attachment and its experiment-history
+copy; do not interpret an intermediate positive increment as completed recovery.
+
+### Attempt314 — select bounded DISTINCT values before rows (2026-11-05)
+
+**Trigger and retained evidence.** Retain Attempt312's bounded collect and Attempt313's
+compact grouping gains. The cumulative fc428 real64 comparison passed all438 load and
+10074 query responses, but did not pass performance acceptance: query RSS rawround0
+increased7.003%; DISTINCT p95 increased269.182→305.793ms, with allthree round p50/p95
+increases. The Apple supplement also retained latency/resource failures. None is
+waived by CPU savings, other rounds or another workload. A separate full73 timeline
+comparison retained all3358 diagnostic responses and precise HTTP/RSS intervals:
+three DISTINCT requests were in flight at candidate pressure peak, with RSS and
+physical footprint growing together and no pressure-stage pageins. This supports
+investigating concurrent allocation, not a proof of a specific allocator cause;
+the diagnostic's lower candidate peak does not replace the earlier failed round.
+
+**Change.** The existing exact multi-source unsorted CallSite DISTINCT path creates
+all per-source distinct Rows, owned strings and provenance, globally merges them,
+then truncates. For finite bounds<=65536, first prove every participating source's
+complete ordered property/frame/dictionary domain. Select only the remaining
+first-encounter winners per source with a bounded heap and retain only selected
+values across sources. Once full, later sources cannot change winners; reconstruct
+all winning values' provenance from every certified graph before returning. Allocate
+Rows only for winners. Retain the original path for sorted, single-source, complex,
+unbounded or unproved inputs. Additional labels must match the complete admitted
+domain; otherwise the existing DISTINCT fastpath also defers to the generic matcher.
+No global concurrency reduction, feature removal or graph semantic change.
+
+**Correctness and stability.** Six focused tests compare direct admission and full
+Rows/provenance against retained raw and independently forced generic pipelines;
+assert only winning Rows are materialized without timing. Cover allfour fields,
+first-encounter ordering, cross-graph duplicates/late winners/provenance, empty and
+zero bounds, malformed later fields/frame/index/domain fallback, cached cancellation,
+timeout and unsupported shapes. A test-directory prefix collision found during
+independent review was corrected before the complete parallel suite. Full Cypher
+suite310/310 passed with all required native and declared-typev1–v4/inherited fixtures;
+strict all-target/all-feature workspace clippy, formatting and diff checks passed.
+The initially incorrect malformed-CSR test assertion remains in the evidence log.
+
+**Predeclared evaluation.** See the immutable attachment's PROTOCOL.distinct.md.
+Use independently built frozen binaries and unchanged real64 producer closure.
+First one diagnostic full73 parent/candidate pair on identical head data, then fresh
+three-pair full73 main/candidate load and query comparisons. Preserve all old runs;
+never replace failed rounds. Keep p50/p95, end-to-end, CPU and lifetime kernel RSS
+conclusions separate per operation/workload/pair with independent5% resource limits.
+Review core outcomes before another final Apple three-graph comparison. Source tests
+are correctness evidence only. The attachment's experiment-history copy records
+actual measurements and retention decisions; this entry claims no measured recovery.

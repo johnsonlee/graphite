@@ -12,7 +12,10 @@ import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
+import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.graph.analysisStatus
 import io.johnsonlee.graphite.input.AnalysisIdentity
@@ -93,6 +96,53 @@ class AnalysisCompletenessPersistenceTest {
                 (graph as? Closeable)?.close()
             }
         }
+
+    @Test
+    fun `declaration-only enums and completeness survive both builders and load modes together`() {
+        val declarations = mapOf(
+            "app.State#EMPTY" to emptyList(),
+            "app.State#PAYLOAD" to listOf(7, null, "label")
+        )
+        fun assertMetadata(graph: Graph) {
+            assertEquals(completeness, graph.analysisCompleteness())
+            assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(analysed))
+            assertEquals(declarations, (graph as EnumValueIndexSource).enumValueIndex())
+            assertEquals(emptyList(), graph.enumValues("app.State", "EMPTY"))
+            assertEquals(listOf(7, null, "label"), graph.enumValues("app.State", "PAYLOAD"))
+            assertNull(graph.enumValues("app.State", "MISSING"))
+        }
+        for (mapped in listOf(false, true)) {
+            val builder: FullGraphBuilder = if (mapped) {
+                MmapGraphBuilder(directory("completeness-enums-builder"))
+            } else {
+                DefaultGraph.Builder()
+            }
+            builder.addNode(IntConstant(NodeId(0), 42))
+            builder.addMethod(analysed)
+            builder.addEnumValues("app.State", "EMPTY", emptyList())
+            builder.addEnumValues("app.State", "PAYLOAD", listOf(7, null, "label"))
+            builder.setAnalysisCompleteness(completeness)
+            val source = builder.build()
+            val first = directory("completeness-enums-first")
+            try {
+                assertMetadata(source)
+                GraphStore.save(source, first)
+            } finally {
+                (source as? Closeable)?.close()
+            }
+            for (mode in GraphStore.LoadMode.entries) {
+                val resaved = directory("completeness-enums-resaved")
+                val graph = GraphStore.load(first, mode)
+                try {
+                    assertMetadata(graph)
+                    GraphStore.save(graph, resaved)
+                } finally {
+                    (graph as? Closeable)?.close()
+                }
+                loaded(resaved, ::assertMetadata)
+            }
+        }
+    }
 
     @Test
     fun `the evidence survives a save and both loads, and the loaded graphs answer a callee's status`() {
