@@ -68,6 +68,9 @@ pub struct AppState {
     /// Graph ids waiting to be warmed, and whether the one worker that drains them
     /// is alive (see `warm_c4_graphs`).
     c4_warm: parking_lot::Mutex<C4WarmQueue>,
+    /// Actual worker lifetimes for this state, isolated from other tests' servers.
+    #[cfg(test)]
+    c4_warm_workers: parking_lot::Mutex<Vec<std::thread::JoinHandle<()>>>,
     /// How long the server must be idle before the worker builds; `C4_WARM_QUIET`
     /// unless a test shortens it.
     c4_warm_quiet: std::time::Duration,
@@ -110,6 +113,8 @@ impl AppState {
             last_request_millis: std::sync::atomic::AtomicU64::new(0),
             requests_in_flight: std::sync::atomic::AtomicUsize::new(0),
             c4_warm: parking_lot::Mutex::new(C4WarmQueue::default()),
+            #[cfg(test)]
+            c4_warm_workers: parking_lot::Mutex::new(Vec::new()),
             c4_warm_quiet: C4_WARM_QUIET,
             topology_queries: Vec::new(),
             topology: parking_lot::RwLock::new(None),
@@ -263,12 +268,17 @@ impl AppState {
         queue.running = true;
         drop(queue);
         let state = self.clone();
-        if std::thread::Builder::new()
+        match std::thread::Builder::new()
             .name("c4-warm".into())
             .spawn(move || state.run_c4_warm())
-            .is_err()
         {
-            self.c4_warm.lock().running = false;
+            Ok(worker) => {
+                #[cfg(test)]
+                self.c4_warm_workers.lock().push(worker);
+                #[cfg(not(test))]
+                drop(worker);
+            }
+            Err(_) => self.c4_warm.lock().running = false,
         }
     }
 
@@ -2627,9 +2637,11 @@ mod tests {
     async fn warm_up_loads_share_one_worker_that_drains_and_exits() {
         let (_, state) = metrics_app();
         // Keep the server busy while thirty loads and replacements arrive.
-        state
-            .requests_in_flight
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let busy = InFlight::enter(state.clone());
+        // Another server may legitimately have its own worker at the same time.
+        let (_, other) = metrics_app();
+        let other_busy = InFlight::enter(other.clone());
+        other.warm_c4_graphs(["independent".into()]);
         for i in 0..30 {
             state.warm_c4_graphs([format!("g{}", i % 3)]);
         }
@@ -2640,55 +2652,56 @@ mod tests {
             // worker took can be queued again behind it), never thirty.
             assert!(queue.pending.len() <= 3, "{:?}", queue.pending);
         }
-        // The worker names itself as it starts, so give it a moment to appear; it
-        // is one thread, never thirty.
-        #[cfg(target_os = "linux")]
+        // Observe this server's actual spawned thread, not every `c4-warm` thread
+        // created by concurrently running tests with independent AppStates.
         {
-            let named = std::time::Instant::now();
-            while warm_threads() == 0 {
-                assert!(named.elapsed() < std::time::Duration::from_secs(5));
-                tokio::time::sleep(std::time::Duration::from_millis(5)).await;
-            }
-            assert_eq!(warm_threads(), 1);
+            let workers = state.c4_warm_workers.lock();
+            assert_eq!(workers.len(), 1, "one worker serves the entire burst");
+            assert!(
+                !workers[0].is_finished(),
+                "traffic keeps the worker waiting"
+            );
         }
         // Traffic stops: the worker finds no such graphs, drains, and exits.
-        state
-            .requests_in_flight
-            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
-        let started = std::time::Instant::now();
-        while state.c4_warm.lock().running {
-            assert!(started.elapsed() < std::time::Duration::from_secs(30));
-            tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-        }
+        assert_eq!(other.c4_warm_workers.lock().len(), 1);
+        drop(busy);
+        drop(other_busy);
+        wait_for_warm_workers(&state).await;
+        wait_for_warm_workers(&other).await;
+        assert!(!state.c4_warm.lock().running);
         assert!(state.c4_warm.lock().pending.is_empty());
-        #[cfg(target_os = "linux")]
-        {
-            let gone = std::time::Instant::now();
-            while warm_threads() != 0 {
-                assert!(gone.elapsed() < std::time::Duration::from_secs(5));
-                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-            }
-        }
-        // A later load starts a fresh worker.
+        // A later load starts a fresh worker, and that worker also drains and exits.
         state.warm_c4_graphs(["late".to_string()]);
-        assert!(state.c4_warm.lock().running);
+        assert_eq!(state.c4_warm_workers.lock().len(), 2);
+        wait_for_warm_workers(&state).await;
+        assert!(!state.c4_warm.lock().running);
+        assert!(state.c4_warm.lock().pending.is_empty());
+        let workers: Vec<_> = state
+            .c4_warm_workers
+            .lock()
+            .drain(..)
+            .chain(other.c4_warm_workers.lock().drain(..))
+            .collect();
+        for worker in workers {
+            worker
+                .join()
+                .expect("warm-up worker exited without panicking");
+        }
     }
 
-    /// Threads of this process named `c4-warm`.
-    #[cfg(target_os = "linux")]
-    fn warm_threads() -> usize {
-        std::fs::read_dir("/proc/self/task")
-            .map(|tasks| {
-                tasks
-                    .flatten()
-                    .filter(|t| {
-                        std::fs::read_to_string(t.path().join("comm"))
-                            .map(|c| c.trim() == "c4-warm")
-                            .unwrap_or(false)
-                    })
-                    .count()
-            })
-            .unwrap_or(0)
+    async fn wait_for_warm_workers(state: &AppState) {
+        tokio::time::timeout(std::time::Duration::from_secs(30), async {
+            while state
+                .c4_warm_workers
+                .lock()
+                .iter()
+                .any(|worker| !worker.is_finished())
+            {
+                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+            }
+        })
+        .await
+        .expect("warm-up workers must drain and exit");
     }
 
     /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a C4 request whose client gave
