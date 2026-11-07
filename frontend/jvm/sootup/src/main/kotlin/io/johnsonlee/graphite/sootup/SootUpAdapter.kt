@@ -286,6 +286,11 @@ class SootUpAdapter(
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
 ) {
+    /** Configured only by an observed load; ordinary loads allocate no snapshots or receipts. */
+    internal var bodyDelivery: FoldedBodyDelivery? = null
+    internal var methodFoldObservation: (MethodSignature) -> MethodFoldObservation? = { null }
+    internal var methodRecovery: (MethodSignature) -> BodyInterceptionEvidence? = { null }
+
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
     /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */
@@ -1304,11 +1309,13 @@ class SootUpAdapter(
         activeControlFlowTruncated = false
         var status = AnalysisStatus.ANALYZED
         var failure: String? = null
+        var analyzedBody: Body? = null
 
         try {
             // Process method body if available
             if (method.hasBody()) {
-                processMethodBody(method, methodDescriptor)
+                analyzedBody = method.body
+                processMethodBody(method, methodDescriptor, analyzedBody)
                 if (activeControlFlowTruncated) status = AnalysisStatus.ANALYZED_WITHOUT_CONTROL_FLOW
             } else {
                 status = when {
@@ -1337,10 +1344,21 @@ class SootUpAdapter(
             clearMethodState(methodDescriptor)
             releaseConversionState(method)
         }
+        bodyDelivery?.let { delivery ->
+            val owner = checkNotNull(classesByNameCache?.get(methodDescriptor.declaringClass.className))
+            val origin = evidenceOrigin(owner)
+            val role = if (origin == null) null else artifactRoles[origin]
+                ?: if (origin == singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
+            delivery.deliver(MethodObservationEvidence(
+                JvmMethodIdentity.of(methodDescriptor), method.modifiers, origin, role,
+                methodDescriptor.declaringClass.className in applicationClasses, status, failure,
+                methodRecovery(method.signature), methodFoldObservation(method.signature)
+            ), analyzedBody)
+        }
     }
 
-    private fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor) {
-        val stmtGraph = method.body.controlFlowGraph
+    private fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor, body: Body) {
+        val stmtGraph = body.controlFlowGraph
         val statements = stmtGraph.stmts
         // A body a rule folded in keeps the numbering it had before the fold, so a surviving call's
         // ordinal is the one the unfolded graph gave it; every other body is numbered as it stands.

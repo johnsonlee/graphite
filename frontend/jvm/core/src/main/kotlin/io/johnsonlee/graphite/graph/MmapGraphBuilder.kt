@@ -102,6 +102,18 @@ class MmapGraphBuilder(
     private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
     private var analysisCompleteness: AnalysisCompleteness? = null
 
+    /**
+     * Abandon a failed build, closing both output streams and removing its private files.
+     * Never call this after handing the built graph to a consumer: it owns these files then.
+     */
+    fun abort() {
+        try {
+            nodeStream.use { edgeStream.close() }
+        } finally {
+            check(workDir.toFile().deleteRecursively()) { "Cannot remove abandoned graph directory: $workDir" }
+        }
+    }
+
     override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
         declaredTypeTable = table
         return this

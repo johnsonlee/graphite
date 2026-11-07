@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.input.GlobPatterns
 import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ProjectLoader
+import io.johnsonlee.graphite.input.FoldReport
 import sootup.apk.frontend.ApkAnalysisInputLocation
 import sootup.apk.frontend.DexBodyInterceptors
 import sootup.apk.frontend.main.AndroidVersionInfo
@@ -21,10 +22,12 @@ import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocatio
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import sootup.core.signatures.MethodSignature
 
 private const val JAR_EXTENSION_NAME = "jar"
 private const val WAR_EXTENSION_NAME = "war"
@@ -95,7 +98,8 @@ private fun createApkInputLocations(
     folding: ConstantFolding?,
     interceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor>,
     onFallback: (String) -> Unit,
-    log: (String) -> Unit
+    log: (String) -> Unit,
+    onRecovery: (BodyInterceptionRecovery) -> Unit = {}
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
     // Dex registers hold unrelated values over time: split them before functional dispatch.
@@ -111,7 +115,8 @@ private fun createApkInputLocations(
         onFallback,
         { builder -> folding?.discard(builder) },
         recoveries.map { it.copy(interceptors = interceptorFactory(it.interceptors)) },
-        { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) }
+        { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) },
+        onRecovery
     )
     val androidVersion = AndroidVersionInfo(path, platforms.toString())
     val apkLocation = ApkAnalysisInputLocation(
@@ -303,6 +308,7 @@ private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path =
  * - Directories containing .class files
  * - Spring Boot fat JARs (BOOT-INF layout)
  */
+@Suppress("TooManyFunctions") // Input-format handling and the guarded observation lifecycle share one loader configuration.
 class JavaProjectLoader(
     private val config: LoaderConfig = LoaderConfig(),
     private val graphBuilderFactory: () -> FullGraphBuilder = { MmapGraphBuilder() }
@@ -343,33 +349,88 @@ class JavaProjectLoader(
     /** Warning destination when verbose logging is disabled; independent for each loader. */
     internal var warningSink: (String) -> Unit = { System.err.println(it) }
 
-    override fun load(path: Path): Graph {
+    private val loading = AtomicBoolean()
+
+    override fun load(path: Path): Graph = withLoad { loadGraph(path, null) { graph, _ -> graph } }
+
+    /**
+     * Stream immutable snapshots of the exact bodies this invocation analyses, including
+     * admitted dependency bodies, then return the same graph with final evidence. This never
+     * broadens scope, runs library domain extensions or performs a second build/selection.
+     * Snapshots may be retained; all provisional observations must be discarded if this throws.
+     * An observer/copy failure aborts the load. Ordinary load(path) does no snapshot work.
+     *
+     * A loader accepts one invocation at a time (including callbacks); overlapping/reentrant
+     * invocations fail immediately. Use distinct loaders and mutable sinks for concurrent loads.
+     */
+    fun loadObserved(path: Path, observer: FoldedBodyObserver): ObservedJavaLoad = withLoad {
+        val delivery = FoldedBodyDelivery(observer)
+        loadGraph(path, delivery) { graph, report -> delivery.finish(graph, report) }
+    }
+
+    private inline fun <T> withLoad(action: () -> T): T {
+        check(loading.compareAndSet(false, true)) { "JavaProjectLoader already has a load in progress" }
+        return try {
+            action()
+        } finally {
+            loading.set(false)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught") // Callback/VM failures must preserve their cause while releasing a failed build.
+    private fun <T> loadGraph(
+        path: Path, delivery: FoldedBodyDelivery?, complete: (Graph, FoldReport?) -> T
+    ): T {
         bodyInterceptionFallbackCount = 0
         val folding = config.folding?.let { ConstantFolding(it.rules) }
         foldInterceptors = folding?.bodyInterceptors(emptyList())
-        val inputLocations = createInputLocations(path, folding)
+        val recoveries = delivery?.let { HashMap<MethodSignature, BodyInterceptionEvidence>() }
+        val inputLocations = createInputLocations(path, folding) { recovery ->
+            recoveries?.set(recovery.method, BodyInterceptionEvidence(recovery.chain, recovery.reason))
+        }
         val view = createJavaView(inputLocations.locations)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path, inputLocations.dexApi)
-        val adapter = SootUpAdapter(
-            view, config,
-            resourceAccessor = resourceAccessor,
-            declarationWarning = ::warn,
-            inputLocationSources = inputLocations.sources,
-            artifactRoles = inputLocations.roles,
-            singleArtifactSource = singleArtifactSource(path),
-            artifactOrder = inputLocations.artifactOrder,
-            graphBuilder = graphBuilderFactory(),
-            preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
-        )
-        val graph = adapter.buildGraph()
-        if (bodyInterceptionFallbackCount > 0) {
-            warn("Recovered $bodyInterceptionFallbackCount APK method body/bodies after interceptor failures")
+        val builder = graphBuilderFactory()
+        try {
+            val adapter = SootUpAdapter(
+                view, config,
+                resourceAccessor = resourceAccessor,
+                declarationWarning = ::warn,
+                inputLocationSources = inputLocations.sources,
+                artifactRoles = inputLocations.roles,
+                singleArtifactSource = singleArtifactSource(path),
+                artifactOrder = inputLocations.artifactOrder,
+                graphBuilder = builder,
+                preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
+            )
+            if (delivery != null) {
+                adapter.bodyDelivery = delivery
+                adapter.methodFoldObservation = { signature -> folding?.observation(signature) }
+                adapter.methodRecovery = { signature -> recoveries?.get(signature) }
+            }
+            val graph = adapter.buildGraph()
+            if (bodyInterceptionFallbackCount > 0) {
+                warn("Recovered $bodyInterceptionFallbackCount APK method body/bodies after interceptor failures")
+            }
+            val report = folding?.report()
+            if (report != null) config.folding?.onReport?.invoke(report)
+            return complete(graph, report)
+        } catch (failure: Throwable) {
+            suppressCleanupFailure(failure) { (builder as? MmapGraphBuilder)?.abort() }
+            suppressCleanupFailure(failure) { resourceAccessor.close() }
+            inputLocations.locations.forEach { location -> suppressCleanupFailure(failure) { location.close() } }
+            throw failure
         }
-        if (folding != null) {
-            config.folding?.onReport?.invoke(folding.report())
+    }
+
+    @Suppress("TooGenericExceptionCaught") // Cleanup must never replace the original analysis or observer failure.
+    private fun suppressCleanupFailure(failure: Throwable, cleanup: () -> Unit) {
+        try {
+            cleanup()
+        } catch (cleanupFailure: Throwable) {
+            if (cleanupFailure !== failure) failure.addSuppressed(cleanupFailure)
         }
-        return graph
     }
 
     private fun singleArtifactSource(path: Path): String? =
@@ -388,7 +449,9 @@ class JavaProjectLoader(
         return ext in listOf(JAR_EXTENSION_NAME, WAR_EXTENSION_NAME, ZIP_EXTENSION_NAME, APK_EXTENSION_NAME)
     }
 
-    private fun createInputLocations(path: Path, folding: ConstantFolding?): InputLocations {
+    private fun createInputLocations(
+        path: Path, folding: ConstantFolding?, onRecovery: (BodyInterceptionRecovery) -> Unit
+    ): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
             path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(
@@ -396,7 +459,7 @@ class JavaProjectLoader(
                 { message ->
                     bodyInterceptionFallbackCount++
                     warn(message)
-                }, ::log
+                }, ::log, onRecovery
             )
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
