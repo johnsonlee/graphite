@@ -129,6 +129,9 @@ enum FrontendCommand {
 
 #[derive(Parser, Debug)]
 struct QueryArgs {
+    /// Query compatibility: graphite or opencypher-m23
+    #[arg(long, default_value = "graphite")]
+    dialect: graphite_cypher::CypherDialect,
     /// Path to a saved graph: a directory or a .graphite file
     graph_dir: PathBuf,
 
@@ -290,7 +293,7 @@ fn query(args: QueryArgs) -> Result<(), String> {
     if args.verbose {
         eprintln!("Executing: {}", args.query);
     }
-    let executor = Executor::single("standalone", Arc::new(graph));
+    let executor = Executor::single("standalone", Arc::new(graph)).with_dialect(args.dialect);
     // The Kotlin command calls `execute(query)` with no row cap, so neither does this.
     let result = executor
         .execute(&args.query, None)
@@ -414,6 +417,38 @@ fn _context_marker(c: &dyn GraphContext) -> usize {
 #[cfg(test)]
 mod cli_tests {
     use super::*;
+
+    #[test]
+    fn query_parser_exposes_public_dialect_and_rejects_invalid_values() {
+        for (extra, expected) in [
+            (vec![], graphite_cypher::CypherDialect::Graphite),
+            (
+                vec!["--dialect", "opencypher-m23"],
+                graphite_cypher::CypherDialect::OpenCypherM23,
+            ),
+        ] {
+            let mut values = vec!["graphite", "query", "graph.graphite", "RETURN 1"];
+            values.extend(extra);
+            let cli = parse_cli(values.into_iter().map(OsString::from).collect()).unwrap();
+            let Some(Command::Query(query)) = cli.command else {
+                panic!("expected query")
+            };
+            assert_eq!(query.dialect, expected);
+        }
+        assert!(parse_cli(
+            [
+                "graphite",
+                "query",
+                "graph.graphite",
+                "RETURN 1",
+                "--dialect",
+                "unknown"
+            ]
+            .map(OsString::from)
+            .into()
+        )
+        .is_err());
+    }
 
     #[test]
     fn build_retains_the_separator_for_shell_option_detection() {

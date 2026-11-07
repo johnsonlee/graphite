@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
@@ -416,18 +417,13 @@ class CypherExecutor internal constructor(
                 map["line"] = node.lineNumber
                 map["ordinal"] = node.ordinal
             }
-            is IntConstant -> map[PROPERTY_VALUE] = node.value
-            is StringConstant -> map[PROPERTY_VALUE] = node.value
-            is LongConstant -> map[PROPERTY_VALUE] = node.value
-            is FloatConstant -> map[PROPERTY_VALUE] = node.value
-            is DoubleConstant -> map[PROPERTY_VALUE] = node.value
-            is BooleanConstant -> map[PROPERTY_VALUE] = node.value
-            is NullConstant -> map[PROPERTY_VALUE] = null
             is EnumConstant -> {
                 map["enum_type"] = node.enumType.className
                 map[PROPERTY_NAME] = node.enumName
                 map[PROPERTY_VALUE] = node.value
             }
+            is IntConstant, is StringConstant, is LongConstant, is FloatConstant,
+            is DoubleConstant, is BooleanConstant, is NullConstant -> map[PROPERTY_VALUE] = (node as ConstantNode).value
             is LocalVariable -> {
                 map[PROPERTY_NAME] = node.name
                 map[PROPERTY_TYPE] = node.type.className
@@ -552,38 +548,37 @@ data class PropertyFilter(
             FilterOperator.LESS_THAN_OR_EQUAL -> compareNumeric(actual, value) { a, b -> a <= b }
             FilterOperator.GREATER_THAN_OR_EQUAL -> compareNumeric(actual, value) { a, b -> a >= b }
             FilterOperator.REGEX -> {
-                val pattern = value?.toString() ?: return false
-                val actualStr = actual?.toString() ?: return false
-                pattern.toRegex().matches(actualStr)
+                value?.toString()?.let { pattern ->
+                    actual?.toString()?.let { pattern.toRegex().matches(it) }
+                } == true
             }
             FilterOperator.STARTS_WITH -> {
-                val prefix = value?.toString() ?: return false
-                actual?.toString()?.startsWith(prefix) == true
+                val prefix = value?.toString()
+                prefix != null && actual?.toString()?.startsWith(prefix) == true
             }
             FilterOperator.ENDS_WITH -> {
-                val suffix = value?.toString() ?: return false
-                actual?.toString()?.endsWith(suffix) == true
+                val suffix = value?.toString()
+                suffix != null && actual?.toString()?.endsWith(suffix) == true
             }
             FilterOperator.CONTAINS -> {
-                val substring = value?.toString() ?: return false
-                actual?.toString()?.contains(substring) == true
+                val substring = value?.toString()
+                substring != null && actual?.toString()?.contains(substring) == true
             }
         }
     }
 
-    private fun compareEquals(a: Any?, b: Any?): Boolean {
-        if (a == null && b == null) return true
-        if (a == null || b == null) return false
-        // Handle numeric type coercion
-        if (a is Number && b is Number) return a.toDouble() == b.toDouble()
-        return a == b || a.toString() == b.toString()
+    private fun compareEquals(a: Any?, b: Any?): Boolean = when {
+        a == null && b == null -> true
+        a == null || b == null -> false
+        a is Number && b is Number -> a.toDouble() == b.toDouble()
+        else -> a == b || a.toString() == b.toString()
     }
 
     private fun compareNumeric(a: Any?, b: Any?, op: (Double, Double) -> Boolean): Boolean {
         val aNum = (a as? Number)?.toDouble() ?: return false
-        val bNum = (b as? Number)?.toDouble() ?: return false
-        return op(aNum, bNum)
+        return (b as? Number)?.toDouble()?.let { op(aNum, it) } ?: false
     }
+
 }
 
 private fun materializeDirectProjectionRows(

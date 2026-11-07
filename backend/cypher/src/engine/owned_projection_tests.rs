@@ -27,9 +27,10 @@ fn owned_projection_preserves_preprojection_order_keys_and_distinct_metadata() {
         })
         .collect();
     let items = [ReturnItem {
+        source_text: None,
         expr: property("text"),
-        // Deliberately shadow the pre-projection map used by ORDER BY.
-        alias: Some("c".into()),
+        // Keep the non-projected source map available to ORDER BY.
+        alias: Some("text".into()),
     }];
     let order = [OrderItem {
         expr: property("rank"),
@@ -37,11 +38,11 @@ fn owned_projection_preserves_preprojection_order_keys_and_distinct_metadata() {
     }];
     let (columns, projected) =
         project(&ev, rows.clone(), Some(&items), false, Some(&order)).unwrap();
-    assert_eq!(columns, ["c"]);
+    assert_eq!(columns, ["text"]);
     assert_eq!(
         projected[0].keys().map(String::as_str).collect::<Vec<_>>(),
         [
-            "c",
+            "text",
             INTERNAL_PROVENANCE_KEY,
             INTERNAL_WEIGHT_KEY,
             "\0order:0"
@@ -62,14 +63,14 @@ fn owned_projection_preserves_preprojection_order_keys_and_distinct_metadata() {
     assert_eq!(
         ordered
             .iter()
-            .map(|row| row["c"].as_str())
+            .map(|row| row["text"].as_str())
             .collect::<Vec<_>>(),
         [Some("same"), Some("same"), Some("other")]
     );
     let (_, distinct) = project(&ev, rows, Some(&items), true, None).unwrap();
     assert_eq!(distinct.len(), 2);
-    assert_eq!(distinct[0]["c"].as_str(), Some("same"));
-    assert_eq!(distinct[1]["c"].as_str(), Some("other"));
+    assert_eq!(distinct[0]["text"].as_str(), Some("same"));
+    assert_eq!(distinct[1]["text"].as_str(), Some("other"));
     assert_eq!(QueryResult::graph_ids(&distinct[0]), ["a", "z"]);
     assert_eq!(QueryResult::graph_ids(&distinct[1]), ["b"]);
     assert!(distinct
@@ -105,6 +106,7 @@ fn owned_projection_keeps_late_expression_and_order_errors_and_drops_all_values(
             })
             .collect();
         let mut items = vec![ReturnItem {
+            source_text: None,
             expr: Expr::Variable("payload".into()),
             alias: Some("retained".into()),
         }];
@@ -114,6 +116,7 @@ fn owned_projection_keeps_late_expression_and_order_errors_and_drops_all_values(
         }];
         if !error_in_order {
             items.push(ReturnItem {
+                source_text: None,
                 expr: late_error.clone(),
                 alias: Some("checked".into()),
             });

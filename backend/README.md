@@ -58,6 +58,19 @@ The command-line interface mirrors `graphite serve`: `--data`, `--graph id:path`
 `--id`, `--port`, `--load-mode`, `--topology`, `--max-concurrent-cypher`,
 `--cypher-max-timeout-ms` and `--metrics`.
 
+HTTP graph loads and unloads stage a complete replacement on a bounded blocking
+pool (at most four jobs, capped by available cores). Readers keep the current graph
+and topology until both replacements can commit against the same catalog generation.
+Cancelling a request prevents a pending commit; its worker retains capacity until
+it finishes. Loading, fingerprinting and declared-table preparation stay off Tokio
+workers and cooperate with cancellation between preparation stages.
+
+Each topology rebuild shares a 10,000,000-unit work budget across all rules. One
+unit is an evaluator/scan tick or an explicit storage/materialization checkpoint.
+The rebuild also uses `--cypher-max-timeout-ms` as its deadline, matching the server's
+query cancellation policy. These maintenance limits cover topology construction;
+ordinary queries gain no new default work limit.
+
 ## Testing
 
 ```bash

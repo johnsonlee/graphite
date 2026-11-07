@@ -1,5 +1,6 @@
 package sootup.java.bytecode.frontend.conversion
 
+import io.johnsonlee.graphite.sootup.operation
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -221,7 +222,7 @@ class StreamingClassMethodsTest {
                 inputLocationSources = emptyMap(),
                 singleArtifactSource = "fixture.jar"
             )
-            val release = SootUpAdapter::class.java.getDeclaredMethod("releaseConversionState", Any::class.java)
+            val release = adapter.operation("releaseConversionState", Any::class.java)
                 .apply { isAccessible = true }
             repeat(3) {
                 // Match source resolution counts: SootUp retains line state between bodies.
@@ -284,7 +285,7 @@ class StreamingClassMethodsTest {
                 singleArtifactSource = "fixture.jar"
             )
             val factory = view.identifierFactory
-            val declares = SootUpAdapter::class.java.getDeclaredMethod(
+            val declares = adapter.operation(
                 "declaresMethod", ClassType::class.java, MethodSubSignature::class.java
             ).apply { isAccessible = true }
             val intType = factory.getType("int")
@@ -337,7 +338,7 @@ class StreamingClassMethodsTest {
             JavaView(emptyList()), LoaderConfig(buildCallGraph = false),
             extensions = emptyList(), inputLocationSources = emptyMap(), singleArtifactSource = "fixture.jar"
         )
-        SootUpAdapter::class.java.getDeclaredMethod("releaseConversionState", Any::class.java).apply {
+        adapter.operation("releaseConversionState", Any::class.java).apply {
             isAccessible = true
         }.invoke(adapter, source)
     }

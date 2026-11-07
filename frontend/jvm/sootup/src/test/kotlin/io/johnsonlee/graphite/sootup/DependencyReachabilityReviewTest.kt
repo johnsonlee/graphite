@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.graph.AnalysisStatus
-import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.FoldPlan

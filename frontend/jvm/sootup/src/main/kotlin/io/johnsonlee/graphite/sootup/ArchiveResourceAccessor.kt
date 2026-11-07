@@ -191,8 +191,8 @@ class ArchiveResourceAccessor private constructor(
                 try {
                     val nestedZip = ZipFile(tempFile.toFile())
                     sources.addManaged(ZipSource(nestedZip, jarName), nestedZip, closers)
-                } catch (e: Exception) {
-                    // Skip malformed JARs
+                } catch (_: java.util.zip.ZipException) {
+                    // A malformed optional nested JAR contributes no resources.
                 }
             }
 

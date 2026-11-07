@@ -166,6 +166,8 @@ pub enum TokenKind {
     Octal,
     /// `FLOAT_LITERAL`
     Float,
+    /// A malformed number lexeme; its parser context determines the diagnostic.
+    InvalidNumber,
     Keyword(Keyword),
     /// `=`
     Assign,
@@ -302,9 +304,10 @@ impl Lexer {
 
     fn error(&self, start: usize, col: usize) -> CypherError {
         let text: String = self.chars[start..self.i].iter().collect();
-        CypherError::Parse {
+        CypherError::Syntax {
             position: col,
             message: format!("token recognition error at: '{text}'"),
+            detail: "UnexpectedSyntax",
         }
     }
 
@@ -362,7 +365,7 @@ impl Lexer {
                         self.bump();
                         self.digits();
                         self.exponent();
-                        self.push(TokenKind::Float, start, line, col);
+                        self.numeric(TokenKind::Float, start, line, col);
                     } else if self.peek(1) == Some('.') {
                         self.bump_n(2);
                         self.push(TokenKind::Range, start, line, col);
@@ -418,6 +421,15 @@ impl Lexer {
                         ':' => (TokenKind::Colon, 1),
                         '|' => (TokenKind::Stick, 1),
                         '$' => (TokenKind::Dollar, 1),
+                        '\u{2010}'..='\u{2015}' | '\u{2212}' => {
+                            return Err(CypherError::compilation(
+                                "SyntaxError",
+                                "InvalidUnicodeCharacter",
+                                format!(
+                                    "Unicode dash is not a subtraction operator at column {col}"
+                                ),
+                            ));
+                        }
                         _ => {
                             self.bump();
                             return Err(self.error(start, col));
@@ -460,6 +472,23 @@ impl Lexer {
         true
     }
 
+    fn numeric(&mut self, kind: TokenKind, start: usize, line: usize, col: usize) {
+        if self
+            .peek(0)
+            .is_some_and(|ch| ch.is_ascii_alphanumeric() || ch == '_')
+        {
+            while self
+                .peek(0)
+                .is_some_and(|ch| ch.is_ascii_alphanumeric() || ch == '_')
+            {
+                self.bump();
+            }
+            self.push(TokenKind::InvalidNumber, start, line, col);
+            return;
+        }
+        self.push(kind, start, line, col);
+    }
+
     fn number(&mut self, start: usize, line: usize, col: usize) {
         if self.peek(0) == Some('0') {
             let prefix = self.peek(1).map(|c| c.to_ascii_lowercase());
@@ -468,13 +497,15 @@ impl Lexer {
                 while self.peek(0).is_some_and(|c| c.is_ascii_hexdigit()) {
                     self.bump();
                 }
-                self.push(TokenKind::Hex, start, line, col);
+                self.numeric(TokenKind::Hex, start, line, col);
                 return;
             }
             if prefix == Some('o') && self.peek(2).is_some_and(|c| c.is_ascii_digit()) {
                 self.bump_n(2);
-                self.digits();
-                self.push(TokenKind::Octal, start, line, col);
+                while self.peek(0).is_some_and(|ch| matches!(ch, '0'..='7')) {
+                    self.bump();
+                }
+                self.numeric(TokenKind::Octal, start, line, col);
                 return;
             }
         }
@@ -484,11 +515,11 @@ impl Lexer {
             self.bump();
             self.digits();
             self.exponent();
-            self.push(TokenKind::Float, start, line, col);
+            self.numeric(TokenKind::Float, start, line, col);
             return;
         }
         if self.exponent() {
-            self.push(TokenKind::Float, start, line, col);
+            self.numeric(TokenKind::Float, start, line, col);
             return;
         }
         // INTEGER_LITERAL : '0' | [1-9][0-9]* — a leading zero only ever forms the token "0".
@@ -498,13 +529,26 @@ impl Lexer {
             self.i -= extra;
             self.col -= extra;
         }
-        self.push(TokenKind::Int, start, line, col);
+        self.numeric(TokenKind::Int, start, line, col)
     }
 
     fn string(&mut self, quote: char, start: usize, line: usize, col: usize) -> CypherResult<()> {
         self.bump();
         loop {
             match self.peek(0) {
+                Some('\\') if matches!(self.peek(1), Some('u' | 'U')) => {
+                    let count = if self.peek(1) == Some('u') { 4 } else { 8 };
+                    if !(2..2 + count)
+                        .all(|offset| self.peek(offset).is_some_and(|ch| ch.is_ascii_hexdigit()))
+                    {
+                        return Err(CypherError::compilation(
+                            "SyntaxError",
+                            "InvalidUnicodeLiteral",
+                            format!("Unicode string escape requires {count} hexadecimal digits"),
+                        ));
+                    }
+                    self.bump_n(2 + count);
+                }
                 Some('\\') => {
                     if self.peek(1).is_none() {
                         self.bump();
@@ -565,7 +609,9 @@ mod tests {
 
     fn err(text: &str) -> (usize, String) {
         match tokenize(text) {
-            Err(CypherError::Parse { position, message }) => (position, message),
+            Err(CypherError::Syntax {
+                position, message, ..
+            }) => (position, message),
             other => panic!("expected lexer error, got {other:?}"),
         }
     }
@@ -649,25 +695,28 @@ mod tests {
         assert_eq!(kinds("0xFF"), vec![TokenKind::Hex, TokenKind::Eof]);
         assert_eq!(kinds("0X1f"), vec![TokenKind::Hex, TokenKind::Eof]);
         assert_eq!(kinds("0o17"), vec![TokenKind::Octal, TokenKind::Eof]);
-        assert_eq!(kinds("0o8"), vec![TokenKind::Octal, TokenKind::Eof]);
+        assert_eq!(kinds("0o8"), vec![TokenKind::InvalidNumber, TokenKind::Eof]);
     }
 
     #[test]
-    fn leading_zero_integers_split() {
-        assert_eq!(texts("007"), vec!["0", "0", "7"]);
+    fn leading_zero_integers_are_invalid_but_float_forms_remain_valid() {
+        assert_eq!(kinds("007"), vec![TokenKind::InvalidNumber, TokenKind::Eof]);
         assert_eq!(texts("007.5"), vec!["007.5"]);
         assert_eq!(texts("007e1"), vec!["007e1"]);
-        assert_eq!(
-            kinds("0x"),
-            vec![TokenKind::Int, TokenKind::Ident, TokenKind::Eof]
-        );
+        assert_eq!(kinds("0x"), vec![TokenKind::InvalidNumber, TokenKind::Eof]);
     }
 
     #[test]
     fn number_followed_by_range_or_dot() {
         assert_eq!(texts("1..3"), vec!["1", "..", "3"]);
-        assert_eq!(texts("1.5e"), vec!["1.5", "e"]);
-        assert_eq!(texts("1e+"), vec!["1", "e", "+"]);
+        assert_eq!(
+            kinds("1.5e"),
+            vec![TokenKind::InvalidNumber, TokenKind::Eof]
+        );
+        assert_eq!(
+            kinds("1e+"),
+            vec![TokenKind::InvalidNumber, TokenKind::Plus, TokenKind::Eof]
+        );
         assert_eq!(texts("[..3]"), vec!["[", "..", "3", "]"]);
         assert_eq!(texts("n.x"), vec!["n", ".", "x"]);
     }
@@ -858,5 +907,32 @@ mod tests {
             assert!(Keyword::from_ident(&w.to_lowercase()).is_some(), "{w}");
         }
         assert_eq!(Keyword::from_ident("foo"), Option::None);
+    }
+}
+
+#[cfg(test)]
+mod native_literal_diagnostics {
+    use super::*;
+    #[test]
+    fn malformed_numeric_tokens_and_unicode_escapes_are_rejected_at_their_origin() {
+        for (text, detail) in [
+            ("9223372h54775808", "InvalidNumberLiteral"),
+            ("0x", "InvalidNumberLiteral"),
+            ("0x1A2b3j4D5E6f7", "InvalidNumberLiteral"),
+            ("0o8", "InvalidNumberLiteral"),
+            (r"'\uH'", "InvalidUnicodeLiteral"),
+            ("42 — 41", "InvalidUnicodeCharacter"),
+        ] {
+            let error = crate::parser::parse(&format!("RETURN {text}")).unwrap_err();
+            let diagnostic = error.diagnostic().unwrap();
+            assert_eq!(
+                (diagnostic.error_type, diagnostic.phase, diagnostic.detail),
+                ("SyntaxError", "compile time", detail),
+                "{text}"
+            );
+        }
+        assert!(tokenize(r"'\u0020'").is_ok());
+        assert!(tokenize(r"'\\uH'").is_ok());
+        assert!(tokenize("'—' `—`").is_ok());
     }
 }

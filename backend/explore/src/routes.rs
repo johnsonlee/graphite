@@ -4,6 +4,7 @@
 //! one graph and returns its payload directly. Under `/api/…` the same route serves
 //! every loaded graph and wraps the per-graph payloads in a grouped envelope.
 
+use crate::graph_updates::{GraphUpdate, ServedTopology};
 use crate::guard::*;
 use crate::helpers::*;
 use crate::registry::*;
@@ -15,7 +16,7 @@ use axum::routing::get;
 use axum::Router;
 use graphite_cypher::engine::{CancelToken, Executor, QueryResult, Source};
 use graphite_cypher::materialize::materialize;
-use graphite_cypher::CypherError;
+use graphite_cypher::{CypherDialect, CypherError};
 use serde_json::{json, Map, Value as J};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -31,12 +32,12 @@ pub const C4_WARM_QUIET: std::time::Duration = std::time::Duration::from_secs(2)
 const C4_WARM_POLL: std::time::Duration = std::time::Duration::from_millis(200);
 
 #[cfg(test)]
-type CypherExecutionHook = Arc<dyn Fn(&mut Arc<CancelToken>, u64) + Send + Sync>;
+pub(crate) type CypherExecutionHook = Arc<dyn Fn(&mut Arc<CancelToken>, u64) + Send + Sync>;
 
 pub struct AppState {
     // Test-only execution boundary: no hook or tuning surface exists in production.
     #[cfg(test)]
-    cypher_before_execute: Option<CypherExecutionHook>,
+    pub(crate) cypher_before_execute: Option<CypherExecutionHook>,
     pub registry: Arc<GraphRegistry>,
     pub guard: Arc<CypherGuard>,
     pub version: String,
@@ -67,6 +68,9 @@ pub struct AppState {
     /// Graph ids waiting to be warmed, and whether the one worker that drains them
     /// is alive (see `warm_c4_graphs`).
     c4_warm: parking_lot::Mutex<C4WarmQueue>,
+    /// Actual worker lifetimes for this state, isolated from other tests' servers.
+    #[cfg(test)]
+    c4_warm_workers: parking_lot::Mutex<Vec<std::thread::JoinHandle<()>>>,
     /// How long the server must be idle before the worker builds; `C4_WARM_QUIET`
     /// unless a test shortens it.
     c4_warm_quiet: std::time::Duration,
@@ -74,80 +78,11 @@ pub struct AppState {
     /// registry catalog it was built against so a later load or unload marks it stale
     /// until the rebuild that follows it lands.
     pub topology_queries: Vec<crate::topology::TopologyQuery>,
-    topology: parking_lot::RwLock<Option<ServedTopology>>,
-}
-
-/// A built topology and the catalog version it describes.
-struct ServedTopology {
-    graph: crate::topology::TopologyGraph,
-    catalog: std::collections::BTreeMap<String, u64>,
-}
-
-impl AppState {
-    /// Rebuild the topology from the rules over every loaded graph, as the Kotlin
-    /// server does at startup and after each load and unload. A rule that fails leaves
-    /// the previous topology in place and is reported to the caller.
-    pub fn rebuild_topology(&self) -> Result<(usize, usize), String> {
-        let leases = self.registry.acquire_all();
-        let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
-        for l in &leases {
-            stats.insert(l.id.clone(), l.stats);
-        }
-        let catalog = self.registry.catalog_version();
-        let graph = if self.topology_queries.is_empty() {
-            crate::topology::TopologyGraph::nodes_only(&stats)
-        } else {
-            let sources: Vec<Source> = leases
-                .iter()
-                .map(|l| Source {
-                    id: Arc::from(l.id.as_str()),
-                    graph: l.graph.clone(),
-                })
-                .collect();
-            let ex = Executor::new(sources, true);
-            crate::topology::build(&stats, &self.topology_queries, |cypher, max_rows| {
-                let result = ex
-                    .execute(cypher, Some(max_rows))
-                    .map_err(|e| e.to_string())?;
-                let rows = result
-                    .rows
-                    .iter()
-                    .map(|row| {
-                        row.iter()
-                            .filter(|(k, _)| !k.starts_with('$'))
-                            .map(|(k, v)| (k.clone(), materialize(v, &ex)))
-                            .collect::<indexmap::IndexMap<String, J>>()
-                    })
-                    .collect();
-                Ok(crate::topology::QueryRows {
-                    columns: result.columns.clone(),
-                    rows,
-                })
-            })?
-        };
-        let summary = (graph.nodes.len(), graph.edges.len());
-        *self.topology.write() = Some(ServedTopology { graph, catalog });
-        Ok(summary)
-    }
-
-    /// The topology as the API serves it: the last build, flagged stale when the
-    /// registry catalog has changed since.
-    fn topology_api_map(&self) -> J {
-        let current = self.topology.read();
-        match current.as_ref() {
-            Some(t) => t
-                .graph
-                .to_api_map(t.catalog != self.registry.catalog_version()),
-            None => {
-                let leases = self.registry.acquire_all();
-                let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
-                for l in &leases {
-                    stats.insert(l.id.clone(), l.stats);
-                }
-                crate::topology::TopologyGraph::nodes_only(&stats).to_api_map(false)
-            }
-        }
-    }
+    pub(crate) topology: parking_lot::RwLock<Option<ServedTopology>>,
+    pub(crate) graph_updates: Arc<tokio::sync::Semaphore>,
+    pub(crate) topology_work_limit: u64,
+    #[cfg(test)]
+    pub(crate) graph_update_hook: Option<crate::graph_updates::UpdateHook>,
 }
 
 impl AppState {
@@ -178,9 +113,19 @@ impl AppState {
             last_request_millis: std::sync::atomic::AtomicU64::new(0),
             requests_in_flight: std::sync::atomic::AtomicUsize::new(0),
             c4_warm: parking_lot::Mutex::new(C4WarmQueue::default()),
+            #[cfg(test)]
+            c4_warm_workers: parking_lot::Mutex::new(Vec::new()),
             c4_warm_quiet: C4_WARM_QUIET,
             topology_queries: Vec::new(),
             topology: parking_lot::RwLock::new(None),
+            graph_updates: Arc::new(tokio::sync::Semaphore::new(
+                std::thread::available_parallelism()
+                    .map_or(1, |n| n.get())
+                    .min(4),
+            )),
+            topology_work_limit: crate::graph_updates::DEFAULT_TOPOLOGY_WORK_LIMIT,
+            #[cfg(test)]
+            graph_update_hook: None,
         }
     }
 
@@ -311,7 +256,7 @@ impl AppState {
     /// replaced under traffic, nothing accumulates but one entry per id, and the
     /// worker leases only the generation current when its turn comes, so an unloaded
     /// graph is dropped and a replaced one is built once, in its final form.
-    fn warm_c4_graphs(self: &Arc<Self>, ids: impl IntoIterator<Item = String>) {
+    pub(crate) fn warm_c4_graphs(self: &Arc<Self>, ids: impl IntoIterator<Item = String>) {
         if graphite_cypher::engine::optimizations_disabled() {
             return;
         }
@@ -323,12 +268,17 @@ impl AppState {
         queue.running = true;
         drop(queue);
         let state = self.clone();
-        if std::thread::Builder::new()
+        match std::thread::Builder::new()
             .name("c4-warm".into())
             .spawn(move || state.run_c4_warm())
-            .is_err()
         {
-            self.c4_warm.lock().running = false;
+            Ok(worker) => {
+                #[cfg(test)]
+                self.c4_warm_workers.lock().push(worker);
+                #[cfg(not(test))]
+                drop(worker);
+            }
+            Err(_) => self.c4_warm.lock().running = false,
         }
     }
 
@@ -377,7 +327,7 @@ impl AppState {
     }
 
     /// Drop C4 state for generations the registry no longer serves.
-    fn prune_c4(&self) {
+    pub(crate) fn prune_c4(&self) {
         let live: Vec<u64> = self.registry.catalog_version().into_values().collect();
         self.c4.retain(&live);
     }
@@ -612,55 +562,33 @@ async fn load_graph(
         },
         None => None,
     };
-    match s.registry.load(&id, std::path::Path::new(&path), mode) {
-        Ok(g) => {
-            // The topology follows the catalog. A rule that fails against the new
-            // catalog fails the load, and the graph is withdrawn again, as the Kotlin
-            // registry rolls its load back when the rebuild throws.
-            if let Err(e) = s.rebuild_topology() {
-                let _ = s.registry.unload(&id);
-                return error_json(StatusCode::BAD_REQUEST, &e);
-            }
-            // A replaced graph's C4 state goes with it; the new one is inferred ahead
-            // of its first request.
-            s.prune_c4();
-            s.warm_c4_graphs([g.id.clone()]);
-            // As at startup (`serve::DeclaredTableReader`): a served graph has its declared
-            // table read before its first request, here inline since the load itself is
-            // the request.
-            if !graphite_cypher::engine::optimizations_disabled() {
-                g.graph.declared_types();
-            }
-            ok_json(json!({ "graph": g.to_api_map() }))
-        }
-        Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
+    match s
+        .clone()
+        .update_graph(GraphUpdate::Load {
+            id,
+            path: path.into(),
+            mode,
+        })
+        .await
+    {
+        Ok(Some(graph)) => ok_json(json!({ "graph": graph.to_api_map() })),
+        Ok(None) => error_json(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Graph load produced no graph",
+        ),
+        Err(error) => error_json(StatusCode::BAD_REQUEST, &error),
     }
 }
 
 async fn unload_graph(State(s): St, AxPath(id): AxPath<String>) -> Response {
-    let removed = match s.registry.take(&id) {
-        Ok(r) => r,
-        Err(e) => return error_json(StatusCode::BAD_REQUEST, &e),
-    };
-    if let Some(served) = removed.as_ref() {
-        if let Err(e) = s.rebuild_topology() {
-            // Put the graph back, as the Kotlin registry restores it when the rebuild
-            // after an unload throws.
-            s.registry.restore(served.clone());
-            return error_json(StatusCode::BAD_REQUEST, &e);
-        }
-        s.prune_c4();
-    }
-    if removed.is_some() {
-        // A 204 has no body, but the baseline still emits Javalin's default
-        // `Content-Type: text/plain` on it, and a client that inspects headers sees it.
-        (
+    match s.update_graph(GraphUpdate::Unload { id: id.clone() }).await {
+        Ok(Some(_)) => (
             StatusCode::NO_CONTENT,
             [(header::CONTENT_TYPE, "text/plain")],
         )
-            .into_response()
-    } else {
-        error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}"))
+            .into_response(),
+        Ok(None) => error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}")),
+        Err(error) => error_json(StatusCode::BAD_REQUEST, &error),
     }
 }
 
@@ -1070,28 +998,22 @@ async fn schema_response(
         Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
-    let started = Instant::now();
-    let result: Result<Vec<J>, CypherError> = tokio::task::block_in_place(|| {
-        leases
+    let graph_count = leases.len();
+    let result = crate::query_job::run(permit, move |permit| {
+        let mut results: Vec<J> = leases
             .iter()
-            .map(|l| schema_payload(l, limit, &permit.cancel).map(|v| grouped(&l.id, v)))
-            .collect()
-    });
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match result {
-        Ok(mut results) => {
-            s.guard.finish(Outcome::Success, elapsed);
-            if grouped_output {
-                ok_json(grouped_envelope(leases.len(), results))
-            } else {
-                ok_json(results.remove(0)["data"].take())
-            }
-        }
-        Err(e) => {
-            s.guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-    }
+            .map(|lease| {
+                schema_payload(lease, limit, &permit.cancel).map(|value| grouped(&lease.id, value))
+            })
+            .collect::<Result<_, _>>()?;
+        Ok(if grouped_output {
+            ok_json(grouped_envelope(graph_count, results))
+        } else {
+            ok_json(results.remove(0)["data"].take())
+        })
+    })
+    .await;
+    query_job_response(result, timeout_millis)
 }
 
 /// The 429 a query gets when the guard has no permit to spare.
@@ -1440,6 +1362,29 @@ fn read_query(body: &str, q: &Params) -> Option<String> {
     q.get("query").cloned()
 }
 
+/// JSON dialect fields take precedence over URL parameters. Invalid values never execute.
+#[allow(clippy::result_large_err)]
+fn read_dialect(body: &str, q: &Params) -> Result<CypherDialect, Response> {
+    let parsed = serde_json::from_str::<J>(body).ok();
+    let value = parsed
+        .as_ref()
+        .and_then(|v| v.as_object())
+        .and_then(|o| o.get("dialect"));
+    let raw = match value {
+        Some(J::String(s)) => Some(s.as_str()),
+        Some(_) => {
+            return Err(error_json(
+                StatusCode::BAD_REQUEST,
+                "'dialect' must be 'graphite' or 'opencypher-m23'",
+            ))
+        }
+        None => q.get("dialect").map(String::as_str),
+    };
+    raw.map(str::parse)
+        .unwrap_or(Ok(CypherDialect::default()))
+        .map_err(|e: String| error_json(StatusCode::BAD_REQUEST, &e))
+}
+
 #[allow(clippy::result_large_err)]
 fn read_timeout(body: &str, q: &Params) -> Result<Option<u64>, Response> {
     const BAD: &str = "'timeoutMs' must be a positive integer";
@@ -1665,6 +1610,10 @@ async fn cypher_one(
     Query(q): Query<Params>,
     body: String,
 ) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let l = match s.registry.acquire(&gid) {
         Ok(Some(l)) => l,
         Ok(None) => return error_json(StatusCode::NOT_FOUND, "Graph not loaded"),
@@ -1684,6 +1633,7 @@ async fn cypher_one(
         CypherSources::Leases(vec![l]),
         false,
         query,
+        dialect,
         limit,
         timeout,
         vec![],
@@ -1692,6 +1642,10 @@ async fn cypher_one(
 }
 
 async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let query = match read_query(&body, &q) {
         Some(query) if !query.trim().is_empty() => query.trim().to_string(),
         _ => return text(StatusCode::BAD_REQUEST, "Missing 'query' parameter"),
@@ -1708,6 +1662,7 @@ async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Resp
         CypherSources::Shared(sources),
         true,
         query,
+        dialect,
         limit,
         timeout,
         vec![("graphCount", json!(count))],
@@ -1716,6 +1671,10 @@ async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Resp
 }
 
 async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> Response {
+    let dialect = match read_dialect(&body, &q) {
+        Ok(d) => d,
+        Err(r) => return r,
+    };
     let parsed: Option<J> = serde_json::from_str(&body).ok();
     let obj = parsed.as_ref().and_then(|j| j.as_object());
     let query = match read_query(&body, &q) {
@@ -1813,6 +1772,7 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
             CypherSources::Leases(leases),
             true,
             query,
+            dialect,
             limit,
             timeout,
             vec![
@@ -1838,7 +1798,17 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
                 .map(|s| truthy(s))
                 .unwrap_or(false)
         });
-    run_fanout(s, leases, query, limit, per_graph, include_rows, timeout).await
+    run_fanout(
+        s,
+        leases,
+        query,
+        dialect,
+        limit,
+        per_graph,
+        include_rows,
+        timeout,
+    )
+    .await
 }
 
 fn cypher_request_error(message: &str) -> Response {
@@ -1887,11 +1857,13 @@ enum CypherSources {
 }
 
 /// Run a query on the blocking pool under a guard permit.
+#[allow(clippy::too_many_arguments)]
 async fn run_cypher(
     s: Arc<AppState>,
     sources: CypherSources,
     cross: bool,
     query: String,
+    dialect: CypherDialect,
     limit: i64,
     timeout: Option<u64>,
     extra: Vec<(&'static str, J)>,
@@ -1901,16 +1873,9 @@ async fn run_cypher(
         Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
-    let guard = s.guard.clone();
     #[cfg(test)]
     let before_execute = s.cypher_before_execute.clone();
-    let started = Instant::now();
-    // The query runs on this worker thread, with the runtime told to move its other
-    // tasks elsewhere first, rather than being handed to the blocking pool and awaited
-    // back. The hand-off was a thread wake each way -- measured at 50-100us on a
-    // request whose whole engine time is a few hundred -- and the concurrency guard
-    // already bounds how many queries run at once, so the runtime keeps workers free.
-    let result: Result<_, tokio::task::JoinError> = Ok(tokio::task::block_in_place(move || {
+    let result = crate::query_job::run(permit, move |permit| {
         let cancel = permit.cancel.clone();
         #[cfg(test)]
         let cancel = {
@@ -1924,45 +1889,33 @@ async fn run_cypher(
             CypherSources::Shared(sources) => sources,
             CypherSources::Leases(leases) => leases
                 .into_iter()
-                .map(|l| Source {
-                    id: Arc::from(l.id.as_str()),
-                    graph: l.graph,
+                .map(|lease| Source {
+                    id: Arc::from(lease.id.as_str()),
+                    graph: lease.graph,
                 })
                 .collect(),
         };
-        let ex = Executor::new(sources, cross)
+        let executor = Executor::new(sources, cross)
+            .with_dialect(dialect)
             .with_cancel(cancel)
             .with_compact()
             .with_probe();
-        let out = ex.execute(&query, Some(limit.max(0) as usize));
-        (out, ex)
-    }));
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match result {
-        Ok((Ok(r), ex)) => {
-            guard.finish(Outcome::Success, elapsed);
-            let returned = match &r.compact {
-                Some(c) => c.values.len(),
-                None => r.rows.len(),
-            };
-            let mut extra = extra;
-            extra.push(("total", total_json(returned, r.more)));
-            (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "application/json")],
-                result_body(&r, &ex, &extra),
-            )
-                .into_response()
-        }
-        Ok((Err(e), _)) => {
-            guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-        Err(_) => {
-            guard.finish(Outcome::Failed, elapsed);
-            error_json(StatusCode::INTERNAL_SERVER_ERROR, "Query execution failed")
-        }
-    }
+        let result = executor.execute(&query, Some(limit.max(0) as usize))?;
+        let returned = result
+            .compact
+            .as_ref()
+            .map_or(result.rows.len(), |compact| compact.values.len());
+        let mut extra = extra;
+        extra.push(("total", total_json(returned, result.more)));
+        Ok((
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "application/json")],
+            result_body(&result, &executor, &extra),
+        )
+            .into_response())
+    })
+    .await;
+    query_job_response(result, timeout_millis)
 }
 
 /// The `total` of a Cypher response, in the shape Elasticsearch gives `hits.total`:
@@ -1979,10 +1932,12 @@ pub fn total_json(returned: usize, more: bool) -> J {
 }
 
 /// Fanout: run the query once per graph and concatenate, injecting a `graphId` column.
+#[allow(clippy::too_many_arguments)]
 async fn run_fanout(
     s: Arc<AppState>,
     leases: Vec<GraphLease>,
     query: String,
+    dialect: CypherDialect,
     limit: i64,
     per_graph: i64,
     include_rows: bool,
@@ -2003,10 +1958,8 @@ async fn run_fanout(
         }
     };
     let timeout_millis = permit.timeout_millis;
-    let guard = s.guard.clone();
     let graph_count = leases.len();
-    let started = Instant::now();
-    let outcome = tokio::task::spawn_blocking(move || {
+    let outcome = crate::query_job::run(permit, move |permit| {
         let mut remaining = limit;
         let mut truncated = false;
         // Whether any graph had rows past its limit, or a graph was not queried at all.
@@ -2023,6 +1976,7 @@ async fn run_fanout(
                 break;
             }
             let ex = Executor::single(l.id.as_str(), l.graph.clone())
+                .with_dialect(dialect)
                 .with_cancel(permit.cancel.clone())
                 .with_probe();
             let take = per_graph.min(remaining).max(0) as usize;
@@ -2065,7 +2019,7 @@ async fn run_fanout(
             per_graph_out.push(J::Object(entry));
             all_rows.extend(rows);
         }
-        Ok::<_, CypherError>(json!({
+        Ok(ok_json(json!({
             "columns": columns,
             "rows": all_rows,
             "rowCount": all_rows.len(),
@@ -2080,21 +2034,22 @@ async fn run_fanout(
             }),
             "graphs": per_graph_out,
             "mode": "fanout",
-        }))
+        })))
     })
     .await;
-    let elapsed = started.elapsed().as_nanos() as u64;
-    match outcome {
-        Ok(Ok(body)) => {
-            guard.finish(Outcome::Success, elapsed);
-            ok_json(body)
+    query_job_response(outcome, timeout_millis)
+}
+
+fn query_job_response(
+    result: Result<Response, crate::query_job::QueryJobError>,
+    timeout_millis: u64,
+) -> Response {
+    match result {
+        Ok(response) => response,
+        Err(crate::query_job::QueryJobError::Query(error)) => {
+            cypher_error_response(&error, timeout_millis)
         }
-        Ok(Err(e)) => {
-            guard.finish(Outcome::of(Some(&e)), elapsed);
-            cypher_error_response(&e, timeout_millis)
-        }
-        Err(_) => {
-            guard.finish(Outcome::Failed, elapsed);
+        Err(crate::query_job::QueryJobError::Failed) => {
             error_json(StatusCode::INTERNAL_SERVER_ERROR, "Query execution failed")
         }
     }
@@ -2297,6 +2252,142 @@ async fn style_css(headers: HeaderMap) -> Response {
 mod tests {
     use super::*;
 
+    #[tokio::test(flavor = "multi_thread")]
+    async fn public_dialect_selection_and_validation_precede_execution() {
+        use tower::ServiceExt;
+        let (app, state) = metrics_app();
+        for path in [
+            "/api/cypher",
+            "/api/graphs/missing/cypher",
+            "/api/cypher/graphs",
+        ] {
+            let response = app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method("POST")
+                        .uri(path)
+                        .body(Body::from(
+                            json!({"query":"RETURN 1", "dialect":"unknown"}).to_string(),
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{path}");
+        }
+        for dialect in [json!(false), json!(null), json!(42)] {
+            assert!(read_dialect(&json!({"dialect":dialect}).to_string(), &Params::new()).is_err());
+        }
+        assert_eq!(
+            read_dialect(
+                "{}",
+                &Params::from([("dialect".into(), "opencypher-m23".into())])
+            )
+            .unwrap(),
+            CypherDialect::OpenCypherM23
+        );
+        assert_eq!(
+            read_dialect(
+                "{\"dialect\":\"graphite\"}",
+                &Params::from([("dialect".into(), "opencypher-m23".into())])
+            )
+            .unwrap(),
+            CypherDialect::Graphite
+        );
+        // Neither invalid requests nor parsing helpers acquired an execution permit.
+        assert_eq!(
+            state
+                .guard
+                .metrics
+                .active
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        for (dialect, expected) in [
+            ("graphite", StatusCode::OK),
+            ("opencypher-m23", StatusCode::BAD_REQUEST),
+        ] {
+            let response = app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method("POST")
+                        .uri(format!("/api/cypher?dialect={dialect}"))
+                        .body(Body::from(
+                            json!({"query":"RETURN toString([1, 2]) AS value"}).to_string(),
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), expected, "{dialect}");
+            let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+                .await
+                .unwrap();
+            let result: J = serde_json::from_slice(&bytes).unwrap();
+            if dialect == "graphite" {
+                assert_eq!(result["rows"][0]["value"], "[1, 2]");
+            } else {
+                assert!(result["error"].as_str().unwrap().contains("toString"));
+            }
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn dialect_reaches_single_cross_graph_and_fanout_executors() {
+        use tower::ServiceExt;
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let (app, state) = metrics_app();
+        for id in ["a", "b"] {
+            state
+                .registry
+                .load(id, std::path::Path::new(&dir), None)
+                .unwrap();
+        }
+        for (path, selection) in [
+            ("/api/graphs/a/cypher", json!({})),
+            ("/api/cypher", json!({})),
+            ("/api/cypher/graphs", json!({"graphs":["a","b"]})),
+            (
+                "/api/cypher/graphs",
+                json!({"graphs":["a","b"],"mode":"fanout"}),
+            ),
+        ] {
+            for (dialect, expected) in [
+                ("graphite", StatusCode::OK),
+                ("opencypher-m23", StatusCode::BAD_REQUEST),
+            ] {
+                let mut body = selection.clone();
+                body["query"] = json!("RETURN toString([1, 2]) AS value");
+                body["dialect"] = json!(dialect);
+                let response = app
+                    .clone()
+                    .oneshot(
+                        axum::http::Request::builder()
+                            .method("POST")
+                            .uri(path)
+                            .body(Body::from(body.to_string()))
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(response.status(), expected, "{path}: {body}");
+                let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
+                let result: J = serde_json::from_slice(&bytes).unwrap();
+                if dialect == "graphite" {
+                    assert_eq!(result["rows"][0]["value"], "[1, 2]");
+                } else {
+                    assert!(result["error"].as_str().unwrap().contains("toString"));
+                }
+            }
+        }
+    }
+
     fn metrics_app() -> (Router, Arc<AppState>) {
         let dir = std::env::temp_dir().join(format!(
             "graphite-metrics-test-{}-{}",
@@ -2359,6 +2450,7 @@ mod tests {
             CypherSources::Leases(leases),
             true,
             query.into(),
+            CypherDialect::Graphite,
             200,
             None,
             vec![("graphCount", json!(2))],
@@ -2736,9 +2828,11 @@ mod tests {
     async fn warm_up_loads_share_one_worker_that_drains_and_exits() {
         let (_, state) = metrics_app();
         // Keep the server busy while thirty loads and replacements arrive.
-        state
-            .requests_in_flight
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let busy = InFlight::enter(state.clone());
+        // Another server may legitimately have its own worker at the same time.
+        let (_, other) = metrics_app();
+        let other_busy = InFlight::enter(other.clone());
+        other.warm_c4_graphs(["independent".into()]);
         for i in 0..30 {
             state.warm_c4_graphs([format!("g{}", i % 3)]);
         }
@@ -2749,55 +2843,56 @@ mod tests {
             // worker took can be queued again behind it), never thirty.
             assert!(queue.pending.len() <= 3, "{:?}", queue.pending);
         }
-        // The worker names itself as it starts, so give it a moment to appear; it
-        // is one thread, never thirty.
-        #[cfg(target_os = "linux")]
+        // Observe this server's actual spawned thread, not every `c4-warm` thread
+        // created by concurrently running tests with independent AppStates.
         {
-            let named = std::time::Instant::now();
-            while warm_threads() == 0 {
-                assert!(named.elapsed() < std::time::Duration::from_secs(5));
-                tokio::time::sleep(std::time::Duration::from_millis(5)).await;
-            }
-            assert_eq!(warm_threads(), 1);
+            let workers = state.c4_warm_workers.lock();
+            assert_eq!(workers.len(), 1, "one worker serves the entire burst");
+            assert!(
+                !workers[0].is_finished(),
+                "traffic keeps the worker waiting"
+            );
         }
         // Traffic stops: the worker finds no such graphs, drains, and exits.
-        state
-            .requests_in_flight
-            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
-        let started = std::time::Instant::now();
-        while state.c4_warm.lock().running {
-            assert!(started.elapsed() < std::time::Duration::from_secs(30));
-            tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-        }
+        assert_eq!(other.c4_warm_workers.lock().len(), 1);
+        drop(busy);
+        drop(other_busy);
+        wait_for_warm_workers(&state).await;
+        wait_for_warm_workers(&other).await;
+        assert!(!state.c4_warm.lock().running);
         assert!(state.c4_warm.lock().pending.is_empty());
-        #[cfg(target_os = "linux")]
-        {
-            let gone = std::time::Instant::now();
-            while warm_threads() != 0 {
-                assert!(gone.elapsed() < std::time::Duration::from_secs(5));
-                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-            }
-        }
-        // A later load starts a fresh worker.
+        // A later load starts a fresh worker, and that worker also drains and exits.
         state.warm_c4_graphs(["late".to_string()]);
-        assert!(state.c4_warm.lock().running);
+        assert_eq!(state.c4_warm_workers.lock().len(), 2);
+        wait_for_warm_workers(&state).await;
+        assert!(!state.c4_warm.lock().running);
+        assert!(state.c4_warm.lock().pending.is_empty());
+        let workers: Vec<_> = state
+            .c4_warm_workers
+            .lock()
+            .drain(..)
+            .chain(other.c4_warm_workers.lock().drain(..))
+            .collect();
+        for worker in workers {
+            worker
+                .join()
+                .expect("warm-up worker exited without panicking");
+        }
     }
 
-    /// Threads of this process named `c4-warm`.
-    #[cfg(target_os = "linux")]
-    fn warm_threads() -> usize {
-        std::fs::read_dir("/proc/self/task")
-            .map(|tasks| {
-                tasks
-                    .flatten()
-                    .filter(|t| {
-                        std::fs::read_to_string(t.path().join("comm"))
-                            .map(|c| c.trim() == "c4-warm")
-                            .unwrap_or(false)
-                    })
-                    .count()
-            })
-            .unwrap_or(0)
+    async fn wait_for_warm_workers(state: &AppState) {
+        tokio::time::timeout(std::time::Duration::from_secs(30), async {
+            while state
+                .c4_warm_workers
+                .lock()
+                .iter()
+                .any(|worker| !worker.is_finished())
+            {
+                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+            }
+        })
+        .await
+        .expect("warm-up workers must drain and exit");
     }
 
     /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a C4 request whose client gave

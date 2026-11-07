@@ -38,11 +38,11 @@ class ResourceConfigLinkingTest {
             val appJson = requireResourceFile(graph, "application.json")
             val configXml = requireResourceFile(graph, "config.xml")
 
-            val featureMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "featureMode")).single()
-            val featureXmlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "featureModeXml")).single()
-            val featureReaderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "featureModeReader")).single()
-            val jsonMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "jsonFeatureEnabled")).single()
-            val xmlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "xmlServiceEndpoint")).single()
+            val featureMethod = resourceMethod(graph, "featureMode")
+            val featureXmlMethod = resourceMethod(graph, "featureModeXml")
+            val featureReaderMethod = resourceMethod(graph, "featureModeReader")
+            val jsonMethod = resourceMethod(graph, "jsonFeatureEnabled")
+            val xmlMethod = resourceMethod(graph, "xmlServiceEndpoint")
 
             val openPropertiesCall = requireCallSite(graph, featureMethod, "getResourceAsStream")
             val lookupPropertiesCall = requireCallSite(graph, featureMethod, "getProperty")
@@ -52,13 +52,20 @@ class ResourceConfigLinkingTest {
             val jsonLoadCall = requireCallSite(graph, jsonMethod, "fromJson")
             val xmlLoadCall = requireCallSite(graph, xmlMethod, "parse")
 
-            assertHasResourceEdge(graph.incomingResourceEdges(openPropertiesCall.id), appProperties.id, ResourceRelation.OPENS, "application.properties should open into getResourceAsStream")
-            assertHasResourceEdge(graph.incomingResourceEdges(lookupPropertiesCall.id), appProperties.id, ResourceRelation.LOOKUP, "application.properties should link to Properties.getProperty")
-            assertHasResourceEdge(graph.incomingResourceEdges(openXmlCall.id), appXml.id, ResourceRelation.OPENS, "application.xml should open into getResourceAsStream")
-            assertHasResourceEdge(graph.incomingResourceEdges(lookupXmlCall.id), appXml.id, ResourceRelation.LOOKUP, "application.xml should link to Properties.getProperty")
-            assertHasResourceEdge(graph.incomingResourceEdges(lookupReaderCall.id), appProperties.id, ResourceRelation.LOOKUP, "Reader-backed Properties.getProperty should stay linked to application.properties")
-            assertHasResourceEdge(graph.incomingResourceEdges(jsonLoadCall.id), appJson.id, ResourceRelation.LOADS, "application.json should link to Gson.fromJson")
-            assertHasResourceEdge(graph.incomingResourceEdges(xmlLoadCall.id), configXml.id, ResourceRelation.LOADS, "config.xml should link to DocumentBuilder.parse")
+            assertHasResourceEdge(graph.incomingResourceEdges(openPropertiesCall.id), appProperties.id,
+                ResourceRelation.OPENS, "application.properties should open into getResourceAsStream")
+            assertHasResourceEdge(graph.incomingResourceEdges(lookupPropertiesCall.id), appProperties.id,
+                ResourceRelation.LOOKUP, "application.properties should link to Properties.getProperty")
+            assertHasResourceEdge(graph.incomingResourceEdges(openXmlCall.id), appXml.id, ResourceRelation.OPENS,
+                "application.xml should open into getResourceAsStream")
+            assertHasResourceEdge(graph.incomingResourceEdges(lookupXmlCall.id), appXml.id, ResourceRelation.LOOKUP,
+                "application.xml should link to Properties.getProperty")
+            assertHasResourceEdge(graph.incomingResourceEdges(lookupReaderCall.id), appProperties.id,
+                ResourceRelation.LOOKUP, "Reader-backed Properties.getProperty should stay linked to application.properties")
+            assertHasResourceEdge(graph.incomingResourceEdges(jsonLoadCall.id), appJson.id, ResourceRelation.LOADS,
+                "application.json should link to Gson.fromJson")
+            assertHasResourceEdge(graph.incomingResourceEdges(xmlLoadCall.id), configXml.id, ResourceRelation.LOADS,
+                "config.xml should link to DocumentBuilder.parse")
         } finally {
             fixtureDir.toFile().deleteRecursively()
         }
@@ -89,7 +96,7 @@ class ResourceConfigLinkingTest {
 
             // Properties.getProperty with the same key stays linked to application.properties.
             val appProperties = requireResourceFile(graph, "application.properties")
-            val featureMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "featureMode")).single()
+            val featureMethod = resourceMethod(graph, "featureMode")
             val propertiesLookup = requireCallSite(graph, featureMethod, "getProperty")
             assertHasResourceEdge(
                 graph.incomingResourceEdges(propertiesLookup.id),
@@ -124,42 +131,46 @@ class ResourceConfigLinkingTest {
             val providerBundle = requireResourceFile(graph, "sample.resources.ProviderMessagesBundle_ko_KR")
             val providerBundleBase = requireResourceFile(graph, "sample.resources.ProviderMessagesBundle")
 
-            val messageMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "message")).single()
-            val messageObjectMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageObject")).single()
-            val messageKeysMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKeys")).single()
-            val messageKoMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKo")).single()
-            val messageKoFromLocalMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromLocal")).single()
-            val messageKoFromTagMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromTag")).single()
-            val messageKoFromCtorMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromCtor")).single()
-            val messageKoWithClassLoaderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithClassLoader")).single()
-            val messageKoWithControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithControl")).single()
-            val messageKoWithControlAliasMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithControlAlias")).single()
-            val messageKoWithDefaultControlAliasMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithDefaultControlAlias")).single()
-            val messageKoFromBuilderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilder")).single()
-            val messageKoFromBuilderTagMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderTag")).single()
-            val messageKoFromBuilderSetLocaleMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderSetLocale")).single()
-            val messageKoFromBuilderResetMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderReset")).single()
-            val messageKoFromBuilderVariantMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderVariant")).single()
-            val messageClassOnlyControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageClassOnlyControlNoCandidate")).single()
-            val messageClassOnlyCustomControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageClassOnlyCustomControlNoCandidate")).single()
-            val messageKoCustomCandidateControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithCustomCandidateControl")).single()
-            val propertyBundleMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messagePropertyBundle")).single()
-            val propertyBundleReaderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messagePropertyBundleReader")).single()
-            val propertyBundleKeysMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messagePropertyBundleKeys")).single()
-            val listBundleMessageMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "listBundleMessage")).single()
-            val listBundleKeysMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "listBundleKeys")).single()
-            val providerBundleMessageMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "providerBundleMessage")).single()
-            val providerBundleKeysMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "providerBundleKeys")).single()
+            val messageMethod = resourceMethod(graph, "message")
+            val messageObjectMethod = resourceMethod(graph, "messageObject")
+            val messageKeysMethod = resourceMethod(graph, "messageKeys")
+            val messageKoMethod = resourceMethod(graph, "messageKo")
+            val messageKoFromLocalMethod = resourceMethod(graph, "messageKoFromLocal")
+            val messageKoFromTagMethod = resourceMethod(graph, "messageKoFromTag")
+            val messageKoFromCtorMethod = resourceMethod(graph, "messageKoFromCtor")
+            val messageKoWithClassLoaderMethod = resourceMethod(graph, "messageKoWithClassLoader")
+            val messageKoWithControlMethod = resourceMethod(graph, "messageKoWithControl")
+            val messageKoWithControlAliasMethod = resourceMethod(graph, "messageKoWithControlAlias")
+            val messageKoWithDefaultControlAliasMethod = resourceMethod(graph, "messageKoWithDefaultControlAlias")
+            val messageKoFromBuilderMethod = resourceMethod(graph, "messageKoFromBuilder")
+            val messageKoFromBuilderTagMethod = resourceMethod(graph, "messageKoFromBuilderTag")
+            val messageKoFromBuilderSetLocaleMethod = resourceMethod(graph, "messageKoFromBuilderSetLocale")
+            val messageKoFromBuilderResetMethod = resourceMethod(graph, "messageKoFromBuilderReset")
+            val messageKoFromBuilderVariantMethod = resourceMethod(graph, "messageKoFromBuilderVariant")
+            val messageClassOnlyControlMethod = resourceMethod(graph, "messageClassOnlyControlNoCandidate")
+            val messageClassOnlyCustomControlMethod = resourceMethod(graph, "messageClassOnlyCustomControlNoCandidate")
+            val messageKoCustomCandidateControlMethod = resourceMethod(graph, "messageKoWithCustomCandidateControl")
+            val propertyBundleMethod = resourceMethod(graph, "messagePropertyBundle")
+            val propertyBundleReaderMethod = resourceMethod(graph, "messagePropertyBundleReader")
+            val propertyBundleKeysMethod = resourceMethod(graph, "messagePropertyBundleKeys")
+            val listBundleMessageMethod = resourceMethod(graph, "listBundleMessage")
+            val listBundleKeysMethod = resourceMethod(graph, "listBundleKeys")
+            val providerBundleMessageMethod = resourceMethod(graph, "providerBundleMessage")
+            val providerBundleKeysMethod = resourceMethod(graph, "providerBundleKeys")
 
             val messageBundleCall = requireCallSite(graph, messageMethod, "getBundle")
             val messageLookupCall = requireCallSite(graph, messageMethod, "getString")
             val messageObjectCall = requireCallSite(graph, messageObjectMethod, "getObject")
             val messageKeysCall = requireCallSite(graph, messageKeysMethod, "getKeys")
 
-            assertHasResourceEdge(graph.incomingResourceEdges(messageBundleCall.id), bundleRoot.id, ResourceRelation.BUNDLE_CANDIDATE, "messages.properties should be a ResourceBundle candidate")
-            assertHasResourceEdge(graph.incomingResourceEdges(messageLookupCall.id), bundleRoot.id, ResourceRelation.LOOKUP, "messages.properties should link to ResourceBundle.getString")
-            assertHasResourceEdge(graph.incomingResourceEdges(messageObjectCall.id), bundleRoot.id, ResourceRelation.LOOKUP, "messages.properties should link to ResourceBundle.getObject")
-            assertHasResourceEdge(graph.incomingResourceEdges(messageKeysCall.id), bundleRoot.id, ResourceRelation.ENUMERATES, "messages.properties should enumerate into ResourceBundle.getKeys")
+            assertHasResourceEdge(graph.incomingResourceEdges(messageBundleCall.id), bundleRoot.id,
+                ResourceRelation.BUNDLE_CANDIDATE, "messages.properties should be a ResourceBundle candidate")
+            assertHasResourceEdge(graph.incomingResourceEdges(messageLookupCall.id), bundleRoot.id, ResourceRelation.LOOKUP,
+                "messages.properties should link to ResourceBundle.getString")
+            assertHasResourceEdge(graph.incomingResourceEdges(messageObjectCall.id), bundleRoot.id, ResourceRelation.LOOKUP,
+                "messages.properties should link to ResourceBundle.getObject")
+            assertHasResourceEdge(graph.incomingResourceEdges(messageKeysCall.id), bundleRoot.id,
+                ResourceRelation.ENUMERATES, "messages.properties should enumerate into ResourceBundle.getKeys")
 
             assertLocaleAwareBundle(graph, messageKoMethod, bundleRoot, bundleKo, bundleKoKr)
             assertLocaleAwareBundle(graph, messageKoFromLocalMethod, bundleRoot, bundleKo, bundleKoKr)
@@ -177,34 +188,46 @@ class ResourceConfigLinkingTest {
 
             val classOnlyControlCall = requireCallSite(graph, messageClassOnlyControlMethod, "getBundle")
             val classOnlyControlEdges = graph.incomingResourceEdges(classOnlyControlCall.id)
-            assertTrue(classOnlyControlEdges.none { it.kind == ResourceRelation.BUNDLE_CANDIDATE }, "FORMAT_CLASS control should not point at .properties bundle files")
+            assertTrue(classOnlyControlEdges.none { it.kind == ResourceRelation.BUNDLE_CANDIDATE },
+                "FORMAT_CLASS control should not point at .properties bundle files")
 
             val customClassOnlyControlCall = requireCallSite(graph, messageClassOnlyCustomControlMethod, "getBundle")
             val customClassOnlyControlEdges = graph.incomingResourceEdges(customClassOnlyControlCall.id)
-            assertTrue(customClassOnlyControlEdges.none { it.kind == ResourceRelation.BUNDLE_CANDIDATE }, "Custom class-only control should not point at .properties bundle files")
+            assertTrue(customClassOnlyControlEdges.none { it.kind == ResourceRelation.BUNDLE_CANDIDATE },
+                "Custom class-only control should not point at .properties bundle files")
 
             val customCandidateControlCall = requireCallSite(graph, messageKoCustomCandidateControlMethod, "getBundle")
             val customCandidateEdges = graph.incomingResourceEdges(customCandidateControlCall.id)
-            assertHasResourceEdge(customCandidateEdges, bundleKoKr.id, ResourceRelation.BUNDLE_CANDIDATE, "Custom candidate control should keep ko_KR bundle candidate")
-            assertTrue(customCandidateEdges.none { it.from == bundleKo.id && it.kind == ResourceRelation.BUNDLE_CANDIDATE }, "Custom candidate control should drop intermediate ko bundle")
-            assertTrue(customCandidateEdges.none { it.from == bundleRoot.id && it.kind == ResourceRelation.BUNDLE_CANDIDATE }, "Custom candidate control should drop root bundle")
+            assertHasResourceEdge(customCandidateEdges, bundleKoKr.id, ResourceRelation.BUNDLE_CANDIDATE,
+                "Custom candidate control should keep ko_KR bundle candidate")
+            assertTrue(customCandidateEdges.none { it.from == bundleKo.id && it.kind == ResourceRelation.BUNDLE_CANDIDATE },
+                "Custom candidate control should drop intermediate ko bundle")
+            assertTrue(customCandidateEdges.none { it.from == bundleRoot.id && it.kind == ResourceRelation.BUNDLE_CANDIDATE },
+                "Custom candidate control should drop root bundle")
 
             val propertyBundleLookupCall = requireCallSite(graph, propertyBundleMethod, "getString")
             val propertyBundleReaderLookupCall = requireCallSite(graph, propertyBundleReaderMethod, "getString")
             val propertyBundleKeysCall = requireCallSite(graph, propertyBundleKeysMethod, "getKeys")
-            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleLookupCall.id), bundleRoot.id, ResourceRelation.LOOKUP, "PropertyResourceBundle(InputStream) should link to messages.properties")
-            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleReaderLookupCall.id), bundleRoot.id, ResourceRelation.LOOKUP, "PropertyResourceBundle(Reader) should link to messages.properties")
-            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleKeysCall.id), bundleRoot.id, ResourceRelation.ENUMERATES, "PropertyResourceBundle.getKeys should enumerate messages.properties")
+            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleLookupCall.id), bundleRoot.id,
+                ResourceRelation.LOOKUP, "PropertyResourceBundle(InputStream) should link to messages.properties")
+            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleReaderLookupCall.id), bundleRoot.id,
+                ResourceRelation.LOOKUP, "PropertyResourceBundle(Reader) should link to messages.properties")
+            assertHasResourceEdge(graph.incomingResourceEdges(propertyBundleKeysCall.id), bundleRoot.id,
+                ResourceRelation.ENUMERATES, "PropertyResourceBundle.getKeys should enumerate messages.properties")
 
             val listBundleMessageCall = requireCallSite(graph, listBundleMessageMethod, "getString")
             val listBundleKeysCall = requireCallSite(graph, listBundleKeysMethod, "getKeys")
-            assertHasResourceEdge(graph.incomingResourceEdges(listBundleMessageCall.id), listBundle.id, ResourceRelation.LOOKUP, "ListResourceBundle lookup should link by bundle class path")
-            assertHasResourceEdge(graph.incomingResourceEdges(listBundleKeysCall.id), listBundleBase.id, ResourceRelation.ENUMERATES, "ListResourceBundle getKeys should enumerate base bundle path")
+            assertHasResourceEdge(graph.incomingResourceEdges(listBundleMessageCall.id), listBundle.id,
+                ResourceRelation.LOOKUP, "ListResourceBundle lookup should link by bundle class path")
+            assertHasResourceEdge(graph.incomingResourceEdges(listBundleKeysCall.id), listBundleBase.id,
+                ResourceRelation.ENUMERATES, "ListResourceBundle getKeys should enumerate base bundle path")
 
             val providerBundleMessageCall = requireCallSite(graph, providerBundleMessageMethod, "getString")
             val providerBundleKeysCall = requireCallSite(graph, providerBundleKeysMethod, "getKeys")
-            assertHasResourceEdge(graph.incomingResourceEdges(providerBundleMessageCall.id), providerBundle.id, ResourceRelation.LOOKUP, "Provider-backed bundle lookup should link by bundle class path")
-            assertHasResourceEdge(graph.incomingResourceEdges(providerBundleKeysCall.id), providerBundleBase.id, ResourceRelation.ENUMERATES, "Provider-backed bundle getKeys should enumerate base bundle path")
+            assertHasResourceEdge(graph.incomingResourceEdges(providerBundleMessageCall.id), providerBundle.id,
+                ResourceRelation.LOOKUP, "Provider-backed bundle lookup should link by bundle class path")
+            assertHasResourceEdge(graph.incomingResourceEdges(providerBundleKeysCall.id), providerBundleBase.id,
+                ResourceRelation.ENUMERATES, "Provider-backed bundle getKeys should enumerate base bundle path")
         } finally {
             fixtureDir.toFile().deleteRecursively()
         }
@@ -223,7 +246,8 @@ class ResourceConfigLinkingTest {
         assertHasResourceEdge(bundleEdges, locale.id, ResourceRelation.BUNDLE_CANDIDATE, "${method.name} should keep ko_KR candidate")
         assertHasResourceEdge(bundleEdges, language.id, ResourceRelation.BUNDLE_CANDIDATE, "${method.name} should keep ko candidate")
         assertHasResourceEdge(bundleEdges, root.id, ResourceRelation.BUNDLE_CANDIDATE, "${method.name} should keep root candidate")
-        assertHasResourceEdge(graph.incomingResourceEdges(lookupCall.id), locale.id, ResourceRelation.LOOKUP, "${method.name} should link lookup to ko_KR bundle path")
+        assertHasResourceEdge(graph.incomingResourceEdges(lookupCall.id), locale.id, ResourceRelation.LOOKUP,
+            "${method.name} should link lookup to ko_KR bundle path")
     }
 
     private fun requireCallSite(graph: Graph, method: io.johnsonlee.graphite.core.MethodDescriptor, calleeName: String): CallSiteNode =
@@ -363,4 +387,7 @@ class ResourceConfigLinkingTest {
     ) {
         assertTrue(edges.any { it.from == from && it.kind == kind }, message)
     }
+    private fun resourceMethod(graph: Graph, name: String): io.johnsonlee.graphite.core.MethodDescriptor =
+        graph.methods(MethodPattern("sample.resources.ResourceConfig", name)).single()
+
 }

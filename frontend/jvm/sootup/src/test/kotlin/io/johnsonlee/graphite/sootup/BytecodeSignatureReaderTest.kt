@@ -1,9 +1,10 @@
 package io.johnsonlee.graphite.sootup
 
 import java.io.File
+import java.io.InputStream
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 import kotlin.io.path.exists
@@ -13,6 +14,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
 /**
  * Tests for BytecodeSignatureReader covering loadFromJar, getMethodReturnType,
@@ -365,6 +368,24 @@ class BytecodeSignatureReaderTest {
         // Should still work after error
         val fieldTypes = reader.getAllFieldTypes("any.Class")
         assertTrue(fieldTypes.isEmpty(), "Should have no data after invalid stream")
+        assertIs<IllegalArgumentException>(reader.failures.single())
+
+        val validClass = findTestClassesDir().resolve("sample/generics/GenericFieldService.class")
+        Files.newInputStream(validClass).use(reader::loadFromStream)
+        assertEquals("java.util.List", reader.getAllFieldTypes("sample.generics.GenericFieldService").getValue("users").className)
+        assertEquals(1, reader.failures.size, "A successful read must retain the earlier failure for diagnostics")
+    }
+
+    @Test
+    fun `stream I O failures remain available to the caller`() {
+        val reader = BytecodeSignatureReader()
+        val failure = IOException("class resource could not be read")
+        val input = object : InputStream() {
+            override fun read(): Int = throw failure
+        }
+        reader.loadFromStream(input)
+        assertSame(failure, reader.failures.single())
+        assertTrue(reader.getAllFieldTypes("any.Class").isEmpty())
     }
 
     // ========== Helper methods ==========
@@ -382,9 +403,7 @@ class BytecodeSignatureReaderTest {
                     .filter { it.isFile && it.name.endsWith(".class") }
                     .forEach { classFile ->
                         val entryName = classFile.relativeTo(baseDir).path.replace(File.separatorChar, '/')
-                        jos.putNextEntry(JarEntry(entryName))
-                        classFile.inputStream().use { it.copyTo(jos) }
-                        jos.closeEntry()
+                        appendArchiveFile(jos, classFile.toPath(), entryName)
                     }
             }
         }

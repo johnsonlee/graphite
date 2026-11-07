@@ -6,6 +6,7 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import java.io.InputStream
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarFile
@@ -18,6 +19,11 @@ import java.util.jar.JarFile
  * bytecode analysis frameworks.
  */
 class BytecodeSignatureReader {
+    private val readFailures = mutableListOf<Exception>()
+
+    /** Recoverable malformed-class and I/O errors, retained for the caller's diagnostics. */
+    val failures: List<Exception> get() = readFailures.toList()
+
     // Cache of class name -> field signatures
     private val fieldSignatures = mutableMapOf<String, MutableMap<String, TypeDescriptor>>()
     // Cache of class name -> method return type signatures
@@ -46,13 +52,12 @@ class BytecodeSignatureReader {
      * Load signatures from a directory of class files.
      */
     fun loadFromDirectory(dirPath: Path) {
-        Files.walk(dirPath)
-            .filter { it.toString().endsWith(".class") }
-            .forEach { classFile ->
-                Files.newInputStream(classFile).use { inputStream ->
-                    loadFromStream(inputStream)
+        Files.walk(dirPath).use { paths ->
+            paths.filter { it.toString().endsWith(".class") }
+                .forEach { classFile ->
+                    Files.newInputStream(classFile).use(::loadFromStream)
                 }
-            }
+        }
     }
 
     /**
@@ -85,8 +90,12 @@ class BytecodeSignatureReader {
             if (visitor.methodParamSignatures.isNotEmpty()) {
                 methodParamSignatures[className] = visitor.methodParamSignatures
             }
-        } catch (e: Exception) {
-            // Ignore classes that can't be parsed
+        } catch (failure: IOException) {
+            readFailures += failure
+        } catch (failure: IllegalArgumentException) {
+            readFailures += failure
+        } catch (expectedMalformedClass: IndexOutOfBoundsException) {
+            readFailures += expectedMalformedClass
         }
     }
 

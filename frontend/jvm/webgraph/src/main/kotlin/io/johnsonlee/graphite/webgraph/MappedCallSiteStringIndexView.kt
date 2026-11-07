@@ -1,7 +1,6 @@
-@file:Suppress("MagicNumber", "ReturnCount", "TooGenericExceptionCaught")
-
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
@@ -21,7 +20,6 @@ import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
-import io.johnsonlee.graphite.core.checkThreadInterrupted
 
 internal interface CallSiteStringIdMembership {
     fun containsPropertyStringId(
@@ -64,7 +62,7 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): Boolean {
         val values = propertyStringIds.getOrNull(propertyIndex) ?: return false
-        return binarySearch(values, stringId, workConsumer) >= 0
+        return mappedCallSiteStringRow(values, stringId, workConsumer) >= 0
     }
 
     fun exactMatchingStringIds(
@@ -72,13 +70,27 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): List<IntArray>? {
         if (predicates.any { predicate -> !predicate.canUseMappedCallSiteIndexView() }) return null
-        val matchesByPredicate = mutableMapOf<MappedPredicateKey, IntArray>()
-        return predicates.map { predicate ->
+        return ExactMatchCollector(workConsumer).collect(predicates)
+    }
+
+    private inner class ExactMatchCollector(private val workConsumer: GraphWorkConsumer?) {
+        private val matchesByPredicate = mutableMapOf<MappedPredicateKey, IntArray>()
+
+        fun collect(predicates: List<StringPropertyPredicate>): List<IntArray>? {
+            val selected = ArrayList<IntArray>(predicates.size)
+            for (predicate in predicates) {
+                val matches = forPredicate(predicate) ?: return null
+                selected += matches
+            }
+            return selected
+        }
+
+        private fun forPredicate(predicate: StringPropertyPredicate): IntArray? {
             if (callSiteStringPropertyIndex(predicate.property) < 0) return null
             val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            matchesByPredicate[key] ?: exactMatchingStringIds(predicate, workConsumer)
-                ?.also { matches -> matchesByPredicate[key] = matches }
-                ?: return null
+            return matchesByPredicate[key] ?: exactMatchingStringIds(predicate, workConsumer)?.also { matches ->
+                matchesByPredicate[key] = matches
+            }
         }
     }
 
@@ -88,25 +100,12 @@ internal class MappedCallSiteStringIndexView private constructor(
         limit: Int,
         workConsumer: GraphWorkConsumer?
     ): Boolean {
-        if (limit <= 0) return true
-        if (predicates.size != exactMatchingStringIds.size) return false
-        var occurrences = 0L
-        predicates.indices.forEach { predicateIndex ->
-            val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
-            if (propertyIndex < 0) return false
-            val stringIds = propertyStringIds[propertyIndex]
-            val postingEnds = propertyPostingEnds[propertyIndex]
-            exactMatchingStringIds[predicateIndex].forEach { stringId ->
-                val row = binarySearch(stringIds, stringId, workConsumer)
-                if (row < 0) return@forEach
-                val end = postingEnds.get(row)
-                val start = if (row == 0) 0 else postingEnds.get(row - 1)
-                if (start !in 0..end || end > callSiteCount) return false
-                occurrences += end - start
-                if (occurrences >= limit) return true
-            }
+        return when {
+            limit <= 0 -> true
+            predicates.size != exactMatchingStringIds.size -> false
+            else -> MappedCallSiteLimitProbe(propertyStringIds, propertyPostingEnds, callSiteCount, limit, workConsumer)
+                .canFill(predicates, exactMatchingStringIds)
         }
-        return false
     }
 
     fun matchingNodeIds(
@@ -115,23 +114,37 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): Sequence<Int>? {
         if (predicates.size != exactMatchingStringIds.size) return null
-        val ranges = mutableListOf<MappedPostingCursor>()
-        predicates.indices.forEach { predicateIndex ->
-            val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
-            if (propertyIndex < 0) return null
-            exactMatchingStringIds[predicateIndex].forEach { stringId ->
-                val range = postingRange(propertyIndex, stringId, workConsumer) ?: return@forEach
-                val cursor = validatedPostingCursor(
-                    propertyIndex,
-                    range.row,
-                    propertyPostingNodeIds[propertyIndex],
-                    range.positions,
-                    workConsumer
-                ) ?: return null
-                ranges += cursor
+        val ranges = CursorFactory(workConsumer).create(predicates, exactMatchingStringIds)
+        return ranges?.let { mergeCursors(it, workConsumer) }
+    }
+
+    private inner class CursorFactory(private val workConsumer: GraphWorkConsumer?) {
+        fun create(predicates: List<StringPropertyPredicate>, exactMatches: List<IntArray>): List<MappedPostingCursor>? {
+            val ranges = mutableListOf<MappedPostingCursor>()
+            for (index in predicates.indices) {
+                if (!forPredicate(predicates[index], exactMatches[index], ranges)) return null
             }
+            return ranges
         }
-        return sequence {
+
+        private fun forPredicate(predicate: StringPropertyPredicate, ids: IntArray, cursors: MutableList<MappedPostingCursor>): Boolean {
+            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
+            return propertyIndex >= 0 && forProperty(propertyIndex, ids, cursors)
+        }
+
+        private fun forProperty(propertyIndex: Int, ids: IntArray, cursors: MutableList<MappedPostingCursor>): Boolean {
+            for (stringId in ids) {
+                val range = postingRange(propertyIndex, stringId, workConsumer) ?: continue
+                val cursor = validatedPostingCursor(
+                    propertyIndex, range.row, propertyPostingNodeIds[propertyIndex], range.positions, workConsumer
+                ) ?: return false
+                cursors += cursor
+            }
+            return true
+        }
+    }
+
+    private fun mergeCursors(ranges: List<MappedPostingCursor>, workConsumer: GraphWorkConsumer?): Sequence<Int> = sequence {
             val accounting = BufferedGraphWorkConsumer(workConsumer)
             val pending = PriorityQueue<MappedPostingCursor>(
                 compareBy<MappedPostingCursor> { cursor -> cursor.order }
@@ -157,7 +170,6 @@ internal class MappedCallSiteStringIndexView private constructor(
                 accounting.flush()
             }
         }
-    }
 
     private fun validatedPostingCursor(
         propertyIndex: Int,
@@ -167,9 +179,18 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): MappedPostingCursor? {
         val key = propertyIndex.toLong() shl Int.SIZE_BITS or (row.toLong() and UINT_MASK)
-        validatedPostingRanges?.get(key)?.let { valid ->
-            return if (valid) MappedPostingCursor(postings, range, nodeOrder) else null
-        }
+        val cached = validatedPostingRanges?.get(key)
+        return if (cached != null) {
+            if (cached) MappedPostingCursor(postings, range, nodeOrder) else null
+        } else validateUncachedCursor(key, postings, range, workConsumer)
+    }
+
+    private fun validateUncachedCursor(
+        key: Long,
+        postings: IntBuffer,
+        range: IntRange,
+        workConsumer: GraphWorkConsumer?
+    ): MappedPostingCursor? {
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val orders = LongArray(range.last - range.first + 1)
         var previousOrder = Long.MIN_VALUE
@@ -187,8 +208,7 @@ internal class MappedCallSiteStringIndexView private constructor(
             accounting.flush()
         }
         val accepted = validatedPostingRanges?.putIfAbsent(key, valid) ?: valid
-        if (!accepted) return null
-        return MappedPostingCursor(postings, range, nodeOrder, orders)
+        return if (accepted) MappedPostingCursor(postings, range, nodeOrder, orders) else null
     }
 
     private fun postingRange(
@@ -196,7 +216,7 @@ internal class MappedCallSiteStringIndexView private constructor(
         stringId: Int,
         workConsumer: GraphWorkConsumer?
     ): IndexedPostingRange? {
-        val row = binarySearch(propertyStringIds[propertyIndex], stringId, workConsumer)
+        val row = mappedCallSiteStringRow(propertyStringIds[propertyIndex], stringId, workConsumer)
         if (row < 0) return null
         val end = propertyPostingEnds[propertyIndex].get(row)
         val start = if (row == 0) 0 else propertyPostingEnds[propertyIndex].get(row - 1)
@@ -208,36 +228,47 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): IntArray? {
         val expected = if (predicate.transform == null) predicate.expected.lowercase() else predicate.expected
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        return try {
+            val spans = candidateSpans(expected, accounting)
+            when {
+                spans == null -> IntArray(0)
+                spans.isEmpty() -> null
+                else -> exactMatchesInSpan(spans.minBy { it.last - it.first }, predicate, accounting)
+            }
+        } finally { accounting.flush() }
+    }
+
+    private fun candidateSpans(expected: String, accounting: BufferedGraphWorkConsumer): List<IntRange>? {
         val spans = mutableListOf<IntRange>()
         val seen = HashSet<Int>()
-        val accounting = BufferedGraphWorkConsumer(workConsumer)
-        try {
-            for (position in 0..expected.length - TRIGRAM_LENGTH) {
-                val trigram = mappedTrigramHash(expected, position)
-                if (!seen.add(trigram)) continue
-                accounting.consume()
-                val span = trigramPostingRange(trigram) ?: return IntArray(0)
-                spans += span
-            }
-            if (spans.isEmpty()) return null
-            val anchor = spans.minBy { range -> range.last - range.first }
-            val actual = MutableString()
-            val matches = IntArray(anchor.last - anchor.first + 1)
-            var size = 0
-            for (postingIndex in anchor) {
-                if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
-                accounting.consume()
-                val stringId = trigramPostings.get(postingIndex).toInt()
-                if (stringId !in 0 until stringCount) return null
-                stringTable.get(stringId, actual)
-                if (reusableContains(actual, predicate.transform, predicate.expected)) {
-                    matches[size++] = stringId
-                }
-            }
-            return matches.copyOf(size)
-        } finally {
-            accounting.flush()
+        for (position in 0..expected.length - TRIGRAM_LENGTH) {
+            val trigram = mappedTrigramHash(expected, position)
+            if (!seen.add(trigram)) continue
+            accounting.consume()
+            val span = trigramPostingRange(trigram) ?: return null
+            spans += span
         }
+        return spans
+    }
+
+    private fun exactMatchesInSpan(
+        span: IntRange,
+        predicate: StringPropertyPredicate,
+        accounting: BufferedGraphWorkConsumer
+    ): IntArray? {
+        val actual = MutableString()
+        val matches = IntArray(span.last - span.first + 1)
+        var size = 0
+        for (postingIndex in span) {
+            if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+            accounting.consume()
+            val stringId = trigramPostings.get(postingIndex).toInt()
+            if (stringId !in 0 until stringCount) return null
+            stringTable.get(stringId, actual)
+            if (reusableContains(actual, predicate.transform, predicate.expected)) matches[size++] = stringId
+        }
+        return matches.copyOf(size)
     }
 
     private fun trigramPostingRange(trigram: Int): IntRange? {
@@ -260,17 +291,14 @@ internal class MappedCallSiteStringIndexView private constructor(
     private fun postingTrigram(index: Int): Int = (trigramPostings.get(index) ushr Int.SIZE_BITS).toInt()
 
     companion object {
-        @Suppress("LongParameterList")
         fun load(
             path: Path,
-            expectedStringCount: Int,
-            expectedCallSiteCount: Int,
-            expectedContentIdentity: ByteArray,
-            stringTable: StringTable,
-            nodeIdCapacity: Int,
-            nodeOrder: (Int) -> Long,
+            context: CallSiteIndexViewContext,
             workConsumer: GraphWorkConsumer?
         ): MappedCallSiteStringIndexView? {
+            val expectedStringCount = context.expectedStringCount
+            val expectedCallSiteCount = context.expectedCallSiteCount
+            val expectedContentIdentity = context.expectedContentIdentity
             if (!Files.isRegularFile(path) ||
                 expectedContentIdentity.size != CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
             ) return null
@@ -324,16 +352,11 @@ internal class MappedCallSiteStringIndexView private constructor(
                     require(
                         validatePersistentIndex(
                             mapped,
-                            propertyStrings,
-                            propertyEnds,
-                            propertyPostings,
-                            signaturesOffset,
-                            offset,
-                            uniqueCounts,
-                            stringCount,
-                            callSiteCount,
-                            nodeIdCapacity,
-                            postingCount,
+                            PersistentIndexViewProperties(propertyStrings, propertyEnds, propertyPostings),
+                            PersistentIndexViewLayout(
+                                signaturesOffset, offset, uniqueCounts, stringCount, callSiteCount, postingCount
+                            ),
+                            context.nodeIdCapacity,
                             expectedContentIdentity,
                             workConsumer
                         )
@@ -345,36 +368,38 @@ internal class MappedCallSiteStringIndexView private constructor(
                         postings,
                         callSiteCount,
                         stringCount,
-                        stringTable,
-                        nodeOrder
+                        context.stringTable,
+                        context.nodeOrder
                     )
                 }
-            } catch (error: Exception) {
-                when (error) {
-                    is CancellationException -> throw error
-                    is IOException, is IllegalArgumentException, is ArithmeticException,
-                    is BufferUnderflowException, is IndexOutOfBoundsException -> null
-                    else -> throw error
-                }
+            } catch (_: IOException) {
+                null
+            } catch (_: IllegalArgumentException) {
+                null
+            } catch (_: ArithmeticException) {
+                null
+            } catch (_: BufferUnderflowException) {
+                null
+            } catch (expectedMalformedIndex: IndexOutOfBoundsException) {
+                null
             }
         }
 
-        @Suppress("LongParameterList")
         private fun validatePersistentIndex(
             mapped: ByteBuffer,
-            propertyStrings: Array<IntBuffer>,
-            propertyEnds: Array<IntBuffer>,
-            propertyPostings: Array<IntBuffer>,
-            signaturesOffset: Long,
-            postingsOffset: Long,
-            uniqueCounts: IntArray,
-            stringCount: Int,
-            callSiteCount: Int,
+            properties: PersistentIndexViewProperties,
+            layout: PersistentIndexViewLayout,
             nodeIdCapacity: Int,
-            postingCount: Int,
             contentIdentity: ByteArray,
             workConsumer: GraphWorkConsumer?
         ): Boolean {
+            val (propertyStrings, propertyEnds, propertyPostings) = properties
+            val signaturesOffset = layout.signaturesOffset
+            val postingsOffset = layout.postingsOffset
+            val uniqueCounts = layout.uniqueCounts
+            val stringCount = layout.stringCount
+            val callSiteCount = layout.callSiteCount
+            val postingCount = layout.postingCount
             val validator = PersistentIndexViewValidator(mapped, workConsumer)
             validator.updateInt(CALL_SITE_STRING_INDEX_MAGIC)
             validator.updateInt(CALL_SITE_STRING_INDEX_VERSION)
@@ -433,6 +458,30 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
     }
 }
+
+internal data class CallSiteIndexViewContext(
+    val expectedStringCount: Int,
+    val expectedCallSiteCount: Int,
+    val expectedContentIdentity: ByteArray,
+    val stringTable: StringTable,
+    val nodeIdCapacity: Int,
+    val nodeOrder: (Int) -> Long
+)
+
+private data class PersistentIndexViewProperties(
+    val stringIds: Array<IntBuffer>,
+    val postingEnds: Array<IntBuffer>,
+    val nodeIds: Array<IntBuffer>
+)
+
+private data class PersistentIndexViewLayout(
+    val signaturesOffset: Long,
+    val postingsOffset: Long,
+    val uniqueCounts: IntArray,
+    val stringCount: Int,
+    val callSiteCount: Int,
+    val postingCount: Int
+)
 
 private class PersistentIndexViewValidator(
     private val mapped: ByteBuffer,
@@ -522,7 +571,7 @@ private fun mappedTrigramHash(value: String, position: Int): Int =
     (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
         value[position + 2].code
 
-private fun binarySearch(
+internal fun mappedCallSiteStringRow(
     values: IntBuffer,
     target: Int,
     workConsumer: GraphWorkConsumer?
@@ -580,23 +629,24 @@ private class BoundedPostingRangeValidationCache private constructor(
 
     @Synchronized
     operator fun get(key: Long): Boolean? {
-        if (closed) return null
-        val slot = slot(key)
-        if (states[slot] == VALIDATION_EMPTY || keys[slot] != key) return null
-        return states[slot] == VALIDATION_VALID
+        return if (closed) null else {
+            val slot = slot(key)
+            if (states[slot] == VALIDATION_EMPTY || keys[slot] != key) null else states[slot] == VALIDATION_VALID
+        }
     }
 
     @Synchronized
     fun putIfAbsent(key: Long, valid: Boolean): Boolean {
         if (closed) return valid
         val slot = slot(key)
-        if (states[slot] != VALIDATION_EMPTY && keys[slot] == key) {
-            return states[slot] == VALIDATION_VALID
+        return if (states[slot] != VALIDATION_EMPTY && keys[slot] == key) {
+            states[slot] == VALIDATION_VALID
+        } else {
+            if (states[slot] == VALIDATION_EMPTY) entries++
+            keys[slot] = key
+            states[slot] = if (valid) VALIDATION_VALID else VALIDATION_INVALID
+            valid
         }
-        if (states[slot] == VALIDATION_EMPTY) entries++
-        keys[slot] = key
-        states[slot] = if (valid) VALIDATION_VALID else VALIDATION_INVALID
-        return valid
     }
 
     @Synchronized
@@ -621,11 +671,11 @@ private class BoundedPostingRangeValidationCache private constructor(
             val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(
                 VALIDATED_POSTING_RANGE_CACHE_RETAINED_BYTES
             ) ?: return null
+            var completed = false
             return try {
-                BoundedPostingRangeValidationCache(reservation)
-            } catch (error: Throwable) {
-                reservation.close()
-                throw error
+                BoundedPostingRangeValidationCache(reservation).also { completed = true }
+            } finally {
+                if (!completed) reservation.close()
             }
         }
     }

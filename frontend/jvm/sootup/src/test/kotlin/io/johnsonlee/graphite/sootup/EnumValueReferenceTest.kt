@@ -49,7 +49,8 @@ class EnumValueReferenceTest {
         assertNotNull(urgentValues, "Should extract values for TaskConfig.URGENT")
         assertEquals(1, urgentValues.size, "TaskConfig.URGENT should have 1 constructor arg")
         val urgentRef = urgentValues[0]
-        assertTrue(urgentRef is EnumValueReference, "Constructor arg should be EnumValueReference, got: ${urgentRef?.javaClass?.simpleName}")
+        assertTrue(urgentRef is EnumValueReference,
+            "Constructor arg should be EnumValueReference, got: ${urgentRef?.javaClass?.simpleName}")
         assertEquals("sample.ab.Priority", (urgentRef as EnumValueReference).enumClass)
         assertEquals("HIGH", urgentRef.enumName)
 
@@ -59,7 +60,8 @@ class EnumValueReferenceTest {
         assertNotNull(normalValues, "Should extract values for TaskConfig.NORMAL")
         assertEquals(1, normalValues.size, "TaskConfig.NORMAL should have 1 constructor arg")
         val normalRef = normalValues[0]
-        assertTrue(normalRef is EnumValueReference, "Constructor arg should be EnumValueReference, got: ${normalRef?.javaClass?.simpleName}")
+        assertTrue(normalRef is EnumValueReference,
+            "Constructor arg should be EnumValueReference, got: ${normalRef?.javaClass?.simpleName}")
         assertEquals("sample.ab.Priority", (normalRef as EnumValueReference).enumClass)
         assertEquals("MEDIUM", normalRef.enumName)
 
@@ -69,7 +71,8 @@ class EnumValueReferenceTest {
         assertNotNull(deferredValues, "Should extract values for TaskConfig.DEFERRED")
         assertEquals(1, deferredValues.size, "TaskConfig.DEFERRED should have 1 constructor arg")
         val deferredRef = deferredValues[0]
-        assertTrue(deferredRef is EnumValueReference, "Constructor arg should be EnumValueReference, got: ${deferredRef?.javaClass?.simpleName}")
+        assertTrue(deferredRef is EnumValueReference,
+            "Constructor arg should be EnumValueReference, got: ${deferredRef?.javaClass?.simpleName}")
         assertEquals("sample.ab.Priority", (deferredRef as EnumValueReference).enumClass)
         assertEquals("LOW", deferredRef.enumName)
     }

@@ -8,10 +8,10 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
-import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherExecutor
+import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MmapGraph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
@@ -58,13 +58,16 @@ class CallSiteProjectionPreflightCacheTest {
 
     @Test
     fun `false preflight is reused without callbacks and cached refusal still honors interruption`() {
-        withStored(listOf(call(0, "A", "first"), call(3, "old", "stale"),
-            StringConstant(NodeId(3), "replacement"))) { dir ->
+        withStored(listOf(call(0, "A", "first"), call(3, "old", "stale"), StringConstant(NodeId(3), "replacement"))) { dir ->
             val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex")))
             loadObserved(dir, index).use { mapped ->
                 repeat(2) {
-                    assertFalse(mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES,
-                        { error("Refusal must not invoke cancellation callback") }, { error("Refusal must not emit") }))
+                    assertFalse(
+                        mapped.forEachStringPropertyProjection(
+                            CallSiteNode::class.java,
+                            PROPERTIES,
+                            { error("Refusal must not invoke cancellation callback") },
+                            { error("Refusal must not emit") }))
                 }
                 assertEquals(1, index.scans.get())
                 try {
@@ -75,10 +78,9 @@ class CallSiteProjectionPreflightCacheTest {
                     Thread.interrupted()
                 }
                 val context = CypherExecutionContext(CypherExecutionBudget(2))
-                assertEquals(listOf(
-                    mapOf("c" to "A", "m" to "first", "again" to "A"),
-                    mapOf("c" to null, "m" to null, "again" to null)
-                ), CypherExecutor(mapped, context).execute(QUERY).rows)
+                assertEquals(
+                    listOf(mapOf("c" to "A", "m" to "first", "again" to "A"), mapOf("c" to null, "m" to null, "again" to null)),
+                    CypherExecutor(mapped, context).execute(QUERY).rows)
                 assertEquals(2L, context.diagnostics.workUnitsConsumed)
             }
         }
@@ -90,17 +92,26 @@ class CallSiteProjectionPreflightCacheTest {
             val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex")))
             loadObserved(dir, index).use { mapped ->
                 for (properties in listOf(emptyList(), listOf("line"))) {
-                    assertFalse(mapped.forEachStringPropertyProjection(CallSiteNode::class.java, properties,
-                        { error("Unsupported request must not poll") }, { error("Unsupported request must not emit") }))
-                    assertFalse(mapped.forEachStringPropertyProjection(CallSiteNode::class.java, properties,
-                        GraphWorkConsumer { error("Unsupported request must not consume preflight work") },
-                        { error("Unsupported request must not poll") }, { error("Unsupported request must not emit") }))
+                    assertFalse(
+                        mapped.forEachStringPropertyProjection(
+                            CallSiteNode::class.java,
+                            properties,
+                            { error("Unsupported request must not poll") },
+                            { error("Unsupported request must not emit") }))
+                    assertFalse(
+                        mapped.forEachStringPropertyProjection(
+                            CallSiteNode::class.java,
+                            properties,
+                            GraphWorkConsumer { error("Unsupported request must not consume preflight work") },
+                            { error("Unsupported request must not poll") },
+                            { error("Unsupported request must not emit") }))
                 }
                 assertEquals(0, index.scans.get())
                 repeat(2) {
                     var checks = 0
-                    assertTrue(mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES,
-                        { checks++ }, { error("Empty graph must not emit") }))
+                    assertTrue(
+                        mapped.forEachStringPropertyProjection(
+                            CallSiteNode::class.java, PROPERTIES, { checks++ }, { error("Empty graph must not emit") }))
                     assertEquals(2, checks)
                 }
                 assertEquals(3, index.scans.get())
@@ -115,9 +126,7 @@ class CallSiteProjectionPreflightCacheTest {
             val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex")))
             loadObserved(dir, index).use { mapped ->
                 val tooSmall = CypherExecutionContext(CypherExecutionBudget(3))
-                val failure = assertFailsWith<CypherBudgetExceededException> {
-                    CypherExecutor(mapped, tooSmall).execute(QUERY)
-                }
+                val failure = assertFailsWith<CypherBudgetExceededException> { CypherExecutor(mapped, tooSmall).execute(QUERY) }
                 assertEquals(3L, failure.maxWorkUnits)
                 assertEquals(3L, tooSmall.diagnostics.workUnitsConsumed)
                 assertEquals(1, index.scans.get(), "Budget failure must precede the row scan")
@@ -133,9 +142,7 @@ class CallSiteProjectionPreflightCacheTest {
                 assertEquals(4, index.scans.get(), "Completed validation survives later row budget failure")
 
                 val warmTooSmall = CypherExecutionContext(CypherExecutionBudget(3))
-                val warmFailure = assertFailsWith<CypherBudgetExceededException> {
-                    CypherExecutor(mapped, warmTooSmall).execute(QUERY)
-                }
+                val warmFailure = assertFailsWith<CypherBudgetExceededException> { CypherExecutor(mapped, warmTooSmall).execute(QUERY) }
                 assertEquals(3L, warmFailure.maxWorkUnits)
                 assertEquals(3L, warmTooSmall.diagnostics.workUnitsConsumed)
                 assertEquals(5, index.scans.get(), "Warm failure scans rows without repeating preflight")
@@ -145,16 +152,14 @@ class CallSiteProjectionPreflightCacheTest {
 
     @Test
     fun `cold structural refusal charges inspected IDs before ordinary fallback and warm refusal does not`() {
-        withStored(listOf(call(0, "A", "first"), call(3, "old", "stale"),
-            StringConstant(NodeId(3), "replacement"))) { dir ->
+        withStored(listOf(call(0, "A", "first"), call(3, "old", "stale"), StringConstant(NodeId(3), "replacement"))) { dir ->
             val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex")))
             loadObserved(dir, index).use { mapped ->
                 for (work in listOf(4L, 2L)) {
                     val context = CypherExecutionContext(CypherExecutionBudget(work))
-                    assertEquals(listOf(
-                        mapOf("c" to "A", "m" to "first", "again" to "A"),
-                        mapOf("c" to null, "m" to null, "again" to null)
-                    ), CypherExecutor(mapped, context).execute(QUERY).rows)
+                    assertEquals(
+                        listOf(mapOf("c" to "A", "m" to "first", "again" to "A"), mapOf("c" to null, "m" to null, "again" to null)),
+                        CypherExecutor(mapped, context).execute(QUERY).rows)
                     assertEquals(work, context.diagnostics.workUnitsConsumed)
                 }
                 assertEquals(3, index.scans.get(), "One refusal preflight and two ordinary scans")
@@ -169,22 +174,29 @@ class CallSiteProjectionPreflightCacheTest {
             loadObserved(dir, index).use { mapped ->
                 val failure = CancellationException("cancel during preflight accounting")
                 var work = 0
-                assertSame(failure, assertFailsWith<CancellationException> {
-                    mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES,
-                        GraphWorkConsumer { if (++work == 2) throw failure },
-                        { error("Incomplete preflight must not reach projection cancellation") },
-                        { error("Incomplete preflight must not emit") })
-                })
+                assertSame(
+                    failure,
+                    assertFailsWith<CancellationException> {
+                        mapped.forEachStringPropertyProjection(
+                            CallSiteNode::class.java,
+                            PROPERTIES,
+                            GraphWorkConsumer { if (++work == 2) throw failure },
+                            { error("Incomplete preflight must not reach projection cancellation") },
+                            { error("Incomplete preflight must not emit") })
+                    })
                 assertEquals(2, work)
                 assertEquals(1, index.scans.get())
                 val rows = mutableListOf<StringPropertyProjectionRow>()
                 work = 0
-                assertTrue(mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES,
-                    GraphWorkConsumer { work++ }, {}, rows::add))
+                assertTrue(
+                    mapped.forEachStringPropertyProjection(
+                        CallSiteNode::class.java, PROPERTIES, GraphWorkConsumer { work++ }, {}, rows::add))
                 assertEquals(4, work)
                 assertEquals(3, index.scans.get())
-                assertEquals(listOf(listOf("A", "first", "A"), listOf("Å", "duplicate", "Å"),
-                    listOf("Z", "last", "Z"), listOf("Å", "duplicate", "Å")), rows.map { it.values })
+                assertEquals(
+                    listOf(
+                        listOf("A", "first", "A"), listOf("Å", "duplicate", "Å"), listOf("Z", "last", "Z"), listOf("Å", "duplicate", "Å")),
+                    rows.map { it.values })
             }
         }
     }
@@ -196,20 +208,19 @@ class CallSiteProjectionPreflightCacheTest {
             val reason = CypherQueryCancelledException("request stopped during preflight")
             val delegate = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
             var scanned = 0
-            val index = object : NodeTypeIndex by delegate {
-                override fun ids(type: Class<out Node>): Sequence<Int> = sequence {
-                    val currentScan = ++scanned
-                    delegate.ids(type).forEachIndexed { offset, id ->
-                        if (currentScan == 1 && offset == 1) signal.cancel(reason)
-                        yield(id)
+            val index =
+                object : NodeTypeIndex by delegate {
+                    override fun ids(type: Class<out Node>): Sequence<Int> = sequence {
+                        val currentScan = ++scanned
+                        delegate.ids(type).forEachIndexed { offset, id ->
+                            if (currentScan == 1 && offset == 1) signal.cancel(reason)
+                            yield(id)
+                        }
                     }
                 }
-            }
             loadObserved(dir, index).use { mapped ->
                 val cancelled = CypherExecutionContext(CypherExecutionBudget(8), signal)
-                assertSame(reason, assertFailsWith<CypherQueryCancelledException> {
-                    CypherExecutor(mapped, cancelled).execute(QUERY)
-                })
+                assertSame(reason, assertFailsWith<CypherQueryCancelledException> { CypherExecutor(mapped, cancelled).execute(QUERY) })
                 assertEquals(1L, cancelled.diagnostics.workUnitsConsumed)
                 assertEquals(1, scanned)
                 val restored = CypherExecutionContext(CypherExecutionBudget(8))
@@ -224,9 +235,11 @@ class CallSiteProjectionPreflightCacheTest {
         val cancelled = CancellationException("empty caller cancellation")
         try {
             Thread.currentThread().interrupt()
-            assertSame(cancelled, assertFailsWith<CancellationException> {
-                mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES, { throw cancelled }, {})
-            })
+            assertSame(
+                cancelled,
+                assertFailsWith<CancellationException> {
+                    mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES, { throw cancelled }, {})
+                })
             assertTrue(Thread.currentThread().isInterrupted)
         } finally {
             Thread.interrupted()
@@ -237,15 +250,15 @@ class CallSiteProjectionPreflightCacheTest {
     fun `preflight exception is not cached but later consumer cancellation does not discard completed validation`() {
         withStored(listOf(call(0, "A", "first"))) { dir ->
             val failure = IllegalStateException("index failed before a complete result")
-            val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))) { scan ->
-                if (scan == 1) throw failure
-            }
+            val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))) { scan -> if (scan == 1) throw failure }
             loadObserved(dir, index).use { mapped ->
                 assertSame(failure, assertFailsWith<IllegalStateException> { project(mapped) })
                 val cancelled = CancellationException("caller cancelled after validation")
-                assertSame(cancelled, assertFailsWith<CancellationException> {
-                    mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES, { throw cancelled }, {})
-                })
+                assertSame(
+                    cancelled,
+                    assertFailsWith<CancellationException> {
+                        mapped.forEachStringPropertyProjection(CallSiteNode::class.java, PROPERTIES, { throw cancelled }, {})
+                    })
                 assertEquals(2, index.scans.get())
                 assertEquals(listOf(listOf("A", "first", "A")), project(mapped))
                 assertEquals(3, index.scans.get())
@@ -265,16 +278,17 @@ class CallSiteProjectionPreflightCacheTest {
     private fun assertInterruptedScanPublication(dir: Path, interruptAfterScan: Boolean) {
         val delegate = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
         val scans = AtomicInteger()
-        val index = object : NodeTypeIndex by delegate {
-            override fun ids(type: Class<out Node>): Sequence<Int> {
-                val scan = scans.incrementAndGet()
-                return sequence {
-                    if (scan == 1 && !interruptAfterScan) Thread.currentThread().interrupt()
-                    yieldAll(delegate.ids(type))
-                    if (scan == 1 && interruptAfterScan) Thread.currentThread().interrupt()
+        val index =
+            object : NodeTypeIndex by delegate {
+                override fun ids(type: Class<out Node>): Sequence<Int> {
+                    val scan = scans.incrementAndGet()
+                    return sequence {
+                        if (scan == 1 && !interruptAfterScan) Thread.currentThread().interrupt()
+                        yieldAll(delegate.ids(type))
+                        if (scan == 1 && interruptAfterScan) Thread.currentThread().interrupt()
+                    }
                 }
             }
-        }
         loadObserved(dir, index).use { mapped ->
             try {
                 assertFailsWith<CancellationException> { project(mapped) }
@@ -297,12 +311,16 @@ class CallSiteProjectionPreflightCacheTest {
             val releaseFirst = CountDownLatch(1)
             val secondEntered = CountDownLatch(1)
             val cancelledThread = AtomicReference<Thread>()
-            val index = ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))) { scan ->
-                when (scan) {
-                    1 -> { firstEntered.countDown(); check(releaseFirst.await(5, TimeUnit.SECONDS)) }
-                    2 -> awaitCancellation(secondEntered)
+            val index =
+                ObservedTypeIndex(MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))) { scan ->
+                    when (scan) {
+                        1 -> {
+                            firstEntered.countDown()
+                            check(releaseFirst.await(5, TimeUnit.SECONDS))
+                        }
+                        2 -> awaitCancellation(secondEntered)
+                    }
                 }
-            }
             loadObserved(dir, index).use { mapped ->
                 val executor = Executors.newFixedThreadPool(2)
                 try {
@@ -351,10 +369,8 @@ class CallSiteProjectionPreflightCacheTest {
         return rows.map { it.values }
     }
 
-    private class ObservedTypeIndex(
-        private val delegate: NodeTypeIndex,
-        private val beforeScan: (Int) -> Unit = {}
-    ) : NodeTypeIndex by delegate {
+    private class ObservedTypeIndex(private val delegate: NodeTypeIndex, private val beforeScan: (Int) -> Unit = {}) :
+        NodeTypeIndex by delegate {
         val scans = AtomicInteger()
 
         override fun ids(type: Class<out Node>): Sequence<Int> {
@@ -380,47 +396,57 @@ class CallSiteProjectionPreflightCacheTest {
     // This fixture has no edges, metadata, resources or ordinal-bearing calls.
     private fun loadObserved(dir: Path, index: NodeTypeIndex): MappedWebGraphBackedGraph {
         val data = dir.resolve("graph.nodedata")
-        val version = DataInputStream(Files.newInputStream(data)).use {
-            NodeSerializer.readHeader(it, NodeSerializer.MAGIC_NODEDATA)
-        }
-        val buffer = FileChannel.open(data, StandardOpenOption.READ).use {
-            it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
-        }
+        val version = DataInputStream(Files.newInputStream(data)).use { NodeSerializer.readHeader(it, NodeSerializer.MAGIC_NODEDATA) }
+        val buffer = FileChannel.open(data, StandardOpenOption.READ).use { it.map(FileChannel.MapMode.READ_ONLY, 0, it.size()) }
         val forward = BVGraph.load(dir.resolve("forward").toString())
         return MappedWebGraphBackedGraph(
-            forward = forward, backward = lazy { error("No incoming edges in this fixture") },
-            mappedNodeData = buffer, nodeDataVersion = version, stringTable = StringTable.load(dir),
-            nodeOffsets = MappedNodeOffsetIndex.load(dir.resolve("graph.nodeoffsets")), nodeTypeIndex = index,
-            forwardLabels = byteArrayOf(), cumulativeOutdeg = IntArray(forward.numNodes() + 1), edgeCount = 0,
-            metadataFile = dir.resolve("graph.metadata").toFile(),
-            callSiteStringIndexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
-            persistentCallSiteStringIndexEnabled = false, methodCount = 0,
-            comparisonLookup = EmptyBranchComparisonLookup,
-            metadata = lazy { error("Projection must not read graph metadata") },
-            classOverviewProvider = { error("Projection must not read class overview") },
-            resourceAccessor = lazy { error("Projection must not read resources") }
-        )
+            nodes =
+                MappedNodeStorage(
+                    buffer, version, StringTable.load(dir), MappedNodeOffsetIndex.load(dir.resolve("graph.nodeoffsets")), index),
+            edges =
+                MappedEdgeStorage(
+                    forward,
+                    lazy { error("No incoming edges in this fixture") },
+                    byteArrayOf(),
+                    IntArray(forward.numNodes() + 1),
+                    0,
+                    EmptyBranchComparisonLookup),
+            sidecars =
+                MappedGraphSidecars(
+                    dir.resolve("graph.metadata").toFile(),
+                    lazy { error("Projection must not read graph metadata") },
+                    0,
+                    { error("Projection must not read class overview") },
+                    lazy { error("Projection must not read resources") }),
+            indexes = MappedIndexFiles(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE), false))
     }
 
-    private fun call(id: Int, target: String, name: String): CallSiteNode = CallSiteNode(
-        NodeId(id), MethodDescriptor(TypeDescriptor("Caller"), "run", emptyList(), TypeDescriptor("void")),
-        MethodDescriptor(TypeDescriptor(target), name, emptyList(), TypeDescriptor("void")), id, null, emptyList()
-    )
+    private fun call(id: Int, target: String, name: String): CallSiteNode =
+        CallSiteNode(
+            NodeId(id),
+            MethodDescriptor(TypeDescriptor("Caller"), "run", emptyList(), TypeDescriptor("void")),
+            MethodDescriptor(TypeDescriptor(target), name, emptyList(), TypeDescriptor("void")),
+            id,
+            null,
+            emptyList())
 
-    private val repeatedCalls = listOf(
-        call(0, "A", "first"), call(3, "old", "replaced"), StringConstant(NodeId(8), "unrelated"),
-        call(13, "Z", "last"), call(3, "Å", "duplicate")
-    )
-    private val expectedRows = listOf(
-        mapOf("c" to "A", "m" to "first", "again" to "A"),
-        mapOf("c" to "Z", "m" to "last", "again" to "Z"),
-        mapOf("c" to "Å", "m" to "duplicate", "again" to "Å"),
-        mapOf("c" to "Å", "m" to "duplicate", "again" to "Å")
-    )
+    private val repeatedCalls =
+        listOf(
+            call(0, "A", "first"),
+            call(3, "old", "replaced"),
+            StringConstant(NodeId(8), "unrelated"),
+            call(13, "Z", "last"),
+            call(3, "Å", "duplicate"))
+    private val expectedRows =
+        listOf(
+            mapOf("c" to "A", "m" to "first", "again" to "A"),
+            mapOf("c" to "Z", "m" to "last", "again" to "Z"),
+            mapOf("c" to "Å", "m" to "duplicate", "again" to "Å"),
+            mapOf("c" to "Å", "m" to "duplicate", "again" to "Å"))
 
     companion object {
         private val PROPERTIES = listOf("callee_class", "callee_name", "callee_class")
-        private const val QUERY = "MATCH (n:CallSiteNode) RETURN n.callee_class AS c, n.callee_name AS m, " +
-            "n.callee_class AS again ORDER BY c, m LIMIT 20"
+        private const val QUERY =
+            "MATCH (n:CallSiteNode) RETURN n.callee_class AS c, n.callee_name AS m, " + "n.callee_class AS again ORDER BY c, m LIMIT 20"
     }
 }

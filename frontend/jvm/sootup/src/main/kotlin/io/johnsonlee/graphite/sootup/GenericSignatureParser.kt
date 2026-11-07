@@ -28,7 +28,9 @@ object GenericSignatureParser {
             val visitor = TypeSignatureVisitor()
             SignatureReader(signature).acceptType(visitor)
             visitor.toTypeDescriptor()
-        } catch (e: Exception) {
+        } catch (_: IllegalArgumentException) {
+            null
+        } catch (_: IndexOutOfBoundsException) {
             null
         }
     }
@@ -47,7 +49,9 @@ object GenericSignatureParser {
             SignatureReader(signature).accept(visitor)
             visitor.finalize()
             visitor.returnType
-        } catch (e: Exception) {
+        } catch (_: IllegalArgumentException) {
+            null
+        } catch (_: IndexOutOfBoundsException) {
             null
         }
     }
@@ -66,7 +70,9 @@ object GenericSignatureParser {
             SignatureReader(signature).accept(visitor)
             visitor.finalize()
             visitor.parameterTypes
-        } catch (e: Exception) {
+        } catch (_: IllegalArgumentException) {
+            emptyList()
+        } catch (_: IndexOutOfBoundsException) {
             emptyList()
         }
     }
@@ -89,7 +95,9 @@ object GenericSignatureParser {
                 superClass = visitor.superClass,
                 interfaces = visitor.interfaces
             )
-        } catch (e: Exception) {
+        } catch (_: IllegalArgumentException) {
+            null
+        } catch (_: IndexOutOfBoundsException) {
             null
         }
     }

@@ -70,18 +70,10 @@ import sootup.core.views.View
 import sootup.interceptors.DeadAssignmentEliminator
 import sootup.interceptors.NopEliminator
 
-private const val STRING_CLASS = "java.lang.String"
-private const val OBJECT_CLASS = "java.lang.Object"
-private const val VALUE_OF = "valueOf"
 private const val CONSTRUCTOR = "<init>"
 private const val COMPUTED_AT_RUN_TIME = "computed at run time"
 private const val SELECT_THE_CALL = "select the call that passes the constant"
 private const val MAX_CASTS = 8
-private const val BOOLEAN_TYPE = "boolean"
-private const val INT_TYPE = "int"
-private const val LONG_TYPE = "long"
-private const val FLOAT_TYPE = "float"
-private const val DOUBLE_TYPE = "double"
 
 private const val MAX_HINTS = 8
 private const val CALLEE_CLASS = "callee_class"
@@ -123,7 +115,6 @@ private const val CALLER_SIGNATURE = "caller_signature"
  * `ConditionalBranchFolderTest`).
  */
 // Keep failed-run cleanup beside the folding state whose lifecycle it owns.
-@Suppress("TooManyFunctions")
 internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** What the fold pass recorded for one body, consumed by the accounting pass at the chain's end. */
@@ -172,8 +163,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** Methods that share a rendered signature and descriptor with another of their class, by signature. */
     private val collidingOverloads = ConcurrentHashMap<MethodSignature, List<String>>()
-    private val enumConstants = HashMap<Pair<ClassType, String>, Boolean>()
+
     private val enumInitialization = EnumInitializationSafety()
+    private val constantValues = FoldConstantValues()
 
     /**
      * [defaults], the chain the input location runs without folding, followed by the fold pass
@@ -184,7 +176,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     fun bodyInterceptors(defaults: List<BodyInterceptor>): List<BodyInterceptor> {
         val chain = ArrayList(defaults)
         chain.add(Fold())
-        listOf(FoldBranches(::isEnumConstant), DeadAssignmentEliminator(), NopEliminator()).mapTo(chain, ::Gated)
+        listOf(FoldBranches(constantValues::isEnumConstant), DeadAssignmentEliminator(), NopEliminator()).mapTo(chain, ::Gated)
         chain.add(Accounting())
         return chain
     }
@@ -372,7 +364,6 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
          * rule folds although a rule's call site matched and an argument it names is not a
          * constant is recorded once as unsupported, under that rule.
          */
-        @Suppress("LongParameterList")
         private fun select(
             run: BodyRun,
             builder: Body.BodyBuilder,
@@ -383,10 +374,10 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         ): Int? {
             val properties = callSiteProperties(callee, builder.methodSignature, key)
             var unresolved: Pair<Int, String>? = null
-            for ((index, fold) in folds.withIndex()) {
-                when (val outcome = test(run, index, fold, builder, invoke, key, properties, view)) {
-                    Outcome.Matched -> return index
-                    is Outcome.Unresolved -> if (unresolved == null) unresolved = index to outcome.reason
+            for (rule in folds.withIndex()) {
+                when (val outcome = test(run, rule, builder, invoke, key, properties, view)) {
+                    Outcome.Matched -> return rule.index
+                    is Outcome.Unresolved -> if (unresolved == null) unresolved = rule.index to outcome.reason
                     Outcome.Skipped -> Unit
                 }
             }
@@ -395,17 +386,17 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         }
 
         /** [fold] against one call: matched, skipped (recording the near miss), or skipped because an argument is not a constant. */
-        @Suppress("LongParameterList", "ReturnCount")
+        @Suppress("ReturnCount")
         private fun test(
             run: BodyRun,
-            index: Int,
-            fold: FoldRule,
+            rule: IndexedValue<FoldRule>,
             builder: Body.BodyBuilder,
             invoke: AbstractInvokeExpr,
             key: CallSiteKey,
             properties: Map<String, String>,
             view: View
         ): Outcome {
+            val (index, fold) = rule
             if (fold is FoldSites) {
                 if (fold.selected?.contains(key) != true) return Outcome.Skipped
                 ambiguity(view, builder.methodSignature, "caller")?.let { return Outcome.Unresolved(it) }
@@ -421,7 +412,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             }
         }
 
-        @Suppress("LongParameterList", "ReturnCount")
+        @Suppress("ReturnCount")
         private fun testArguments(
             run: BodyRun,
             index: Int,
@@ -622,7 +613,6 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
          * cannot carry the value. [resultType] is the type the value really has where the
          * return type is erased, see [FoldSites.resultTypes].
          */
-        @Suppress("LongParameterList")
         private fun foldCall(
             run: BodyRun,
             builder: Body.BodyBuilder,
@@ -632,7 +622,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             view: View,
             resultType: String?
         ): Boolean {
-            val replacement = replacementFor(stmt, invoke, folds[index], view, resultType)
+            val replacement = constantValues.replacementFor(stmt, invoke, folds[index], view, resultType)
             if (replacement == null) {
                 val type = invoke.methodSignature.type.toString() + (resultType?.let { " (result type $it)" } ?: "")
                 val reason = "return type $type cannot carry ${folds[index].value.description}"
@@ -1007,7 +997,6 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun declares(view: View, type: ClassType, subSignature: MethodSubSignature): Boolean =
         runCatching { view.getClass(type).map { it.getMethod(subSignature).isPresent }.orElse(false) }.getOrDefault(false)
 
-
     /**
      * The constant reaching argument [index] of [invoke] as the graph would label it, or `null`
      * when it is not a constant: the argument itself when it is one, else the right-hand side
@@ -1021,16 +1010,16 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     ): Pair<String, Map<String, Any?>>? {
         val parameterType = invoke.methodSignature.parameterTypes[index]
         return when (val argument = invoke.args[index]) {
-            is Constant -> describe(argument, parameterType)
+            is Constant -> constantValues.describe(argument, parameterType)
             is Local -> {
                 val definitions = builder.controlFlowGraph.nodes.filter { it.def.orElse(null) == argument }
                 when (val source = (definitions.singleOrNull() as? JAssignStmt)?.rightOp) {
-                    is Constant -> describe(source, parameterType)
+                    is Constant -> constantValues.describe(source, parameterType)
                     // A boxed constant (`fn.apply(3)` passes `Integer.valueOf(3)`) is the constant it holds.
-                    is JStaticFieldRef -> booleanBoxOf(source)?.let { describe(it.second, PrimitiveType.getBoolean()) }
-                        ?: describe(source, view)
+                    is JStaticFieldRef -> booleanBoxOf(source)?.let { constantValues.describe(it.second, PrimitiveType.getBoolean()) }
+                        ?: constantValues.describe(source, view)
                     is JStaticInvokeExpr -> valueOfBoxOf(source)?.let { (_, constant) ->
-                        describe(constant, source.methodSignature.parameterTypes.single())
+                        constantValues.describe(constant, source.methodSignature.parameterTypes.single())
                     }
                     else -> null
                 }
@@ -1039,212 +1028,6 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         }
     }
 
-    private fun describe(constant: Constant, parameterType: Type): Pair<String, Map<String, Any?>>? = when (constant) {
-        is IntConstant ->
-            if (parameterType is PrimitiveType.BooleanType) ConstantPattern.BOOLEAN to mapOf(ConstantPattern.VALUE to (constant.value != 0))
-            else ConstantPattern.INT to mapOf(ConstantPattern.VALUE to constant.value)
-        is LongConstant -> ConstantPattern.LONG to mapOf(ConstantPattern.VALUE to constant.value)
-        is FloatConstant -> ConstantPattern.FLOAT to mapOf(ConstantPattern.VALUE to constant.value.toDouble())
-        is DoubleConstant -> ConstantPattern.DOUBLE to mapOf(ConstantPattern.VALUE to constant.value)
-        is StringConstant -> ConstantPattern.STRING to mapOf(ConstantPattern.VALUE to constant.value)
-        is NullConstant -> ConstantPattern.NULL to emptyMap()
-        else -> null
-    }
-
-    /** A static field read: an enum constant when the field is one (`ACC_ENUM`), a plain field otherwise. */
-    private fun describe(field: JStaticFieldRef, view: View): Pair<String, Map<String, Any?>> {
-        val signature = field.fieldSignature
-        val owner = signature.declClassType
-        return if (isEnumConstant(view, field)) {
-            ConstantPattern.ENUM to mapOf("enum_type" to owner.fullyQualifiedName, "name" to signature.name)
-        } else {
-            ConstantPattern.FIELD to mapOf("class" to owner.fullyQualifiedName, "name" to signature.name)
-        }
-    }
-
-    /**
-     * The statement that stands in for [stmt], or `null` when the return type cannot carry the
-     * value. A discarded call is checked the same way before it becomes a `nop`: a `void` call,
-     * or an overload returning a type the value does not fit, is not the call the rule means,
-     * and deleting it would delete its effects.
-     */
-    private fun replacementFor(stmt: Stmt, invoke: AbstractInvokeExpr, fold: FoldRule, view: View, resultType: String?): Stmt? {
-        val returnType = invoke.methodSignature.type
-        val value = if (isObject(returnType)) erasedConstantFor(fold.value, view, resultType) else constantFor(returnType, fold.value, view)
-        if (value == null) return null
-        return if (stmt is JInvokeStmt) JNopStmt(stmt.positionInfo) else (stmt as JAssignStmt).withRValue(value)
-    }
-
-    /**
-     * The Jimple value [pattern] names for a call returning [type], `null` when the type cannot
-     * carry it: a constant, or for an `EnumConstant` the read of the enum's static field, which
-     * is what the constant is in bytecode. The enum must be the return type itself.
-     */
-    @Suppress("ReturnCount")
-    private fun constantFor(type: Type, pattern: ConstantPattern, view: View): Value? {
-        if (pattern.label == ConstantPattern.NULL) return nullFor(type)
-        if (pattern.label == ConstantPattern.ENUM) return enumConstantFor(type, pattern, view)
-        val primitive = BOXES.entries.firstOrNull { it.value.first == type.toString() }?.key
-        if (primitive != null) {
-            return constantFor(view.identifierFactory.getType(primitive), pattern, view)
-                ?.let { boxed(primitive, it as Immediate, view) }
-        }
-        val value = pattern.scalar
-        if (type is VoidType || value == null) return null
-        return when (pattern.label) {
-            ConstantPattern.CONSTANT -> inferredConstantFor(type, value, view)
-            ConstantPattern.BOOLEAN -> (value as? Boolean)?.takeIf { type is PrimitiveType.BooleanType }?.let(::booleanConstant)
-            ConstantPattern.INT -> integral(value)?.let { intLikeConstant(type, it) }
-            ConstantPattern.LONG -> integral(value)?.takeIf { type is PrimitiveType.LongType }?.let(LongConstant::getInstance)
-            ConstantPattern.FLOAT -> numeric(value)?.takeIf { type is PrimitiveType.FloatType }?.let(::floatConstant)
-            ConstantPattern.DOUBLE -> numeric(value)?.takeIf { type is PrimitiveType.DoubleType }?.let(DoubleConstant::getInstance)
-            else -> (value as? String)?.takeIf { isString(type) }?.let { stringConstant(it, view) }
-        }
-    }
-
-    /**
-     * The value a call whose return type is erased to `java.lang.Object` becomes, `null` when
-     * none fits: what the call really returns there is [resultType], when the CLI read it off the
-     * function value's body, else the type the constant names (`false` a `boolean`, `3` an `int`,
-     * an `EnumConstant` its enum). A primitive is boxed the way the compiler boxes it
-     * (`Boolean.TRUE`/`FALSE`, `Integer.valueOf(3)`), so the cast and unboxing after the call
-     * fold; a string is its constant; an enum constant is the read of its field.
-     */
-    private fun erasedConstantFor(pattern: ConstantPattern, view: View, resultType: String?): Value? {
-        val factory = view.identifierFactory
-        val effective = resultType ?: naturalType(pattern)
-        val primitive = BOXES.entries.firstOrNull { (name, box) -> effective == name || effective == box.first }?.key
-        val enumType = pattern.properties[ConstantPattern.ENUM_TYPE] as? String
-        return when {
-            pattern.label == ConstantPattern.NULL -> NullConstant.getInstance()
-            pattern.label == ConstantPattern.ENUM -> enumType?.takeIf { resultType == null || resultType == it }
-                ?.let { enumConstantFor(factory.getClassType(it), pattern, view) }
-            primitive != null -> constantFor(factory.getType(primitive), pattern, view)?.let { boxed(primitive, it as Immediate, view) }
-            effective == STRING_CLASS -> constantFor(factory.getClassType(STRING_CLASS), pattern, view)
-            else -> null
-        }
-    }
-
-    /** The shorthand: the scalar is carried by whatever the return type is, when it can be. */
-    private fun inferredConstantFor(type: Type, value: Any, view: View): Value? = when {
-        type is PrimitiveType.BooleanType -> (value as? Boolean)?.let(::booleanConstant)
-        isIntLike(type) -> (value as? Int)?.let { intLikeConstant(type, it.toLong()) }
-        type is PrimitiveType.LongType -> integral(value)?.let(LongConstant::getInstance)
-        type is PrimitiveType.DoubleType -> numeric(value)?.let(DoubleConstant::getInstance)
-        type is PrimitiveType.FloatType -> numeric(value)?.let(::floatConstant)
-        isString(type) -> (value as? String)?.let { stringConstant(it, view) }
-        else -> null
-    }
-
-    /** The read of the named constant, when the return type is its enum and the enum declares a constant of that name. */
-    private fun enumConstantFor(type: Type, pattern: ConstantPattern, view: View): Value? {
-        val enumType = pattern.properties[ConstantPattern.ENUM_TYPE] as? String
-        val name = pattern.properties[ConstantPattern.NAME] as? String
-        val fits = type is ClassType && type.fullyQualifiedName == enumType && name != null && isEnumConstant(view, type, name)
-        return if (fits) JStaticFieldRef(FieldSignature(type as ClassType, name!!, type)) else null
-    }
-
-    /** Whether [field] reads an enum constant, as `describe` labels it and `FoldBranches` compares it. */
-    private fun isEnumConstant(view: View, field: JStaticFieldRef): Boolean =
-        isEnumConstant(view, field.fieldSignature.declClassType, field.fieldSignature.name)
-
-    /**
-     * Whether [owner] declares an enum constant [name]: the field carries `ACC_ENUM`, by the class
-     * in the view, else by the analysis JVM's own copy of it, loaded without initialisation. An
-     * enum's other static fields (`static E alias = A`) are fields, whatever their type.
-     */
-    private fun isEnumConstant(view: View, owner: ClassType, name: String): Boolean = enumConstants.getOrPut(owner to name) {
-        runCatching {
-            view.getClass(owner).map { declared -> declared.getField(name).map { FieldModifier.ENUM in it.modifiers }.orElse(false) }
-                .orElse(null)
-        }.getOrNull()
-            ?: runCatching {
-                val loader = ConstantFolding::class.java.classLoader
-                Class.forName(owner.fullyQualifiedName, false, loader).getDeclaredField(name).isEnumConstant
-            }.getOrDefault(false)
-    }
-
-    private fun stringConstant(value: String, view: View): Value =
-        StringConstant(value, view.identifierFactory.getClassType(STRING_CLASS))
-}
-
-private fun booleanConstant(value: Boolean): Value = IntConstant.getInstance(if (value) 1 else 0)
-
-/** The type a scalar names on its own: `false` is a `boolean`, `3` an `int`, `"x"` a `java.lang.String`. */
-private fun naturalType(pattern: ConstantPattern): String? = when (pattern.label) {
-    ConstantPattern.BOOLEAN -> BOOLEAN_TYPE
-    ConstantPattern.INT -> INT_TYPE
-    ConstantPattern.LONG -> LONG_TYPE
-    ConstantPattern.FLOAT -> FLOAT_TYPE
-    ConstantPattern.DOUBLE -> DOUBLE_TYPE
-    ConstantPattern.STRING -> STRING_CLASS
-    else -> when (pattern.scalar) {
-        is Boolean -> BOOLEAN_TYPE
-        is Int -> INT_TYPE
-        is Long -> LONG_TYPE
-        is Double -> DOUBLE_TYPE
-        is String -> STRING_CLASS
-        else -> null
-    }
-}
-
-/** [constant], a value of [primitive], boxed as the compiler boxes it. */
-private fun boxed(primitive: String, constant: Immediate, view: View): Value {
-    val factory = view.identifierFactory
-    val box = factory.getClassType(BOXES.getValue(primitive).first)
-    return if (primitive == BOOLEAN_TYPE) {
-        JStaticFieldRef(FieldSignature(box, if ((constant as IntConstant).value != 0) "TRUE" else "FALSE", box))
-    } else {
-        JStaticInvokeExpr(factory.getMethodSignature(box, VALUE_OF, box, listOf(factory.getType(primitive))), listOf(constant))
-    }
-}
-
-/**
- * [value] as the `int` constant Jimple uses for every int-like [type], or `null` when the
- * declared type cannot hold it: a `byte` method does not return 128, a `short` 32768 or a
- * `char` -1, whatever the carrier, and a folded call must keep the method's own contract.
- */
-private fun intLikeConstant(type: Type, value: Long): Value? =
-    intLikeRange(type)?.takeIf { value in it }?.let { IntConstant.getInstance(value.toInt()) }
-
-/**
- * [value] at `float` precision, or `null` when a `float` cannot carry it: a finite double
- * past `Float.MAX_VALUE` (`1e308`) narrows to an infinity, a value that was not written.
- */
-private fun floatConstant(value: Double): Value? =
-    value.toFloat().takeIf { it.isFinite() || !value.isFinite() }?.let(FloatConstant::getInstance)
-
-private fun nullFor(type: Type): Value? =
-    if (type is ClassType || type.toString().endsWith("[]")) NullConstant.getInstance() else null
-
-private fun isIntLike(type: Type): Boolean = intLikeRange(type) != null
-
-/**
- * The values a type Jimple carries as an `int` can hold, `null` for any other type. SootUp
- * derives the narrow types (and `boolean`) from `IntType`, so they are matched first.
- */
-private fun intLikeRange(type: Type): LongRange? = when (type) {
-    is PrimitiveType.BooleanType -> null
-    is PrimitiveType.ByteType -> Byte.MIN_VALUE.toLong()..Byte.MAX_VALUE.toLong()
-    is PrimitiveType.ShortType -> Short.MIN_VALUE.toLong()..Short.MAX_VALUE.toLong()
-    is PrimitiveType.CharType -> Char.MIN_VALUE.code.toLong()..Char.MAX_VALUE.code.toLong()
-    is PrimitiveType.IntType -> Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()
-    else -> null
-}
-
-private fun isString(type: Type): Boolean = type is ClassType && type.fullyQualifiedName == STRING_CLASS
-
-private fun integral(value: Any): Long? = when (value) {
-    is Int -> value.toLong()
-    is Long -> value
-    else -> null
-}
-
-private fun numeric(value: Any): Double? = when (value) {
-    is Int -> value.toDouble()
-    is Long -> value.toDouble()
-    is Double -> value
-    else -> null
 }
 
 /**
@@ -1354,5 +1137,3 @@ internal fun graphTypeName(type: Type): String = when (type) {
     is ArrayType -> graphTypeName(type.baseType) + "[]".repeat(type.dimension)
     else -> type.toString()
 }
-
-private fun isObject(type: Type): Boolean = type is ClassType && type.fullyQualifiedName == OBJECT_CLASS

@@ -265,6 +265,10 @@ const PURE: [&str; 52] = [
 fn dep(e: &Expr, scope: &Scope) -> Dep {
     let all = |es: &[Expr]| es.iter().fold(Dep::CONST, |d, e| d.join(dep(e, scope)));
     match e {
+        Expr::LabelPredicate { .. }
+        | Expr::PatternPredicate(_)
+        | Expr::PatternComprehension { .. }
+        | Expr::ExistsSubquery(_) => Dep::CONTENT,
         Expr::Literal(_) | Expr::Parameter(_) | Expr::CountStar => Dep::CONST,
         Expr::Variable(v) => scope.bound(v).unwrap_or(Dep::CONTENT),
         Expr::Property { expr, key } => match expr.as_ref() {
@@ -1061,7 +1065,14 @@ impl PartitionPlan {
                             row.insert(a.to_string(), Value::Node(NodeRef { source, id }));
                         }
                         if let Some(r) = r {
-                            row.insert(r.to_string(), Value::Rel(EdgeRef { source, edge }));
+                            row.insert(
+                                r.to_string(),
+                                Value::Rel(EdgeRef {
+                                    property_id: None,
+                                    source,
+                                    edge,
+                                }),
+                            );
                         }
                         if let Some(b) = b {
                             row.insert(b.to_string(), Value::Node(NodeRef { source, id: other }));
@@ -1495,6 +1506,36 @@ fn bounded_integer(e: &Expr) -> bool {
 fn walk(e: &Expr, f: &mut dyn FnMut(&Expr)) {
     f(e);
     match e {
+        Expr::ExistsSubquery(_) => {}
+        Expr::PatternComprehension {
+            pattern,
+            filter,
+            map,
+        } => {
+            for (_, expr) in pattern
+                .nodes
+                .iter()
+                .flat_map(|n| &n.properties)
+                .chain(pattern.rels.iter().flat_map(|r| &r.properties))
+            {
+                walk(expr, f);
+            }
+            if let Some(filter) = filter {
+                walk(filter, f);
+            }
+            walk(map, f);
+        }
+        Expr::LabelPredicate { expr, .. } => walk(expr, f),
+        Expr::PatternPredicate(pattern) => {
+            for (_, expr) in pattern
+                .nodes
+                .iter()
+                .flat_map(|n| &n.properties)
+                .chain(pattern.rels.iter().flat_map(|r| &r.properties))
+            {
+                walk(expr, f);
+            }
+        }
         Expr::Literal(_) | Expr::Variable(_) | Expr::Parameter(_) | Expr::CountStar => {}
         Expr::Property { expr, .. }
         | Expr::Distinct(expr)

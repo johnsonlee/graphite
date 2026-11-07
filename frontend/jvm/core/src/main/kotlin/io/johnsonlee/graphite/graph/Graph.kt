@@ -1,9 +1,9 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
@@ -11,16 +11,9 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import java.util.regex.Pattern
 
-data class ClassDependency(
-    val callerClass: String,
-    val calleeClass: String
-)
+data class ClassDependency(val callerClass: String, val calleeClass: String)
 
-data class ClassOverview(
-    val classCounts: Map<String, Int>,
-    val classEdges: Map<ClassDependency, Int>,
-    val callSiteCount: Int
-)
+data class ClassOverview(val classCounts: Map<String, Int>, val classEdges: Map<ClassDependency, Int>, val callSiteCount: Int)
 
 enum class StringMatchMode {
     STARTS_WITH,
@@ -45,8 +38,8 @@ data class StringPropertyPredicate(
 /**
  * Optional storage capability for graphs that can avoid materializing a full node scan.
  *
- * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
- * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence returned by this capability must be monotonic in
+ * [StringPropertyLookupOrder.stringPropertyNodeOrder].
  */
 interface StringPropertyLookup {
     fun <T : Node> nodesByStringProperty(
@@ -70,35 +63,27 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
     override fun consume() = consume(1L)
 }
 
-/**
- * A thread-safe batch consumer that explicitly permits one storage lookup to invoke it
- * concurrently from multiple scan workers.
- */
+/** A thread-safe batch consumer that explicitly permits one storage lookup to invoke it concurrently from multiple scan workers. */
 fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
 /**
- * A thread-safe batch consumer for a cross-graph lookup that splits one process-wide CPU budget
- * between graph workers and a shared background segment pool. The calling graph worker participates
- * in the scan; [segmentWorkerCount] is the maximum number of additional workers that this lookup may
- * request from that shared pool. Concurrent graph lookups share the same pool, so this value is not
- * multiplied by the number of graph workers.
+ * A thread-safe batch consumer for a cross-graph lookup that splits one process-wide CPU budget between graph workers and a shared
+ * background segment pool. The calling graph worker participates in the scan; [segmentWorkerCount] is the maximum number of additional
+ * workers that this lookup may request from that shared pool. Concurrent graph lookups share the same pool, so this value is not multiplied
+ * by the number of graph workers.
  */
 interface SplitGraphWorkBatchConsumer : ParallelGraphWorkBatchConsumer {
     val segmentWorkerCount: Int
 }
 
 /**
- * Requests the existing persisted string index through a read-only mapped view while preserving
- * the additive graph/segment worker split. This is intended for unscoped broad scans: explicitly
- * selected graph sets keep their retained-index lifecycle and telemetry.
+ * Requests the existing persisted string index through a read-only mapped view while preserving the additive graph/segment worker split.
+ * This is intended for unscoped broad scans: explicitly selected graph sets keep their retained-index lifecycle and telemetry.
  */
 interface PreferredMappedStringIndexViewGraphWorkBatchConsumer : SplitGraphWorkBatchConsumer
 
 /** Additive graph/segment worker allocation used by broad cross-graph scans. */
-data class GraphScanParallelismPlan(
-    val graphWorkerCount: Int,
-    val segmentWorkerCount: Int
-) {
+data class GraphScanParallelismPlan(val graphWorkerCount: Int, val segmentWorkerCount: Int) {
     init {
         require(graphWorkerCount > 0) { "graphWorkerCount must be positive" }
         require(segmentWorkerCount >= 0) { "segmentWorkerCount must not be negative" }
@@ -114,10 +99,7 @@ data class GraphScanParallelismPlan(
         }
 
         /** Applies a graph-worker override while keeping graph plus segment workers within NCPU. */
-        fun withGraphWorkers(
-            processors: Int = Runtime.getRuntime().availableProcessors(),
-            graphWorkers: Int
-        ): GraphScanParallelismPlan {
+        fun withGraphWorkers(processors: Int = Runtime.getRuntime().availableProcessors(), graphWorkers: Int): GraphScanParallelismPlan {
             val available = processors.coerceAtLeast(1)
             val boundedGraphWorkers = graphWorkers.coerceIn(1, available)
             return GraphScanParallelismPlan(boundedGraphWorkers, available - boundedGraphWorkers)
@@ -126,9 +108,8 @@ data class GraphScanParallelismPlan(
 }
 
 /**
- * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
- * already parallelizes independent graph sources. This avoids nested scan pools while preserving
- * the same shared work and cancellation accounting.
+ * A batch consumer that explicitly requests one storage lookup to stay serial because its caller already parallelizes independent graph
+ * sources. This avoids nested scan pools while preserving the same shared work and cancellation accounting.
  */
 fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
@@ -136,9 +117,7 @@ fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
 
 /** Permits one parallel raw build, then requests retained string-index lookups without segment fanout. */
-fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer :
-    SerialGraphWorkBatchConsumer,
-    ParallelGraphWorkBatchConsumer
+fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer, ParallelGraphWorkBatchConsumer
 
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
@@ -148,22 +127,14 @@ fun interface MethodMetadataScanConsumer {
 /**
  * Optional method-metadata capability for lazy, cancellation-aware storage scans.
  *
- * This stays outside [Graph] so adding cancellable method discovery does not add JVM
- * interface methods that older third-party [Graph] implementations would be forced to
- * implement at runtime. Method metadata is not graph work, so the callback deliberately
- * has a type distinct from [GraphWorkConsumer].
+ * This stays outside [Graph] so adding cancellable method discovery does not add JVM interface methods that older third-party [Graph]
+ * implementations would be forced to implement at runtime. Method metadata is not graph work, so the callback deliberately has a type
+ * distinct from [GraphWorkConsumer].
  */
 interface StreamingMethodLookup {
-    fun methods(
-        pattern: MethodPattern,
-        scanConsumer: MethodMetadataScanConsumer
-    ): Sequence<MethodDescriptor>
+    fun methods(pattern: MethodPattern, scanConsumer: MethodMetadataScanConsumer): Sequence<MethodDescriptor>
 
-    fun methodSlice(
-        pattern: MethodPattern,
-        limit: Int,
-        scanConsumer: MethodMetadataScanConsumer
-    ): List<MethodDescriptor>? = null
+    fun methodSlice(pattern: MethodPattern, limit: Int, scanConsumer: MethodMetadataScanConsumer): List<MethodDescriptor>? = null
 }
 
 /** Optional string lookup capability that exposes its internal work to callers. */
@@ -181,8 +152,8 @@ interface WorkAwareStringPropertyLookup : StringPropertyLookup {
 /**
  * Optional storage capability for matching a precisely transformed string value.
  *
- * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
- * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence returned by this capability must be monotonic in
+ * [StringPropertyLookupOrder.stringPropertyNodeOrder].
  */
 interface TransformedStringPropertyLookup {
     fun <T : Node> nodesByTransformedStringProperty(
@@ -209,15 +180,11 @@ interface WorkAwareTransformedStringPropertyLookup : TransformedStringPropertyLo
 }
 
 /**
- * Optional capability for matching several string properties in one canonical node scan.
- * Returned nodes must match at least one predicate and must not contain duplicates.
+ * Optional capability for matching several string properties in one canonical node scan. Returned nodes must match at least one predicate
+ * and must not contain duplicates.
  */
 interface StringPropertyDisjunctionLookup {
-    fun <T : Node> nodesByStringPropertyDisjunction(
-        type: Class<T>,
-        predicates: List<StringPropertyPredicate>,
-        limit: Int
-    ): Sequence<T>?
+    fun <T : Node> nodesByStringPropertyDisjunction(type: Class<T>, predicates: List<StringPropertyPredicate>, limit: Int): Sequence<T>?
 }
 
 /** Disjunction lookup capability that exposes each inspected node as one work item. */
@@ -231,18 +198,14 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
 }
 
 /** One duplicate-preserving storage projection row in canonical node encounter order. */
-data class StringPropertyProjectionRow(
-    val values: List<String?>
-)
+data class StringPropertyProjectionRow(val values: List<String?>)
 
 /**
- * Optional, serial projection in the same encounter order as [Graph.nodes], retaining duplicates.
- * Each row contains the requested properties in order; its values remain valid after the callback.
- * Returns false only for unsupported requests, before scanning or invoking either callback.
- * A successful scan visits every matching node, without a storage-side limit or result list.
- * `checkCancelled` is cancellation-only, not graph-work accounting: implementations call it before
- * scanning, before decoding each row and after scanning, including an empty scan. Callback and
- * storage exceptions propagate; a partially completed scan must never become an unsupported result.
+ * Optional, serial projection in the same encounter order as [Graph.nodes], retaining duplicates. Each row contains the requested
+ * properties in order; its values remain valid after the callback. Returns false only for unsupported requests, before scanning or invoking
+ * either callback. A successful scan visits every matching node, without a storage-side limit or result list. `checkCancelled` is
+ * cancellation-only, not graph-work accounting: implementations call it before scanning, before decoding each row and after scanning,
+ * including an empty scan. Callback and storage exceptions propagate; a partially completed scan must never become an unsupported result.
  * This separate capability does not add required methods to existing [Graph] implementations.
  */
 interface StreamingStringPropertyProjection {
@@ -255,11 +218,10 @@ interface StreamingStringPropertyProjection {
 }
 
 /**
- * Projection capability that also charges structural preflight work. Each inspected preflight
- * node consumes one unit before its header is read; cached decisions consume no preflight work.
- * Unsupported shapes consume nothing. A structural refusal may consume preflight work before
- * returning false, but still invokes neither the cancellation callback nor the row consumer. Exceptions propagate
- * without publishing an incomplete decision. Row accounting remains the consumer's responsibility.
+ * Projection capability that also charges structural preflight work. Each inspected preflight node consumes one unit before its header is
+ * read; cached decisions consume no preflight work. Unsupported shapes consume nothing. A structural refusal may consume preflight work
+ * before returning false, but still invokes neither the cancellation callback nor the row consumer. Exceptions propagate without publishing
+ * an incomplete decision. Row accounting remains the consumer's responsibility.
  */
 interface WorkAwareStreamingStringPropertyProjection : StreamingStringPropertyProjection {
     fun forEachStringPropertyProjection(
@@ -283,10 +245,7 @@ interface StringPropertyDisjunctionProjection {
 }
 
 /** Storage-level result for a string-disjunction aggregate without node materialization. */
-data class StringPropertyDisjunctionAggregate(
-    val count: Long,
-    val distinctValues: Set<String>? = null
-)
+data class StringPropertyDisjunctionAggregate(val count: Long, val distinctValues: Set<String>? = null)
 
 /** Optional capability for counting or deduplicating indexed string matches in storage. */
 interface StringPropertyDisjunctionAggregation {
@@ -308,14 +267,11 @@ interface WorkAwareStringPropertyDisjunctionAggregation : StringPropertyDisjunct
 }
 
 /** One storage-projected distinct row in the backend's canonical node encounter order. */
-data class StringPropertyDistinctRow(
-    val encounterOrder: Long,
-    val values: List<String?>
-)
+data class StringPropertyDistinctRow(val encounterOrder: Long, val values: List<String?>)
 
 /**
- * Optional storage capability for DISTINCT string-property projections. When [selectedValues] is
- * non-null, implementations return only selected tuples that occur anywhere in the match set.
+ * Optional storage capability for DISTINCT string-property projections. When [selectedValues] is non-null, implementations return only
+ * selected tuples that occur anywhere in the match set.
  */
 interface StringPropertyDisjunctionDistinctProjection {
     fun distinctStringPropertyDisjunction(
@@ -329,9 +285,8 @@ interface StringPropertyDisjunctionDistinctProjection {
 }
 
 /**
- * Optional lifecycle hook for a storage backend whose disjunction accelerator is a rebuildable
- * cache. A caller may release the cache after a completed source scan that produced no rows;
- * implementations must keep already-returned results valid and rebuild transparently later.
+ * Optional lifecycle hook for a storage backend whose disjunction accelerator is a rebuildable cache. A caller may release the cache after
+ * a completed source scan that produced no rows; implementations must keep already-returned results valid and rebuild transparently later.
  */
 interface ReleasableStringPropertyDisjunctionCache {
     fun releaseStringPropertyDisjunctionCache()
@@ -339,132 +294,93 @@ interface ReleasableStringPropertyDisjunctionCache {
 
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
 interface StringPropertyDisjunctionLookupStrategy {
-    fun prefersSerialStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
+    fun prefersSerialStringPropertyDisjunction(type: Class<out Node>, predicates: List<StringPropertyPredicate>): Boolean
 }
 
 /** Optional planning hint that a persisted lookup can be restored without building a raw index. */
 interface PreparedStringPropertyDisjunctionLookup {
-    fun hasPreparedStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
+    fun hasPreparedStringPropertyDisjunction(type: Class<out Node>, predicates: List<StringPropertyPredicate>): Boolean
 }
 
 /** Optional planning hint that a complete disjunction index is already retained in process memory. */
 interface RetainedStringPropertyDisjunctionLookup {
-    fun hasRetainedStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
+    fun hasRetainedStringPropertyDisjunction(type: Class<out Node>, predicates: List<StringPropertyPredicate>): Boolean
 }
 
 /**
- * Ordering capability for storage lookups that are emitted in canonical node traversal order.
- * Implementations must return a stable key and must emit all string-property lookup sequences
- * monotonically by that key.
+ * Ordering capability for storage lookups that are emitted in canonical node traversal order. Implementations must return a stable key and
+ * must emit all string-property lookup sequences monotonically by that key.
  */
 interface StringPropertyLookupOrder {
     fun stringPropertyNodeOrder(node: Node): Long
 }
 
 /**
- * The unified program graph that combines all analysis graphs.
- * This is the central abstraction of Graphite.
+ * The unified program graph that combines all analysis graphs. This is the central abstraction of Graphite.
  *
  * Key design decisions:
  * 1. Immutable - once built, the graph doesn't change
  * 2. Queryable - supports efficient traversal and pattern matching
  * 3. Composable - can be built incrementally from different sources
  */
+// One graph exposes the stable node, edge, metadata and query capabilities consumed by all frontends.
 @Suppress("TooManyFunctions")
 interface Graph {
     /** Declared generic types; old graphs have no declaration metadata. */
     fun declaredTypes(): DeclaredTypeTable = DeclaredTypeTable.EMPTY
 
     /**
-     * Binds this graph's nodes and methods to [declaredTypes] by the IDs the graph stores them
-     * under, or null when only the member-key lookup can answer (an in-memory graph, a table in
-     * an older wire format).
+     * Binds this graph's nodes and methods to [declaredTypes] by the IDs the graph stores them under, or null when only the member-key
+     * lookup can answer (an in-memory graph, a table in an older wire format).
      */
     fun declaredTypeBinding(): DeclaredTypeBinding? = null
 
-    /**
-     * Get a node by its ID
-     */
+    /** Get a node by its ID */
     fun node(id: NodeId): Node?
 
-    /**
-     * Get all nodes of a specific type
-     */
+    /** Get all nodes of a specific type */
     fun <T : Node> nodes(type: Class<T>): Sequence<T>
 
     /**
-     * Return a precomputed node count for [type] when the graph can answer
-     * without scanning/deserializing nodes. Implementations may return null
-     * to indicate callers should fall back to [nodes].
+     * Return a precomputed node count for [type] when the graph can answer without scanning/deserializing nodes. Implementations may return
+     * null to indicate callers should fall back to [nodes].
      */
     fun nodeCount(type: Class<out Node>): Long? = null
 
-    /**
-     * Return a precomputed edge count when the graph can answer without
-     * scanning every node's adjacency list.
-     */
+    /** Return a precomputed edge count when the graph can answer without scanning every node's adjacency list. */
     fun edgeCount(): Long? = null
 
-    /**
-     * Get all outgoing edges from a node
-     */
+    /** Get all outgoing edges from a node */
     fun outgoing(id: NodeId): Sequence<Edge>
 
-    /**
-     * Get all incoming edges to a node
-     */
+    /** Get all incoming edges to a node */
     fun incoming(id: NodeId): Sequence<Edge>
 
-    /**
-     * Get outgoing edges of a specific type
-     */
+    /** Get outgoing edges of a specific type */
     fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T>
 
-    /**
-     * Get incoming edges of a specific type
-     */
+    /** Get incoming edges of a specific type */
     fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T>
 
-    /**
-     * Find all call sites that invoke a method matching the pattern
-     */
+    /** Find all call sites that invoke a method matching the pattern */
     fun callSites(methodPattern: MethodPattern): Sequence<CallSiteNode>
 
-    /**
-     * Get the type hierarchy for a type
-     */
+    /** Get the type hierarchy for a type */
     fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor>
+
     fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor>
 
-    /**
-     * Find methods matching a pattern
-     */
+    /** Find methods matching a pattern */
     fun methods(pattern: MethodPattern): Sequence<MethodDescriptor>
 
-    /**
-     * Return a precomputed method count when the graph can answer without
-     * materializing every method descriptor.
-     */
+    /** Return a precomputed method count when the graph can answer without materializing every method descriptor. */
     fun methodCount(): Long? = null
 
-    /**
-     * Return up to [limit] methods matching [pattern] when the graph can do so
-     * without materializing the full method index.
-     */
+    /** Return up to [limit] methods matching [pattern] when the graph can do so without materializing the full method index. */
     fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
 
     /**
-     * Get the underlying values for an enum constant.
-     * Enum constructors can have multiple user-defined arguments.
+     * Get the underlying values for an enum constant. Enum constructors can have multiple user-defined arguments.
      *
      * @param enumClass fully qualified enum class name
      * @param enumName the name of the enum constant
@@ -482,44 +398,32 @@ interface Graph {
     fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>>
 
     /**
-     * Return all member annotations keyed by "$className#$memberName" when
-     * the graph already stores that index. Implementations may return null to
-     * let callers discover annotated members by scanning nodes.
+     * Return all member annotations keyed by "$className#$memberName" when the graph already stores that index. Implementations may return
+     * null to let callers discover annotated members by scanning nodes.
      */
     fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>>? = null
 
-    /**
-     * Access resource files from the analyzed archive (JAR, WAR, directory).
-     */
+    /** Access resource files from the analyzed archive (JAR, WAR, directory). */
     val resources: ResourceAccessor
 
-    /**
-     * Get all branch scopes in the graph.
-     * Each BranchScope records which nodes belong to each branch of a condition.
-     */
+    /** Get all branch scopes in the graph. Each BranchScope records which nodes belong to each branch of a condition. */
     fun branchScopes(): Sequence<BranchScope>
 
-    /**
-     * Get branch scopes where the given node is the condition operand.
-     */
+    /** Get branch scopes where the given node is the condition operand. */
     fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope>
 
     /**
-     * Every write, in statement order, of each local that has at least one constant
-     * definition on a branch side (see [BranchScope.trueDefinitions]); non-constant
-     * writes are included so a consumer can tell when a surviving write blocks folding.
-     * Locals with no constant definition on any side have nothing to fold and are absent.
-     * The lists survive persistence unchanged, unlike repeated ASSIGN edges.
+     * Every write, in statement order, of each local that has at least one constant definition on a branch side (see
+     * [BranchScope.trueDefinitions]); non-constant writes are included so a consumer can tell when a surviving write blocks folding. Locals
+     * with no constant definition on any side have nothing to fold and are absent. The lists survive persistence unchanged, unlike repeated
+     * ASSIGN edges.
      */
     fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = emptyMap()
 
     /** The recorded definitions of [localNodeId], or an empty list when it is not tracked. */
-    fun localDefinitionsFor(localNodeId: NodeId): List<LocalDefinition> =
-        localDefinitions()[localNodeId] ?: emptyList()
+    fun localDefinitionsFor(localNodeId: NodeId): List<LocalDefinition> = localDefinitions()[localNodeId] ?: emptyList()
 
-    /**
-     * Get all type names that have type hierarchy information (supertypes or subtypes).
-     */
+    /** Get all type names that have type hierarchy information (supertypes or subtypes). */
     fun typeHierarchyTypes(): Set<String> = emptySet()
 
     /**
@@ -532,27 +436,21 @@ interface Graph {
      */
     fun classOrigin(className: String): String? = null
 
-    /**
-     * Get all known class origins keyed by fully qualified class name.
-     */
+    /** Get all known class origins keyed by fully qualified class name. */
     fun classOrigins(): Map<String, String> = emptyMap()
 
     /**
      * Stable identity of a compiler-numbered synthetic member, or `null` when [member] has none.
      *
      * [member] is a fully qualified class name (`sample.Foo$1`) or a method signature as
-     * [io.johnsonlee.graphite.core.MethodDescriptor.signature] renders it
-     * (`sample.Foo.lambda$run$0(int)`). Only members whose names carry a compiler-assigned
-     * ordinal (javac and Kotlin lambdas, anonymous classes, accessors, D8 outlines) or the
-     * `ACC_SYNTHETIC` flag have one; the identity is a 128-bit hash of the member's structure
-     * that does not move when a sibling is added or removed, see
+     * [io.johnsonlee.graphite.core.MethodDescriptor.signature] renders it (`sample.Foo.lambda$run$0(int)`). Only members whose names carry
+     * a compiler-assigned ordinal (javac and Kotlin lambdas, anonymous classes, accessors, D8 outlines) or the `ACC_SYNTHETIC` flag have
+     * one; the identity is a 128-bit hash of the member's structure that does not move when a sibling is added or removed, see
      * `io.johnsonlee.graphite.sootup.SyntheticIdentity`.
      */
     fun syntheticIdentity(member: String): String? = null
 
-    /**
-     * All synthetic identities keyed as in [syntheticIdentity].
-     */
+    /** All synthetic identities keyed as in [syntheticIdentity]. */
     fun syntheticIdentities(): Map<String, String> = emptyMap()
 
     /**
@@ -563,58 +461,45 @@ interface Graph {
      */
     fun artifactDependencies(): Map<String, Map<String, Int>> = emptyMap()
 
-    /**
-     * Return a precomputed class-level call overview when the graph can answer
-     * without scanning/deserializing call-site nodes.
-     */
+    /** Return a precomputed class-level call overview when the graph can answer without scanning/deserializing call-site nodes. */
     fun classOverview(limit: Int): ClassOverview? = null
 
     /**
-     * Whether this graph holds [method] (by [MethodDescriptor.identity]: class, name, parameter
-     * and return types). Implementations answer from their method index; the default scans.
+     * Whether this graph holds [method] (by [MethodDescriptor.identity]: class, name, parameter and return types). Implementations answer
+     * from their method index; the default scans.
      */
-    fun hasMethod(method: MethodDescriptor): Boolean = methods(
-        MethodPattern(
-            declaringClass = method.declaringClass.className,
-            name = method.name,
-            parameterTypes = method.parameterTypes.map { it.className },
-            returnType = method.returnType.className
-        )
-    ).any()
+    fun hasMethod(method: MethodDescriptor): Boolean =
+        methods(
+                MethodPattern(
+                    declaringClass = method.declaringClass.className,
+                    name = method.name,
+                    parameterTypes = method.parameterTypes.map { it.className },
+                    returnType = method.returnType.className))
+            .any()
 
     /**
-     * The completeness evidence of the build that produced this graph, see
-     * [AnalysisCompleteness], or `null` when the graph carries none.
+     * The completeness evidence of the build that produced this graph, see [AnalysisCompleteness], or `null` when the graph carries none.
      */
     fun analysisCompleteness(): AnalysisCompleteness? = null
-
 }
 
 /**
- * Scan method metadata while polling cancellation before applying [pattern].
- * Storage backends can keep this lazy by implementing [StreamingMethodLookup].
+ * Scan method metadata while polling cancellation before applying [pattern]. Storage backends can keep this lazy by implementing
+ * [StreamingMethodLookup].
  */
-fun Graph.methods(
-    pattern: MethodPattern,
-    scanConsumer: MethodMetadataScanConsumer
-): Sequence<MethodDescriptor> = (this as? StreamingMethodLookup)
-    ?.methods(pattern, scanConsumer)
-    ?: methods(MethodPattern()).onEach { scanConsumer.inspect() }.filter(pattern::matches)
+fun Graph.methods(pattern: MethodPattern, scanConsumer: MethodMetadataScanConsumer): Sequence<MethodDescriptor> =
+    (this as? StreamingMethodLookup)?.methods(pattern, scanConsumer)
+        ?: methods(MethodPattern()).onEach { scanConsumer.inspect() }.filter(pattern::matches)
 
 /**
- * Use a bounded method lookup only when the backend can poll cancellation during its scan.
- * Returning null lets callers fall back to the streaming [methods] extension.
+ * Use a bounded method lookup only when the backend can poll cancellation during its scan. Returning null lets callers fall back to the
+ * streaming [methods] extension.
  */
-fun Graph.methodSlice(
-    pattern: MethodPattern,
-    limit: Int,
-    scanConsumer: MethodMetadataScanConsumer
-): List<MethodDescriptor>? = (this as? StreamingMethodLookup)
-    ?.methodSlice(pattern, limit, scanConsumer)
+fun Graph.methodSlice(pattern: MethodPattern, limit: Int, scanConsumer: MethodMetadataScanConsumer): List<MethodDescriptor>? =
+    (this as? StreamingMethodLookup)?.methodSlice(pattern, limit, scanConsumer)
 
 /**
- * Use a storage-aware string lookup when [Graph] also implements
- * [StringPropertyLookup]. Existing graph implementations remain binary
+ * Use a storage-aware string lookup when [Graph] also implements [StringPropertyLookup]. Existing graph implementations remain binary
  * compatible and return null through this extension.
  */
 fun <T : Node> Graph.nodesByStringProperty(
@@ -623,8 +508,7 @@ fun <T : Node> Graph.nodesByStringProperty(
     mode: StringMatchMode,
     expected: String,
     limit: Int = Int.MAX_VALUE
-): Sequence<T>? = (this as? StringPropertyLookup)
-    ?.nodesByStringProperty(type, property, mode, expected, limit)
+): Sequence<T>? = (this as? StringPropertyLookup)?.nodesByStringProperty(type, property, mode, expected, limit)
 
 /** Use a storage lookup only when it can report every inspected work item. */
 fun <T : Node> Graph.nodesByStringProperty(
@@ -634,8 +518,7 @@ fun <T : Node> Graph.nodesByStringProperty(
     expected: String,
     limit: Int,
     workConsumer: GraphWorkConsumer
-): Sequence<T>? = (this as? WorkAwareStringPropertyLookup)
-    ?.nodesByStringProperty(type, property, mode, expected, limit, workConsumer)
+): Sequence<T>? = (this as? WorkAwareStringPropertyLookup)?.nodesByStringProperty(type, property, mode, expected, limit, workConsumer)
 
 /** Use a storage-aware transformed string lookup when the graph supports it. */
 fun <T : Node> Graph.nodesByTransformedStringProperty(
@@ -645,8 +528,8 @@ fun <T : Node> Graph.nodesByTransformedStringProperty(
     mode: StringMatchMode,
     expected: String,
     limit: Int = Int.MAX_VALUE
-): Sequence<T>? = (this as? TransformedStringPropertyLookup)
-    ?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit)
+): Sequence<T>? =
+    (this as? TransformedStringPropertyLookup)?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit)
 
 /** Use a transformed lookup only when it can report every inspected work item. */
 fun <T : Node> Graph.nodesByTransformedStringProperty(
@@ -657,16 +540,16 @@ fun <T : Node> Graph.nodesByTransformedStringProperty(
     expected: String,
     limit: Int,
     workConsumer: GraphWorkConsumer
-): Sequence<T>? = (this as? WorkAwareTransformedStringPropertyLookup)
-    ?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit, workConsumer)
+): Sequence<T>? =
+    (this as? WorkAwareTransformedStringPropertyLookup)?.nodesByTransformedStringProperty(
+        type, property, transform, mode, expected, limit, workConsumer)
 
 /** Use a fused storage lookup when the graph can evaluate the complete disjunction exactly. */
 fun <T : Node> Graph.nodesByStringPropertyDisjunction(
     type: Class<T>,
     predicates: List<StringPropertyPredicate>,
     limit: Int = Int.MAX_VALUE
-): Sequence<T>? = (this as? StringPropertyDisjunctionLookup)
-    ?.nodesByStringPropertyDisjunction(type, predicates, limit)
+): Sequence<T>? = (this as? StringPropertyDisjunctionLookup)?.nodesByStringPropertyDisjunction(type, predicates, limit)
 
 /** Use a fused disjunction lookup only when it can report every inspected node. */
 fun <T : Node> Graph.nodesByStringPropertyDisjunction(
@@ -674,83 +557,64 @@ fun <T : Node> Graph.nodesByStringPropertyDisjunction(
     predicates: List<StringPropertyPredicate>,
     limit: Int,
     workConsumer: GraphWorkConsumer
-): Sequence<T>? = (this as? WorkAwareStringPropertyDisjunctionLookup)
-    ?.nodesByStringPropertyDisjunction(type, predicates, limit, workConsumer)
+): Sequence<T>? =
+    (this as? WorkAwareStringPropertyDisjunctionLookup)?.nodesByStringPropertyDisjunction(type, predicates, limit, workConsumer)
 
-/**
- * Pattern for matching methods.
- * Supports wildcards and annotations.
- */
+/** Pattern for matching methods. Supports wildcards and annotations. */
 data class MethodPattern(
-    val declaringClass: String? = null,        // e.g., "com.example.*" or regex ".*Client" when useRegex=true
-    val name: String? = null,                  // e.g., "getOption" or regex "getOption.*" when useRegex=true
-    val parameterTypes: List<String>? = null,  // e.g., ["java.lang.Integer"] or null for any
+    val declaringClass: String? = null, // e.g., "com.example.*" or regex ".*Client" when useRegex=true
+    val name: String? = null, // e.g., "getOption" or regex "getOption.*" when useRegex=true
+    val parameterTypes: List<String>? = null, // e.g., ["java.lang.Integer"] or null for any
     val returnType: String? = null,
     val annotations: List<String> = emptyList(), // e.g., ["org.springframework.web.bind.annotation.GetMapping"]
-    val useRegex: Boolean = false              // when true, declaringClass and name are treated as regex patterns
+    val useRegex: Boolean = false // when true, declaringClass and name are treated as regex patterns
 ) {
-    @Transient
-    private val declaringClassExactRegex = exactRegex(declaringClass)
+    @Transient private val declaringClassExactRegex = exactRegex(declaringClass)
+
+    @Transient private val declaringClassRegex = compileRegex(declaringClass, declaringClassExactRegex)
+
+    @Transient private val nameExactRegex = exactRegex(name)
+
+    @Transient private val nameRegex = compileRegex(name, nameExactRegex)
+
+    @Transient private val parameterTypeExactRegexes = parameterTypes?.map(::exactRegex)
 
     @Transient
-    private val declaringClassRegex = compileRegex(declaringClass, declaringClassExactRegex)
+    private val parameterTypeRegexes =
+        parameterTypes?.mapIndexed { index, pattern -> compileRegex(pattern, parameterTypeExactRegexes?.get(index)) }
 
-    @Transient
-    private val nameExactRegex = exactRegex(name)
+    @Transient private val returnTypeExactRegex = exactRegex(returnType)
 
-    @Transient
-    private val nameRegex = compileRegex(name, nameExactRegex)
+    @Transient private val returnTypeRegex = compileRegex(returnType, returnTypeExactRegex)
 
-    @Transient
-    private val parameterTypeExactRegexes = parameterTypes?.map(::exactRegex)
+    fun matches(method: MethodDescriptor): Boolean =
+        matchesDeclaringClass(method) && matchesName(method) && matchesParameters(method) && matchesReturnType(method)
 
-    @Transient
-    private val parameterTypeRegexes = parameterTypes?.mapIndexed { index, pattern ->
-        compileRegex(pattern, parameterTypeExactRegexes?.get(index))
-    }
+    private fun matchesDeclaringClass(method: MethodDescriptor): Boolean =
+        declaringClass == null ||
+            matchesPattern(method.declaringClass.className, declaringClass, declaringClassExactRegex, declaringClassRegex)
 
-    @Transient
-    private val returnTypeExactRegex = exactRegex(returnType)
+    private fun matchesName(method: MethodDescriptor): Boolean =
+        name == null || matchesPattern(method.name, name, nameExactRegex, nameRegex)
 
-    @Transient
-    private val returnTypeRegex = compileRegex(returnType, returnTypeExactRegex)
-
-    fun matches(method: MethodDescriptor): Boolean {
-        if (declaringClass != null &&
-            !matchesPattern(
-                method.declaringClass.className,
-                declaringClass,
-                declaringClassExactRegex,
-                declaringClassRegex
-            )
-        ) {
-            return false
-        }
-        if (name != null && !matchesPattern(method.name, name, nameExactRegex, nameRegex)) {
-            return false
-        }
-        if (parameterTypes != null) {
-            if (method.parameterTypes.size != parameterTypes.size) return false
-            if (!method.parameterTypes.indices.all { index ->
+    private fun matchesParameters(method: MethodDescriptor): Boolean =
+        parameterTypes == null ||
+            (method.parameterTypes.size == parameterTypes.size &&
+                method.parameterTypes.indices.all { index ->
                     matchesPattern(
                         method.parameterTypes[index].className,
                         parameterTypes[index],
                         parameterTypeExactRegexes?.get(index),
-                        parameterTypeRegexes?.get(index)
-                    )
-                }) return false
-        }
-        if (returnType != null &&
-            !matchesPattern(method.returnType.className, returnType, returnTypeExactRegex, returnTypeRegex)
-        ) {
-            return false
-        }
-        return true
-    }
+                        parameterTypeRegexes?.get(index))
+                })
+
+    private fun matchesReturnType(method: MethodDescriptor): Boolean =
+        returnType == null || matchesPattern(method.returnType.className, returnType, returnTypeExactRegex, returnTypeRegex)
 
     private fun exactRegex(pattern: String?): String? {
         if (!useRegex || pattern == null) return null
-        return pattern.takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
+        return pattern
+            .takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
             ?.substring(2, pattern.length - 2)
             ?.replace("\\E\\\\E\\Q", "\\E")
             ?.takeIf { Pattern.quote(it) == pattern }
@@ -770,18 +634,18 @@ data class MethodPattern(
     }
 }
 
-/**
- * Builder for constructing graphs
- */
+/** Builder for constructing graphs */
 interface GraphBuilder {
     fun addNode(node: Node): GraphBuilder
+
     fun addEdge(edge: Edge): GraphBuilder
+
     fun build(): Graph
 }
 
-/**
- * Extension functions for convenient traversal
- */
+/** Extension functions for convenient traversal */
 inline fun <reified T : Node> Graph.nodes(): Sequence<T> = nodes(T::class.java)
+
 inline fun <reified T : Edge> Graph.outgoing(id: NodeId): Sequence<T> = outgoing(id, T::class.java)
+
 inline fun <reified T : Edge> Graph.incoming(id: NodeId): Sequence<T> = incoming(id, T::class.java)

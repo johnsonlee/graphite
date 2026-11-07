@@ -16,6 +16,7 @@ fn type_rank(v: &Value) -> u8 {
         Value::List(_) => 3,
         Value::Path(_) => 4,
         Value::Str(_) => 5,
+        Value::Temporal(_) => 8,
         Value::Bool(_) => 6,
         Value::Int(_) | Value::Float(_) | Value::Float32(_) => 7,
         Value::Null => u8::MAX,
@@ -31,6 +32,7 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
     }
     match (a, b) {
         (Value::Int(x), Value::Int(y)) => return x.cmp(y),
+        (Value::Temporal(a), Value::Temporal(b)) => return a.order_compare(b),
         (Value::Str(x), Value::Str(y)) => return compare_utf16(x, y),
         (Value::Bool(x), Value::Bool(y)) => return x.cmp(y),
         (Value::Float(x), Value::Float(y)) => return java_double_compare(*x, *y),
@@ -84,7 +86,8 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
             .cmp(&y.source)
             .then(x.edge.from.cmp(&y.edge.from))
             .then(x.edge.to.cmp(&y.edge.to))
-            .then(x.edge.rest_type().cmp(y.edge.rest_type())),
+            .then(x.edge.rest_type().cmp(y.edge.rest_type()))
+            .then(x.property_id.cmp(&y.property_id)),
         (Value::Path(x), Value::Path(y)) => {
             for (nx, ny) in x.nodes.iter().zip(y.nodes.iter()) {
                 let c = nx.cmp(ny);
@@ -92,7 +95,10 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
                     return c;
                 }
             }
-            x.nodes.len().cmp(&y.nodes.len())
+            x.nodes
+                .len()
+                .cmp(&y.nodes.len())
+                .then(x.property_path.cmp(&y.property_path))
         }
         _ => Ordering::Equal,
     }

@@ -1,84 +1,45 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.AnnotationNode
-import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.BranchComparison
-import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
-import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.Edge
-import io.johnsonlee.graphite.core.EnumConstant
-import io.johnsonlee.graphite.core.FieldNode
-import io.johnsonlee.graphite.core.FloatConstant
-import io.johnsonlee.graphite.core.IntConstant
-import io.johnsonlee.graphite.core.LocalVariable
-import io.johnsonlee.graphite.core.LongConstant
-import io.johnsonlee.graphite.core.Node
-import io.johnsonlee.graphite.core.NodeId
-import io.johnsonlee.graphite.core.NullConstant
-import io.johnsonlee.graphite.core.ParameterNode
-import io.johnsonlee.graphite.core.ResourceFileNode
-import io.johnsonlee.graphite.core.ResourceValueNode
-import io.johnsonlee.graphite.core.ReturnNode
-import io.johnsonlee.graphite.core.StringConstant
-import io.johnsonlee.graphite.core.TypeDescriptor
-import io.johnsonlee.graphite.core.ValueNode
-import io.johnsonlee.graphite.graph.ClassOverview
-import io.johnsonlee.graphite.graph.DeclaredTypeTable
-import io.johnsonlee.graphite.graph.MemberTypeKey
-import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.graph.MmapGraph
-import io.johnsonlee.graphite.graph.PackedBranchMetadataSource
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
 import it.unimi.dsi.webgraph.LazyIntIterators
 import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
-import java.security.DigestOutputStream
 import java.security.MessageDigest
-import java.util.HexFormat
 import java.util.Arrays
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionException
 
-private const val NODE_OFFSETS_FILE = "graph.nodeoffsets"
-private const val NODE_INDEX_FILE = "graph.nodeindex"
-private const val TYPE_INDEX_FILE = "graph.typeindex"
-private const val LABEL_PREFIX_FILE = "graph.labelprefix"
-private const val BACKWARD_GRAPH = "backward"
-private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
-private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
-private const val BACKWARD_COMPRESSION_THREADS = 2
+internal const val NODE_OFFSETS_FILE = "graph.nodeoffsets"
+internal const val NODE_INDEX_FILE = "graph.nodeindex"
+internal const val TYPE_INDEX_FILE = "graph.typeindex"
+internal const val LABEL_PREFIX_FILE = "graph.labelprefix"
+internal const val BACKWARD_GRAPH = "backward"
+internal const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
+internal const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
+internal const val BACKWARD_COMPRESSION_THREADS = 2
 
-private fun mappedCallSiteStringIndexPreparationEnabled(): Boolean =
-    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
-        ?.equals("true", ignoreCase = true) == true
+internal fun mappedCallSiteStringIndexPreparationEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)?.equals("true", ignoreCase = true) == true
 
-private fun mappedCallSiteStringIndexPersistenceEnabled(): Boolean =
-    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
-        ?.equals("false", ignoreCase = true) != true
+internal fun mappedCallSiteStringIndexPersistenceEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)?.equals("false", ignoreCase = true) != true
 
 /** OutputStream wrapper that tracks total bytes written. */
-private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
+internal class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
     var bytesWritten: Long = 0L
         private set
 
@@ -93,26 +54,21 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
     }
 
     override fun flush() = delegate.flush()
+
     override fun close() = delegate.close()
 }
 
-private class NodeOffsetIndexWriter(path: Path, private val size: Int) : Closeable {
+internal class NodeOffsetIndexWriter(path: Path, private val size: Int) : Closeable {
     private val channel: FileChannel
     private val buffer: java.nio.MappedByteBuffer
 
     init {
         require(size >= 0) { "Invalid node offset index size: $size" }
         val totalBytes = NODE_OFFSET_DATA_START.toLong() + size.toLong() * Long.SIZE_BYTES
-        require(totalBytes <= Int.MAX_VALUE) {
-            "Mapped node offset index is too large to map as a single buffer: $totalBytes bytes"
-        }
-        channel = FileChannel.open(
-            path,
-            StandardOpenOption.CREATE,
-            StandardOpenOption.TRUNCATE_EXISTING,
-            StandardOpenOption.READ,
-            StandardOpenOption.WRITE
-        )
+        require(totalBytes <= Int.MAX_VALUE) { "Mapped node offset index is too large to map as a single buffer: $totalBytes bytes" }
+        channel =
+            FileChannel.open(
+                path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.READ, StandardOpenOption.WRITE)
         if (totalBytes > 0) {
             channel.write(ByteBuffer.wrap(byteArrayOf(0)), totalBytes - 1)
         }
@@ -133,7 +89,7 @@ private class NodeOffsetIndexWriter(path: Path, private val size: Int) : Closeab
     }
 }
 
-private class TypeIndexWriter(path: Path, private val counts: IntArray) : Closeable {
+internal class TypeIndexWriter(path: Path, private val counts: IntArray) : Closeable {
     private val tags = nodeTagEntries()
     private val offsets = IntArray(UByte.MAX_VALUE.toInt() + 1) { -1 }
     private val fillPositions = IntArray(UByte.MAX_VALUE.toInt() + 1)
@@ -149,18 +105,12 @@ private class TypeIndexWriter(path: Path, private val counts: IntArray) : Closea
             offsets[tag] = totalBytesLong.toInt()
             totalBytesLong += counts[tag].toLong() * Int.SIZE_BYTES
         }
-        require(totalBytesLong <= Int.MAX_VALUE) {
-            "Mapped node type index is too large to map as a single buffer: $totalBytesLong bytes"
-        }
+        require(totalBytesLong <= Int.MAX_VALUE) { "Mapped node type index is too large to map as a single buffer: $totalBytesLong bytes" }
         val totalBytes = totalBytesLong.toInt()
 
-        channel = FileChannel.open(
-            path,
-            StandardOpenOption.CREATE,
-            StandardOpenOption.TRUNCATE_EXISTING,
-            StandardOpenOption.READ,
-            StandardOpenOption.WRITE
-        )
+        channel =
+            FileChannel.open(
+                path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.READ, StandardOpenOption.WRITE)
         if (totalBytes > 0) {
             channel.write(ByteBuffer.wrap(byteArrayOf(0)), totalBytesLong - 1L)
         }
@@ -191,26 +141,23 @@ private class TypeIndexWriter(path: Path, private val counts: IntArray) : Closea
     }
 }
 
-private fun readMappedNodeIndex(dir: Path): NodeIndexData {
+internal fun readMappedNodeIndex(dir: Path): NodeIndexData {
     val nodeIndexFile = dir.resolve(NODE_INDEX_FILE).toFile()
-    require(nodeIndexFile.exists()) {
-        "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
-    }
+    require(nodeIndexFile.exists()) { "Node index file not found: $nodeIndexFile. Re-save the graph to generate it." }
     ensureMappedNodeIndexes(dir)
     return NodeIndexData(
         nodeOffsets = MappedNodeOffsetIndex.load(dir.resolve(NODE_OFFSETS_FILE)),
-        nodeTypeIndex = MappedNodeTypeIndex.load(dir.resolve(TYPE_INDEX_FILE))
-    )
+        nodeTypeIndex = MappedNodeTypeIndex.load(dir.resolve(TYPE_INDEX_FILE)))
 }
 
-private fun ensureMappedNodeIndexes(dir: Path) {
+internal fun ensureMappedNodeIndexes(dir: Path) {
     val offsetsFile = dir.resolve(NODE_OFFSETS_FILE)
     val typeIndexFile = dir.resolve(TYPE_INDEX_FILE)
     if (Files.exists(offsetsFile) && Files.exists(typeIndexFile)) return
     buildMappedNodeIndexesFromNodeIndex(dir.resolve(NODE_INDEX_FILE), offsetsFile, dir)
 }
 
-private fun buildMappedNodeIndexesFromNodeIndex(nodeIndexPath: Path, nodeOffsetsPath: Path, dir: Path) {
+internal fun buildMappedNodeIndexesFromNodeIndex(nodeIndexPath: Path, nodeOffsetsPath: Path, dir: Path) {
     val indexStats = readLegacyNodeIndexStats(nodeIndexPath)
     val offsetsTemp = Files.createTempFile(dir, "$NODE_OFFSETS_FILE.", ".tmp")
     val typeIndexTemp = Files.createTempFile(dir, "$TYPE_INDEX_FILE.", ".tmp")
@@ -228,7 +175,7 @@ private fun buildMappedNodeIndexesFromNodeIndex(nodeIndexPath: Path, nodeOffsets
     }
 }
 
-private fun readLegacyNodeIndexStats(nodeIndexPath: Path): LegacyNodeIndexStats {
+internal fun readLegacyNodeIndexStats(nodeIndexPath: Path): LegacyNodeIndexStats {
     var maxNodeId = -1
     val nodeTypeCounts = IntArray(UByte.MAX_VALUE.toInt() + 1)
     DataInputStream(BufferedInputStream(nodeIndexPath.toFile().inputStream())).use { dis ->
@@ -245,11 +192,7 @@ private fun readLegacyNodeIndexStats(nodeIndexPath: Path): LegacyNodeIndexStats 
     return LegacyNodeIndexStats(maxNodeId, nodeTypeCounts)
 }
 
-private fun copyLegacyNodeIndexEntries(
-    nodeIndexPath: Path,
-    offsetWriter: NodeOffsetIndexWriter,
-    typeIndexWriter: TypeIndexWriter
-) {
+internal fun copyLegacyNodeIndexEntries(nodeIndexPath: Path, offsetWriter: NodeOffsetIndexWriter, typeIndexWriter: TypeIndexWriter) {
     DataInputStream(BufferedInputStream(nodeIndexPath.toFile().inputStream())).use { dis ->
         NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
         val nodeCount = dis.readInt()
@@ -263,12 +206,9 @@ private fun copyLegacyNodeIndexEntries(
     }
 }
 
-private data class LegacyNodeIndexStats(
-    val maxNodeId: Int,
-    val typeCounts: IntArray
-)
+internal data class LegacyNodeIndexStats(val maxNodeId: Int, val typeCounts: IntArray)
 
-private fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
+internal fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
     if (!hasPersistedBackwardGraph(dir)) return null
     return try {
         BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
@@ -277,7 +217,7 @@ private fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
     }
 }
 
-private fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph? {
+internal fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph? {
     var tempDir: Path? = null
     return try {
         tempDir = Files.createTempDirectory(dir, "$BACKWARD_GRAPH.")
@@ -295,7 +235,7 @@ private fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): Im
     }
 }
 
-private fun compressAndLoadTransientBackwardGraph(backward: ImmutableGraph): ImmutableGraph? {
+internal fun compressAndLoadTransientBackwardGraph(backward: ImmutableGraph): ImmutableGraph? {
     var tempDir: Path? = null
     return try {
         tempDir = Files.createTempDirectory("$BACKWARD_GRAPH.")
@@ -307,7 +247,7 @@ private fun compressAndLoadTransientBackwardGraph(backward: ImmutableGraph): Imm
     }
 }
 
-private fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph {
+internal fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph {
     BVGraph.store(
         backward,
         dir.resolve(BACKWARD_GRAPH).toString(),
@@ -316,17 +256,15 @@ private fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): Immu
         BVGraph.DEFAULT_MIN_INTERVAL_LENGTH,
         BVGraph.DEFAULT_ZETA_K,
         0,
-        BACKWARD_COMPRESSION_THREADS
-    )
+        BACKWARD_COMPRESSION_THREADS)
     stripPropertiesComments(dir.resolve("$BACKWARD_GRAPH.properties"))
     return BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
 }
 
 /**
- * Drops the comment lines `java.util.Properties.store` puts at the top of a `.properties`
- * file. One of them is the wall-clock time of the write, so two builds of the same graph
- * differed in that line and nothing else, which changed the container fingerprint of every
- * rebuild. No reader depends on the comments: `Properties.load` and the Rust parser skip them.
+ * Drops the comment lines `java.util.Properties.store` puts at the top of a `.properties` file. One of them is the wall-clock time of the
+ * write, so two builds of the same graph differed in that line and nothing else, which changed the container fingerprint of every rebuild.
+ * No reader depends on the comments: `Properties.load` and the Rust parser skip them.
  */
 internal fun stripPropertiesComments(properties: Path) {
     val lines = Files.readAllLines(properties, Charsets.ISO_8859_1)
@@ -336,37 +274,31 @@ internal fun stripPropertiesComments(properties: Path) {
     }
 }
 
-private fun hasPersistedBackwardGraph(dir: Path): Boolean =
-    Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.graph")) &&
-        Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.properties"))
+internal fun hasPersistedBackwardGraph(dir: Path): Boolean =
+    Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.graph")) && Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.properties"))
 
-private fun moveGraphFiles(sourceDir: Path, targetDir: Path) {
+internal fun moveGraphFiles(sourceDir: Path, targetDir: Path) {
     Files.list(sourceDir).use { paths ->
-        paths.forEach { source ->
-            Files.move(source, targetDir.resolve(source.fileName), StandardCopyOption.REPLACE_EXISTING)
-        }
+        paths.forEach { source -> Files.move(source, targetDir.resolve(source.fileName), StandardCopyOption.REPLACE_EXISTING) }
     }
 }
 
 /**
- * Build a cumulative outdegree array for O(1) label offset lookup.
- * `cumulativeOutdeg[i]` = sum of outdegree(0..i-1), so the labels for
- * node `i` start at `forwardLabels[cumulativeOutdeg[i]]`.
+ * Build a cumulative outdegree array for O(1) label offset lookup. `cumulativeOutdeg[i]` = sum of outdegree(0..i-1), so the labels for node
+ * `i` start at `forwardLabels[cumulativeOutdeg[i]]`.
  */
-private fun buildCumulativeOutdeg(forward: ImmutableGraph): IntArray {
+internal fun buildCumulativeOutdeg(forward: ImmutableGraph): IntArray {
     val numNodes = forward.numNodes()
     val cumOutdeg = IntArray(numNodes + 1)
     for (i in 0 until numNodes) {
         val next = cumOutdeg[i].toLong() + forward.outdegree(i).toLong()
-        require(next <= Int.MAX_VALUE) {
-            "Graph has too many edges for byte-addressed labels: $next"
-        }
+        require(next <= Int.MAX_VALUE) { "Graph has too many edges for byte-addressed labels: $next" }
         cumOutdeg[i + 1] = next.toInt()
     }
     return cumOutdeg
 }
 
-private fun loadCumulativeOutdeg(dir: Path, forward: ImmutableGraph): IntArray {
+internal fun loadCumulativeOutdeg(dir: Path, forward: ImmutableGraph): IntArray {
     val path = dir.resolve(LABEL_PREFIX_FILE)
     if (Files.isRegularFile(path)) {
         try {
@@ -381,7 +313,7 @@ private fun loadCumulativeOutdeg(dir: Path, forward: ImmutableGraph): IntArray {
     return buildCumulativeOutdeg(forward)
 }
 
-private class NodeDataWriteContext(
+internal class NodeDataWriteContext(
     val dataDos: DataOutputStream,
     val idxDos: DataOutputStream,
     val offsetWriter: NodeOffsetIndexWriter,
@@ -393,25 +325,25 @@ private class NodeDataWriteContext(
     val declaredKeys: DeclaredKeySummaryBuilder?
 )
 
-private class CallSiteWriteContext(
+internal class CallSiteWriteContext(
     val identity: MessageDigest,
     val indexInput: CallSiteIndexPersistenceInput?,
     val ordinalInput: CallSiteOrdinalPersistenceInput
 )
 
-private fun MessageDigest.updateContentInt(value: Int) {
+internal fun MessageDigest.updateContentInt(value: Int) {
     for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
         update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
     }
 }
 
-private fun MessageDigest.updateContentLong(value: Long) {
+internal fun MessageDigest.updateContentLong(value: Long) {
     for (byteIndex in Long.SIZE_BYTES - 1 downTo 0) {
         update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
     }
 }
 
-private class ForwardDataScratch {
+internal class ForwardDataScratch {
     private var targets = IntArray(INITIAL_TARGET_CAPACITY)
     private var targetCount = 0
     private var edgeKeys = LongArray(INITIAL_TARGET_CAPACITY)
@@ -520,8 +452,7 @@ private class ForwardDataScratch {
         return next
     }
 
-    private fun edgeSortKey(target: Int, ordinal: Int): Long =
-        target.toLong() shl INT_BITS or (ordinal.toLong() and UNSIGNED_INT_MASK)
+    private fun edgeSortKey(target: Int, ordinal: Int): Long = target.toLong() shl INT_BITS or (ordinal.toLong() and UNSIGNED_INT_MASK)
 
     private fun targetFromSortKey(key: Long): Int = (key ushr INT_BITS).toInt()
 
@@ -532,409 +463,100 @@ private class ForwardDataScratch {
     }
 }
 
-internal data class NodeIndexData(
-    val nodeOffsets: NodeOffsetIndex,
-    val nodeTypeIndex: NodeTypeIndex
-)
+internal data class NodeIndexData(val nodeOffsets: NodeOffsetIndex, val nodeTypeIndex: NodeTypeIndex)
 
 /**
- * Save and load [Graph] instances using WebGraph compression with native LAW
- * ecosystem tools (dsiutils + sux4j + fastutil).
+ * Save and load [Graph] instances using WebGraph compression with native LAW ecosystem tools (dsiutils + sux4j + fastutil).
  *
  * Storage layout:
- * - `forward.*`                -- BVGraph compressed forward adjacency
- * - `backward.*`               -- optional BVGraph compressed backward adjacency, created after first incoming query
- * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
- * - `graph.strings.identity`   -- semantic SHA-256 identity of the ordered string table
- * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
- * - `graph.labelprefix`        -- int[] cumulative outdegree values for label lookup
- * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
- * - `graph.nodedata`           -- sequential binary node data with string table indices
- * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
- * - `graph.classoverview`      -- class-level call counts and dependency weights
- * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
+ * - `forward.*` -- BVGraph compressed forward adjacency
+ * - `backward.*` -- optional BVGraph compressed backward adjacency, created after first incoming query
+ * - `graph.strings` -- [StringTable] (FrontCodedStringList via BinIO)
+ * - `graph.strings.identity` -- semantic SHA-256 identity of the ordered string table
+ * - `graph.labels` -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
+ * - `graph.labelprefix` -- int[] cumulative outdegree values for label lookup
+ * - `graph.comparisons` -- [BranchComparison] data for [ControlFlowEdge]s that carry one
+ * - `graph.nodedata` -- sequential binary node data with string table indices
+ * - `graph.metadata` -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
+ * - `graph.classoverview` -- class-level call counts and dependency weights
+ * - `graph.resources` -- persisted text resources, including an explicit empty store when none exist
  * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
- * - `graph.branchdefs`         -- optional branch-side local definitions, aligned with and bound to the metadata branch scopes
+ * - `graph.branchdefs` -- optional branch-side local definitions, aligned with and bound to the metadata branch scopes
  */
-@Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {
 
     /**
-     * Graphs with >= 1M nodes use memory-mapped loading to avoid heap pressure.
-     * Below this threshold, eager loading provides faster queries at acceptable memory cost.
+     * Graphs with >= 1M nodes use memory-mapped loading to avoid heap pressure. Below this threshold, eager loading provides faster queries
+     * at acceptable memory cost.
      */
-    private const val MAPPED_THRESHOLD = 1_000_000
+    internal const val MAPPED_THRESHOLD = 1_000_000
 
-    private const val FORWARD_GRAPH = "forward"
-    private const val LABELS_FILE = "graph.labels"
-    private const val COMPARISONS_FILE = "graph.comparisons"
-    private const val NODE_DATA_FILE = "graph.nodedata"
-    private const val METADATA_FILE = "graph.metadata"
+    internal const val FORWARD_GRAPH = "forward"
+    internal const val LABELS_FILE = "graph.labels"
+    internal const val COMPARISONS_FILE = "graph.comparisons"
+    internal const val NODE_DATA_FILE = "graph.nodedata"
+    internal const val METADATA_FILE = "graph.metadata"
     internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
     internal const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
     internal const val CALL_SITE_ORDINALS_FILE = "graph.callsite-ordinals"
-    private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
-    internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
-        "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
-
-    private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
-
-    private fun readMetadataMethodCount(metadataFile: Path): Long =
-        DataInputStream(BufferedInputStream(metadataFile.toFile().inputStream())).use { dis ->
-            NodeSerializer.readMetadataMethodCount(dis).toLong()
-        }
-
-    private fun <T> joinLoad(future: CompletableFuture<T>): T =
-        try {
-            future.join()
-        } catch (e: CompletionException) {
-            throw e.cause ?: e
-        }
+    internal const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
+    internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY = "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
 
     /**
      * Save a graph to disk in WebGraph + native LAW format.
      *
-     * Uses a streaming [ImmutableGraph] wrapper over the source [Graph] to avoid
-     * copying all edge data into a second adjacency structure
-     * ([ArrayListMutableGraph][it.unimi.dsi.webgraph.ArrayListMutableGraph]).
-     * For large graphs (millions of nodes) this eliminates the OOM caused by
-     * duplicating the entire adjacency list in memory.
+     * Uses a streaming [ImmutableGraph] wrapper over the source [Graph] to avoid copying all edge data into a second adjacency structure
+     * ([ArrayListMutableGraph][it.unimi.dsi.webgraph.ArrayListMutableGraph]). For large graphs (millions of nodes) this eliminates the OOM
+     * caused by duplicating the entire adjacency list in memory.
      */
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
         save(graph, dir, compressionThreads, prepareCallSiteStringIndex = false)
     }
 
-    fun save(
-        graph: Graph,
-        dir: Path,
-        compressionThreads: Int = 2,
-        prepareCallSiteStringIndex: Boolean
-    ) = saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
+    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2, prepareCallSiteStringIndex: Boolean) =
+        saveGraphFiles(
+            graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
 
     /** Explicit compatibility fixture path; ordinary saves always choose the current representation. */
     internal fun saveLegacyDeclaredTypesV3(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
+        saveGraphFiles(
+            graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
 
     internal fun saveLegacyDeclaredTypesV4(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false,
-            declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
+        saveGraphFiles(
+            graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
 
-    private const val CURRENT_DECLARED_TYPE_VERSION = 5
-    private const val STRUCTURAL_DECLARED_TYPE_VERSION = 4
-    private const val SHARED_DECLARED_TYPE_VERSION = 3
-
-    private fun saveGraph(
-        graph: Graph, dir: Path, compressionThreads: Int, prepareCallSiteStringIndex: Boolean, declaredTypeVersion: Int
-    ) {
-        // A loaded graph reads its evidence on first use, from the directory this save may be
-        // rewriting: materialise it before any file of that directory is removed.
-        val completeness = graph.analysisCompleteness()
-        Files.createDirectories(dir)
-        Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
-        Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
-        Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
-        Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
-        Files.deleteIfExists(dir.resolve(DeclaredPresence.FILE_NAME))
-        Files.deleteIfExists(dir.resolve(AnalysisCompletenessStore.FILE_NAME))
-
-        // 1. Stream nodes: find maxNodeId, count nodes, collect strings
-        var maxNodeId = 0
-        var nodeCount = 0
-        var ordinalCount = 0
-        val allStrings = mutableSetOf<String>()
-        val nodeTypeCounts = IntArray(UByte.MAX_VALUE.toInt() + 1)
-        val classOverviewBuilder = ClassOverviewBuilder()
-        for (node in graph.nodes(Node::class.java)) {
-            if (node.id.value > maxNodeId) maxNodeId = node.id.value
-            nodeCount++
-            nodeTypeCounts[NodeSerializer.tagOf(node)]++
-            collectSingleNodeStrings(node, allStrings)
-            if (node is CallSiteNode) {
-                classOverviewBuilder.add(node)
-                if (node.ordinal != null) ordinalCount++
-            }
-        }
-        val classOverviewCounts = classOverviewBuilder.topClassCounts(ClassOverviewStore.MAX_PERSISTED_CLASSES)
-        val classOverviewEdges = ClassOverviewEdgeBuilder(classOverviewCounts.keys)
-        val prepareCallSiteIndex = classOverviewBuilder.callSiteCount() > 0L &&
-            (prepareCallSiteStringIndex || mappedCallSiteStringIndexPreparationEnabled())
-        val callSiteIndexInput = if (prepareCallSiteIndex) {
-            CallSiteIndexPersistenceInput(classOverviewBuilder.callSiteCount().toInt())
-        } else {
-            null
-        }
-
-        val declaredTypes = graph.declaredTypes()
-
-        // 2. Collect metadata
-        val metadata = collectMetadata(graph)
-        NodeSerializer.collectMetadataStrings(metadata, allStrings)
-        ClassOverviewStore.collectStrings(
-            ClassOverview(
-                classCounts = classOverviewCounts,
-                classEdges = emptyMap(),
-                callSiteCount = classOverviewBuilder.callSiteCount()
-            ),
-            allStrings
-        )
-        val declaredTypePlan = DeclaredTypeStore.collectStrings(declaredTypes, allStrings, declaredTypeVersion)
-        val stringTable = StringTable.build(allStrings, dir, declaredTypes != DeclaredTypeTable.EMPTY)
-        allStrings.clear()
-
-        // 3. Build forward adjacency + labels + comparisons
-        val numNodes = maxNodeId + 1
-        val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val (forwardAdj, labelArray) = if (graph is MmapGraph) {
-            buildForwardData(graph, numNodes, comparisonMap)
-        } else {
-            buildForwardData(graph, numNodes, comparisonMap)
-        }
-
-        // 4. Store BVGraph (forward only)
-        val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
-        BVGraph.store(
-            forwardGraph, dir.resolve(FORWARD_GRAPH).toString(),
-            BVGraph.DEFAULT_WINDOW_SIZE, BVGraph.DEFAULT_MAX_REF_COUNT,
-            BVGraph.DEFAULT_MIN_INTERVAL_LENGTH, BVGraph.DEFAULT_ZETA_K,
-            0, compressionThreads
-        )
-        stripPropertiesComments(dir.resolve("$FORWARD_GRAPH.properties"))
-
-        // 5. Store labels + comparisons
-        BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
-        BinIO.storeInts(forwardAdj.offsets, dir.resolve(LABEL_PREFIX_FILE).toString())
-        DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
-            NodeSerializer.writeComparisons(dos, comparisonMap)
-        }
-
-        // 6. Write nodedata + nodeindex and capture compact ordinal fields and the declared-key
-        //    summary in the same pass.
-        val ordinalInput = CallSiteOrdinalPersistenceInput(ordinalCount)
-        val declaredKeys =
-            if (declaredTypes == DeclaredTypeTable.EMPTY) null else DeclaredKeySummaryBuilder(declaredTypes, maxNodeId)
-        val layoutDigest = writeNodeDataAndIndex(
-            graph,
-            dir,
-            nodeCount,
-            maxNodeId,
-            nodeTypeCounts,
-            classOverviewBuilder.callSiteCount().toInt(),
-            stringTable,
-            classOverviewEdges,
-            callSiteIndexInput,
-            ordinalInput,
-            declaredKeys
-        )
-        // The node layout identity: which node sits at which id. Sidecars indexed by node id carry it.
-        ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to HexFormat.of().formatHex(layoutDigest)))
-        // The build's evidence, when the graph carries one, bound to this save of the graph.
-        AnalysisCompletenessStore.save(dir, completeness, layoutDigest)
-
-        // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
-        //    the binding of the call-site ordinal sidecar, then the two sidecars.
-        val branchDefinitions = NodeSerializer.encodeBranchDefinitions(metadata.branchScopes, metadata.localDefinitions)
-        val callSiteOrdinals = ordinalInput.encode()
-        DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
-            NodeSerializer.saveMetadata(metadata, dos, stringTable)
-            NodeSerializer.writeMetadataTrailer(dos, branchDefinitions.payloadDigest)
-            NodeSerializer.writeSyntheticIdentities(metadata, dos, stringTable)
-            if (callSiteOrdinals != null) NodeSerializer.writeCallSiteOrdinalBinding(dos, callSiteOrdinals.digest)
-        }
-        Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
-        if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
-
-        val typesDigest = DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
-        if (declaredKeys != null && typesDigest != null) {
-            Files.write(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME), declaredKeys.encode(typesDigest, layoutDigest))
-            writeDeclaredPresence(dir, metadata, declaredTypes, declaredKeys, typesDigest, layoutDigest)
-        }
-
-        // 8. Save class-level overview summary for explorer routes
-        ClassOverviewStore.save(
-            ClassOverview(
-                classCounts = classOverviewCounts,
-                classEdges = classOverviewEdges.build(),
-                callSiteCount = classOverviewBuilder.callSiteCount()
-            ),
-            dir,
-            stringTable
-        )
-
-        // 9. Save persisted text resources for loaded-graph access
-        PersistedResourceStore.save(graph, dir)
-
-        // 10. Build the query-only CallSite index once and persist it for mapped loads.
-        if (prepareCallSiteIndex) {
-            persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
-        }
-    }
-
-    /**
-     * The saver's presence answers: the node bits the summary builder collected, and a shape per
-     * method in saveMetadata's order, which is the mapped index's.
-     */
-    @Suppress("LongParameterList")
-    private fun writeDeclaredPresence(
-        dir: Path,
-        metadata: GraphMetadata,
-        declaredTypes: DeclaredTypeTable,
-        declaredKeys: DeclaredKeySummaryBuilder,
-        typesDigest: ByteArray,
-        layoutDigest: ByteArray
-    ) {
-        val shapes = ByteArray(metadata.methods.size)
-        var ordinal = 0
-        for ((_, method) in metadata.methods) {
-            val key = MemberTypeKey(method.declaringClass.className, method.name, method.descriptor)
-            shapes[ordinal++] = DeclaredPresence.shapeByte(declaredTypes.methods[key])
-        }
-        Files.write(
-            dir.resolve(DeclaredPresence.FILE_NAME),
-            DeclaredPresence.encode(typesDigest, layoutDigest, declaredKeys.presenceWords, declaredKeys.nodeBits, shapes)
-        )
-    }
-
-    @Suppress("LongParameterList")
-    private fun writeNodeDataAndIndex(
-        graph: Graph,
-        dir: Path,
-        nodeCount: Int,
-        maxNodeId: Int,
-        nodeTypeCounts: IntArray,
-        callSiteCount: Int,
-        stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder,
-        callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
-        declaredKeys: DeclaredKeySummaryBuilder?
-    ): ByteArray {
-        val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
-            update(stringTable.contentIdentity())
-            updateContentInt(callSiteCount)
-        }
-        // Hashed as it is written: the node layout identity is the SHA-256 of graph.nodedata, and
-        // reading the file back for it would be the one read of a file this save had just produced.
-        val nodeLayout = MessageDigest.getInstance("SHA-256")
-        CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
-            val dataDos = DataOutputStream(DigestOutputStream(cos, nodeLayout))
-            DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
-                writeNodeDataAndIndex(
-                    graph,
-                    dir,
-                    nodeCount,
-                    maxNodeId,
-                    nodeTypeCounts,
-                    callSiteIdentity,
-                    dataDos,
-                    idxDos,
-                    cos,
-                    stringTable,
-                    classOverviewEdges,
-                    callSiteIndexInput,
-                    callSiteOrdinals,
-                    declaredKeys
-                )
-            }
-        }
-        Files.write(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE), callSiteIdentity.digest())
-        return nodeLayout.digest()
-    }
-
-    @Suppress("LongParameterList")
-    private fun writeNodeDataAndIndex(
-        graph: Graph,
-        dir: Path,
-        nodeCount: Int,
-        maxNodeId: Int,
-        nodeTypeCounts: IntArray,
-        callSiteIdentity: MessageDigest,
-        dataDos: DataOutputStream,
-        idxDos: DataOutputStream,
-        cos: CountingOutputStream,
-        stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder,
-        callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
-        declaredKeys: DeclaredKeySummaryBuilder?
-    ) {
-        NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
-            TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
-                NodeSerializer.writeHeader(dataDos, NodeSerializer.MAGIC_NODEDATA)
-                dataDos.writeInt(nodeCount)
-                NodeSerializer.writeHeader(idxDos, NodeSerializer.MAGIC_NODEINDEX)
-                idxDos.writeInt(nodeCount)
-                writeNodes(
-                    graph,
-                    NodeDataWriteContext(
-                        dataDos,
-                        idxDos,
-                        offsetWriter,
-                        typeIndexWriter,
-                        cos,
-                        stringTable,
-                        classOverviewEdges,
-                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals),
-                        declaredKeys
-                    )
-                )
-            }
-        }
-    }
-
-    private fun writeNodes(graph: Graph, context: NodeDataWriteContext) {
-        for (node in graph.nodes(Node::class.java)) {
-            val offset = context.countingOutput.bytesWritten
-            val tag = NodeSerializer.writeNode(context.dataDos, node, context.stringTable)
-            context.idxDos.writeInt(node.id.value)
-            context.idxDos.writeByte(tag)
-            context.idxDos.writeLong(offset)
-            context.offsetWriter.write(node.id.value, offset)
-            context.typeIndexWriter.write(tag, node.id.value)
-            context.declaredKeys?.add(node)
-            if (node is CallSiteNode) {
-                context.classOverviewEdges.add(node)
-                context.callSites.identity.updateContentInt(node.id.value)
-                context.callSites.identity.updateContentLong(offset)
-                context.callSites.identity.updateContentInt(
-                    context.stringTable.indexOf(node.caller.declaringClass.className)
-                )
-                context.callSites.identity.updateContentInt(context.stringTable.indexOf(node.caller.name))
-                context.callSites.identity.updateContentInt(
-                    context.stringTable.indexOf(node.callee.declaringClass.className)
-                )
-                context.callSites.identity.updateContentInt(context.stringTable.indexOf(node.callee.name))
-                context.callSites.indexInput?.add(node, context.stringTable)
-                context.callSites.ordinalInput.add(node)
-            }
-        }
-    }
+    internal const val CURRENT_DECLARED_TYPE_VERSION = 5
+    internal const val STRUCTURAL_DECLARED_TYPE_VERSION = 4
+    internal const val SHARED_DECLARED_TYPE_VERSION = 3
 
     /**
      * Load a graph from disk.
      *
-     * @param mode loading strategy; defaults to [LoadMode.AUTO] which selects
-     *   based on graph size (< 1M nodes → eager, >= 1M → mapped).
+     * @param mode loading strategy; defaults to [LoadMode.AUTO] which selects based on graph size (< 1M nodes → eager, >= 1M → mapped).
      */
     fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
-        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
+        require(Files.isDirectory(dir)) { graphNotDirectoryMessage(dir) }
         return when (mode) {
-            LoadMode.EAGER -> loadEager(dir)
-            LoadMode.MAPPED -> { ensureNodeIndex(dir); loadMapped(dir) }
+            LoadMode.EAGER -> loadEagerGraph(dir)
+            LoadMode.MAPPED -> {
+                ensureGraphNodeIndex(dir)
+                loadMapped(dir)
+            }
             LoadMode.AUTO -> {
-                val (_, nodeCount) = readNodeDataHeader(dir)
+                val (_, nodeCount) = readGraphNodeDataHeader(dir)
                 if (nodeCount < MAPPED_THRESHOLD) {
-                    loadEager(dir)
+                    loadEagerGraph(dir)
                 } else {
-                    ensureNodeIndex(dir); loadMapped(dir)
+                    ensureGraphNodeIndex(dir)
+                    loadMapped(dir)
                 }
             }
         }
     }
 
-    /**
-     * Loading strategy for [load].
-     */
+    /** Loading strategy for [load]. */
     enum class LoadMode {
         /** All nodes deserialized into JVM heap. Fastest queries, highest memory. */
         EAGER,
@@ -945,346 +567,29 @@ object GraphStore {
     }
 
     /**
-     * Load all nodes eagerly into JVM heap. Best for graphs < 1M nodes.
-     */
-    private fun loadEager(dir: Path): Graph {
-        val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-
-        val forward = forwardFuture.join()
-        val stringTable = stringTableFuture.join()
-        val labelBytes = labelsFuture.join()
-
-        val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
-        val backward = lazy { loadBackward(dir, forward) }
-
-        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
-        }
-        val comparisonLookup = MapBranchComparisonLookup(comparisonMap)
-
-        val callSiteOrdinals = loadCallSiteOrdinals(dir)
-        val nodesById = mutableMapOf<Int, Node>()
-        DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
-            val count = dis.readInt()
-            repeat(count) {
-                val node = NodeSerializer.readNode(dis, stringTable, nodeDataVersion, callSiteOrdinals)
-                nodesById[node.id.value] = node
-            }
-        }
-
-        val metadata = loadMetadataWithTrailer(dir, stringTable)
-        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
-
-        return WebGraphBackedGraph(
-            forward,
-            backward,
-            nodesById,
-            nodeDataVersion,
-            labelBytes,
-            cumulativeOutdeg,
-            comparisonLookup,
-            metadata,
-            classOverview,
-            PersistedResourceStore.load(dir),
-            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
-            lazy { DeclaredTypeStore.load(dir, stringTable) },
-            lazy { AnalysisCompletenessStore.load(dir) }
-        )
-    }
-
-    /**
-     * Load a graph with memory-mapped node data. Forward edge structures and
-     * edge labels are opened during load so the returned graph is ready for
-     * forward traversal without hidden first-query initialization.
+     * Load a graph with memory-mapped node data. Forward edge structures and edge labels are opened during load so the returned graph is
+     * ready for forward traversal without hidden first-query initialization.
      *
-     * The OS page cache manages which node pages are in physical RAM.
-     * No JVM heap allocation for node data, and no system calls per node access
-     * after the initial page fault.
+     * The OS page cache manages which node pages are in physical RAM. No JVM heap allocation for node data, and no system calls per node
+     * access after the initial page fault.
      *
-     * Persisted CallSite string and trigram indexes are restored lazily on the first relevant query,
-     * so unrelated mapped-graph queries do not retain their memory. Set
-     * `graphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare before this method returns,
-     * or `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
+     * Persisted CallSite string and trigram indexes are restored lazily on the first relevant query, so unrelated mapped-graph queries do
+     * not retain their memory. Set `graphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare before this method returns, or
+     * `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
      */
-    fun loadMapped(dir: Path): Graph = loadMapped(
-        dir,
-        prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
-        persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled()
-    )
-
-    @Suppress("TooGenericExceptionCaught")
-    private fun loadMapped(
-        dir: Path,
-        prepareCallSiteStringIndex: Boolean,
-        persistentCallSiteStringIndex: Boolean
-    ): Graph {
-        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
-
-        val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
-        val metadataFile = dir.resolve(METADATA_FILE)
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
-        val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-        val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
-        val comparisonFuture = CompletableFuture.supplyAsync {
-            MappedBranchComparisonLookup.load(dir.resolve(COMPARISONS_FILE))
-        }
-
-        val nodeDataPath = dir.resolve(NODE_DATA_FILE)
-        val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
-        val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
-        channel.close()
-
-        val forward = joinLoad(forwardFuture)
-        val labelBytes = joinLoad(labelsFuture)
-        val stringTable = joinLoad(stringTableFuture)
-        val nodeIndex = joinLoad(nodeIndexFuture)
-        val methodCount = joinLoad(methodCountFuture)
-        val comparisonLookup = joinLoad(comparisonFuture)
-        val backward = lazy { loadBackward(dir, forward) }
-        val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
-        val metadata = lazy { loadMetadataWithTrailer(dir, stringTable) }
-        val branchDefinitions = lazy {
-            loadBranchDefinitions(dir, metadata.value, nodeCount, mappedNodeTagLookup(nodeIndex.nodeOffsets, mappedBuffer))
-        }
-        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
-
-        val graph = MappedWebGraphBackedGraph(
-            forward = forward,
-            backward = backward,
-            mappedNodeData = mappedBuffer,
-            nodeDataVersion = nodeDataVersion,
-            stringTable = stringTable,
-            nodeOffsets = nodeIndex.nodeOffsets,
-            nodeTypeIndex = nodeIndex.nodeTypeIndex,
-            forwardLabels = labelBytes,
-            cumulativeOutdeg = cumulativeOutdeg,
-            edgeCount = labelBytes.size.toLong(),
-            metadataFile = metadataFile.toFile(),
-            callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
-            persistentCallSiteStringIndexEnabled = persistentCallSiteStringIndex,
-            methodCount = methodCount,
-            comparisonLookup = comparisonLookup,
-            metadata = metadata,
-            classOverviewProvider = classOverview,
-            resourceAccessor = lazy { PersistedResourceStore.load(dir) },
-            branchDefinitions = branchDefinitions,
-            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
-            // The table is query-only state. Reading, binding and validating it before readiness
-            // charged every graph's load for declarations no request had asked for yet.
-            declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) },
-            declaredPresence = lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) },
-            analysisCompleteness = lazy { AnalysisCompletenessStore.load(dir) }
-        )
-        if (prepareCallSiteStringIndex) {
-            try {
-                if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
-            } catch (error: Exception) {
-                graph.close()
-                throw error
-            }
-        }
-        return graph
-    }
+    fun loadMapped(dir: Path): Graph =
+        loadMappedGraph(
+            dir,
+            prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
+            persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled())
 
     /**
-     * The ordinal sidecar of the graph in [dir], bound by the digest `graph.metadata` ends with:
-     * read from the metadata's tail, not by parsing it, so a mapped graph pays nothing for the
-     * metadata on the first call site it decodes.
+     * Flat sorted adjacency: targets[offsets[node]..offsets[node+1]] are the sorted, deduplicated successors of node. Zero per-node
+     * allocation on access.
      */
-    private fun loadCallSiteOrdinals(dir: Path): CallSiteOrdinals =
-        CallSiteOrdinals.load(dir.resolve(CALL_SITE_ORDINALS_FILE), NodeSerializer.readCallSiteOrdinalBinding(dir.resolve(METADATA_FILE)))
-
-    /**
-     * Parse `graph.metadata` with its optional sections: the trailer that binds it to its
-     * branch-definition sidecar and the synthetic identities, when present.
-     */
-    private fun loadMetadataWithTrailer(dir: Path, stringTable: StringTable): GraphMetadata =
-        DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            val metadata = NodeSerializer.loadMetadata(dis, stringTable)
-            NodeSerializer.readMetadataOptionalSections(dis, stringTable, metadata)
-        }
-
-    /**
-     * Read the optional `graph.branchdefs` sidecar for the graph in [dir], or [PersistedBranchDefinitions.EMPTY]
-     * with one warning when it is missing, is not the one `graph.metadata` was written with (for example
-     * left behind when an older writer re-saved this directory, whose metadata then carries no trailer),
-     * or is corrupt. The preamble is validated before the payload is read, and the payload is read only
-     * up to its validated length, its local table may not exceed [nodeCount] entries, and its content is
-     * checked against the persisted nodes through [nodeTags] (see [NodeSerializer.decodeBranchDefinitionPayload]).
-     * The sidecar is derived data: rebuilding the graph restores it. Called lazily on the first
-     * branch-scope access.
-     */
-    internal fun loadBranchDefinitions(
-        dir: Path,
-        metadata: GraphMetadata,
-        nodeCount: Int,
-        nodeTags: NodeSerializer.NodeTagLookup
-    ): PersistedBranchDefinitions {
-        if (metadata.branchScopes.isEmpty()) return PersistedBranchDefinitions.EMPTY
-        val file = dir.resolve(BRANCH_DEFINITIONS_FILE)
-        val decoded = when {
-            !Files.isRegularFile(file) -> DecodedBranchDefinitions.rejected("is missing")
-            else -> try {
-                readBranchDefinitions(file, metadata, nodeCount, nodeTags)
-            } catch (e: IOException) {
-                DecodedBranchDefinitions.rejected("could not be read (${e.message})")
-            }
-        }
-        if (decoded.definitions == null) {
-            System.err.println("Warning: $file ${decoded.rejection}; branch scopes are loaded without local definitions")
-        }
-        return decoded.definitions ?: PersistedBranchDefinitions.EMPTY
-    }
-
-    private fun eagerNodeTagLookup(nodesById: Map<Int, Node>) = NodeSerializer.NodeTagLookup { nodeId ->
-        nodesById[nodeId]?.let(NodeSerializer::tagOf) ?: NodeSerializer.NO_NODE
-    }
-
-    /** Reads the tag byte that follows the id in a mapped node record, without deserialising the node. */
-    private fun mappedNodeTagLookup(offsets: NodeOffsetIndex, nodeData: ByteBuffer) = NodeSerializer.NodeTagLookup { nodeId ->
-        if (nodeId < 0 || nodeId >= offsets.size) {
-            NodeSerializer.NO_NODE
-        } else {
-            val offset = offsets.offset(nodeId)
-            if (offset < 0) NodeSerializer.NO_NODE else nodeData.get((offset + Int.SIZE_BYTES).toInt()).toInt()
-        }
-    }
-
-    private fun readBranchDefinitions(
-        file: Path,
-        metadata: GraphMetadata,
-        nodeCount: Int,
-        nodeTags: NodeSerializer.NodeTagLookup
-    ): DecodedBranchDefinitions =
-        DataInputStream(BufferedInputStream(file.toFile().inputStream())).use { dis ->
-            val preambleBytes = ByteArray(NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES)
-            val read = dis.readNBytes(preambleBytes, 0, preambleBytes.size)
-            val preamble = NodeSerializer.decodeBranchDefinitionPreamble(
-                preambleBytes.copyOf(read),
-                Files.size(file) - read,
-                metadata.branchDefinitionDigest
-            )
-            val digest = preamble.payloadDigest
-            if (digest == null) {
-                DecodedBranchDefinitions.rejected(checkNotNull(preamble.rejection))
-            } else {
-                val payload = ByteArray(preamble.payloadLength)
-                dis.readFully(payload)
-                NodeSerializer.decodeBranchDefinitionPayload(payload, metadata.branchScopes.size, digest, nodeCount, nodeTags)
-            }
-        }
-
-    /**
-     * Build forward adjacency, labels, and comparisons in 2 sequential passes.
-     *
-     * Pass 1: count unique outdegree per node.
-     * Pass 2: fill sorted targets + encode labels + extract comparisons.
-     */
-    private fun buildForwardData(
-        graph: Graph,
-        numNodes: Int,
-        comparisonMap: MutableMap<Long, BranchComparison>
-    ): Pair<PrecomputedAdjacency, ByteArray> {
-        val scratch = ForwardDataScratch()
-        val outdeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            scratch.resetTargets()
-            for (edge in graph.outgoing(NodeId(node))) {
-                scratch.addTarget(edge.to.value)
-            }
-            outdeg[node] = scratch.uniqueTargetCount()
-        }
-
-        val offsets = IntArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            val next = offsets[i].toLong() + outdeg[i].toLong()
-            require(next <= Int.MAX_VALUE) {
-                "Graph has too many edges for in-memory adjacency: $next"
-            }
-            offsets[i + 1] = next.toInt()
-        }
-        val totalArcs = offsets[numNodes]
-        val targets = IntArray(totalArcs)
-        val labels = ByteArray(totalArcs)
-
-        for (node in 0 until numNodes) {
-            scratch.resetEdges()
-            for (edge in graph.outgoing(NodeId(node))) {
-                scratch.addEdge(edge)
-            }
-            val written = scratch.emitSortedEdges(node, offsets[node], targets, labels, comparisonMap)
-            check(written == outdeg[node]) {
-                "Forward adjacency mismatch for node $node: wrote $written edges, expected ${outdeg[node]}"
-            }
-        }
-
-        return PrecomputedAdjacency(numNodes, targets, offsets) to labels
-    }
-
-    private fun buildForwardData(
-        graph: MmapGraph,
-        numNodes: Int,
-        comparisonMap: MutableMap<Long, BranchComparison>
-    ): Pair<PrecomputedAdjacency, ByteArray> {
-        val scratch = ForwardDataScratch()
-        val outdeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            scratch.resetTargets()
-            graph.forEachOutgoingTarget(node) { target ->
-                scratch.addTarget(target)
-            }
-            outdeg[node] = scratch.uniqueTargetCount()
-        }
-
-        val offsets = IntArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            val next = offsets[i].toLong() + outdeg[i].toLong()
-            require(next <= Int.MAX_VALUE) {
-                "Graph has too many edges for in-memory adjacency: $next"
-            }
-            offsets[i + 1] = next.toInt()
-        }
-        val totalArcs = offsets[numNodes]
-        val targets = IntArray(totalArcs)
-        val labels = ByteArray(totalArcs)
-
-        for (node in 0 until numNodes) {
-            scratch.resetEdges()
-            graph.forEachOutgoingEdge(node) { edge ->
-                scratch.addEdge(edge)
-            }
-            val written = scratch.emitSortedEdges(node, offsets[node], targets, labels, comparisonMap)
-            check(written == outdeg[node]) {
-                "Forward adjacency mismatch for node $node: wrote $written edges, expected ${outdeg[node]}"
-            }
-        }
-
-        return PrecomputedAdjacency(numNodes, targets, offsets) to labels
-    }
-
-    /**
-     * Collect strings from a single node (avoids building a list of all nodes).
-     */
-    private fun collectSingleNodeStrings(node: Node, dest: MutableSet<String>) {
-        NodeSerializer.collectNodeStrings(node, dest)
-    }
-
-    /**
-     * Flat sorted adjacency: targets[offsets[node]..offsets[node+1]] are the
-     * sorted, deduplicated successors of node. Zero per-node allocation on access.
-     */
-    internal class PrecomputedAdjacency(
-        val numNodes: Int,
-        val targets: IntArray,
-        val offsets: IntArray
-    ) {
+    internal class PrecomputedAdjacency(val numNodes: Int, val targets: IntArray, val offsets: IntArray) {
         fun outdegree(node: Int): Int = offsets[node + 1] - offsets[node]
+
         fun successorArray(node: Int): IntArray {
             val start = offsets[node]
             val end = offsets[node + 1]
@@ -1293,263 +598,36 @@ object GraphStore {
     }
 
     /**
-     * Wraps a [PrecomputedAdjacency] as a WebGraph [ImmutableGraph] for BVGraph storage.
-     * Zero allocation per node access -- successorArray returns a copy of the pre-sorted slice.
+     * Wraps a [PrecomputedAdjacency] as a WebGraph [ImmutableGraph] for BVGraph storage. Zero allocation per node access -- successorArray
+     * returns a copy of the pre-sorted slice.
      */
-    internal class PrecomputedImmutableGraph(
-        private val adj: PrecomputedAdjacency
-    ) : ImmutableGraph() {
+    internal class PrecomputedImmutableGraph(private val adj: PrecomputedAdjacency) : ImmutableGraph() {
         override fun numNodes(): Int = adj.numNodes
+
         override fun numArcs(): Long = adj.offsets[adj.numNodes].toLong()
+
         override fun randomAccess(): Boolean = true
+
         override fun outdegree(x: Int): Int = adj.outdegree(x)
+
         override fun successorArray(x: Int): IntArray = adj.successorArray(x)
+
         override fun successors(x: Int): LazyIntIterator = LazyIntIterators.wrap(successorArray(x))
+
         override fun copy(): ImmutableGraph = this
     }
 
-    /** Build backward adjacency from forward BVGraph. */
-    private fun loadBackward(dir: Path, forward: ImmutableGraph): ImmutableGraph =
-        loadPersistedBackwardGraph(dir) ?: run {
-            val backward = buildBackwardFromForward(forward)
-            persistAndLoadBackwardGraph(dir, backward) ?: compressAndLoadTransientBackwardGraph(backward) ?: backward
-        }
+    internal fun collectMetadata(graph: Graph): GraphMetadata = GraphMetadataCollector(graph).collect()
 
-    /**
-     * Build backward (transpose) adjacency from forward BVGraph.
-     * Two passes over the compressed forward graph -- no intermediate collections.
-     * Memory: IntArray(totalEdges) + IntArray(numNodes+1) + IntArray(numNodes) work array.
-     */
-    private fun buildBackwardFromForward(forward: ImmutableGraph): PrecomputedImmutableGraph {
-        val numNodes = forward.numNodes()
+    fun ensureNodeIndex(dir: Path) = ensureGraphNodeIndex(dir)
 
-        // Pass 1: count indegree
-        val backwardDeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            val succs = forward.successorArray(node)
-            val outdeg = forward.outdegree(node)
-            for (i in 0 until outdeg) {
-                backwardDeg[succs[i]]++
-            }
-        }
+    internal fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) =
+        buildGraphNodeIndex(nodeDataPath, nodeIndexPath, stringTable)
 
-        // Build offsets
-        val offsets = IntArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            val next = offsets[i].toLong() + backwardDeg[i].toLong()
-            require(next <= Int.MAX_VALUE) {
-                "Graph has too many edges for in-memory transpose: $next"
-            }
-            offsets[i + 1] = next.toInt()
-        }
-
-        // Pass 2: fill targets
-        val targets = IntArray(offsets[numNodes])
-        val fillPos = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            val succs = forward.successorArray(node)
-            val outdeg = forward.outdegree(node)
-            for (i in 0 until outdeg) {
-                val to = succs[i]
-                targets[offsets[to] + fillPos[to]] = node
-                fillPos[to]++
-            }
-        }
-
-        // Sort each node's predecessors
-        for (node in 0 until numNodes) {
-            val start = offsets[node]
-            val end = offsets[node + 1]
-            java.util.Arrays.sort(targets, start, end)
-        }
-
-        return PrecomputedImmutableGraph(PrecomputedAdjacency(numNodes, targets, offsets))
-    }
-
-    /**
-     * Ensure the `graph.nodeindex` file exists for the given graph directory.
-     * If it doesn't exist, scans `graph.nodedata` to build it.
-     * This is idempotent — safe to call on graphs that already have the index.
-     */
-    fun ensureNodeIndex(dir: Path) {
-        val indexFile = dir.resolve(NODE_INDEX_FILE)
-        if (Files.exists(indexFile)) return
-        val stringTable = StringTable.load(dir)
-        buildNodeIndex(dir.resolve(NODE_DATA_FILE), indexFile, stringTable)
-    }
-
-    internal fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) {
-        // Stream directly: read nodedata, write nodeindex entry by entry (no intermediate list)
-        RandomAccessFile(nodeDataPath.toFile(), "r").use { raf ->
-            val nodeDataVersion = NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
-            val count = raf.readInt()
-            DataOutputStream(BufferedOutputStream(nodeIndexPath.toFile().outputStream())).use { dos ->
-                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEINDEX)
-                dos.writeInt(count)
-                repeat(count) {
-                    val offset = raf.filePointer
-                    val nodeId = raf.readInt()
-                    val tag = raf.readByte().toInt()
-                    dos.writeInt(nodeId)
-                    dos.writeByte(tag)
-                    dos.writeLong(offset)
-                    // Seek back and read full node to advance raf past the record
-                    raf.seek(offset)
-                    val dis = object : DataInputStream(object : InputStream() {
-                        override fun read(): Int = raf.read()
-                        override fun read(b: ByteArray, off: Int, len: Int): Int = raf.read(b, off, len)
-                    }) {}
-                    NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
-                }
-            }
-        }
-    }
-
-    private fun readNodeDataHeader(dir: Path): Pair<Int, Int> {
-        return DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
-            val version = NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
-            version to dis.readInt()
-        }
-    }
-
-    internal fun collectMetadata(graph: Graph): GraphMetadata {
-        fun collectReferencedTypes(): MutableSet<TypeDescriptor> {
-            val allTypes = mutableSetOf<TypeDescriptor>()
-            graph.nodes(Node::class.java).forEach { node ->
-                when (node) {
-                    is LocalVariable -> {
-                        allTypes.add(node.type)
-                        allTypes.add(node.method.declaringClass)
-                    }
-                    is FieldNode -> {
-                        allTypes.add(node.descriptor.declaringClass)
-                        allTypes.add(node.descriptor.type)
-                    }
-                    is ParameterNode -> {
-                        allTypes.add(node.type)
-                        allTypes.add(node.method.declaringClass)
-                    }
-                    is ReturnNode -> {
-                        node.actualType?.let { allTypes.add(it) }
-                        allTypes.add(node.method.declaringClass)
-                        allTypes.add(node.method.returnType)
-                    }
-                    is CallSiteNode -> {
-                        allTypes.add(node.callee.declaringClass)
-                        allTypes.add(node.callee.returnType)
-                        allTypes.add(node.caller.declaringClass)
-                    }
-                    is EnumConstant -> allTypes.add(node.enumType)
-                    is AnnotationNode -> {}
-                    else -> {}
-                }
-            }
-            graph.methods(MethodPattern()).forEach { method ->
-                allTypes.add(method.declaringClass)
-                allTypes.add(method.returnType)
-                method.parameterTypes.forEach { allTypes.add(it) }
-            }
-            return allTypes
-        }
-
-        fun collectMemberAnnotations(): Map<String, Map<String, Map<String, Any?>>> {
-            val memberAnnotations = mutableMapOf<String, Map<String, Map<String, Any?>>>()
-            val classMembers = mutableSetOf<Pair<String, String>>()
-            graph.nodes(Node::class.java).forEach { node ->
-                when (node) {
-                    is FieldNode -> classMembers.add(node.descriptor.declaringClass.className to node.descriptor.name)
-                    is CallSiteNode -> classMembers.add(node.callee.declaringClass.className to node.callee.name)
-                    is ParameterNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
-                    is ReturnNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
-                    is AnnotationNode -> {}
-                    else -> {}
-                }
-            }
-            // Also add <class> level annotations
-            val allClasses = classMembers.map { it.first }.toSet()
-            for (className in allClasses) {
-                classMembers.add(className to "<class>")
-            }
-            for ((className, memberName) in classMembers) {
-                val annotations = graph.memberAnnotations(className, memberName)
-                if (annotations.isNotEmpty()) {
-                    memberAnnotations["$className#$memberName"] = annotations
-                }
-            }
-            return memberAnnotations
-        }
-
-        // Collect type hierarchy
-        val supertypes = mutableMapOf<String, Set<TypeDescriptor>>()
-        val subtypes = mutableMapOf<String, Set<TypeDescriptor>>()
-        val hierarchyTypeNames = graph.typeHierarchyTypes()
-        val allTypes = if (hierarchyTypeNames.isNotEmpty()) {
-            hierarchyTypeNames.mapTo(mutableSetOf()) { TypeDescriptor(it) }
-        } else {
-            collectReferencedTypes()
-        }
-
-        for (type in allTypes) {
-            val sups = graph.supertypes(type).toSet()
-            if (sups.isNotEmpty()) supertypes[type.className] = sups
-            val subs = graph.subtypes(type).toSet()
-            if (subs.isNotEmpty()) subtypes[type.className] = subs
-        }
-
-        // Collect methods
-        val methods = graph.methods(MethodPattern())
-            .associateBy { it.identity }
-
-        // Declaration-only cases have no EnumConstant node. Fill any missing
-        // entries from graphs that expose enum arguments through point lookups.
-        val enumValues = (graph as? EnumValueIndexSource)?.enumValueIndex().orEmpty().toMutableMap()
-        graph.nodes(EnumConstant::class.java).forEach { ec ->
-            val key = "${ec.enumType.className}#${ec.enumName}"
-            if (key !in enumValues) {
-                val values = graph.enumValues(ec.enumType.className, ec.enumName)
-                if (values != null) enumValues[key] = values
-            }
-        }
-
-        val memberAnnotations = graph.memberAnnotationIndex()?.toMap()
-            ?: collectMemberAnnotations()
-
-        // Collect branch scopes
-        val packedSource = graph as? PackedBranchMetadataSource
-        val branchScopes = packedSource?.packedBranchScopes()?.map { scope ->
-            BranchScopeData(
-                scope.conditionNodeId, scope.method, scope.comparison,
-                scope.trueBranchNodeIds, scope.falseBranchNodeIds, scope.trueDefinitions, scope.falseDefinitions
-            )
-        }?.toList() ?: graph.branchScopes().map { bs ->
-            BranchScopeData(
-                conditionNodeId = bs.conditionNodeId.value,
-                method = bs.method,
-                comparison = bs.comparison,
-                trueBranchNodeIds = bs.trueBranchNodeIds.toIntArray(),
-                falseBranchNodeIds = bs.falseBranchNodeIds.toIntArray(),
-                trueDefinitions = BranchScope.packDefinitions(bs.trueDefinitions),
-                falseDefinitions = BranchScope.packDefinitions(bs.falseDefinitions)
-            )
-        }.toList()
-
-        val localDefinitions = packedSource?.packedLocalDefinitions()
-            ?: graph.localDefinitions().entries.associate { (localId, definitions) ->
-                localId.value to BranchScope.packDefinitions(definitions)
-            }
-
-        return GraphMetadata(
-            methods = methods,
-            supertypes = supertypes,
-            subtypes = subtypes,
-            enumValues = enumValues,
-            classOrigins = graph.classOrigins(),
-            artifactDependencies = graph.artifactDependencies(),
-            memberAnnotations = memberAnnotations,
-            branchScopes = branchScopes,
-            localDefinitions = localDefinitions,
-            syntheticIdentities = graph.syntheticIdentities()
-        )
-    }
-
+    internal fun loadBranchDefinitions(
+        dir: Path,
+        metadata: GraphMetadata,
+        nodeCount: Int,
+        nodeTags: BranchDefinitionNodeTags
+    ): PersistedBranchDefinitions = loadPersistedBranchDefinitions(dir, metadata, nodeCount, nodeTags)
 }

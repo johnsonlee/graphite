@@ -84,23 +84,30 @@ impl StringTable {
         }
         .ok_or_else(|| StringTableError::Layout("missing front-coded list field".into()))?;
         let n = match inner.field("n") {
-            Some(Value::Int(n)) => *n as usize,
+            Some(Value::Int(n)) => {
+                usize::try_from(*n).map_err(|_| layout("negative string count"))?
+            }
             _ => return Err(StringTableError::Layout("missing n".into())),
         };
         let ratio = match inner.field("ratio") {
-            Some(Value::Int(r)) => *r as usize,
+            Some(Value::Int(r)) => usize::try_from(*r)
+                .ok()
+                .filter(|r| *r > 0)
+                .ok_or_else(|| layout("invalid front-coding ratio"))?,
             _ => return Err(StringTableError::Layout("missing ratio".into())),
         };
         let mut arena = Vec::new();
         let mut invalid_text = Vec::new();
-        let mut offsets = Vec::with_capacity(n + 1);
+        // Every entry needs at least one encoded length unit. Bound the offsets only
+        // after reading the actual array, rather than trusting a serialized count.
+        let mut offsets = Vec::new();
         offsets.push(0u32);
         if utf8 {
             let mut segs: Vec<&[u8]> = Vec::new();
             match inner.field("array") {
                 Some(Value::ObjArray(items)) => {
                     for it in items {
-                        match it {
+                        match it.resolved() {
                             Value::ByteArray(b) => segs.push(b),
                             _ => return Err(StringTableError::Layout("bad byte segment".into())),
                         }
@@ -109,28 +116,22 @@ impl StringTable {
                 Some(Value::ByteArray(b)) => segs.push(b),
                 _ => return Err(StringTableError::Layout("missing array".into())),
             }
-            let flat: Vec<u8> = segs.concat();
+            let flat = flatten_segments(&segs)?;
+            reserve_offsets(&mut offsets, n, flat.len())?;
             let mut invalid_utf8 = false;
-            decode_front_coded(
-                &flat,
-                n,
-                ratio,
-                |v| v as usize,
-                |_| 1,
-                &mut |bytes: &[u8]| {
-                    match std::str::from_utf8(bytes) {
-                        Ok(text) => arena.extend_from_slice(text.as_bytes()),
-                        Err(_) => {
-                            // A verified table refuses invalid UTF-8 outright; an ordinary load
-                            // keeps a lossy rendering and marks the ID, never unchecked bytes.
-                            invalid_utf8 = true;
-                            invalid_text.push(offsets.len() - 1);
-                            arena.extend_from_slice(String::from_utf8_lossy(bytes).as_bytes());
-                        }
+            decode_front_coded(&flat, n, ratio, read_byte_length, &mut |bytes: &[u8]| {
+                match std::str::from_utf8(bytes) {
+                    Ok(text) => append_text(&mut arena, &mut offsets, text)?,
+                    Err(_) => {
+                        // A verified table refuses invalid UTF-8 outright; an ordinary load
+                        // keeps a lossy rendering and marks the ID, never unchecked bytes.
+                        invalid_utf8 = true;
+                        invalid_text.push(offsets.len() - 1);
+                        append_text(&mut arena, &mut offsets, &String::from_utf8_lossy(bytes))?;
                     }
-                    offsets.push(arena.len() as u32);
-                },
-            );
+                }
+                Ok(())
+            })?;
             if verified && invalid_utf8 {
                 return Err(StringTableError::Layout(
                     "invalid UTF-8 in shared string table".into(),
@@ -141,7 +142,7 @@ impl StringTable {
             match inner.field("array") {
                 Some(Value::ObjArray(items)) => {
                     for it in items {
-                        match it {
+                        match it.resolved() {
                             Value::CharArray(c) => segs.push(c),
                             _ => return Err(StringTableError::Layout("bad char segment".into())),
                         }
@@ -150,45 +151,14 @@ impl StringTable {
                 Some(Value::CharArray(c)) => segs.push(c),
                 _ => return Err(StringTableError::Layout("missing array".into())),
             }
-            let flat: Vec<u16> = segs.concat();
-            let mut buf: Vec<u16> = Vec::new();
-            let mut prev: Vec<u16> = Vec::new();
-            // Front coding over UTF-16 units.
-            let mut pos = 0usize;
-            let read_int = |a: &[u16], pos: &mut usize| -> usize {
-                let c0 = a[*pos];
-                if c0 < 0x8000 {
-                    *pos += 1;
-                    c0 as usize
-                } else {
-                    let v = (((c0 & 0x7FFF) as usize) << 16) | a[*pos + 1] as usize;
-                    *pos += 2;
-                    v
+            let flat = flatten_segments(&segs)?;
+            reserve_offsets(&mut offsets, n, flat.len())?;
+            decode_front_coded(&flat, n, ratio, read_char_length, &mut |units: &[u16]| {
+                if char::decode_utf16(units.iter().copied()).any(|unit| unit.is_err()) {
+                    invalid_text.push(offsets.len() - 1);
                 }
-            };
-            for i in 0..n {
-                if i % ratio == 0 {
-                    let len = read_int(&flat, &mut pos);
-                    buf.clear();
-                    buf.extend_from_slice(&flat[pos..pos + len]);
-                    pos += len;
-                } else {
-                    // Non-leader: suffix length first, then common prefix length.
-                    let len = read_int(&flat, &mut pos);
-                    let common = read_int(&flat, &mut pos);
-                    buf.clear();
-                    buf.extend_from_slice(&prev[..common]);
-                    buf.extend_from_slice(&flat[pos..pos + len]);
-                    pos += len;
-                }
-                if char::decode_utf16(buf.iter().copied()).any(|unit| unit.is_err()) {
-                    invalid_text.push(i);
-                }
-                let s = String::from_utf16_lossy(&buf);
-                arena.extend_from_slice(s.as_bytes());
-                offsets.push(arena.len() as u32);
-                std::mem::swap(&mut prev, &mut buf);
-            }
+                append_text(&mut arena, &mut offsets, &String::from_utf16_lossy(units))
+            })?;
         }
         arena.shrink_to_fit();
         Ok(StringTable {
@@ -363,46 +333,135 @@ pub fn java_cmp(a: &str, b: &str) -> std::cmp::Ordering {
     a.encode_utf16().cmp(b.encode_utf16())
 }
 
-fn decode_front_coded(
-    flat: &[u8],
+fn layout(message: &str) -> StringTableError {
+    StringTableError::Layout(message.into())
+}
+
+fn flatten_segments<T: Copy>(segments: &[&[T]]) -> Result<Vec<T>, StringTableError> {
+    let length = segments
+        .iter()
+        .try_fold(0usize, |n, segment| n.checked_add(segment.len()))
+        .ok_or_else(|| layout("front-coded array is too large"))?;
+    let mut flat = Vec::new();
+    flat.try_reserve_exact(length)
+        .map_err(|_| layout("cannot allocate front-coded array"))?;
+    for segment in segments {
+        flat.extend_from_slice(segment);
+    }
+    Ok(flat)
+}
+
+fn reserve_offsets(
+    offsets: &mut Vec<u32>,
+    count: usize,
+    encoded_units: usize,
+) -> Result<(), StringTableError> {
+    if count > encoded_units {
+        return Err(layout("string count exceeds front-coded array"));
+    }
+    offsets
+        .try_reserve_exact(count)
+        .map_err(|_| layout("cannot allocate string offsets"))
+}
+
+fn append_text(
+    arena: &mut Vec<u8>,
+    offsets: &mut Vec<u32>,
+    text: &str,
+) -> Result<(), StringTableError> {
+    let end = arena
+        .len()
+        .checked_add(text.len())
+        .and_then(|n| u32::try_from(n).ok())
+        .ok_or_else(|| layout("decoded string arena exceeds 32-bit offsets"))?;
+    arena
+        .try_reserve(text.len())
+        .map_err(|_| layout("cannot allocate string arena"))?;
+    arena.extend_from_slice(text.as_bytes());
+    offsets.push(end);
+    Ok(())
+}
+
+fn read_unit<T: Copy>(array: &[T], position: &mut usize) -> Result<T, StringTableError> {
+    let unit = array
+        .get(*position)
+        .copied()
+        .ok_or_else(|| layout("truncated front-coded length"))?;
+    *position += 1;
+    Ok(unit)
+}
+
+fn read_byte_length(array: &[u8], position: &mut usize) -> Result<usize, StringTableError> {
+    // fastutil stores continuation digits as -(digit + 1), not standard unsigned vByte.
+    let mut value = 0usize;
+    for _ in 0..5 {
+        let byte = read_unit(array, position)?;
+        let continuation = byte & 0x80 != 0;
+        let digit = if continuation { !byte & 0x7f } else { byte };
+        value = value
+            .checked_mul(128)
+            .and_then(|n| n.checked_add(digit as usize))
+            .filter(|n| *n <= i32::MAX as usize)
+            .ok_or_else(|| layout("front-coded length overflows"))?;
+        if !continuation {
+            return Ok(value);
+        }
+    }
+    Err(layout("front-coded length exceeds five bytes"))
+}
+
+fn read_char_length(array: &[u16], position: &mut usize) -> Result<usize, StringTableError> {
+    let first = read_unit(array, position)?;
+    if first < 0x8000 {
+        return Ok(first as usize);
+    }
+    let second = read_unit(array, position)?;
+    Ok((((first & 0x7fff) as usize) << 16) | second as usize)
+}
+
+fn decode_front_coded<T: Copy>(
+    flat: &[T],
     n: usize,
     ratio: usize,
-    _id: impl Fn(u8) -> usize,
-    _one: impl Fn(u8) -> usize,
-    emit: &mut dyn FnMut(&[u8]),
-) {
-    // ByteArrayFrontCodedList: lengths coded as vByte (7 bits per byte, MSB continuation).
-    let mut pos = 0usize;
-    let read_int = |a: &[u8], pos: &mut usize| -> usize {
-        let mut v = 0usize;
-        loop {
-            let b = a[*pos];
-            *pos += 1;
-            v = (v << 7) | (b & 0x7F) as usize;
-            if b & 0x80 == 0 {
-                return v;
-            }
-        }
-    };
-    let mut prev: Vec<u8> = Vec::new();
-    let mut buf: Vec<u8> = Vec::new();
-    for i in 0..n {
-        if i % ratio == 0 {
-            let len = read_int(flat, &mut pos);
-            buf.clear();
-            buf.extend_from_slice(&flat[pos..pos + len]);
-            pos += len;
-        } else {
-            let len = read_int(flat, &mut pos);
-            let common = read_int(flat, &mut pos);
-            buf.clear();
-            buf.extend_from_slice(&prev[..common]);
-            buf.extend_from_slice(&flat[pos..pos + len]);
-            pos += len;
-        }
-        emit(&buf);
-        std::mem::swap(&mut prev, &mut buf);
+    read_length: impl Fn(&[T], &mut usize) -> Result<usize, StringTableError>,
+    emit: &mut dyn FnMut(&[T]) -> Result<(), StringTableError>,
+) -> Result<(), StringTableError> {
+    if ratio == 0 {
+        return Err(layout("invalid front-coding ratio"));
     }
+    let mut position = 0usize;
+    let mut previous = Vec::new();
+    let mut buffer = Vec::new();
+    for index in 0..n {
+        let suffix_length = read_length(flat, &mut position)?;
+        let common = if index % ratio == 0 {
+            0
+        } else {
+            read_length(flat, &mut position)?
+        };
+        let prefix = previous
+            .get(..common)
+            .ok_or_else(|| layout("front-coded prefix exceeds previous string"))?;
+        let end = position
+            .checked_add(suffix_length)
+            .ok_or_else(|| layout("front-coded suffix overflows"))?;
+        let suffix = flat
+            .get(position..end)
+            .ok_or_else(|| layout("truncated front-coded suffix"))?;
+        let length = common
+            .checked_add(suffix_length)
+            .ok_or_else(|| layout("front-coded string overflows"))?;
+        buffer.clear();
+        buffer
+            .try_reserve(length)
+            .map_err(|_| layout("cannot allocate front-coded string"))?;
+        buffer.extend_from_slice(prefix);
+        buffer.extend_from_slice(suffix);
+        position = end;
+        emit(&buffer)?;
+        std::mem::swap(&mut previous, &mut buffer);
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -529,3 +588,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "strings_decode_tests.rs"]
+mod decode_tests;

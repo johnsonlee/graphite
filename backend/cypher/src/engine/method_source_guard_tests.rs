@@ -375,7 +375,9 @@ fn invalid_class_ids_fall_through_only_when_where_reads_class() {
 // The child runs the same complete output contract in a fresh process, because the
 // production disable flag is intentionally process-wide OnceLock state.
 fn output_contract() -> Option<serde_json::Value> {
-    let ex = multi(fixture()?).with_probe();
+    let ex = multi(fixture()?)
+        .with_probe()
+        .with_params([("step".into(), Value::Int(0))].into());
     let mut snapshots = vec![];
     for projection in [
         "m AS value",
@@ -469,12 +471,15 @@ fn output_contract() -> Option<serde_json::Value> {
     assert_eq!(QueryResult::graph_ids(&skipped.rows[2]), ["g61"]);
     snapshots.push(serde_json::json!({"orderedSkip":format!("{skipped:?}")}));
     for query in [
-        "MATCH (m:Method) WHERE m.graphId = 'absent' AND unknown(m) RETURN m",
-        "MATCH (m:Method) WHERE unknown(m) OR m.graphId = 'absent' RETURN m",
+        "MATCH (m:Method) WHERE m.graphId = 'absent' AND size(range(0, 1, $step)) > 0 RETURN m",
+        "MATCH (m:Method) WHERE size(range(0, 1, $step)) > 0 OR m.graphId = 'absent' RETURN m",
     ] {
-        let error = ex.execute(query, None).unwrap_err().to_string();
-        assert!(error.contains("Unknown function"));
-        snapshots.push(serde_json::json!({"error":error}));
+        let error = ex.execute(query, None).unwrap_err();
+        assert_eq!(
+            error,
+            CypherError::Runtime("Step cannot be zero in range()".into())
+        );
+        snapshots.push(serde_json::json!({"error":format!("{error:?}")}));
     }
     // Bound rows, paths and OPTIONAL retain the generic matcher; projection remains identical.
     for query in [

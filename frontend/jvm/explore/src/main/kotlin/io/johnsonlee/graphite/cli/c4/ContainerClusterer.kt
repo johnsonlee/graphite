@@ -12,167 +12,7 @@ internal object ContainerClusterer {
         apiEndpoints: List<ApiEndpointEvidence>,
         systemBoundary: String,
         limit: Int
-    ): ContainerLayout {
-        val internalClasses = linkedSetOf<String>()
-        methods.mapTo(internalClasses) { it.declaringClass.className }
-        apiEndpoints.mapTo(internalClasses) { it.className }
-        callSites.forEach { cs ->
-            internalClasses += cs.caller.declaringClass.className
-            internalClasses += cs.callee.declaringClass.className
-        }
-        val filteredClasses = internalClasses.filter { isInternalArchitectureClass(it, systemBoundary) }
-        val methodCountsByUnit = methods.asSequence()
-            .map { it.declaringClass.className }
-            .filter { isInternalArchitectureClass(it, systemBoundary) }
-            .groupingBy { internalPackageUnit(it, systemBoundary) }
-            .eachCount()
-        val endpointCountsByUnit = apiEndpoints.asSequence()
-            .map { it.className }
-            .filter { isInternalArchitectureClass(it, systemBoundary) }
-            .groupingBy { internalPackageUnit(it, systemBoundary) }
-            .eachCount()
-        val endpointPathsByUnit = apiEndpoints.asSequence()
-            .mapNotNull { endpoint ->
-                val className = endpoint.className
-                if (!isInternalArchitectureClass(className, systemBoundary)) return@mapNotNull null
-                internalPackageUnit(className, systemBoundary) to endpoint.path
-            }
-            .groupBy({ it.first }, { it.second })
-            .mapValues { (_, paths) -> paths.filter { it.isNotBlank() }.distinct().sorted() }
-        val classesByUnit = filteredClasses.groupBy { internalPackageUnit(it, systemBoundary) }
-        val undirectedTraffic = mutableMapOf<Pair<String, String>, Int>()
-        val externalWeights = mutableMapOf<String, Int>()
-        callSites.forEach { cs ->
-            val callerClass = cs.caller.declaringClass.className
-            val calleeClass = cs.callee.declaringClass.className
-            if (isSyntheticArchitectureClass(callerClass) || isSyntheticArchitectureClass(calleeClass)) return@forEach
-            val callerInternal = isInternalArchitectureClass(callerClass, systemBoundary)
-            val calleeInternal = isInternalArchitectureClass(calleeClass, systemBoundary)
-            when {
-                callerInternal && calleeInternal -> {
-                    val callerUnit = internalPackageUnit(callerClass, systemBoundary)
-                    val calleeUnit = internalPackageUnit(calleeClass, systemBoundary)
-                    if (callerUnit != calleeUnit) {
-                        val key = if (callerUnit < calleeUnit) callerUnit to calleeUnit else calleeUnit to callerUnit
-                        undirectedTraffic[key] = (undirectedTraffic[key] ?: 0) + 1
-                    }
-                }
-                callerInternal && !calleeInternal ->
-                    externalWeights[calleeClass] = (externalWeights[calleeClass] ?: 0) + 1
-            }
-        }
-        val trafficByUnit = mutableMapOf<String, Int>()
-        undirectedTraffic.forEach { (pair, weight) ->
-            trafficByUnit[pair.first] = (trafficByUnit[pair.first] ?: 0) + weight
-            trafficByUnit[pair.second] = (trafficByUnit[pair.second] ?: 0) + weight
-        }
-        val allUnits = (methodCountsByUnit.keys + endpointCountsByUnit.keys + classesByUnit.keys).distinct()
-        val tokenDocumentFrequency = allUnits
-            .flatMap { unit ->
-                unit.removePrefix(systemBoundary)
-                    .trimStart('.')
-                    .split('.')
-                    .filter { it.isNotBlank() }
-                    .distinct()
-            }
-            .groupingBy { it }
-            .eachCount()
-        val unitClusters = clusterInternalPackageUnits(allUnits, undirectedTraffic)
-        val scoredClusters = unitClusters.map { packageUnits ->
-            val methodCount = packageUnits.sumOf { methodCountsByUnit[it] ?: 0 }
-            val endpointCount = packageUnits.sumOf { endpointCountsByUnit[it] ?: 0 }
-            val callSiteCount = packageUnits.sumOf { unit -> trafficByUnit[unit] ?: 0 }
-            val score = methodCount * C4ContainerScoring.METHOD_WEIGHT +
-                endpointCount * C4ContainerScoring.ENDPOINT_WEIGHT +
-                callSiteCount * C4ContainerScoring.TRAFFIC_WEIGHT
-            Triple(packageUnits, score, callSiteCount)
-        }
-        val selectedClusters = scoredClusters
-            .sortedWith(
-                compareByDescending<Triple<Set<String>, Int, Int>> { it.second }
-                    .thenByDescending { it.third }
-                    .thenBy { it.first.minOrNull().orEmpty() }
-            )
-            .take(limit)
-            .map { it.first }
-        val containerDescriptors = selectedClusters.map { packageUnits ->
-            val packageUnitSet = packageUnits.toSortedSet()
-            val unitScores = packageUnitSet.associateWith { unit ->
-                (methodCountsByUnit[unit] ?: 0) * C4ContainerScoring.REPRESENTATIVE_METHOD_WEIGHT +
-                    (endpointCountsByUnit[unit] ?: 0) * C4ContainerScoring.ENDPOINT_WEIGHT +
-                    (trafficByUnit[unit] ?: 0) * C4ContainerScoring.TRAFFIC_WEIGHT
-            }
-            val representativeUnit = unitScores.maxByOrNull { it.value }?.key ?: packageUnitSet.first()
-            val classes = packageUnitSet.flatMap { classesByUnit[it].orEmpty() }
-            val entrypoints = packageUnitSet.flatMap { endpointPathsByUnit[it].orEmpty() }
-                .distinct()
-                .sorted()
-                .take(C4EvidenceLimits.MAX_ENTRYPOINTS_PER_CONTAINER)
-            val methodCount = packageUnitSet.sumOf { methodCountsByUnit[it] ?: 0 }
-            val endpointCount = packageUnitSet.sumOf { endpointCountsByUnit[it] ?: 0 }
-            val callSiteCount = packageUnitSet.sumOf { unit -> trafficByUnit[unit] ?: 0 }
-            val name = inferName(packageUnitSet, unitScores, tokenDocumentFrequency, systemBoundary)
-            val id = "$CONTAINER_ID_PREFIX${slugify(name.ifBlank { representativeUnit })}"
-            ContainerDescriptor(
-                id = id,
-                name = name.ifBlank { representativeUnit },
-                packageUnits = packageUnitSet,
-                methodCount = methodCount,
-                callSiteCount = callSiteCount,
-                endpointCount = endpointCount,
-                inboundCrossContainer = 0,
-                outboundCrossContainer = 0,
-                externalCallCount = 0,
-                entrypoints = entrypoints,
-                primaryClasses = classes.groupingBy { it }.eachCount().entries
-                    .sortedByDescending { it.value }
-                    .take(C4EvidenceLimits.MAX_PRIMARY_CLASSES_PER_CONTAINER)
-                    .map { it.key.substringAfterLast('.') },
-                rationale = buildRationale(packageUnitSet, representativeUnit, entrypoints)
-            )
-        }.toMutableList()
-        val unitToContainerId = containerDescriptors.flatMap { container ->
-            container.packageUnits.map { it to container.id }
-        }.toMap()
-
-        val inboundCrossContainer = mutableMapOf<String, Int>()
-        val outboundCrossContainer = mutableMapOf<String, Int>()
-        val externalCallCounts = mutableMapOf<String, Int>()
-        val callSiteCounts = mutableMapOf<String, Int>()
-        callSites.forEach { cs ->
-            val callerClass = cs.caller.declaringClass.className
-            val calleeClass = cs.callee.declaringClass.className
-            if (isSyntheticArchitectureClass(callerClass) || isSyntheticArchitectureClass(calleeClass)) return@forEach
-            val callerInternal = isInternalArchitectureClass(callerClass, systemBoundary)
-            val calleeInternal = isInternalArchitectureClass(calleeClass, systemBoundary)
-            val callerContainer = if (callerInternal) unitToContainerId[internalPackageUnit(callerClass, systemBoundary)] else null
-            val calleeContainer = if (calleeInternal) unitToContainerId[internalPackageUnit(calleeClass, systemBoundary)] else null
-            if (callerContainer != null) callSiteCounts[callerContainer] = (callSiteCounts[callerContainer] ?: 0) + 1
-            if (calleeContainer != null) callSiteCounts[calleeContainer] = (callSiteCounts[calleeContainer] ?: 0) + 1
-            when {
-                callerContainer != null && calleeContainer != null && callerContainer != calleeContainer -> {
-                    outboundCrossContainer[callerContainer] = (outboundCrossContainer[callerContainer] ?: 0) + 1
-                    inboundCrossContainer[calleeContainer] = (inboundCrossContainer[calleeContainer] ?: 0) + 1
-                }
-                callerContainer != null && !calleeInternal && !isRuntimeArchitectureClass(calleeClass) ->
-                    externalCallCounts[callerContainer] = (externalCallCounts[callerContainer] ?: 0) + 1
-            }
-        }
-        val finalizedContainers = containerDescriptors.map { container ->
-            container.copy(
-                callSiteCount = callSiteCounts[container.id] ?: container.callSiteCount,
-                inboundCrossContainer = inboundCrossContainer[container.id] ?: 0,
-                outboundCrossContainer = outboundCrossContainer[container.id] ?: 0,
-                externalCallCount = externalCallCounts[container.id] ?: 0
-            )
-        }
-        return ContainerLayout(
-            systemBoundary = systemBoundary,
-            containers = finalizedContainers,
-            unitToContainerId = unitToContainerId,
-            externalDependencies = ExternalSystemClassifier.summarize(graph, externalWeights)
-        )
-    }
+    ): ContainerLayout = ContainerLayoutInference(graph, methods, callSites, apiEndpoints, systemBoundary, limit).build()
 
     fun inferOperationalLayout(subject: SubjectDescriptor, capabilityLayout: ContainerLayout): ContainerLayout {
         if (subject.role != WIRE_APPLICATION) {
@@ -180,52 +20,50 @@ internal object ContainerClusterer {
                 systemBoundary = capabilityLayout.systemBoundary,
                 containers = emptyList(),
                 unitToContainerId = emptyMap(),
-                externalDependencies = capabilityLayout.externalDependencies
-            )
+                externalDependencies = capabilityLayout.externalDependencies)
         }
         val runtimeId = "$CONTAINER_ID_PREFIX$WIRE_APPLICATION_RUNTIME"
         val runtimeName = "${subject.name} Runtime"
-        val runtimeKind = if (capabilityLayout.containers.any { it.endpointCount > 0 }) {
-            WIRE_APPLICATION_SERVICE
-        } else {
-            WIRE_APPLICATION_RUNTIME
-        }
-        val runtimeContainer = ContainerDescriptor(
-            id = runtimeId,
-            name = runtimeName,
-            packageUnits = capabilityLayout.containers.flatMap { it.packageUnits }.toSortedSet(),
-            methodCount = capabilityLayout.containers.sumOf { it.methodCount },
-            callSiteCount = capabilityLayout.containers.sumOf { it.callSiteCount },
-            endpointCount = capabilityLayout.containers.sumOf { it.endpointCount },
-            inboundCrossContainer = 0,
-            outboundCrossContainer = 0,
-            externalCallCount = capabilityLayout.containers.sumOf { it.externalCallCount },
-            entrypoints = capabilityLayout.containers
-                .flatMap { it.entrypoints }
-                .distinct()
-                .sorted()
-                .take(C4EvidenceLimits.MAX_ENTRYPOINTS_PER_CONTAINER),
-            primaryClasses = capabilityLayout.containers
-                .flatMap { it.primaryClasses }
-                .distinct()
-                .take(C4EvidenceLimits.MAX_PRIMARY_CLASSES_PER_CONTAINER),
-            rationale = "Selected from C4 semantics as the executable/deployable JVM runtime boundary; " +
-                "package clusters remain internal capability evidence",
-            declaredKind = runtimeKind
-        )
+        val runtimeKind =
+            if (capabilityLayout.containers.any { it.endpointCount > 0 }) {
+                WIRE_APPLICATION_SERVICE
+            } else {
+                WIRE_APPLICATION_RUNTIME
+            }
+        val runtimeContainer =
+            ContainerDescriptor(
+                id = runtimeId,
+                name = runtimeName,
+                packageUnits = capabilityLayout.containers.flatMap { it.packageUnits }.toSortedSet(),
+                methodCount = capabilityLayout.containers.sumOf { it.methodCount },
+                callSiteCount = capabilityLayout.containers.sumOf { it.callSiteCount },
+                endpointCount = capabilityLayout.containers.sumOf { it.endpointCount },
+                inboundCrossContainer = 0,
+                outboundCrossContainer = 0,
+                externalCallCount = capabilityLayout.containers.sumOf { it.externalCallCount },
+                entrypoints =
+                    capabilityLayout.containers
+                        .flatMap { it.entrypoints }
+                        .distinct()
+                        .sorted()
+                        .take(C4EvidenceLimits.MAX_ENTRYPOINTS_PER_CONTAINER),
+                primaryClasses =
+                    capabilityLayout.containers
+                        .flatMap { it.primaryClasses }
+                        .distinct()
+                        .take(C4EvidenceLimits.MAX_PRIMARY_CLASSES_PER_CONTAINER),
+                rationale =
+                    "Selected from C4 semantics as the executable/deployable JVM runtime boundary; " +
+                        "package clusters remain internal capability evidence",
+                declaredKind = runtimeKind)
         return ContainerLayout(
             systemBoundary = capabilityLayout.systemBoundary,
             containers = listOf(runtimeContainer),
             unitToContainerId = capabilityLayout.unitToContainerId.keys.associateWith { runtimeId },
-            externalDependencies = capabilityLayout.externalDependencies
-        )
+            externalDependencies = capabilityLayout.externalDependencies)
     }
 
-    fun buildRuntimeDependencyRelationships(
-        graph: Graph,
-        callSites: List<CallSiteNode>,
-        layout: ContainerLayout
-    ): List<C4Relationship> {
+    fun buildRuntimeDependencyRelationships(graph: Graph, callSites: List<CallSiteNode>, layout: ContainerLayout): List<C4Relationship> {
         val runtimeContainer = layout.containers.singleOrNull() ?: return emptyList()
         val externalDependenciesById = layout.externalDependencies.associateBy { it.id }
         val dependencyWeights = mutableMapOf<String, Int>()
@@ -233,10 +71,8 @@ internal object ContainerClusterer {
             val callerClass = cs.caller.declaringClass.className
             val calleeClass = cs.callee.declaringClass.className
             if (isSyntheticArchitectureClass(callerClass) || isSyntheticArchitectureClass(calleeClass)) return@forEach
-            if (
-                !isInternalArchitectureClass(callerClass, layout.systemBoundary) ||
-                isInternalArchitectureClass(calleeClass, layout.systemBoundary)
-            ) {
+            if (!isInternalArchitectureClass(callerClass, layout.systemBoundary) ||
+                isInternalArchitectureClass(calleeClass, layout.systemBoundary)) {
                 return@forEach
             }
             val dependencyId = "$DEPENDENCY_ID_PREFIX${ExternalSystemClassifier.key(graph, calleeClass)}"
@@ -245,46 +81,48 @@ internal object ContainerClusterer {
         }
 
         val runtimeBoundaryLibraryIds = selectRuntimeBoundaryLibraryIds(graph, layout.externalDependencies)
-        val libraryToRuntimeRelationships = layout.externalDependencies
-            .filter { it.kind != ExternalDependencyKind.RUNTIME && it.id in runtimeBoundaryLibraryIds }
-            .flatMap { library ->
-                layout.externalDependencies
-                    .filter { it.kind == ExternalDependencyKind.RUNTIME }
-                    .map { runtime ->
-                        C4Relationship(
-                            from = library.id,
-                            to = runtime.id,
-                            type = C4RelationshipType.RUNS_ON,
-                            kind = C4RelationshipKind.RUNS_ON,
-                            description = "${library.name} runs on ${runtime.name}",
-                            evidence = C4Metadata.runtimeDependencyEvidence(runtime)
-                        )
-                    }
-            }
-
-        val containerToDependencyRelationships = dependencyWeights.entries
-            .sortedByDescending { it.value }
-            .map { (dependencyId, weight) ->
-                val dependency = externalDependenciesById.getValue(dependencyId)
-                val kind = if (dependency.kind == ExternalDependencyKind.RUNTIME) {
-                    C4RelationshipKind.RUNS_ON
-                } else {
-                    C4RelationshipKind.DEPENDS_ON
+        val libraryToRuntimeRelationships =
+            layout.externalDependencies
+                .filter { it.kind != ExternalDependencyKind.RUNTIME && it.id in runtimeBoundaryLibraryIds }
+                .flatMap { library ->
+                    layout.externalDependencies
+                        .filter { it.kind == ExternalDependencyKind.RUNTIME }
+                        .map { runtime ->
+                            C4Relationship(
+                                from = library.id,
+                                to = runtime.id,
+                                type = C4RelationshipType.RUNS_ON,
+                                kind = C4RelationshipKind.RUNS_ON,
+                                description = "${library.name} runs on ${runtime.name}",
+                                evidence = C4Metadata.runtimeDependencyEvidence(runtime))
+                        }
                 }
-                C4Relationship(
-                    from = runtimeContainer.id,
-                    to = dependencyId,
-                    type = if (kind == C4RelationshipKind.RUNS_ON) C4RelationshipType.RUNS_ON else C4RelationshipType.USES,
-                    kind = kind,
-                    description = if (kind == C4RelationshipKind.RUNS_ON) {
-                        "${runtimeContainer.name} runs on ${dependency.name}"
-                    } else {
-                        "${runtimeContainer.name} uses ${dependency.name}"
-                    },
-                    weight = weight,
-                    evidence = C4Metadata.boundaryDependencyEvidence(dependency, weight)
-                )
-            }
+
+        val containerToDependencyRelationships =
+            dependencyWeights.entries
+                .sortedByDescending { it.value }
+                .map { (dependencyId, weight) ->
+                    val dependency = externalDependenciesById.getValue(dependencyId)
+                    val kind =
+                        if (dependency.kind == ExternalDependencyKind.RUNTIME) {
+                            C4RelationshipKind.RUNS_ON
+                        } else {
+                            C4RelationshipKind.DEPENDS_ON
+                        }
+                    C4Relationship(
+                        from = runtimeContainer.id,
+                        to = dependencyId,
+                        type = if (kind == C4RelationshipKind.RUNS_ON) C4RelationshipType.RUNS_ON else C4RelationshipType.USES,
+                        kind = kind,
+                        description =
+                            if (kind == C4RelationshipKind.RUNS_ON) {
+                                "${runtimeContainer.name} runs on ${dependency.name}"
+                            } else {
+                                "${runtimeContainer.name} uses ${dependency.name}"
+                            },
+                        weight = weight,
+                        evidence = C4Metadata.boundaryDependencyEvidence(dependency, weight))
+                }
 
         return containerToDependencyRelationships + libraryToRuntimeRelationships
     }
@@ -299,34 +137,35 @@ internal object ContainerClusterer {
     }
 
     fun selectRuntimeBoundaryLibraryIds(graph: Graph, dependencies: List<ExternalDependency>): Set<String> {
-        val librariesByArtifact = dependencies
-            .filter { it.kind != ExternalDependencyKind.RUNTIME }
-            .mapNotNull { dependency ->
-                val artifact = ExternalSystemClassifier.artifactNameFromDependencyId(dependency.id) ?: return@mapNotNull null
-                artifact to dependency.id
-            }
-            .toMap()
+        val librariesByArtifact =
+            dependencies
+                .filter { it.kind != ExternalDependencyKind.RUNTIME }
+                .mapNotNull { dependency ->
+                    val artifact = ExternalSystemClassifier.artifactNameFromDependencyId(dependency.id) ?: return@mapNotNull null
+                    artifact to dependency.id
+                }
+                .toMap()
         if (librariesByArtifact.isEmpty()) return emptySet()
 
-        val librariesWithDownstreamLibrary = graph.artifactDependencies().mapNotNull { (fromArtifact, downstream) ->
-            val fromId = librariesByArtifact[fromArtifact] ?: return@mapNotNull null
-            if (downstream.any { (toArtifact, weight) ->
-                    weight > 0 && librariesByArtifact[toArtifact] != null && librariesByArtifact[toArtifact] != fromId
+        val librariesWithDownstreamLibrary =
+            graph
+                .artifactDependencies()
+                .mapNotNull { (fromArtifact, downstream) ->
+                    val fromId = librariesByArtifact[fromArtifact] ?: return@mapNotNull null
+                    if (downstream.any { (toArtifact, weight) ->
+                        weight > 0 && librariesByArtifact[toArtifact] != null && librariesByArtifact[toArtifact] != fromId
+                    }) {
+                        fromId
+                    } else {
+                        null
+                    }
                 }
-            ) {
-                fromId
-            } else {
-                null
-            }
-        }.toSet()
+                .toSet()
         val boundary = librariesByArtifact.values.toSet() - librariesWithDownstreamLibrary
         return boundary.ifEmpty { librariesByArtifact.values.toSet() }
     }
 
-    fun clusterInternalPackageUnits(
-        units: List<String>,
-        undirectedTraffic: Map<Pair<String, String>, Int>
-    ): List<Set<String>> {
+    fun clusterInternalPackageUnits(units: List<String>, undirectedTraffic: Map<Pair<String, String>, Int>): List<Set<String>> {
         if (units.isEmpty()) return emptyList()
         val adjacency = mutableMapOf<String, MutableMap<String, Int>>()
         fun addEdge(from: String, to: String, weight: Int) {
@@ -336,52 +175,29 @@ internal object ContainerClusterer {
             addEdge(pair.first, pair.second, weight)
             addEdge(pair.second, pair.first, weight)
         }
-        val strongestNeighbor = units.associateWith { unit ->
-            adjacency[unit]
-                ?.entries
-                ?.maxWithOrNull(compareBy<Map.Entry<String, Int>> { it.value }.thenByDescending { it.key })
-                ?.key
-        }
-        val parents = units.associateWith { it }.toMutableMap()
-        fun find(unit: String): String {
-            var current = unit
-            while (parents[current] != current) {
-                current = parents[current]!!
+        val strongestNeighbor =
+            units.associateWith { unit ->
+                adjacency[unit]?.entries?.maxWithOrNull(compareBy<Map.Entry<String, Int>> { it.value }.thenByDescending { it.key })?.key
             }
-            var cursor = unit
-            while (parents[cursor] != cursor) {
-                val parent = parents[cursor]!!
-                parents[cursor] = current
-                cursor = parent
-            }
-            return current
-        }
-        fun union(left: String, right: String) {
-            val leftRoot = find(left)
-            val rightRoot = find(right)
-            if (leftRoot != rightRoot) parents[rightRoot] = leftRoot
-        }
+        val groups = PackageUnionFind(units)
         units.forEach { unit ->
             val neighbor = strongestNeighbor[unit]
             if (neighbor != null && strongestNeighbor[neighbor] == unit) {
-                union(unit, neighbor)
+                groups.union(unit, neighbor)
             }
         }
         units.forEach { unit ->
-            if (find(unit) != unit) return@forEach
+            if (groups.find(unit) != unit) return@forEach
             val neighbor = strongestNeighbor[unit] ?: return@forEach
-            if (find(neighbor) != unit) {
+            if (groups.find(neighbor) != unit) {
                 val totalWeight = adjacency[unit]?.values?.sum() ?: 0
                 val strongestWeight = adjacency[unit]?.get(neighbor) ?: 0
                 if (totalWeight > 0 && strongestWeight * 2 >= totalWeight) {
-                    union(unit, neighbor)
+                    groups.union(unit, neighbor)
                 }
             }
         }
-        return units.groupBy { find(it) }
-            .values
-            .map { it.toSortedSet() }
-            .sortedBy { it.firstOrNull().orEmpty() }
+        return units.groupBy { groups.find(it) }.values.map { it.toSortedSet() }.sortedBy { it.firstOrNull().orEmpty() }
     }
 
     fun inferName(
@@ -400,22 +216,20 @@ internal object ContainerClusterer {
                 tokenScores[token] = (tokenScores[token] ?: 0.0) + weight * rarity
             }
         }
-        val rankedTokens = tokenScores.entries
-            .sortedByDescending { it.value }
-            .toList()
-        val selectedTokens = buildList {
-            rankedTokens.firstOrNull()?.let { add(humanizeIdentifier(it.key)) }
-            if (rankedTokens.size >= C4NamingHeuristics.MIN_TOKENS_FOR_SECOND_TOKEN) {
-                val firstScore = rankedTokens[0].value
-                val secondScore = rankedTokens[1].value
-                if (
-                    firstScore > C4NamingHeuristics.MIN_POSITIVE_TOKEN_SCORE &&
-                    secondScore >= firstScore * C4NamingHeuristics.SECOND_TOKEN_MIN_SCORE_RATIO
-                ) {
-                    add(humanizeIdentifier(rankedTokens[1].key))
+        val rankedTokens = tokenScores.entries.sortedByDescending { it.value }.toList()
+        val selectedTokens =
+            buildList {
+                    rankedTokens.firstOrNull()?.let { add(humanizeIdentifier(it.key)) }
+                    if (rankedTokens.size >= C4NamingHeuristics.MIN_TOKENS_FOR_SECOND_TOKEN) {
+                        val firstScore = rankedTokens[0].value
+                        val secondScore = rankedTokens[1].value
+                        if (firstScore > C4NamingHeuristics.MIN_POSITIVE_TOKEN_SCORE &&
+                            secondScore >= firstScore * C4NamingHeuristics.SECOND_TOKEN_MIN_SCORE_RATIO) {
+                            add(humanizeIdentifier(rankedTokens[1].key))
+                        }
+                    }
                 }
-            }
-        }.distinct()
+                .distinct()
         return when {
             selectedTokens.isEmpty() -> systemBoundary
             selectedTokens.size == 1 -> selectedTokens.single()
@@ -423,19 +237,13 @@ internal object ContainerClusterer {
         }
     }
 
-    fun buildRationale(
-        packageUnits: Set<String>,
-        representativeUnit: String,
-        entrypoints: List<String>
-    ): String {
+    fun buildRationale(packageUnits: Set<String>, representativeUnit: String, entrypoints: List<String>): String {
         val unitCount = packageUnits.size
         return when {
             entrypoints.isNotEmpty() ->
                 "Grouped from $unitCount tightly-coupled package unit(s) with visible inbound entrypoints; anchored by $representativeUnit"
-            unitCount > 1 ->
-                "Grouped from $unitCount mutually dependent package units around the structural center $representativeUnit"
-            else ->
-                "Derived from the dominant internal package unit $representativeUnit"
+            unitCount > 1 -> "Grouped from $unitCount mutually dependent package units around the structural center $representativeUnit"
+            else -> "Derived from the dominant internal package unit $representativeUnit"
         }
     }
 
@@ -448,8 +256,7 @@ internal object ContainerClusterer {
     ): String {
         val dominantInteraction = maxOf(inboundCrossContainer, outboundCrossContainer, externalCalls)
         return when {
-            endpointCount > 0 ->
-                "Provides an inbound system interface and coordinates downstream execution across internal capabilities"
+            endpointCount > 0 -> "Provides an inbound system interface and coordinates downstream execution across internal capabilities"
             externalCalls > 0 && externalCalls == dominantInteraction ->
                 "Acts as an outward-facing capability boundary that coordinates internal work and collaborates with external dependencies"
             inboundCrossContainer > outboundCrossContainer ->
@@ -458,8 +265,7 @@ internal object ContainerClusterer {
                 "Acts as an orchestration boundary that fans out into several other internal capabilities"
             methodCount > 0 && dominantInteraction > 0 ->
                 "Acts as a balanced internal collaboration boundary with both implementation depth and cross-capability traffic"
-            else ->
-                "Implements a cohesive internal capability boundary inferred from code concentration and collaboration patterns"
+            else -> "Implements a cohesive internal capability boundary inferred from code concentration and collaboration patterns"
         }
     }
 
@@ -475,25 +281,24 @@ internal object ContainerClusterer {
     }
 
     fun kind(container: ContainerDescriptor): String =
-        container.declaredKind ?: inferKind(
-            endpointCount = container.endpointCount,
-            inboundCrossContainer = container.inboundCrossContainer,
-            outboundCrossContainer = container.outboundCrossContainer,
-            externalCalls = container.externalCallCount
-        )
+        container.declaredKind
+            ?: inferKind(
+                endpointCount = container.endpointCount,
+                inboundCrossContainer = container.inboundCrossContainer,
+                outboundCrossContainer = container.outboundCrossContainer,
+                externalCalls = container.externalCallCount)
 
     fun description(kind: String): String =
         when (kind) {
-            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE ->
-                "Executable/deployable runtime container inferred from entrypoint, endpoint, and archive evidence"
-            else ->
-                "Internal capability evidence derived from code graph structure"
+            WIRE_APPLICATION_RUNTIME,
+            WIRE_APPLICATION_SERVICE -> "Executable/deployable runtime container inferred from entrypoint, endpoint, and archive evidence"
+            else -> "Internal capability evidence derived from code graph structure"
         }
 
     fun operationalResponsibility(kind: String): String? =
         when (kind) {
-            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE ->
-                "Runs the subject software system and owns the deployable JVM execution boundary"
+            WIRE_APPLICATION_RUNTIME,
+            WIRE_APPLICATION_SERVICE -> "Runs the subject software system and owns the deployable JVM execution boundary"
             else -> null
         }
 
@@ -505,17 +310,23 @@ internal object ContainerClusterer {
 
     fun dependencyLayerRank(kind: String): Int =
         when (kind) {
-            WIRE_INTERFACE, WIRE_ENTRYPOINT -> C4ContainerLayerRanks.INTERFACE
-            WIRE_ORCHESTRATOR, WIRE_INTEGRATION -> C4ContainerLayerRanks.ORCHESTRATION
-            WIRE_CAPABILITY, WIRE_COORDINATION -> C4ContainerLayerRanks.CAPABILITY
+            WIRE_INTERFACE,
+            WIRE_ENTRYPOINT -> C4ContainerLayerRanks.INTERFACE
+            WIRE_ORCHESTRATOR,
+            WIRE_INTEGRATION -> C4ContainerLayerRanks.ORCHESTRATION
+            WIRE_CAPABILITY,
+            WIRE_COORDINATION -> C4ContainerLayerRanks.CAPABILITY
             WIRE_SHARED_CAPABILITY -> C4ContainerLayerRanks.SHARED_CAPABILITY
             else -> C4ContainerLayerRanks.CAPABILITY
         }
 
     fun architectureType(kind: String): C4ArchitectureType =
         when (kind) {
-            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE -> C4ArchitectureType.APPLICATION_SERVICE
-            WIRE_INTERFACE, WIRE_ORCHESTRATOR, WIRE_INTEGRATION -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_APPLICATION_RUNTIME,
+            WIRE_APPLICATION_SERVICE -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_INTERFACE,
+            WIRE_ORCHESTRATOR,
+            WIRE_INTEGRATION -> C4ArchitectureType.APPLICATION_SERVICE
             else -> C4ArchitectureType.APPLICATION_COMPONENT
         }
 }
@@ -527,8 +338,7 @@ internal fun inferContainerLayout(
     apiEndpoints: List<ApiEndpointEvidence>,
     systemBoundary: String,
     limit: Int
-): ContainerLayout =
-    ContainerClusterer.inferLayout(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
+): ContainerLayout = ContainerClusterer.inferLayout(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
 
 internal fun inferOperationalContainerLayout(subject: SubjectDescriptor, capabilityLayout: ContainerLayout): ContainerLayout =
     ContainerClusterer.inferOperationalLayout(subject, capabilityLayout)
@@ -537,22 +347,17 @@ internal fun buildRuntimeContainerDependencyRelationships(
     graph: Graph,
     callSites: List<CallSiteNode>,
     layout: ContainerLayout
-): List<C4Relationship> =
-    ContainerClusterer.buildRuntimeDependencyRelationships(graph, callSites, layout)
+): List<C4Relationship> = ContainerClusterer.buildRuntimeDependencyRelationships(graph, callSites, layout)
 
 internal fun selectRuntimeBoundaryLibraries(
     libraries: List<ExternalDependency>,
     libraryRelationships: List<C4Relationship>
-): List<ExternalDependency> =
-    ContainerClusterer.selectRuntimeBoundaryLibraries(libraries, libraryRelationships)
+): List<ExternalDependency> = ContainerClusterer.selectRuntimeBoundaryLibraries(libraries, libraryRelationships)
 
 internal fun selectRuntimeBoundaryLibraryIds(graph: Graph, dependencies: List<ExternalDependency>): Set<String> =
     ContainerClusterer.selectRuntimeBoundaryLibraryIds(graph, dependencies)
 
-internal fun clusterInternalPackageUnits(
-    units: List<String>,
-    undirectedTraffic: Map<Pair<String, String>, Int>
-): List<Set<String>> =
+internal fun clusterInternalPackageUnits(units: List<String>, undirectedTraffic: Map<Pair<String, String>, Int>): List<Set<String>> =
     ContainerClusterer.clusterInternalPackageUnits(units, undirectedTraffic)
 
 internal fun inferContainerName(
@@ -560,8 +365,7 @@ internal fun inferContainerName(
     unitScores: Map<String, Int>,
     tokenDocumentFrequency: Map<String, Int>,
     systemBoundary: String
-): String =
-    ContainerClusterer.inferName(packageUnits, unitScores, tokenDocumentFrequency, systemBoundary)
+): String = ContainerClusterer.inferName(packageUnits, unitScores, tokenDocumentFrequency, systemBoundary)
 
 internal fun buildContainerRationale(packageUnits: Set<String>, representativeUnit: String, entrypoints: List<String>): String =
     ContainerClusterer.buildRationale(packageUnits, representativeUnit, entrypoints)
@@ -572,31 +376,306 @@ internal fun inferContainerResponsibility(
     inboundCrossContainer: Int,
     outboundCrossContainer: Int,
     externalCalls: Int
-): String =
-    ContainerClusterer.inferResponsibility(endpointCount, methodCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
+): String = ContainerClusterer.inferResponsibility(endpointCount, methodCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
 
 internal fun inferContainerKind(endpointCount: Int, inboundCrossContainer: Int, outboundCrossContainer: Int, externalCalls: Int): String =
     ContainerClusterer.inferKind(endpointCount, inboundCrossContainer, outboundCrossContainer, externalCalls)
 
-internal fun containerKind(container: ContainerDescriptor): String =
-    ContainerClusterer.kind(container)
+internal fun containerKind(container: ContainerDescriptor): String = ContainerClusterer.kind(container)
 
-internal fun containerDescription(kind: String): String =
-    ContainerClusterer.description(kind)
+internal fun containerDescription(kind: String): String = ContainerClusterer.description(kind)
 
-internal fun operationalContainerResponsibility(kind: String): String? =
-    ContainerClusterer.operationalResponsibility(kind)
+internal fun operationalContainerResponsibility(kind: String): String? = ContainerClusterer.operationalResponsibility(kind)
 
 internal fun canonicalContainerRelationshipPair(
     sourceId: String,
     targetId: String,
     sourceKind: String,
     targetKind: String
-): Pair<String, String> =
-    ContainerClusterer.canonicalRelationshipPair(sourceId, targetId, sourceKind, targetKind)
+): Pair<String, String> = ContainerClusterer.canonicalRelationshipPair(sourceId, targetId, sourceKind, targetKind)
 
-internal fun containerDependencyLayerRank(kind: String): Int =
-    ContainerClusterer.dependencyLayerRank(kind)
+internal fun containerDependencyLayerRank(kind: String): Int = ContainerClusterer.dependencyLayerRank(kind)
 
-internal fun inferContainerArchitectureType(kind: String): String =
-    ContainerClusterer.architectureType(kind).wireName
+internal fun inferContainerArchitectureType(kind: String): String = ContainerClusterer.architectureType(kind).wireName
+
+private data class ContainerTraffic(
+    val undirectedTraffic: Map<Pair<String, String>, Int>,
+    val externalWeights: Map<String, Int>,
+    val trafficByUnit: Map<String, Int>
+)
+
+private data class ContainerEvidence(
+    val methodCountsByUnit: Map<String, Int>,
+    val endpointCountsByUnit: Map<String, Int>,
+    val endpointPathsByUnit: Map<String, List<String>>,
+    val classesByUnit: Map<String, List<String>>,
+    val traffic: ContainerTraffic,
+    val allUnits: List<String>,
+    val tokenDocumentFrequency: Map<String, Int>
+) {
+    val trafficByUnit: Map<String, Int>
+        get() = traffic.trafficByUnit
+}
+
+private class ContainerLayoutInference(
+    private val graph: Graph?,
+    private val methods: List<MethodDescriptor>,
+    private val callSites: List<CallSiteNode>,
+    private val apiEndpoints: List<ApiEndpointEvidence>,
+    private val systemBoundary: String,
+    private val limit: Int
+) {
+    fun build(): ContainerLayout {
+        val evidence = collectEvidence(methods, callSites, apiEndpoints, systemBoundary)
+        val containerDescriptors =
+            selectClusters(evidence, limit).map { packageUnits -> describeCluster(packageUnits, evidence, systemBoundary) }
+        val unitToContainerId = containerDescriptors.flatMap { container -> container.packageUnits.map { it to container.id } }.toMap()
+        return ContainerLayout(
+            systemBoundary = systemBoundary,
+            containers = finalizeTraffic(containerDescriptors, unitToContainerId, callSites, systemBoundary),
+            unitToContainerId = unitToContainerId,
+            externalDependencies = ExternalSystemClassifier.summarize(graph, evidence.traffic.externalWeights))
+    }
+
+    private fun collectEvidence(
+        methods: List<MethodDescriptor>,
+        callSites: List<CallSiteNode>,
+        apiEndpoints: List<ApiEndpointEvidence>,
+        systemBoundary: String
+    ): ContainerEvidence {
+        val internalClasses = linkedSetOf<String>()
+        methods.mapTo(internalClasses) { it.declaringClass.className }
+        apiEndpoints.mapTo(internalClasses) { it.className }
+        callSites.forEach { cs ->
+            internalClasses += cs.caller.declaringClass.className
+            internalClasses += cs.callee.declaringClass.className
+        }
+        val filteredClasses = internalClasses.filter { isInternalArchitectureClass(it, systemBoundary) }
+        val methodCountsByUnit =
+            methods
+                .asSequence()
+                .map { it.declaringClass.className }
+                .filter { isInternalArchitectureClass(it, systemBoundary) }
+                .groupingBy { internalPackageUnit(it, systemBoundary) }
+                .eachCount()
+        val endpointCountsByUnit =
+            apiEndpoints
+                .asSequence()
+                .map { it.className }
+                .filter { isInternalArchitectureClass(it, systemBoundary) }
+                .groupingBy { internalPackageUnit(it, systemBoundary) }
+                .eachCount()
+        val endpointPathsByUnit =
+            apiEndpoints
+                .asSequence()
+                .mapNotNull { endpoint ->
+                    val className = endpoint.className
+                    if (!isInternalArchitectureClass(className, systemBoundary)) return@mapNotNull null
+                    internalPackageUnit(className, systemBoundary) to endpoint.path
+                }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { (_, paths) -> paths.filter { it.isNotBlank() }.distinct().sorted() }
+        val classesByUnit = filteredClasses.groupBy { internalPackageUnit(it, systemBoundary) }
+        val traffic = collectPackageTraffic(callSites, systemBoundary)
+        val allUnits = (methodCountsByUnit.keys + endpointCountsByUnit.keys + classesByUnit.keys).distinct()
+        val tokenDocumentFrequency =
+            allUnits
+                .flatMap { unit -> unit.removePrefix(systemBoundary).trimStart('.').split('.').filter { it.isNotBlank() }.distinct() }
+                .groupingBy { it }
+                .eachCount()
+        return ContainerEvidence(
+            methodCountsByUnit, endpointCountsByUnit, endpointPathsByUnit, classesByUnit, traffic, allUnits, tokenDocumentFrequency)
+    }
+
+    private fun collectPackageTraffic(callSites: List<CallSiteNode>, systemBoundary: String): ContainerTraffic {
+        val undirectedTraffic = mutableMapOf<Pair<String, String>, Int>()
+        val externalWeights = mutableMapOf<String, Int>()
+        callSites.forEach { cs ->
+            val callerClass = cs.caller.declaringClass.className
+            val calleeClass = cs.callee.declaringClass.className
+            if (isSyntheticArchitectureClass(callerClass) || isSyntheticArchitectureClass(calleeClass)) return@forEach
+            val callerInternal = isInternalArchitectureClass(callerClass, systemBoundary)
+            val calleeInternal = isInternalArchitectureClass(calleeClass, systemBoundary)
+            if (callerInternal && calleeInternal) {
+                addInternalTraffic(callerClass, calleeClass, systemBoundary, undirectedTraffic)
+            } else if (callerInternal) {
+                externalWeights[calleeClass] = (externalWeights[calleeClass] ?: 0) + 1
+            }
+        }
+
+        val trafficByUnit = mutableMapOf<String, Int>()
+        undirectedTraffic.forEach { (pair, weight) ->
+            trafficByUnit[pair.first] = (trafficByUnit[pair.first] ?: 0) + weight
+            trafficByUnit[pair.second] = (trafficByUnit[pair.second] ?: 0) + weight
+        }
+        return ContainerTraffic(undirectedTraffic, externalWeights, trafficByUnit)
+    }
+
+    private fun addInternalTraffic(
+        callerClass: String,
+        calleeClass: String,
+        systemBoundary: String,
+        undirectedTraffic: MutableMap<Pair<String, String>, Int>
+    ) {
+        val callerUnit = internalPackageUnit(callerClass, systemBoundary)
+        val calleeUnit = internalPackageUnit(calleeClass, systemBoundary)
+        if (callerUnit != calleeUnit) {
+            val key = if (callerUnit < calleeUnit) callerUnit to calleeUnit else calleeUnit to callerUnit
+            undirectedTraffic[key] = (undirectedTraffic[key] ?: 0) + 1
+        }
+    }
+
+    private fun selectClusters(evidence: ContainerEvidence, limit: Int): List<Set<String>> {
+        val methodCountsByUnit = evidence.methodCountsByUnit
+        val endpointCountsByUnit = evidence.endpointCountsByUnit
+        val trafficByUnit = evidence.trafficByUnit
+        val allUnits = evidence.allUnits
+        val undirectedTraffic = evidence.traffic.undirectedTraffic
+        val unitClusters = ContainerClusterer.clusterInternalPackageUnits(allUnits, undirectedTraffic)
+        val scoredClusters =
+            unitClusters.map { packageUnits ->
+                val methodCount = packageUnits.sumOf { methodCountsByUnit[it] ?: 0 }
+                val endpointCount = packageUnits.sumOf { endpointCountsByUnit[it] ?: 0 }
+                val callSiteCount = packageUnits.sumOf { unit -> trafficByUnit[unit] ?: 0 }
+                val score =
+                    methodCount * C4ContainerScoring.METHOD_WEIGHT +
+                        endpointCount * C4ContainerScoring.ENDPOINT_WEIGHT +
+                        callSiteCount * C4ContainerScoring.TRAFFIC_WEIGHT
+                Triple(packageUnits, score, callSiteCount)
+            }
+        return scoredClusters
+            .sortedWith(
+                compareByDescending<Triple<Set<String>, Int, Int>> { it.second }
+                    .thenByDescending { it.third }
+                    .thenBy { it.first.minOrNull().orEmpty() })
+            .take(limit)
+            .map { it.first }
+    }
+
+    private fun describeCluster(packageUnits: Set<String>, evidence: ContainerEvidence, systemBoundary: String): ContainerDescriptor {
+        val methodCountsByUnit = evidence.methodCountsByUnit
+        val endpointCountsByUnit = evidence.endpointCountsByUnit
+        val endpointPathsByUnit = evidence.endpointPathsByUnit
+        val classesByUnit = evidence.classesByUnit
+        val trafficByUnit = evidence.trafficByUnit
+        val tokenDocumentFrequency = evidence.tokenDocumentFrequency
+        val packageUnitSet = packageUnits.toSortedSet()
+        val unitScores =
+            packageUnitSet.associateWith { unit ->
+                (methodCountsByUnit[unit] ?: 0) * C4ContainerScoring.REPRESENTATIVE_METHOD_WEIGHT +
+                    (endpointCountsByUnit[unit] ?: 0) * C4ContainerScoring.ENDPOINT_WEIGHT +
+                    (trafficByUnit[unit] ?: 0) * C4ContainerScoring.TRAFFIC_WEIGHT
+            }
+        val representativeUnit = unitScores.maxByOrNull { it.value }?.key ?: packageUnitSet.first()
+        val classes = packageUnitSet.flatMap { classesByUnit[it].orEmpty() }
+        val entrypoints =
+            packageUnitSet
+                .flatMap { endpointPathsByUnit[it].orEmpty() }
+                .distinct()
+                .sorted()
+                .take(C4EvidenceLimits.MAX_ENTRYPOINTS_PER_CONTAINER)
+        val methodCount = packageUnitSet.sumOf { methodCountsByUnit[it] ?: 0 }
+        val endpointCount = packageUnitSet.sumOf { endpointCountsByUnit[it] ?: 0 }
+        val callSiteCount = packageUnitSet.sumOf { unit -> trafficByUnit[unit] ?: 0 }
+        val name = ContainerClusterer.inferName(packageUnitSet, unitScores, tokenDocumentFrequency, systemBoundary)
+        val id = "$CONTAINER_ID_PREFIX${slugify(name.ifBlank { representativeUnit })}"
+        return ContainerDescriptor(
+            id = id,
+            name = name.ifBlank { representativeUnit },
+            packageUnits = packageUnitSet,
+            methodCount = methodCount,
+            callSiteCount = callSiteCount,
+            endpointCount = endpointCount,
+            inboundCrossContainer = 0,
+            outboundCrossContainer = 0,
+            externalCallCount = 0,
+            entrypoints = entrypoints,
+            primaryClasses =
+                classes
+                    .groupingBy { it }
+                    .eachCount()
+                    .entries
+                    .sortedByDescending { it.value }
+                    .take(C4EvidenceLimits.MAX_PRIMARY_CLASSES_PER_CONTAINER)
+                    .map { it.key.substringAfterLast('.') },
+            rationale = ContainerClusterer.buildRationale(packageUnitSet, representativeUnit, entrypoints))
+    }
+
+    private fun finalizeTraffic(
+        containerDescriptors: List<ContainerDescriptor>,
+        unitToContainerId: Map<String, String>,
+        callSites: List<CallSiteNode>,
+        systemBoundary: String
+    ): List<ContainerDescriptor> {
+        val counts = containerCallCounts(unitToContainerId, callSites, systemBoundary)
+        return containerDescriptors.map { container ->
+            container.copy(
+                callSiteCount = counts.callSiteCounts[container.id] ?: container.callSiteCount,
+                inboundCrossContainer = counts.inboundCrossContainer[container.id] ?: 0,
+                outboundCrossContainer = counts.outboundCrossContainer[container.id] ?: 0,
+                externalCallCount = counts.externalCallCounts[container.id] ?: 0)
+        }
+    }
+
+    private fun containerCallCounts(
+        unitToContainerId: Map<String, String>,
+        callSites: List<CallSiteNode>,
+        systemBoundary: String
+    ): ContainerCallCounts {
+        val inboundCrossContainer = mutableMapOf<String, Int>()
+        val outboundCrossContainer = mutableMapOf<String, Int>()
+        val externalCallCounts = mutableMapOf<String, Int>()
+        val callSiteCounts = mutableMapOf<String, Int>()
+        callSites.forEach { cs ->
+            val callerClass = cs.caller.declaringClass.className
+            val calleeClass = cs.callee.declaringClass.className
+            if (isSyntheticArchitectureClass(callerClass) || isSyntheticArchitectureClass(calleeClass)) return@forEach
+            val callerInternal = isInternalArchitectureClass(callerClass, systemBoundary)
+            val calleeInternal = isInternalArchitectureClass(calleeClass, systemBoundary)
+            val callerContainer = if (callerInternal) unitToContainerId[internalPackageUnit(callerClass, systemBoundary)] else null
+            val calleeContainer = if (calleeInternal) unitToContainerId[internalPackageUnit(calleeClass, systemBoundary)] else null
+            callSiteCounts.incrementCount(callerContainer)
+            callSiteCounts.incrementCount(calleeContainer)
+            when {
+                callerContainer != null && calleeContainer != null && callerContainer != calleeContainer -> {
+                    outboundCrossContainer[callerContainer] = (outboundCrossContainer[callerContainer] ?: 0) + 1
+                    inboundCrossContainer[calleeContainer] = (inboundCrossContainer[calleeContainer] ?: 0) + 1
+                }
+                callerContainer != null && !calleeInternal && !isRuntimeArchitectureClass(calleeClass) ->
+                    externalCallCounts[callerContainer] = (externalCallCounts[callerContainer] ?: 0) + 1
+            }
+        }
+        return ContainerCallCounts(inboundCrossContainer, outboundCrossContainer, externalCallCounts, callSiteCounts)
+    }
+}
+
+private class PackageUnionFind(units: List<String>) {
+    private val parents = units.associateWith { it }.toMutableMap()
+
+    fun find(unit: String): String {
+        var current = unit
+        while (parents[current] != current) {
+            current = parents[current]!!
+        }
+        var cursor = unit
+        while (parents[cursor] != cursor) {
+            val parent = parents[cursor]!!
+            parents[cursor] = current
+            cursor = parent
+        }
+        return current
+    }
+
+    fun union(left: String, right: String) {
+        val leftRoot = find(left)
+        val rightRoot = find(right)
+        if (leftRoot != rightRoot) parents[rightRoot] = leftRoot
+    }
+}
+
+private data class ContainerCallCounts(
+    val inboundCrossContainer: Map<String, Int>,
+    val outboundCrossContainer: Map<String, Int>,
+    val externalCallCounts: Map<String, Int>,
+    val callSiteCounts: Map<String, Int>
+)

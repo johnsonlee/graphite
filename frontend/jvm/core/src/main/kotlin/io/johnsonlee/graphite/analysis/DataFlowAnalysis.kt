@@ -6,7 +6,6 @@ import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.DoubleConstant
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.FloatConstant
@@ -21,7 +20,6 @@ import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
-import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 
 private const val CONSTANT_PREVIEW_LENGTH = 50
@@ -29,13 +27,9 @@ private const val CONSTANT_PREVIEW_LENGTH = 50
 /**
  * Dataflow analysis engine.
  *
- * Supports both forward and backward analysis with configurable
- * inter-procedural depth and sensitivity.
+ * Supports both forward and backward analysis with configurable inter-procedural depth and sensitivity.
  */
-class DataFlowAnalysis(
-    private val graph: Graph,
-    private val config: AnalysisConfig = AnalysisConfig()
-) {
+class DataFlowAnalysis(private val graph: Graph, private val config: AnalysisConfig = AnalysisConfig()) {
     private val backwardSliceCache = mutableMapOf<NodeId, DataFlowResult>()
 
     private data class BackwardSliceState(
@@ -53,12 +47,12 @@ class DataFlowAnalysis(
      * - Trace backward to find all possible constant values
      */
     fun backwardSlice(from: NodeId): DataFlowResult {
-        backwardSliceCache[from]?.let { return it }
+        backwardSliceCache[from]?.let {
+            return it
+        }
         val state = BackwardSliceState()
         traverseBackward(from, emptyList(), emptyList(), null, 0, state)
-        return DataFlowResult(state.sources, state.paths, state.propagationPaths, graph).also {
-            backwardSliceCache[from] = it
-        }
+        return DataFlowResult(state.sources, state.paths, state.propagationPaths, graph).also { backwardSliceCache[from] = it }
     }
 
     private fun traverseBackward(
@@ -69,45 +63,41 @@ class DataFlowAnalysis(
         depth: Int,
         state: BackwardSliceState
     ) {
-        if (current in state.visited) return
-        if (depth > config.maxDepth) return
+        if (current in state.visited || depth > config.maxDepth) return
         state.visited.add(current)
 
         val node = graph.node(current) ?: return
         val currentPath = path + current
         val currentPropSteps = propSteps + createPropagationStep(node, lastEdgeKind, depth)
 
-        val skipDefaultIncoming = when (node) {
-            is FieldNode -> config.interProcedural
-            else -> false
-        }
+        val skipDefaultIncoming =
+            when (node) {
+                is FieldNode -> config.interProcedural
+                else -> false
+            }
 
         when (node) {
             is ConstantNode -> {
                 state.sources.add(SourceInfo.Constant(node, currentPath))
                 state.paths.add(DataFlowPath(currentPath.reversed()))
-                val sourceType = when (node) {
-                    is EnumConstant -> PropagationSourceType.ENUM_CONSTANT
-                    else -> PropagationSourceType.CONSTANT
-                }
+                val sourceType = constantSourceType(node)
                 state.propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
             }
             is ParameterNode -> {
                 state.sources.add(SourceInfo.Parameter(node, currentPath))
-                state.propagationPaths.add(
-                    PropagationPath(currentPropSteps.reversed(), PropagationSourceType.PARAMETER, depth)
-                )
+                state.propagationPaths.add(PropagationPath(currentPropSteps.reversed(), PropagationSourceType.PARAMETER, depth))
                 if (config.interProcedural) {
                     traceParameterSources(node, currentPath, currentPropSteps, depth, state)
                 }
             }
             is FieldNode -> {
                 state.sources.add(SourceInfo.Field(node, currentPath))
-                val sourceType = if (isEnumConstantField(node)) {
-                    PropagationSourceType.ENUM_CONSTANT
-                } else {
-                    PropagationSourceType.FIELD
-                }
+                val sourceType =
+                    if (isEnumConstantField(node)) {
+                        PropagationSourceType.ENUM_CONSTANT
+                    } else {
+                        PropagationSourceType.FIELD
+                    }
                 state.propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
                 if (config.interProcedural) {
                     traceFieldStores(node, currentPath, currentPropSteps, depth, state)
@@ -128,76 +118,72 @@ class DataFlowAnalysis(
         }
     }
 
-    /**
-     * Create a PropagationStep from a node.
-     */
+    /** Create a PropagationStep from a node. */
     private fun createPropagationStep(node: Node, edgeKind: DataFlowKind?, depth: Int): PropagationStep {
         return when (node) {
-            is ConstantNode -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.CONSTANT,
-                description = formatConstantDescription(node),
-                location = null,
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            is LocalVariable -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.LOCAL_VARIABLE,
-                description = "var ${node.name}: ${node.type.simpleName}",
-                location = methodLocation(node.method),
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            is ParameterNode -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.PARAMETER,
-                description = "param[${node.index}]: ${node.type.simpleName}",
-                location = "${node.method.declaringClass.simpleName}.${node.method.name}()",
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            is FieldNode -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.FIELD,
-                description = "${if (node.isStatic) "static " else ""}${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}",
-                location = null,
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            is ReturnNode -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.RETURN_VALUE,
-                description = "return: ${node.actualType?.simpleName ?: node.method.returnType.simpleName}",
-                location = "${node.method.declaringClass.simpleName}.${node.method.name}()",
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            is CallSiteNode -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.CALL_SITE,
-                description = "${node.callee.declaringClass.simpleName}.${node.callee.name}()",
-                location = "${node.caller.declaringClass.simpleName}.${node.caller.name}():${node.lineNumber ?: "?"}",
-                edgeKind = edgeKind,
-                depth = depth
-            )
-            else -> PropagationStep(
-                nodeId = node.id,
-                nodeType = PropagationNodeType.UNKNOWN,
-                description = node.javaClass.simpleName,
-                location = null,
-                edgeKind = edgeKind,
-                depth = depth
-            )
+            is ConstantNode ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.CONSTANT,
+                    description = formatConstantDescription(node),
+                    location = null,
+                    edgeKind = edgeKind,
+                    depth = depth)
+            is LocalVariable ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.LOCAL_VARIABLE,
+                    description = "var ${node.name}: ${node.type.simpleName}",
+                    location = methodLocation(node.method),
+                    edgeKind = edgeKind,
+                    depth = depth)
+            is ParameterNode ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.PARAMETER,
+                    description = "param[${node.index}]: ${node.type.simpleName}",
+                    location = "${node.method.declaringClass.simpleName}.${node.method.name}()",
+                    edgeKind = edgeKind,
+                    depth = depth)
+            is FieldNode ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.FIELD,
+                    description =
+                        "${if (node.isStatic) "static " else ""}${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}",
+                    location = null,
+                    edgeKind = edgeKind,
+                    depth = depth)
+            is ReturnNode ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.RETURN_VALUE,
+                    description = "return: ${node.actualType?.simpleName ?: node.method.returnType.simpleName}",
+                    location = "${node.method.declaringClass.simpleName}.${node.method.name}()",
+                    edgeKind = edgeKind,
+                    depth = depth)
+            is CallSiteNode ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.CALL_SITE,
+                    description = "${node.callee.declaringClass.simpleName}.${node.callee.name}()",
+                    location = "${node.caller.declaringClass.simpleName}.${node.caller.name}():${node.lineNumber ?: "?"}",
+                    edgeKind = edgeKind,
+                    depth = depth)
+            else ->
+                PropagationStep(
+                    nodeId = node.id,
+                    nodeType = PropagationNodeType.UNKNOWN,
+                    description = node.javaClass.simpleName,
+                    location = null,
+                    edgeKind = edgeKind,
+                    depth = depth)
         }
     }
 
-    private fun methodLocation(method: MethodDescriptor): String =
-        "${method.declaringClass.simpleName}.${method.name}()"
+    private fun methodLocation(method: MethodDescriptor): String = "${method.declaringClass.simpleName}.${method.name}()"
 
-    /**
-     * Format a constant node for display.
-     */
+    /** Format a constant node for display. */
     private fun formatConstantDescription(node: ConstantNode): String {
         return when (node) {
             is IntConstant -> "const int: ${node.value}"
@@ -215,9 +201,7 @@ class DataFlowAnalysis(
         }
     }
 
-    /**
-     * Check if a field is an enum constant (static field where type == declaring class)
-     */
+    /** Check if a field is an enum constant (static field where type == declaring class) */
     private fun isEnumConstantField(fieldNode: FieldNode): Boolean {
         val descriptor = fieldNode.descriptor
         return descriptor.type.className == descriptor.declaringClass.className
@@ -237,15 +221,8 @@ class DataFlowAnalysis(
         val paths = mutableListOf<DataFlowPath>()
         val propagationPaths = mutableListOf<PropagationPath>()
 
-        fun traverse(
-            current: NodeId,
-            path: List<NodeId>,
-            propSteps: List<PropagationStep>,
-            lastEdgeKind: DataFlowKind?,
-            depth: Int
-        ) {
-            if (current in visited) return
-            if (depth > config.maxDepth) return
+        fun traverse(current: NodeId, path: List<NodeId>, propSteps: List<PropagationStep>, lastEdgeKind: DataFlowKind?, depth: Int) {
+            if (current in visited || depth > config.maxDepth) return
             visited.add(current)
 
             val node = graph.node(current) ?: return
@@ -287,19 +264,19 @@ class DataFlowAnalysis(
         state: BackwardSliceState
     ) {
         // Match the full signature to avoid mixing overloads that share the same name.
-        graph.callSites(
-            io.johnsonlee.graphite.graph.MethodPattern(
-                declaringClass = param.method.declaringClass.className,
-                name = param.method.name,
-                parameterTypes = param.method.parameterTypes.map { it.className },
-                returnType = param.method.returnType.className
-            )
-        ).forEach { callSite ->
-            if (param.index < callSite.arguments.size) {
-                val argNodeId = callSite.arguments[param.index]
-                traverseBackward(argNodeId, path, propSteps, DataFlowKind.PARAMETER_PASS, depth + 1, state)
+        graph
+            .callSites(
+                io.johnsonlee.graphite.graph.MethodPattern(
+                    declaringClass = param.method.declaringClass.className,
+                    name = param.method.name,
+                    parameterTypes = param.method.parameterTypes.map { it.className },
+                    returnType = param.method.returnType.className))
+            .forEach { callSite ->
+                if (param.index < callSite.arguments.size) {
+                    val argNodeId = callSite.arguments[param.index]
+                    traverseBackward(argNodeId, path, propSteps, DataFlowKind.PARAMETER_PASS, depth + 1, state)
+                }
             }
-        }
     }
 
     private fun traceFieldStores(
@@ -309,20 +286,14 @@ class DataFlowAnalysis(
         depth: Int,
         state: BackwardSliceState
     ) {
-        graph.incoming(field.id, DataFlowEdge::class.java)
-            .filter { edge ->
-                edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN
-            }
-            .forEach { edge ->
-                traverseBackward(edge.from, path, propSteps, edge.kind, depth + 1, state)
-            }
+        graph
+            .incoming(field.id, DataFlowEdge::class.java)
+            .filter { edge -> edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN }
+            .forEach { edge -> traverseBackward(edge.from, path, propSteps, edge.kind, depth + 1, state) }
     }
-
 }
 
-/**
- * Configuration for dataflow analysis
- */
+/** Configuration for dataflow analysis */
 data class AnalysisConfig(
     val maxDepth: Int = 50,
     val interProcedural: Boolean = true,
@@ -330,87 +301,65 @@ data class AnalysisConfig(
     val flowSensitive: Boolean = true
 )
 
-/**
- * Result of dataflow analysis
- */
+/** Result of dataflow analysis */
 class DataFlowResult(
     val sources: List<SourceInfo>,
     val paths: List<DataFlowPath>,
     val propagationPaths: List<PropagationPath> = emptyList(),
-    private val graph: Graph? = null  // Optional graph for enum value lookup
+    private val graph: Graph? = null // Optional graph for enum value lookup
 ) {
-    /**
-     * Get all constant values that were found (direct constants only)
-     */
+    /** Get all constant values that were found (direct constants only) */
     fun constants(): List<ConstantNode> = sources.filterIsInstance<SourceInfo.Constant>().map { it.node }
 
     /**
      * Get all constant values including enum constants from field accesses.
      *
-     * Enum constants are accessed via static field reads (e.g., ExperimentId.CHECKOUT_V2),
-     * which are represented as FieldNode in the graph. This method extracts both:
+     * Enum constants are accessed via static field reads (e.g., ExperimentId.CHECKOUT_V2), which are represented as FieldNode in the graph.
+     * This method extracts both:
      * - Direct ConstantNode values
      * - Enum constants from FieldNode sources (synthetic EnumConstant with resolved values)
      */
     fun allConstants(): List<ConstantNode> {
         val directConstants = constants()
-        val enumFieldConstants = sources.filterIsInstance<SourceInfo.Field>()
-            .filter { isEnumConstantField(it.node) }
-            .map { fieldInfo ->
-                val field = fieldInfo.node.descriptor
-                val enumClass = field.declaringClass.className
-                val enumName = field.name
-                // Look up the enum values from the graph
-                val constructorArgs = graph?.enumValues(enumClass, enumName) ?: emptyList()
-                EnumConstant(
-                    id = NodeId.next(),
-                    enumType = field.declaringClass,
-                    enumName = enumName,
-                    constructorArgs = constructorArgs
-                )
-            }
+        val enumFieldConstants =
+            sources
+                .filterIsInstance<SourceInfo.Field>()
+                .filter { isEnumConstantField(it.node) }
+                .map { fieldInfo ->
+                    val field = fieldInfo.node.descriptor
+                    val enumClass = field.declaringClass.className
+                    val enumName = field.name
+                    // Look up the enum values from the graph
+                    val constructorArgs = graph?.enumValues(enumClass, enumName) ?: emptyList()
+                    EnumConstant(
+                        id = NodeId.next(), enumType = field.declaringClass, enumName = enumName, constructorArgs = constructorArgs)
+                }
         return directConstants + enumFieldConstants
     }
 
-    /**
-     * Check if a field is an enum constant (static field where type == declaring class)
-     */
+    /** Check if a field is an enum constant (static field where type == declaring class) */
     private fun isEnumConstantField(fieldNode: FieldNode): Boolean {
         val descriptor = fieldNode.descriptor
         // Enum constants are static fields where the field type is the same as the declaring class
         return descriptor.type.className == descriptor.declaringClass.className
     }
 
-    /**
-     * Get all field sources
-     */
+    /** Get all field sources */
     fun fields(): List<FieldNode> = sources.filterIsInstance<SourceInfo.Field>().map { it.node }
 
-    /**
-     * Get all integer constants
-     */
+    /** Get all integer constants */
     fun intConstants(): List<Int> = constants().filterIsInstance<IntConstant>().map { it.value }
 
-    /**
-     * Get all enum constants (direct only, use allConstants() for field-based enum constants)
-     */
+    /** Get all enum constants (direct only, use allConstants() for field-based enum constants) */
     fun enumConstants(): List<EnumConstant> = constants().filterIsInstance<EnumConstant>()
 
-    /**
-     * Get all propagation paths grouped by source type.
-     */
-    fun propagationPathsBySourceType(): Map<PropagationSourceType, List<PropagationPath>> =
-        propagationPaths.groupBy { it.sourceType }
+    /** Get all propagation paths grouped by source type. */
+    fun propagationPathsBySourceType(): Map<PropagationSourceType, List<PropagationPath>> = propagationPaths.groupBy { it.sourceType }
 
-    /**
-     * Get the maximum propagation depth across all paths.
-     */
+    /** Get the maximum propagation depth across all paths. */
     fun maxPropagationDepth(): Int = propagationPaths.maxOfOrNull { it.depth } ?: 0
 
-    /**
-     * Get propagation paths with their associated constants.
-     * Returns pairs of (constant, path) for each found constant.
-     */
+    /** Get propagation paths with their associated constants. Returns pairs of (constant, path) for each found constant. */
     fun constantsWithPaths(): List<Pair<ConstantNode, PropagationPath?>> {
         val constantPaths = mutableListOf<Pair<ConstantNode, PropagationPath?>>()
 
@@ -422,19 +371,17 @@ class DataFlowResult(
 
         // Enum constants from field accesses
         val directConstCount = sources.filterIsInstance<SourceInfo.Constant>().size
-        sources.filterIsInstance<SourceInfo.Field>()
+        sources
+            .filterIsInstance<SourceInfo.Field>()
             .filter { isEnumConstantField(it.node) }
             .forEachIndexed { index, fieldInfo ->
                 val field = fieldInfo.node.descriptor
                 val enumClass = field.declaringClass.className
                 val enumName = field.name
                 val constructorArgs = graph?.enumValues(enumClass, enumName) ?: emptyList()
-                val enumConstant = EnumConstant(
-                    id = NodeId.next(),
-                    enumType = field.declaringClass,
-                    enumName = enumName,
-                    constructorArgs = constructorArgs
-                )
+                val enumConstant =
+                    EnumConstant(
+                        id = NodeId.next(), enumType = field.declaringClass, enumName = enumName, constructorArgs = constructorArgs)
                 // Find the corresponding propagation path (after direct constants)
                 val path = propagationPaths.getOrNull(directConstCount + index)
                 constantPaths.add(enumConstant to path)
@@ -444,29 +391,26 @@ class DataFlowResult(
     }
 }
 
-/**
- * Information about a source/sink in the dataflow
- */
+/** Information about a source/sink in the dataflow */
 sealed interface SourceInfo {
     val path: List<NodeId>
 
     data class Constant(val node: ConstantNode, override val path: List<NodeId>) : SourceInfo
+
     data class Parameter(val node: ParameterNode, override val path: List<NodeId>) : SourceInfo
+
     data class Field(val node: FieldNode, override val path: List<NodeId>) : SourceInfo
+
     data class Return(val node: ReturnNode, override val path: List<NodeId>) : SourceInfo
 }
 
-/**
- * A path through the dataflow graph
- */
+/** A path through the dataflow graph */
 data class DataFlowPath(val nodes: List<NodeId>) {
-    val length: Int get() = nodes.size
+    val length: Int
+        get() = nodes.size
 }
 
-/**
- * Represents a single step in a propagation path.
- * Contains detailed information about the node and how the value flows through it.
- */
+/** Represents a single step in a propagation path. Contains detailed information about the node and how the value flows through it. */
 data class PropagationStep(
     val nodeId: NodeId,
     val nodeType: PropagationNodeType,
@@ -475,49 +419,34 @@ data class PropagationStep(
     val edgeKind: DataFlowKind?,
     val depth: Int
 ) {
-    /**
-     * Compact representation for display
-     */
+    /** Compact representation for display */
     fun toDisplayString(): String {
         val locSuffix = if (location != null) " @ $location" else ""
         return "$description$locSuffix"
     }
 }
 
-/**
- * Types of nodes in a propagation path
- */
+/** Types of nodes in a propagation path */
 enum class PropagationNodeType {
-    CONSTANT,           // Literal constant value
-    LOCAL_VARIABLE,     // Local variable assignment
-    PARAMETER,          // Method parameter
-    FIELD,              // Field access (load/store)
-    RETURN_VALUE,       // Method return value
-    CALL_SITE,          // Method invocation
-    RECEIVER,           // Receiver of method call
+    CONSTANT, // Literal constant value
+    LOCAL_VARIABLE, // Local variable assignment
+    PARAMETER, // Method parameter
+    FIELD, // Field access (load/store)
+    RETURN_VALUE, // Method return value
+    CALL_SITE, // Method invocation
+    RECEIVER, // Receiver of method call
     UNKNOWN
 }
 
-/**
- * Detailed propagation path with step information.
- * Tracks the complete flow from source (constant) to sink (argument).
- */
-data class PropagationPath(
-    val steps: List<PropagationStep>,
-    val sourceType: PropagationSourceType,
-    val depth: Int
-) {
-    /**
-     * Format the path as a readable string with arrows showing flow direction.
-     */
+/** Detailed propagation path with step information. Tracks the complete flow from source (constant) to sink (argument). */
+data class PropagationPath(val steps: List<PropagationStep>, val sourceType: PropagationSourceType, val depth: Int) {
+    /** Format the path as a readable string with arrows showing flow direction. */
     fun toDisplayString(): String {
         if (steps.isEmpty()) return "(empty path)"
         return steps.joinToString(" → ") { it.toDisplayString() }
     }
 
-    /**
-     * Format the path as a tree-like structure for verbose output.
-     */
+    /** Format the path as a tree-like structure for verbose output. */
     fun toTreeString(indent: String = ""): String {
         if (steps.isEmpty()) return "${indent}(empty path)"
         val sb = StringBuilder()
@@ -530,13 +459,14 @@ data class PropagationPath(
     }
 }
 
-/**
- * Type of source where the value originates
- */
+/** Type of source where the value originates */
 enum class PropagationSourceType {
-    CONSTANT,           // Direct constant value
-    ENUM_CONSTANT,      // Enum constant via field access
-    PARAMETER,          // Method parameter (interprocedural)
-    FIELD,              // Field value
-    RETURN_VALUE        // Return value from another method
+    CONSTANT, // Direct constant value
+    ENUM_CONSTANT, // Enum constant via field access
+    PARAMETER, // Method parameter (interprocedural)
+    FIELD, // Field value
+    RETURN_VALUE // Return value from another method
 }
+
+private fun constantSourceType(node: ConstantNode): PropagationSourceType =
+    if (node is EnumConstant) PropagationSourceType.ENUM_CONSTANT else PropagationSourceType.CONSTANT

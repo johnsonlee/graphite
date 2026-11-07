@@ -1,468 +1,36 @@
 package io.johnsonlee.graphite.graph
 
-import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.BranchComparison
-import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ComparisonOp
-import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.ControlFlowEdge
-import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.DoubleConstant
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
-import io.johnsonlee.graphite.core.EnumValueReference
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.FloatConstant
 import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.LongConstant
-import io.johnsonlee.graphite.core.MethodDescriptor
-import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ParameterNode
-import io.johnsonlee.graphite.core.ResourceEdge
-import io.johnsonlee.graphite.core.ResourceFileNode
-import io.johnsonlee.graphite.core.ResourceRelation
-import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
-import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
-import io.johnsonlee.graphite.core.ValueNode
-import io.johnsonlee.graphite.input.JavaArchiveLayout
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class MmapGraphBuilderTest {
-
-    @BeforeTest
-    fun resetNodeId() {
-        NodeId.reset()
-    }
-
-    private fun makeMethod(className: String, name: String, params: List<String> = emptyList()): MethodDescriptor {
-        return MethodDescriptor(
-            TypeDescriptor(className),
-            name,
-            params.map { TypeDescriptor(it) },
-            TypeDescriptor("void")
-        )
-    }
-
-    // ========================================================================
-    // Round-trip: every node type
-    // ========================================================================
-
-    @Test
-    fun `round-trip IntConstant`() {
-        val id = NodeId.next()
-        val node = IntConstant(id, 42)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip StringConstant`() {
-        val id = NodeId.next()
-        val node = StringConstant(id, "hello world")
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip LongConstant`() {
-        val id = NodeId.next()
-        val node = LongConstant(id, 123456789L)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip FloatConstant`() {
-        val id = NodeId.next()
-        val node = FloatConstant(id, 3.14f)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip DoubleConstant`() {
-        val id = NodeId.next()
-        val node = DoubleConstant(id, 2.71828)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip BooleanConstant`() {
-        val id = NodeId.next()
-        val node = BooleanConstant(id, true)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip NullConstant`() {
-        val id = NodeId.next()
-        val node = NullConstant(id)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip EnumConstant with constructor args`() {
-        val id = NodeId.next()
-        val node = EnumConstant(
-            id,
-            TypeDescriptor("com.example.Priority"),
-            "HIGH",
-            listOf(1, "urgent", true, null, EnumValueReference("com.example.Level", "TOP"))
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as EnumConstant
-        assertEquals(node.enumType, restored.enumType)
-        assertEquals(node.enumName, restored.enumName)
-        assertEquals(node.constructorArgs, restored.constructorArgs)
-    }
-
-    @Test
-    fun `round-trip EnumConstant with no args`() {
-        val id = NodeId.next()
-        val node = EnumConstant(id, TypeDescriptor("com.example.Color"), "RED")
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip LocalVariable`() {
-        val id = NodeId.next()
-        val method = makeMethod("com.example.Foo", "bar")
-        val node = LocalVariable(id, "x", TypeDescriptor("int"), method)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip FieldNode`() {
-        val id = NodeId.next()
-        val node = FieldNode(
-            id,
-            FieldDescriptor(TypeDescriptor("com.example.Foo"), "count", TypeDescriptor("int")),
-            isStatic = true
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip ParameterNode`() {
-        val id = NodeId.next()
-        val method = makeMethod("com.example.Foo", "bar", listOf("java.lang.String"))
-        val node = ParameterNode(id, 0, TypeDescriptor("java.lang.String"), method)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip ReturnNode with actualType`() {
-        val id = NodeId.next()
-        val method = makeMethod("com.example.Foo", "bar")
-        val node = ReturnNode(id, method, actualType = TypeDescriptor("java.lang.String"))
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip ReturnNode without actualType`() {
-        val id = NodeId.next()
-        val method = makeMethod("com.example.Foo", "bar")
-        val node = ReturnNode(id, method, actualType = null)
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip ResourceFileNode`() {
-        val id = NodeId.next()
-        val node = ResourceFileNode(
-            id,
-            "config/application.properties",
-            JavaArchiveLayout.BOOT_INF_CLASSES.removeSuffix("/"),
-            "properties",
-            "dev"
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip CallSiteNode with receiver and arguments`() {
-        val id = NodeId.next()
-        val receiverId = NodeId.next()
-        val arg1 = NodeId.next()
-        val arg2 = NodeId.next()
-        val caller = makeMethod("com.example.Main", "run")
-        val callee = makeMethod("com.example.Service", "process", listOf("int", "java.lang.String"))
-        val node = CallSiteNode(id, caller, callee, lineNumber = 42, receiver = receiverId, arguments = listOf(arg1, arg2))
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip CallSiteNode without receiver or line number`() {
-        val id = NodeId.next()
-        val caller = makeMethod("com.example.Main", "run")
-        val callee = makeMethod("com.example.Util", "helper")
-        val node = CallSiteNode(id, caller, callee, lineNumber = null, receiver = null, arguments = emptyList())
-        val graph = MmapGraphBuilder().addNode(node).build()
-        assertEquals(node, graph.node(id))
-    }
-
-    @Test
-    fun `round-trip AnnotationNode with values`() {
-        val id = NodeId.next()
-        val node = AnnotationNode(
-            id,
-            "org.springframework.web.bind.annotation.GetMapping",
-            "com.example.UserController",
-            "getUser",
-            mapOf(
-                "value" to "/api/users/{id}",
-                "produces" to listOf("application/json", "application/xml"),
-                "required" to true,
-                "status" to 200
-            )
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as AnnotationNode
-        assertEquals(node.name, restored.name)
-        assertEquals(node.className, restored.className)
-        assertEquals(node.memberName, restored.memberName)
-        assertEquals(node.values, restored.values)
-    }
-
-    @Test
-    fun `round-trip AnnotationNode with empty values`() {
-        val id = NodeId.next()
-        val node = AnnotationNode(id, "javax.persistence.Id", "com.example.User", "id", emptyMap())
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as AnnotationNode
-        assertEquals(node, restored)
-    }
-
-    @Test
-    fun `round-trip AnnotationNode with null value`() {
-        val id = NodeId.next()
-        val node = AnnotationNode(id, "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("key" to null))
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as AnnotationNode
-        assertEquals(node.name, restored.name)
-        assertNull(restored.values["key"])
-    }
-
-    @Test
-    fun `round-trip AnnotationNode with very large string value`() {
-        val id = NodeId.next()
-        val largeValue = "x".repeat(1_100_000)
-        val node = AnnotationNode(
-            id,
-            "com.example.BigAnnotation",
-            "com.example.Foo",
-            "bar",
-            mapOf("value" to largeValue)
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as AnnotationNode
-        assertEquals(largeValue, restored.values["value"])
-    }
-
-    @Test
-    fun `round-trip AnnotationNode class-level annotation`() {
-        val id = NodeId.next()
-        val node = AnnotationNode(id, "org.springframework.stereotype.Controller", "com.example.MyController", "<class>", emptyMap())
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as AnnotationNode
-        assertEquals("<class>", restored.memberName)
-        assertEquals(node, restored)
-    }
-
-    @Test
-    fun `round-trip ResourceValueNode`() {
-        val id = NodeId.next()
-        val node = ResourceValueNode(id, "application.yml", "server.port", 8080, "yaml", "dev")
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as ResourceValueNode
-        assertEquals(node, restored)
-    }
-
-    // ========================================================================
-    // Round-trip: every edge type
-    // ========================================================================
-
-    @Test
-    fun `round-trip DataFlowEdge for each kind`() {
-        for (kind in DataFlowKind.entries) {
-            NodeId.reset()
-            val from = NodeId.next()
-            val to = NodeId.next()
-            val edge = DataFlowEdge(from, to, kind)
-            val graph = MmapGraphBuilder()
-                .addNode(IntConstant(from, 1))
-                .addNode(IntConstant(to, 2))
-                .addEdge(edge)
-                .build()
-            val edges = graph.outgoing(from).toList()
-            assertEquals(1, edges.size, "Failed for kind=$kind")
-            assertEquals(edge, edges[0], "Failed for kind=$kind")
-        }
-    }
-
-    @Test
-    fun `round-trip ResourceEdge for each relation`() {
-        for (relation in ResourceRelation.entries) {
-            NodeId.reset()
-            val from = NodeId.next()
-            val to = NodeId.next()
-            val edge = ResourceEdge(from, to, relation)
-            val graph = MmapGraphBuilder()
-                .addNode(ResourceFileNode(from, "application.properties", "test", "properties", null))
-                .addNode(ResourceValueNode(to, "application.properties", "feature.mode", "shadow", "properties", null))
-                .addEdge(edge)
-                .build()
-            val edges = graph.outgoing(from).toList()
-            assertEquals(1, edges.size, "Failed for relation=$relation")
-            assertEquals(edge, edges[0], "Failed for relation=$relation")
-        }
-    }
-
-    @Test
-    fun `round-trip CallEdge`() {
-        val from = NodeId.next()
-        val to = NodeId.next()
-        val edge = CallEdge(from, to, isVirtual = true, isDynamic = true)
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(from, 1))
-            .addNode(IntConstant(to, 2))
-            .addEdge(edge)
-            .build()
-        val restored = graph.outgoing(from).first() as CallEdge
-        assertEquals(true, restored.isVirtual)
-        assertEquals(true, restored.isDynamic)
-    }
-
-    @Test
-    fun `round-trip CallEdge non-virtual non-dynamic`() {
-        val from = NodeId.next()
-        val to = NodeId.next()
-        val edge = CallEdge(from, to, isVirtual = false, isDynamic = false)
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(from, 1))
-            .addNode(IntConstant(to, 2))
-            .addEdge(edge)
-            .build()
-        val restored = graph.outgoing(from).first() as CallEdge
-        assertEquals(false, restored.isVirtual)
-        assertEquals(false, restored.isDynamic)
-    }
-
-    @Test
-    fun `round-trip TypeEdge for each relation`() {
-        for (relation in TypeRelation.entries) {
-            NodeId.reset()
-            val from = NodeId.next()
-            val to = NodeId.next()
-            val edge = TypeEdge(from, to, relation)
-            val graph = MmapGraphBuilder()
-                .addNode(IntConstant(from, 1))
-                .addNode(IntConstant(to, 2))
-                .addEdge(edge)
-                .build()
-            val edges = graph.outgoing(from).toList()
-            assertEquals(1, edges.size, "Failed for relation=$relation")
-            assertEquals(edge, edges[0], "Failed for relation=$relation")
-        }
-    }
-
-    @Test
-    fun `round-trip ControlFlowEdge with comparison`() {
-        val from = NodeId.next()
-        val to = NodeId.next()
-        val comparand = NodeId.next()
-        val edge = ControlFlowEdge(from, to, ControlFlowKind.BRANCH_TRUE, BranchComparison(ComparisonOp.EQ, comparand))
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(from, 1))
-            .addNode(IntConstant(to, 2))
-            .addNode(IntConstant(comparand, 0))
-            .addEdge(edge)
-            .build()
-        val restored = graph.outgoing(from).first() as ControlFlowEdge
-        assertEquals(ControlFlowKind.BRANCH_TRUE, restored.kind)
-        assertNotNull(restored.comparison)
-        assertEquals(ComparisonOp.EQ, restored.comparison!!.operator)
-        assertEquals(comparand, restored.comparison!!.comparandNodeId)
-    }
-
-    @Test
-    fun `round-trip ControlFlowEdge without comparison`() {
-        val from = NodeId.next()
-        val to = NodeId.next()
-        val edge = ControlFlowEdge(from, to, ControlFlowKind.SEQUENTIAL)
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(from, 1))
-            .addNode(IntConstant(to, 2))
-            .addEdge(edge)
-            .build()
-        val restored = graph.outgoing(from).first() as ControlFlowEdge
-        assertEquals(ControlFlowKind.SEQUENTIAL, restored.kind)
-        assertNull(restored.comparison)
-    }
-
-    @Test
-    fun `round-trip ControlFlowEdge for each kind`() {
-        for (kind in ControlFlowKind.entries) {
-            NodeId.reset()
-            val from = NodeId.next()
-            val to = NodeId.next()
-            val edge = ControlFlowEdge(from, to, kind)
-            val graph = MmapGraphBuilder()
-                .addNode(IntConstant(from, 1))
-                .addNode(IntConstant(to, 2))
-                .addEdge(edge)
-                .build()
-            assertEquals(edge, graph.outgoing(from).first(), "Failed for kind=$kind")
-        }
-    }
-
-    // ========================================================================
-    // Metadata round-trip
-    // ========================================================================
-
-    @Test
-    fun `round-trip methods`() {
-        val method = makeMethod("com.example.Foo", "doWork", listOf("int", "java.lang.String"))
-        val graph = MmapGraphBuilder().addMethod(method).build()
-        val found = graph.methods(MethodPattern(declaringClass = "com.example.Foo", name = "doWork")).toList()
-        assertEquals(1, found.size)
-        assertEquals(method, found[0])
-    }
-
+internal class MmapGraphBuilderTest : MmapGraphBuilderTestSupport() {
     @Test
     fun `a bridge and its covariant override are two methods`() {
         val override = makeMethod("com.example.Foo", "load", listOf("int")).copy(returnType = TypeDescriptor("java.lang.String"))
@@ -474,90 +42,13 @@ class MmapGraphBuilderTest {
     }
 
     @Test
-    fun `round-trip type hierarchy`() {
-        val sub = TypeDescriptor("com.example.Bar")
-        val sup = TypeDescriptor("com.example.Foo")
-        val graph = MmapGraphBuilder()
-            .addTypeRelation(sub, sup, TypeRelation.EXTENDS)
-            .build()
-        assertEquals(listOf(sup), graph.supertypes(sub).toList())
-        assertEquals(listOf(sub), graph.subtypes(sup).toList())
-    }
-
-    @Test
-    fun `round-trip enum values`() {
-        val graph = MmapGraphBuilder()
-            .addEnumValues("com.example.Status", "ACTIVE", listOf(1, "active", null))
-            .build()
-        val values = graph.enumValues("com.example.Status", "ACTIVE")
-        assertNotNull(values)
-        assertEquals(listOf(1, "active", null), values)
-    }
-
-    @Test
-    fun `round-trip member annotations`() {
-        val graph = MmapGraphBuilder()
-            .addMemberAnnotation(
-                "com.example.User",
-                "name",
-                "javax.validation.NotNull",
-                mapOf("message" to "required", "groups" to listOf("Create", "Update"))
-            )
-            .addMemberAnnotation(
-                "com.example.User",
-                "name",
-                "javax.persistence.Column",
-                mapOf("length" to 255, "nullable" to false)
-            )
-            .build()
-        val annotations = graph.memberAnnotations("com.example.User", "name")
-        assertEquals(2, annotations.size)
-        assertEquals("required", annotations["javax.validation.NotNull"]?.get("message"))
-        assertEquals(listOf("Create", "Update"), annotations["javax.validation.NotNull"]?.get("groups"))
-        assertEquals(255, annotations["javax.persistence.Column"]?.get("length"))
-        assertEquals(false, annotations["javax.persistence.Column"]?.get("nullable"))
-    }
-
-    @Test
-    fun `round-trip member annotation with default empty values`() {
-        val graph = MmapGraphBuilder()
-            .addMemberAnnotation("com.example.User", "id", "javax.persistence.Id")
-            .build()
-        val annotations = graph.memberAnnotations("com.example.User", "id")
-        assertTrue(annotations.containsKey("javax.persistence.Id"))
-        assertTrue(annotations["javax.persistence.Id"]!!.isEmpty())
-    }
-
-    @Test
     fun `FullGraphBuilder default arguments are honored by mmap builder`() {
         val builder: FullGraphBuilder = MmapGraphBuilder()
-        val graph = builder
-            .addMemberAnnotation("com.example.User", "id", "javax.persistence.Id")
-            .addArtifactDependency("app", "lib")
-            .build()
+        val graph =
+            builder.addMemberAnnotation("com.example.User", "id", "javax.persistence.Id").addArtifactDependency("app", "lib").build()
 
         assertEquals(emptyMap(), graph.memberAnnotations("com.example.User", "id")["javax.persistence.Id"])
         assertEquals(1, graph.artifactDependencies()["app"]?.get("lib"))
-    }
-
-    @Test
-    fun `round-trip branch scopes`() {
-        val condId = NodeId.next()
-        val comparand = NodeId.next()
-        val comp = BranchComparison(ComparisonOp.NE, comparand)
-        val method = makeMethod("com.example.Foo", "check")
-        val graph = MmapGraphBuilder()
-            .addBranchScope(condId, method, comp, intArrayOf(10, 20), intArrayOf(30, 40))
-            .build()
-        val scopes = graph.branchScopes().toList()
-        assertEquals(1, scopes.size)
-        assertEquals(condId, scopes[0].conditionNodeId)
-        assertEquals(ComparisonOp.NE, scopes[0].comparison.operator)
-        assertEquals(comparand, scopes[0].comparison.comparandNodeId)
-        assertTrue(scopes[0].trueBranchNodeIds.contains(10))
-        assertTrue(scopes[0].trueBranchNodeIds.contains(20))
-        assertTrue(scopes[0].falseBranchNodeIds.contains(30))
-        assertTrue(scopes[0].falseBranchNodeIds.contains(40))
     }
 
     @Test
@@ -565,23 +56,25 @@ class MmapGraphBuilderTest {
         val condId = NodeId.next()
         val comp = BranchComparison(ComparisonOp.EQ, NodeId.next())
         val m = makeMethod("com.example.Foo", "check")
-        val graph = MmapGraphBuilder()
-            .addBranchScope(
-                condId, m, comp, intArrayOf(1), intArrayOf(2),
-                trueDefinitions = intArrayOf(3, 1, 7),
-                falseDefinitions = intArrayOf(5, 2, 8, 6, 2, 9)
-            )
-            .addBranchScope(NodeId.next(), m, comp, intArrayOf(4), intArrayOf(5))
-            .build()
+        val graph =
+            MmapGraphBuilder()
+                .addBranchScope(
+                    condId,
+                    m,
+                    comp,
+                    intArrayOf(1),
+                    intArrayOf(2),
+                    trueDefinitions = intArrayOf(3, 1, 7),
+                    falseDefinitions = intArrayOf(5, 2, 8, 6, 2, 9))
+                .addBranchScope(NodeId.next(), m, comp, intArrayOf(4), intArrayOf(5))
+                .build()
 
         val scopes = graph.branchScopes().toList()
         assertEquals(2, scopes.size)
         val withDefinitions = graph.branchScopesFor(condId).single()
         assertEquals(listOf(LocalDefinition(3, NodeId(1), NodeId(7))), withDefinitions.trueDefinitions)
         assertEquals(
-            listOf(LocalDefinition(5, NodeId(2), NodeId(8)), LocalDefinition(6, NodeId(2), NodeId(9))),
-            withDefinitions.falseDefinitions
-        )
+            listOf(LocalDefinition(5, NodeId(2), NodeId(8)), LocalDefinition(6, NodeId(2), NodeId(9))), withDefinitions.falseDefinitions)
         val without = scopes.single { it.conditionNodeId != condId }
         assertEquals(emptyList(), without.trueDefinitions)
         assertEquals(emptyList(), without.falseDefinitions)
@@ -590,13 +83,8 @@ class MmapGraphBuilderTest {
     @Test
     fun `addLocalDefinitions records every definition of a tracked local`() {
         val local = NodeId.next()
-        val graph = MmapGraphBuilder()
-            .addLocalDefinitions(local, intArrayOf(2, local.value, 7, 9, local.value, 8))
-            .build()
-        assertEquals(
-            listOf(LocalDefinition(2, local, NodeId(7)), LocalDefinition(9, local, NodeId(8))),
-            graph.localDefinitionsFor(local)
-        )
+        val graph = MmapGraphBuilder().addLocalDefinitions(local, intArrayOf(2, local.value, 7, 9, local.value, 8)).build()
+        assertEquals(listOf(LocalDefinition(2, local, NodeId(7)), LocalDefinition(9, local, NodeId(8))), graph.localDefinitionsFor(local))
         assertEquals(emptyList(), graph.localDefinitionsFor(NodeId(999)))
         assertEquals(setOf(local), graph.localDefinitions().keys)
         assertEquals(emptyMap(), MmapGraphBuilder().build().localDefinitions())
@@ -608,18 +96,15 @@ class MmapGraphBuilderTest {
         val condId2 = NodeId.next()
         val comp = BranchComparison(ComparisonOp.EQ, NodeId.next())
         val method = makeMethod("com.example.Foo", "check")
-        val graph = MmapGraphBuilder()
-            .addBranchScope(condId1, method, comp, intArrayOf(1), intArrayOf(2))
-            .addBranchScope(condId2, method, comp, intArrayOf(3), intArrayOf(4))
-            .build()
+        val graph =
+            MmapGraphBuilder()
+                .addBranchScope(condId1, method, comp, intArrayOf(1), intArrayOf(2))
+                .addBranchScope(condId2, method, comp, intArrayOf(3), intArrayOf(4))
+                .build()
         assertEquals(1, graph.branchScopesFor(condId1).count())
         assertEquals(1, graph.branchScopesFor(condId2).count())
         assertEquals(0, graph.branchScopesFor(NodeId(999)).count())
     }
-
-    // ========================================================================
-    // Equivalence with DefaultGraph.Builder
-    // ========================================================================
 
     @Test
     fun `MmapGraphBuilder produces same graph as DefaultGraph Builder`() {
@@ -679,69 +164,13 @@ class MmapGraphBuilderTest {
         // Verify metadata
         assertEquals(
             defaultGraph.methods(MethodPattern()).toList().sortedBy { it.signature },
-            mmapGraph.methods(MethodPattern()).toList().sortedBy { it.signature }
-        )
+            mmapGraph.methods(MethodPattern()).toList().sortedBy { it.signature })
         assertEquals(
             defaultGraph.supertypes(TypeDescriptor("com.example.Bar")).toList(),
-            mmapGraph.supertypes(TypeDescriptor("com.example.Bar")).toList()
-        )
-        assertEquals(
-            defaultGraph.enumValues("com.example.Status", "ACTIVE"),
-            mmapGraph.enumValues("com.example.Status", "ACTIVE")
-        )
-        assertEquals(
-            defaultGraph.memberAnnotations("com.example.User", "name"),
-            mmapGraph.memberAnnotations("com.example.User", "name")
-        )
+            mmapGraph.supertypes(TypeDescriptor("com.example.Bar")).toList())
+        assertEquals(defaultGraph.enumValues("com.example.Status", "ACTIVE"), mmapGraph.enumValues("com.example.Status", "ACTIVE"))
+        assertEquals(defaultGraph.memberAnnotations("com.example.User", "name"), mmapGraph.memberAnnotations("com.example.User", "name"))
     }
-
-    // ========================================================================
-    // Scale test
-    // ========================================================================
-
-    @Test
-    fun `10K nodes and edges round-trip without error`() {
-        val builder = MmapGraphBuilder()
-        val nodeIds = mutableListOf<NodeId>()
-
-        // Add 10K nodes of various types
-        for (i in 0 until 10_000) {
-            val id = NodeId.next()
-            nodeIds.add(id)
-            val node = when (i % 5) {
-                0 -> IntConstant(id, i)
-                1 -> StringConstant(id, "str_$i")
-                2 -> LongConstant(id, i.toLong())
-                3 -> BooleanConstant(id, i % 2 == 0)
-                else -> FloatConstant(id, i.toFloat())
-            }
-            builder.addNode(node)
-        }
-
-        // Add 10K edges
-        for (i in 0 until 10_000) {
-            val from = nodeIds[i]
-            val to = nodeIds[(i + 1) % 10_000]
-            builder.addEdge(DataFlowEdge(from, to, DataFlowKind.ASSIGN))
-        }
-
-        val graph = builder.build()
-
-        // Verify all nodes are present
-        for (i in 0 until 10_000) {
-            assertNotNull(graph.node(nodeIds[i]), "Node $i missing")
-        }
-
-        // Verify edges
-        for (i in 0 until 10_000) {
-            val outgoing = graph.outgoing(nodeIds[i]).toList()
-            assertEquals(1, outgoing.size, "Node $i should have 1 outgoing edge")
-        }
-    }
-
-    // ========================================================================
-    // Mixed node types in a single graph
-    // ========================================================================
 
     @Test
     fun `all node types in one graph`() {
@@ -761,21 +190,22 @@ class MmapGraphBuilderTest {
         val returnId = NodeId.next()
         val callId = NodeId.next()
 
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(intId, 42))
-            .addNode(StringConstant(strId, "hello"))
-            .addNode(LongConstant(longId, 99L))
-            .addNode(FloatConstant(floatId, 1.5f))
-            .addNode(DoubleConstant(doubleId, 2.5))
-            .addNode(BooleanConstant(boolId, false))
-            .addNode(NullConstant(nullId))
-            .addNode(EnumConstant(enumId, TypeDescriptor("com.example.Status"), "OK", listOf(200)))
-            .addNode(LocalVariable(localId, "x", TypeDescriptor("int"), method))
-            .addNode(FieldNode(fieldId, FieldDescriptor(TypeDescriptor("com.example.Foo"), "f", TypeDescriptor("int")), false))
-            .addNode(ParameterNode(paramId, 0, TypeDescriptor("int"), method))
-            .addNode(ReturnNode(returnId, method, TypeDescriptor("int")))
-            .addNode(CallSiteNode(callId, method, method, 5, null, listOf(intId)))
-            .build()
+        val graph =
+            MmapGraphBuilder()
+                .addNode(IntConstant(intId, 42))
+                .addNode(StringConstant(strId, "hello"))
+                .addNode(LongConstant(longId, 99L))
+                .addNode(FloatConstant(floatId, 1.5f))
+                .addNode(DoubleConstant(doubleId, 2.5))
+                .addNode(BooleanConstant(boolId, false))
+                .addNode(NullConstant(nullId))
+                .addNode(EnumConstant(enumId, TypeDescriptor("com.example.Status"), "OK", listOf(200)))
+                .addNode(LocalVariable(localId, "x", TypeDescriptor("int"), method))
+                .addNode(FieldNode(fieldId, FieldDescriptor(TypeDescriptor("com.example.Foo"), "f", TypeDescriptor("int")), false))
+                .addNode(ParameterNode(paramId, 0, TypeDescriptor("int"), method))
+                .addNode(ReturnNode(returnId, method, TypeDescriptor("int")))
+                .addNode(CallSiteNode(callId, method, method, 5, null, listOf(intId)))
+                .build()
 
         // Verify each type
         assertTrue(graph.node(intId) is IntConstant)
@@ -792,10 +222,6 @@ class MmapGraphBuilderTest {
         assertTrue(graph.node(returnId) is ReturnNode)
         assertTrue(graph.node(callId) is CallSiteNode)
     }
-
-    // ========================================================================
-    // Edge cases
-    // ========================================================================
 
     @Test
     fun `empty graph builds successfully`() {
@@ -817,236 +243,27 @@ class MmapGraphBuilderTest {
     fun `multiple edges between same nodes`() {
         val from = NodeId.next()
         val to = NodeId.next()
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(from, 1))
-            .addNode(IntConstant(to, 2))
-            .addEdge(DataFlowEdge(from, to, DataFlowKind.ASSIGN))
-            .addEdge(CallEdge(from, to, isVirtual = false))
-            .build()
+        val graph =
+            MmapGraphBuilder()
+                .addNode(IntConstant(from, 1))
+                .addNode(IntConstant(to, 2))
+                .addEdge(DataFlowEdge(from, to, DataFlowKind.ASSIGN))
+                .addEdge(CallEdge(from, to, isVirtual = false))
+                .build()
         assertEquals(2, graph.outgoing(from).count())
         assertEquals(2, graph.incoming(to).count())
     }
 
     @Test
-    fun `setResources is propagated to built graph`() {
-        val graph = MmapGraphBuilder()
-            .setResources(io.johnsonlee.graphite.input.EmptyResourceAccessor)
-            .build()
-        assertNotNull(graph.resources)
-    }
-
-    @Test
-    fun `EnumConstant with unknown type constructor arg round-trips via toString`() {
-        // A non-primitive, non-String, non-EnumValueReference argument triggers the else branch
-        // in writeAnyValue (writes as VAL_STRING + toString()) and readAnyValue (reads as String)
-        val id = NodeId.next()
-        val customValue = java.math.BigDecimal("123.456")
-        val node = EnumConstant(
-            id,
-            TypeDescriptor("com.example.Custom"),
-            "VALUE",
-            listOf(customValue)
-        )
-        val graph = MmapGraphBuilder().addNode(node).build()
-        val restored = graph.node(id) as EnumConstant
-        // The value is serialized via toString() and deserialized as a String
-        assertEquals("123.456", restored.constructorArgs[0])
-    }
-
-    @Test
     fun `EnumConstant with float, double, long constructor args`() {
         val id = NodeId.next()
-        val node = EnumConstant(
-            id,
-            TypeDescriptor("com.example.Metric"),
-            "LATENCY",
-            listOf(1.5f, 2.5, 100L, false)
-        )
+        val node = EnumConstant(id, TypeDescriptor("com.example.Metric"), "LATENCY", listOf(1.5f, 2.5, 100L, false))
         val graph = MmapGraphBuilder().addNode(node).build()
         val restored = graph.node(id) as EnumConstant
         assertEquals(1.5f, restored.constructorArgs[0])
         assertEquals(2.5, restored.constructorArgs[1])
         assertEquals(100L, restored.constructorArgs[2])
         assertEquals(false, restored.constructorArgs[3])
-    }
-
-    @Test
-    fun `deserializeNode supports legacy string type descriptors`() {
-        val method = makeMethod("com.example.Owner", "method")
-        val bytes = bytes {
-            writeInt(7)
-            writeByte(MmapGraphBuilder.TAG_LOCAL_VARIABLE)
-            MmapGraphBuilder.writeString(this, "value")
-            MmapGraphBuilder.writeString(this, "java.lang.String")
-            writeInt(0)
-        }
-
-        assertEquals(
-            LocalVariable(NodeId(7), "value", TypeDescriptor("java.lang.String"), method),
-            MmapGraphBuilder.deserializeNode(bytes, listOf(method))
-        )
-    }
-
-    @Test
-    fun `deserializeEdge supports every compact edge tag`() {
-        assertEquals(
-            DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.RETURN_VALUE),
-            MmapGraphBuilder.deserializeEdge(edgeInput(1, 2) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_DATAFLOW)
-                writeByte(DataFlowKind.RETURN_VALUE.ordinal)
-            })
-        )
-        assertEquals(
-            CallEdge(NodeId(3), NodeId(4), isVirtual = true, isDynamic = true),
-            MmapGraphBuilder.deserializeEdge(edgeInput(3, 4) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CALL)
-                writeByte(3)
-            })
-        )
-        assertEquals(
-            TypeEdge(NodeId(5), NodeId(6), TypeRelation.IMPLEMENTS),
-            MmapGraphBuilder.deserializeEdge(edgeInput(5, 6) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_TYPE)
-                writeByte(TypeRelation.IMPLEMENTS.ordinal)
-            })
-        )
-        assertEquals(
-            ControlFlowEdge(NodeId(7), NodeId(8), ControlFlowKind.SEQUENTIAL),
-            MmapGraphBuilder.deserializeEdge(edgeInput(7, 8) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW)
-                writeByte(ControlFlowKind.SEQUENTIAL.ordinal)
-                writeByte(0)
-            })
-        )
-        assertEquals(
-            ControlFlowEdge(
-                NodeId(9),
-                NodeId(10),
-                ControlFlowKind.BRANCH_TRUE,
-                BranchComparison(ComparisonOp.GT, NodeId(11))
-            ),
-            MmapGraphBuilder.deserializeEdge(edgeInput(9, 10) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW)
-                writeByte(ControlFlowKind.BRANCH_TRUE.ordinal)
-                writeByte(1)
-                writeByte(ComparisonOp.GT.ordinal)
-                writeInt(11)
-            })
-        )
-        assertEquals(
-            ResourceEdge(NodeId(12), NodeId(13), ResourceRelation.LOADS),
-            MmapGraphBuilder.deserializeEdge(edgeInput(12, 13) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_RESOURCE)
-                writeByte(ResourceRelation.LOADS.ordinal)
-            })
-        )
-    }
-
-    @Test
-    fun `deserialize helpers reject unknown tags and preserve fallback values`() {
-        val fallback = dataInput {
-            writeByte(99)
-            MmapGraphBuilder.writeString(this, "fallback")
-        }
-        assertEquals("fallback", MmapGraphBuilder.readAnyValue(fallback, emptyList()))
-
-        assertFailsWith<IllegalStateException> {
-            MmapGraphBuilder.deserializeNode(
-                bytes {
-                    writeInt(1)
-                    writeByte(99)
-                },
-                emptyList()
-            )
-        }
-        assertFailsWith<IllegalStateException> {
-            MmapGraphBuilder.deserializeEdge(edgeInput(1, 2) { writeByte(99) })
-        }
-    }
-
-    // ========================================================================
-    // MmapGraph operations on a realistic graph
-    // ========================================================================
-
-    /**
-     * Builds a small but realistic graph for testing MmapGraph operations.
-     * Contains a mix of node types, edge types, methods, type hierarchy,
-     * enum values, member annotations, and branch scopes.
-     */
-    private fun buildTestGraph(): Triple<Graph, Map<String, NodeId>, Map<String, MethodDescriptor>> {
-        val ids = mutableMapOf<String, NodeId>()
-        fun id(name: String): NodeId = ids.getOrPut(name) { NodeId.next() }
-
-        val mainRun = makeMethod("com.example.Main", "run")
-        val serviceProcess = makeMethod("com.example.Service", "process", listOf("int", "java.lang.String"))
-        val serviceHelper = makeMethod("com.example.Service", "helper")
-        val methods = mapOf("mainRun" to mainRun, "serviceProcess" to serviceProcess, "serviceHelper" to serviceHelper)
-
-        val builder = MmapGraphBuilder()
-
-        // Nodes: constants
-        builder.addNode(IntConstant(id("int1"), 42))
-        builder.addNode(IntConstant(id("int2"), 99))
-        builder.addNode(StringConstant(id("str1"), "hello"))
-        builder.addNode(LongConstant(id("long1"), 1000L))
-        builder.addNode(BooleanConstant(id("bool1"), true))
-        builder.addNode(NullConstant(id("null1")))
-
-        // Nodes: structural
-        builder.addNode(ParameterNode(id("param1"), 0, TypeDescriptor("int"), serviceProcess))
-        builder.addNode(ParameterNode(id("param2"), 1, TypeDescriptor("java.lang.String"), serviceProcess))
-        builder.addNode(ReturnNode(id("ret1"), serviceProcess, TypeDescriptor("java.lang.String")))
-        builder.addNode(LocalVariable(id("local1"), "x", TypeDescriptor("int"), mainRun))
-        builder.addNode(FieldNode(id("field1"), FieldDescriptor(TypeDescriptor("com.example.Service"), "count", TypeDescriptor("int")), false))
-
-        // Nodes: call sites
-        builder.addNode(CallSiteNode(id("call1"), mainRun, serviceProcess, 10, null, listOf(id("int1"), id("str1"))))
-        builder.addNode(CallSiteNode(id("call2"), mainRun, serviceHelper, 20, null, emptyList()))
-
-        // Edges: data flow
-        builder.addEdge(DataFlowEdge(id("int1"), id("call1"), DataFlowKind.PARAMETER_PASS))
-        builder.addEdge(DataFlowEdge(id("str1"), id("call1"), DataFlowKind.PARAMETER_PASS))
-        builder.addEdge(DataFlowEdge(id("param1"), id("local1"), DataFlowKind.ASSIGN))
-        builder.addEdge(DataFlowEdge(id("local1"), id("ret1"), DataFlowKind.RETURN_VALUE))
-
-        // Edges: call
-        builder.addEdge(CallEdge(id("call1"), id("param1"), isVirtual = true))
-        builder.addEdge(CallEdge(id("call2"), id("ret1"), isVirtual = false, isDynamic = true))
-
-        // Edges: type
-        builder.addEdge(TypeEdge(id("field1"), id("int1"), TypeRelation.EXTENDS))
-
-        // Edges: control flow with comparison
-        builder.addEdge(ControlFlowEdge(id("bool1"), id("call1"), ControlFlowKind.BRANCH_TRUE, BranchComparison(ComparisonOp.EQ, id("int2"))))
-        builder.addEdge(ControlFlowEdge(id("bool1"), id("call2"), ControlFlowKind.BRANCH_FALSE))
-
-        // Methods
-        builder.addMethod(mainRun)
-        builder.addMethod(serviceProcess)
-        builder.addMethod(serviceHelper)
-
-        // Type hierarchy
-        builder.addTypeRelation(TypeDescriptor("com.example.ServiceImpl"), TypeDescriptor("com.example.Service"), TypeRelation.EXTENDS)
-        builder.addTypeRelation(TypeDescriptor("com.example.ServiceImpl"), TypeDescriptor("com.example.Runnable"), TypeRelation.IMPLEMENTS)
-        builder.addTypeRelation(TypeDescriptor("com.example.AdvancedService"), TypeDescriptor("com.example.Service"), TypeRelation.EXTENDS)
-
-        // Enum values
-        builder.addEnumValues("com.example.Status", "ACTIVE", listOf(1, "active", true))
-        builder.addEnumValues("com.example.Status", "INACTIVE", listOf(0, "inactive", false))
-
-        // Member annotations
-        builder.addMemberAnnotation("com.example.User", "name", "javax.validation.NotNull", mapOf("message" to "required"))
-        builder.addMemberAnnotation("com.example.User", "name", "javax.persistence.Column", mapOf("length" to 255))
-        builder.addMemberAnnotation("com.example.User", "id", "javax.persistence.Id")
-
-        // Branch scopes
-        builder.addBranchScope(
-            id("bool1"), mainRun,
-            BranchComparison(ComparisonOp.EQ, id("int2")),
-            intArrayOf(id("call1").value), intArrayOf(id("call2").value)
-        )
-
-        return Triple(builder.build(), ids, methods)
     }
 
     @Test
@@ -1132,10 +349,7 @@ class MmapGraphBuilderTest {
         val (graph, _, methods) = buildTestGraph()
 
         // Find call sites targeting serviceProcess
-        val processCallSites = graph.callSites(MethodPattern(
-            declaringClass = "com.example.Service",
-            name = "process"
-        )).toList()
+        val processCallSites = graph.callSites(MethodPattern(declaringClass = "com.example.Service", name = "process")).toList()
         assertEquals(1, processCallSites.size)
         assertEquals(methods["serviceProcess"], processCallSites[0].callee)
 
@@ -1231,89 +445,4 @@ class MmapGraphBuilderTest {
         val noAnnotations = graph.memberAnnotations("com.example.User", "nonexistent")
         assertTrue(noAnnotations.isEmpty())
     }
-
-    @Test
-    fun `branchScopes() and branchScopesFor() work`() {
-        val (graph, ids, _) = buildTestGraph()
-
-        val allScopes = graph.branchScopes().toList()
-        assertEquals(1, allScopes.size)
-        val scope = allScopes[0]
-        assertEquals(ids["bool1"], scope.conditionNodeId)
-        assertEquals(ComparisonOp.EQ, scope.comparison.operator)
-        assertEquals(ids["int2"]!!.value, scope.comparison.comparandNodeId.value)
-        assertTrue(scope.trueBranchNodeIds.contains(ids["call1"]!!.value))
-        assertTrue(scope.falseBranchNodeIds.contains(ids["call2"]!!.value))
-
-        // branchScopesFor specific node
-        val scopesForBool1 = graph.branchScopesFor(ids["bool1"]!!).toList()
-        assertEquals(1, scopesForBool1.size)
-
-        // branchScopesFor non-condition node
-        val scopesForInt1 = graph.branchScopesFor(ids["int1"]!!).toList()
-        assertEquals(0, scopesForInt1.size)
-    }
-
-    @Test
-    fun `typeHierarchyTypes() returns all types with hierarchy info`() {
-        val (graph, _, _) = buildTestGraph()
-
-        val types = graph.typeHierarchyTypes()
-        assertTrue(types.contains("com.example.ServiceImpl"))
-        assertTrue(types.contains("com.example.Service"))
-        assertTrue(types.contains("com.example.Runnable"))
-        assertTrue(types.contains("com.example.AdvancedService"))
-        // Types not in hierarchy should not appear
-        assertTrue(!types.contains("com.example.Main"))
-    }
-
-    @Test
-    fun `graph data persists on disk after builder completes`() {
-        // Build a graph, then verify it works -- the builder's temp buffers are gone
-        // but the disk files remain accessible
-        val id1 = NodeId.next()
-        val id2 = NodeId.next()
-        val graph = MmapGraphBuilder()
-            .addNode(IntConstant(id1, 111))
-            .addNode(StringConstant(id2, "persisted"))
-            .addEdge(DataFlowEdge(id1, id2, DataFlowKind.ASSIGN))
-            .addMethod(makeMethod("com.example.Persist", "test"))
-            .addTypeRelation(TypeDescriptor("com.example.Child"), TypeDescriptor("com.example.Parent"), TypeRelation.EXTENDS)
-            .addEnumValues("com.example.Level", "HIGH", listOf(3))
-            .build()
-
-        // Multiple reads to verify disk data is stable
-        for (i in 0 until 3) {
-            assertEquals(111, (graph.node(id1) as IntConstant).value)
-            assertEquals("persisted", (graph.node(id2) as StringConstant).value)
-            assertEquals(1, graph.outgoing(id1).count())
-            assertEquals(1, graph.incoming(id2).count())
-            assertEquals(1, graph.methods(MethodPattern(name = "test")).count())
-            assertEquals(listOf(TypeDescriptor("com.example.Parent")), graph.supertypes(TypeDescriptor("com.example.Child")).toList())
-            assertEquals(listOf(3), graph.enumValues("com.example.Level", "HIGH"))
-        }
-    }
-
-    private fun bytes(writer: DataOutputStream.() -> Unit): ByteArray =
-        ByteArrayOutputStream().use { baos ->
-            DataOutputStream(baos).use { output ->
-                output.writer()
-                output.flush()
-            }
-            baos.toByteArray()
-        }
-
-    private fun dataInput(writer: DataOutputStream.() -> Unit): DataInputStream =
-        DataInputStream(ByteArrayInputStream(bytes(writer)))
-
-    private fun edgeInput(
-        from: Int,
-        to: Int,
-        writePayload: DataOutputStream.() -> Unit
-    ): DataInputStream =
-        dataInput {
-            writeInt(from)
-            writeInt(to)
-            writePayload()
-        }
 }

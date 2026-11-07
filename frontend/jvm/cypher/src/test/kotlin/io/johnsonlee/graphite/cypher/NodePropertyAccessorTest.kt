@@ -8,7 +8,6 @@ import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DoubleConstant
-import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
@@ -28,12 +27,11 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
-import io.johnsonlee.graphite.core.ValueNode
-import org.junit.Before
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.Before
+import org.junit.Test
 
 class NodePropertyAccessorTest {
 
@@ -192,13 +190,13 @@ class NodePropertyAccessorTest {
 
     @Test
     fun `AnnotationNode properties`() {
-        val node = AnnotationNode(
-            NodeId(100),
-            "org.springframework.web.bind.annotation.GetMapping",
-            "com.example.UserController",
-            "getUser",
-            mapOf("value" to "/api/users/{id}")
-        )
+        val node =
+            AnnotationNode(
+                NodeId(100),
+                "org.springframework.web.bind.annotation.GetMapping",
+                "com.example.UserController",
+                "getUser",
+                mapOf("value" to "/api/users/{id}"))
         assertEquals("org.springframework.web.bind.annotation.GetMapping", NodePropertyAccessor.getProperty(node, "name"))
         assertEquals("com.example.UserController", NodePropertyAccessor.getProperty(node, "class"))
         assertEquals("getUser", NodePropertyAccessor.getProperty(node, "member"))
@@ -208,13 +206,8 @@ class NodePropertyAccessorTest {
 
     @Test
     fun `AnnotationNode values property returns map toString`() {
-        val node = AnnotationNode(
-            NodeId(101),
-            "com.example.MyAnnotation",
-            "com.example.Foo",
-            "bar",
-            mapOf("key1" to "val1", "key2" to "val2")
-        )
+        val node =
+            AnnotationNode(NodeId(101), "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("key1" to "val1", "key2" to "val2"))
         val valuesStr = NodePropertyAccessor.getProperty(node, "values") as String
         assertTrue(valuesStr.contains("key1"))
         assertTrue(valuesStr.contains("val1"))
@@ -222,26 +215,16 @@ class NodePropertyAccessorTest {
 
     @Test
     fun `AnnotationNode custom annotation value accessed via property name`() {
-        val node = AnnotationNode(
-            NodeId(102),
-            "com.example.MyAnnotation",
-            "com.example.Foo",
-            "bar",
-            mapOf("path" to "/api/test", "method" to "GET")
-        )
+        val node =
+            AnnotationNode(
+                NodeId(102), "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("path" to "/api/test", "method" to "GET"))
         assertEquals("/api/test", NodePropertyAccessor.getProperty(node, "path"))
         assertEquals("GET", NodePropertyAccessor.getProperty(node, "method"))
     }
 
     @Test
     fun `AnnotationNode unknown property returns null from values map`() {
-        val node = AnnotationNode(
-            NodeId(103),
-            "com.example.MyAnnotation",
-            "com.example.Foo",
-            "bar",
-            mapOf("key" to "value")
-        )
+        val node = AnnotationNode(NodeId(103), "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("key" to "value"))
         assertNull(NodePropertyAccessor.getProperty(node, "nonexistent_key"))
     }
 
@@ -253,13 +236,13 @@ class NodePropertyAccessorTest {
 
     @Test
     fun `getAllProperties for AnnotationNode includes base and annotation values`() {
-        val node = AnnotationNode(
-            NodeId(300),
-            "org.springframework.web.bind.annotation.GetMapping",
-            "com.example.UserController",
-            "getUser",
-            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
-        )
+        val node =
+            AnnotationNode(
+                NodeId(300),
+                "org.springframework.web.bind.annotation.GetMapping",
+                "com.example.UserController",
+                "getUser",
+                mapOf("value" to "/api/users/{id}", "produces" to "application/json"))
         val props = NodePropertyAccessor.getAllProperties(node)
         assertEquals(300, props["id"])
         assertEquals("org.springframework.web.bind.annotation.GetMapping", props["name"])
@@ -395,8 +378,11 @@ class NodePropertyAccessorTest {
         assertEquals("FieldNode", NodePropertyAccessor.nodeTypeName(FieldNode(NodeId.next(), FieldDescriptor(type, "f", intType), false)))
         assertEquals("ParameterNode", NodePropertyAccessor.nodeTypeName(ParameterNode(NodeId.next(), 0, intType, method)))
         assertEquals("ReturnNode", NodePropertyAccessor.nodeTypeName(ReturnNode(NodeId.next(), method)))
-        assertEquals("ResourceFileNode", NodePropertyAccessor.nodeTypeName(ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml")))
-        assertEquals("ResourceValueNode", NodePropertyAccessor.nodeTypeName(ResourceValueNode(NodeId.next(), "application.yml", "k", "v", "yaml")))
+        assertEquals(
+            "ResourceFileNode",
+            NodePropertyAccessor.nodeTypeName(ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml")))
+        assertEquals(
+            "ResourceValueNode", NodePropertyAccessor.nodeTypeName(ResourceValueNode(NodeId.next(), "application.yml", "k", "v", "yaml")))
         assertEquals("LocalVariable", NodePropertyAccessor.nodeTypeName(LocalVariable(NodeId.next(), "x", intType, method)))
     }
 

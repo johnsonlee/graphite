@@ -24,14 +24,11 @@ import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
-import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Resolves Cypher property names to actual values on Graphite nodes.
- */
+/** Resolves Cypher property names to actual values on Graphite nodes. */
 object NodePropertyAccessor {
     private val propertyNamesByType = ConcurrentHashMap<Class<out Node>, List<String>>()
 
@@ -48,13 +45,15 @@ object NodePropertyAccessor {
         }
     }
 
-    private fun erasedPropertyNames(node: Node): List<String> = if (node is AnnotationNode) {
-        getAllProperties(node).keys.toList()
-    } else {
-        propertyNamesByType[node.javaClass] ?: propertyNamesByType.computeIfAbsent(node.javaClass) {
-            Collections.unmodifiableList(getAllProperties(node).keys.toList())
+    private fun erasedPropertyNames(node: Node): List<String> =
+        if (node is AnnotationNode) {
+            getAllProperties(node).keys.toList()
+        } else {
+            propertyNamesByType[node.javaClass]
+                ?: propertyNamesByType.computeIfAbsent(node.javaClass) {
+                    Collections.unmodifiableList(getAllProperties(node).keys.toList())
+                }
         }
-    }
 
     private const val PROPERTY_ID = "id"
     private const val PROPERTY_TYPE = "type"
@@ -64,42 +63,41 @@ object NodePropertyAccessor {
     private const val PROPERTY_CLASS = "class"
     private const val PROPERTY_FORMAT = "format"
     private const val PROPERTY_PROFILE = "profile"
-    private val nodeTypesByLabel = mapOf(
-        "callsitenode" to CallSiteNode::class.java,
-        "callsite" to CallSiteNode::class.java,
-        "intconstant" to IntConstant::class.java,
-        "stringconstant" to StringConstant::class.java,
-        "longconstant" to LongConstant::class.java,
-        "floatconstant" to FloatConstant::class.java,
-        "doubleconstant" to DoubleConstant::class.java,
-        "booleanconstant" to BooleanConstant::class.java,
-        "nullconstant" to NullConstant::class.java,
-        "enumconstant" to EnumConstant::class.java,
-        "constant" to ConstantNode::class.java,
-        "constantnode" to ConstantNode::class.java,
-        "fieldnode" to FieldNode::class.java,
-        "field" to FieldNode::class.java,
-        "parameternode" to ParameterNode::class.java,
-        "parameter" to ParameterNode::class.java,
-        "returnnode" to ReturnNode::class.java,
-        "return" to ReturnNode::class.java,
-        "resourcefilenode" to ResourceFileNode::class.java,
-        "resourcefile" to ResourceFileNode::class.java,
-        "resourcevaluenode" to ResourceValueNode::class.java,
-        "resourcevalue" to ResourceValueNode::class.java,
-        "resource" to ResourceValueNode::class.java,
-        "localvariable" to LocalVariable::class.java,
-        "local" to LocalVariable::class.java,
-        "annotationnode" to AnnotationNode::class.java,
-        "annotation" to AnnotationNode::class.java,
-        "node" to Node::class.java
-    )
+    private val nodeTypesByLabel =
+        mapOf(
+            "callsitenode" to CallSiteNode::class.java,
+            "callsite" to CallSiteNode::class.java,
+            "intconstant" to IntConstant::class.java,
+            "stringconstant" to StringConstant::class.java,
+            "longconstant" to LongConstant::class.java,
+            "floatconstant" to FloatConstant::class.java,
+            "doubleconstant" to DoubleConstant::class.java,
+            "booleanconstant" to BooleanConstant::class.java,
+            "nullconstant" to NullConstant::class.java,
+            "enumconstant" to EnumConstant::class.java,
+            "constant" to ConstantNode::class.java,
+            "constantnode" to ConstantNode::class.java,
+            "fieldnode" to FieldNode::class.java,
+            "field" to FieldNode::class.java,
+            "parameternode" to ParameterNode::class.java,
+            "parameter" to ParameterNode::class.java,
+            "returnnode" to ReturnNode::class.java,
+            "return" to ReturnNode::class.java,
+            "resourcefilenode" to ResourceFileNode::class.java,
+            "resourcefile" to ResourceFileNode::class.java,
+            "resourcevaluenode" to ResourceValueNode::class.java,
+            "resourcevalue" to ResourceValueNode::class.java,
+            "resource" to ResourceValueNode::class.java,
+            "localvariable" to LocalVariable::class.java,
+            "local" to LocalVariable::class.java,
+            "annotationnode" to AnnotationNode::class.java,
+            "annotation" to AnnotationNode::class.java,
+            "node" to Node::class.java)
 
     /**
-     * The erased property first: every read of a stored property, which is nearly every
-     * read, costs nothing beyond what it cost before declared types existed. Only a name no
-     * node type stores (`generic_type`, `type_info`, or an absent one) reaches the
-     * declaration binding, and those two are never stored, so the order changes no value.
+     * The erased property first: every read of a stored property, which is nearly every read, costs nothing beyond what it cost before
+     * declared types existed. Only a name no node type stores (`generic_type`, `type_info`, or an absent one) reaches the declaration
+     * binding, and those two are never stored, so the order changes no value.
      */
     fun getProperty(node: Node, property: String, graph: Graph?): Any? =
         getProperty(node, property)
@@ -114,267 +112,246 @@ object NodePropertyAccessor {
         if (property == PROPERTY_ID) return node.id.value
 
         // Try node-specific properties first (they take precedence)
-        val nodeSpecific = when (node) {
-            is CallSiteNode -> getCallSiteProperty(node, property)
-            is IntConstant -> getIntConstantProperty(node, property)
-            is StringConstant -> getStringConstantProperty(node, property)
-            is LongConstant -> getLongConstantProperty(node, property)
-            is FloatConstant -> getFloatConstantProperty(node, property)
-            is DoubleConstant -> getDoubleConstantProperty(node, property)
-            is BooleanConstant -> getBooleanConstantProperty(node, property)
-            is NullConstant -> null
-            is EnumConstant -> getEnumConstantProperty(node, property)
-            is LocalVariable -> getLocalVariableProperty(node, property)
-            is FieldNode -> getFieldNodeProperty(node, property)
-            is ParameterNode -> getParameterNodeProperty(node, property)
-            is ReturnNode -> getReturnNodeProperty(node, property)
-            is ResourceFileNode -> getResourceFileNodeProperty(node, property)
-            is ResourceValueNode -> getResourceValueNodeProperty(node, property)
-            is AnnotationNode -> getAnnotationNodeProperty(node, property)
-        }
-        if (nodeSpecific != null) return nodeSpecific
+        val nodeSpecific =
+            when (node) {
+                is CallSiteNode -> getCallSiteProperty(node, property)
+                is EnumConstant -> getEnumConstantProperty(node, property)
+                is IntConstant,
+                is StringConstant,
+                is LongConstant,
+                is FloatConstant,
+                is DoubleConstant,
+                is BooleanConstant,
+                is NullConstant -> constantProperty(node as ConstantNode, property)
+                is LocalVariable -> getLocalVariableProperty(node, property)
+                is FieldNode -> getFieldNodeProperty(node, property)
+                is ParameterNode -> getParameterNodeProperty(node, property)
+                is ReturnNode -> getReturnNodeProperty(node, property)
+                is ResourceFileNode -> getResourceFileNodeProperty(node, property)
+                is ResourceValueNode -> getResourceValueNodeProperty(node, property)
+                is AnnotationNode -> getAnnotationNodeProperty(node, property)
+            }
+        // Fall back to global properties only after node-specific values have been tried.
+        return nodeSpecific
+            ?: when (property) {
+                PROPERTY_TYPE -> nodeTypeName(node)
+                else -> null
+            }
+    }
 
-        // Fall back to global properties
-        return when (property) {
-            PROPERTY_TYPE -> nodeTypeName(node)
+    fun nodeTypeName(node: Node): String =
+        when (node) {
+            is CallSiteNode -> "CallSiteNode"
+            is IntConstant -> "IntConstant"
+            is StringConstant -> "StringConstant"
+            is LongConstant -> "LongConstant"
+            is FloatConstant -> "FloatConstant"
+            is DoubleConstant -> "DoubleConstant"
+            is BooleanConstant -> "BooleanConstant"
+            is NullConstant -> "NullConstant"
+            is EnumConstant -> "EnumConstant"
+            is LocalVariable -> "LocalVariable"
+            is FieldNode -> "FieldNode"
+            is ParameterNode -> "ParameterNode"
+            is ReturnNode -> "ReturnNode"
+            is ResourceFileNode -> "ResourceFileNode"
+            is ResourceValueNode -> "ResourceValueNode"
+            is AnnotationNode -> "AnnotationNode"
+        }
+
+    private fun getCallSiteProperty(node: CallSiteNode, prop: String) =
+        when (prop) {
+            "callee_class" -> node.callee.declaringClass.className
+            "callee_name" -> node.callee.name
+            "callee_signature" -> node.callee.signature
+            "callee_descriptor" -> node.callee.descriptor
+            "caller_class" -> node.caller.declaringClass.className
+            "caller_name" -> node.caller.name
+            "caller_signature" -> node.caller.signature
+            "caller_descriptor" -> node.caller.descriptor
+            "line" -> node.lineNumber
+            "ordinal" -> node.ordinal
             else -> null
         }
-    }
 
-    fun nodeTypeName(node: Node): String = when (node) {
-        is CallSiteNode -> "CallSiteNode"
-        is IntConstant -> "IntConstant"
-        is StringConstant -> "StringConstant"
-        is LongConstant -> "LongConstant"
-        is FloatConstant -> "FloatConstant"
-        is DoubleConstant -> "DoubleConstant"
-        is BooleanConstant -> "BooleanConstant"
-        is NullConstant -> "NullConstant"
-        is EnumConstant -> "EnumConstant"
-        is LocalVariable -> "LocalVariable"
-        is FieldNode -> "FieldNode"
-        is ParameterNode -> "ParameterNode"
-        is ReturnNode -> "ReturnNode"
-        is ResourceFileNode -> "ResourceFileNode"
-        is ResourceValueNode -> "ResourceValueNode"
-        is AnnotationNode -> "AnnotationNode"
-    }
+    private fun getEnumConstantProperty(node: EnumConstant, prop: String) =
+        when (prop) {
+            PROPERTY_VALUE -> node.value
+            PROPERTY_NAME -> node.enumName
+            "enum_type" -> node.enumType.className
+            else -> null
+        }
 
-    private fun getCallSiteProperty(node: CallSiteNode, prop: String) = when (prop) {
-        "callee_class" -> node.callee.declaringClass.className
-        "callee_name" -> node.callee.name
-        "callee_signature" -> node.callee.signature
-        "callee_descriptor" -> node.callee.descriptor
-        "caller_class" -> node.caller.declaringClass.className
-        "caller_name" -> node.caller.name
-        "caller_signature" -> node.caller.signature
-        "caller_descriptor" -> node.caller.descriptor
-        "line" -> node.lineNumber
-        "ordinal" -> node.ordinal
-        else -> null
-    }
+    private fun getLocalVariableProperty(node: LocalVariable, prop: String) =
+        when (prop) {
+            PROPERTY_NAME -> node.name
+            PROPERTY_TYPE -> node.type.className
+            PROPERTY_METHOD -> node.method.signature
+            else -> null
+        }
 
-    private fun getIntConstantProperty(node: IntConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getFieldNodeProperty(node: FieldNode, prop: String) =
+        when (prop) {
+            PROPERTY_NAME -> node.descriptor.name
+            PROPERTY_TYPE -> node.descriptor.type.className
+            PROPERTY_CLASS -> node.descriptor.declaringClass.className
+            "static" -> node.isStatic
+            else -> null
+        }
 
-    private fun getStringConstantProperty(node: StringConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getParameterNodeProperty(node: ParameterNode, prop: String) =
+        when (prop) {
+            "index" -> node.index
+            PROPERTY_TYPE -> node.type.className
+            PROPERTY_METHOD -> node.method.signature
+            else -> null
+        }
 
-    private fun getLongConstantProperty(node: LongConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getReturnNodeProperty(node: ReturnNode, prop: String) =
+        when (prop) {
+            PROPERTY_METHOD -> node.method.signature
+            "actual_type" -> node.actualType?.className
+            else -> null
+        }
 
-    private fun getFloatConstantProperty(node: FloatConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getResourceFileNodeProperty(node: ResourceFileNode, prop: String) =
+        when (prop) {
+            "path" -> node.path
+            "source" -> node.source
+            PROPERTY_FORMAT -> node.format
+            PROPERTY_PROFILE -> node.profile
+            else -> null
+        }
 
-    private fun getDoubleConstantProperty(node: DoubleConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getResourceValueNodeProperty(node: ResourceValueNode, prop: String) =
+        when (prop) {
+            "path" -> node.path
+            "key" -> node.key
+            PROPERTY_VALUE -> node.value
+            PROPERTY_FORMAT -> node.format
+            PROPERTY_PROFILE -> node.profile
+            else -> null
+        }
 
-    private fun getBooleanConstantProperty(node: BooleanConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        else -> null
-    }
+    private fun getAnnotationNodeProperty(node: AnnotationNode, prop: String) =
+        when (prop) {
+            PROPERTY_NAME -> node.name
+            PROPERTY_CLASS -> node.className
+            "member" -> node.memberName
+            "values" -> node.values.toString()
+            else -> node.values[prop]
+        }
 
-    private fun getEnumConstantProperty(node: EnumConstant, prop: String) = when (prop) {
-        PROPERTY_VALUE -> node.value
-        PROPERTY_NAME -> node.enumName
-        "enum_type" -> node.enumType.className
-        else -> null
-    }
-
-    private fun getLocalVariableProperty(node: LocalVariable, prop: String) = when (prop) {
-        PROPERTY_NAME -> node.name
-        PROPERTY_TYPE -> node.type.className
-        PROPERTY_METHOD -> node.method.signature
-        else -> null
-    }
-
-    private fun getFieldNodeProperty(node: FieldNode, prop: String) = when (prop) {
-        PROPERTY_NAME -> node.descriptor.name
-        PROPERTY_TYPE -> node.descriptor.type.className
-        PROPERTY_CLASS -> node.descriptor.declaringClass.className
-        "static" -> node.isStatic
-        else -> null
-    }
-
-    private fun getParameterNodeProperty(node: ParameterNode, prop: String) = when (prop) {
-        "index" -> node.index
-        PROPERTY_TYPE -> node.type.className
-        PROPERTY_METHOD -> node.method.signature
-        else -> null
-    }
-
-    private fun getReturnNodeProperty(node: ReturnNode, prop: String) = when (prop) {
-        PROPERTY_METHOD -> node.method.signature
-        "actual_type" -> node.actualType?.className
-        else -> null
-    }
-
-    private fun getResourceFileNodeProperty(node: ResourceFileNode, prop: String) = when (prop) {
-        "path" -> node.path
-        "source" -> node.source
-        PROPERTY_FORMAT -> node.format
-        PROPERTY_PROFILE -> node.profile
-        else -> null
-    }
-
-    private fun getResourceValueNodeProperty(node: ResourceValueNode, prop: String) = when (prop) {
-        "path" -> node.path
-        "key" -> node.key
-        PROPERTY_VALUE -> node.value
-        PROPERTY_FORMAT -> node.format
-        PROPERTY_PROFILE -> node.profile
-        else -> null
-    }
-
-    private fun getAnnotationNodeProperty(node: AnnotationNode, prop: String) = when (prop) {
-        PROPERTY_NAME -> node.name
-        PROPERTY_CLASS -> node.className
-        "member" -> node.memberName
-        "values" -> node.values.toString()
-        else -> node.values[prop]
-    }
-
-    /**
-     * Returns all properties of a node as a map.
-     */
+    /** Returns all properties of a node as a map. */
     fun getAllProperties(node: Node, graph: Graph?): Map<String, Any?> {
         val properties = getAllProperties(node)
         val declared = DeclaredTypeProperties.nodeProperties(node, graph)
         return if (declared.isEmpty()) properties else properties + declared
     }
 
-    fun getAllProperties(node: Node): Map<String, Any?> = when (node) {
-        is CallSiteNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            "callee_class" to node.callee.declaringClass.className,
-            "callee_name" to node.callee.name,
-            "callee_signature" to node.callee.signature,
-            "callee_descriptor" to node.callee.descriptor,
-            "caller_class" to node.caller.declaringClass.className,
-            "caller_name" to node.caller.name,
-            "caller_signature" to node.caller.signature,
-            "caller_descriptor" to node.caller.descriptor,
-            "line" to node.lineNumber,
-            "ordinal" to node.ordinal
-        )
-        is IntConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is StringConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is LongConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is FloatConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is DoubleConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is BooleanConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
-        is NullConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to null)
-        is EnumConstant -> mapOf(
-            PROPERTY_ID to node.id.value,
-            PROPERTY_VALUE to node.value,
-            PROPERTY_NAME to node.enumName,
-            "enum_type" to node.enumType.className
-        )
-        is LocalVariable -> mapOf(
-            PROPERTY_ID to node.id.value,
-            PROPERTY_NAME to node.name,
-            PROPERTY_TYPE to node.type.className,
-            PROPERTY_METHOD to node.method.signature
-        )
-        is FieldNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            PROPERTY_NAME to node.descriptor.name,
-            PROPERTY_TYPE to node.descriptor.type.className,
-            PROPERTY_CLASS to node.descriptor.declaringClass.className,
-            "static" to node.isStatic
-        )
-        is ParameterNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            "index" to node.index,
-            PROPERTY_TYPE to node.type.className,
-            PROPERTY_METHOD to node.method.signature
-        )
-        is ReturnNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            PROPERTY_METHOD to node.method.signature,
-            "actual_type" to node.actualType?.className
-        )
-        is ResourceFileNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            "path" to node.path,
-            "source" to node.source,
-            PROPERTY_FORMAT to node.format,
-            PROPERTY_PROFILE to node.profile
-        )
-        is ResourceValueNode -> mapOf(
-            PROPERTY_ID to node.id.value,
-            "path" to node.path,
-            "key" to node.key,
-            PROPERTY_VALUE to node.value,
-            PROPERTY_FORMAT to node.format,
-            PROPERTY_PROFILE to node.profile
-        )
-        is AnnotationNode -> mutableMapOf<String, Any?>(
-            PROPERTY_ID to node.id.value,
-            PROPERTY_NAME to node.name,
-            PROPERTY_CLASS to node.className,
-            "member" to node.memberName
-        ).also { map -> node.values.forEach { (k, v) -> map[k] = v } }
-    }
+    fun getAllProperties(node: Node): Map<String, Any?> =
+        when (node) {
+            is CallSiteNode ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    "callee_class" to node.callee.declaringClass.className,
+                    "callee_name" to node.callee.name,
+                    "callee_signature" to node.callee.signature,
+                    "callee_descriptor" to node.callee.descriptor,
+                    "caller_class" to node.caller.declaringClass.className,
+                    "caller_name" to node.caller.name,
+                    "caller_signature" to node.caller.signature,
+                    "caller_descriptor" to node.caller.descriptor,
+                    "line" to node.lineNumber,
+                    "ordinal" to node.ordinal)
+            is EnumConstant ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    PROPERTY_VALUE to node.value,
+                    PROPERTY_NAME to node.enumName,
+                    "enum_type" to node.enumType.className)
+            is IntConstant,
+            is StringConstant,
+            is LongConstant,
+            is FloatConstant,
+            is DoubleConstant,
+            is BooleanConstant,
+            is NullConstant -> constantProperties(node as ConstantNode)
+            is LocalVariable ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    PROPERTY_NAME to node.name,
+                    PROPERTY_TYPE to node.type.className,
+                    PROPERTY_METHOD to node.method.signature)
+            is FieldNode ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    PROPERTY_NAME to node.descriptor.name,
+                    PROPERTY_TYPE to node.descriptor.type.className,
+                    PROPERTY_CLASS to node.descriptor.declaringClass.className,
+                    "static" to node.isStatic)
+            is ParameterNode ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    "index" to node.index,
+                    PROPERTY_TYPE to node.type.className,
+                    PROPERTY_METHOD to node.method.signature)
+            is ReturnNode ->
+                mapOf(PROPERTY_ID to node.id.value, PROPERTY_METHOD to node.method.signature, "actual_type" to node.actualType?.className)
+            is ResourceFileNode ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    "path" to node.path,
+                    "source" to node.source,
+                    PROPERTY_FORMAT to node.format,
+                    PROPERTY_PROFILE to node.profile)
+            is ResourceValueNode ->
+                mapOf(
+                    PROPERTY_ID to node.id.value,
+                    "path" to node.path,
+                    "key" to node.key,
+                    PROPERTY_VALUE to node.value,
+                    PROPERTY_FORMAT to node.format,
+                    PROPERTY_PROFILE to node.profile)
+            is AnnotationNode ->
+                mutableMapOf<String, Any?>(
+                        PROPERTY_ID to node.id.value,
+                        PROPERTY_NAME to node.name,
+                        PROPERTY_CLASS to node.className,
+                        "member" to node.memberName)
+                    .also { map -> node.values.forEach { (k, v) -> map[k] = v } }
+        }
 
     /**
      * Maps a Cypher label string to the corresponding Graphite [Node] subclass.
      *
-     * Unknown labels resolve to `null`. Treating an unknown label as [Node]
-     * makes `MATCH (n:MissingLabel)` indistinguishable from `MATCH (n)` and
-     * violates Cypher label semantics.
+     * Unknown labels resolve to `null`. Treating an unknown label as [Node] makes `MATCH (n:MissingLabel)` indistinguishable from `MATCH
+     * (n)` and violates Cypher label semantics.
      */
     fun resolveNodeLabelOrNull(label: String): Class<out Node>? = nodeTypesByLabel[label.lowercase()]
 
     /**
      * Resolve a known Graphite node label.
      *
-     * Prefer [resolveNodeLabelOrNull] in query execution, where an unknown
-     * label means that the pattern has no candidates.
+     * Prefer [resolveNodeLabelOrNull] in query execution, where an unknown label means that the pattern has no candidates.
      */
-    fun resolveNodeLabel(label: String): Class<out Node> =
-        resolveNodeLabelOrNull(label) ?: Node::class.java
+    fun resolveNodeLabel(label: String): Class<out Node> = resolveNodeLabelOrNull(label) ?: Node::class.java
 
-    /**
-     * Maps a Cypher relationship type string to the corresponding Graphite [Edge] subclass.
-     */
-    fun resolveEdgeType(type: String): Class<out Edge>? = when (type.uppercase()) {
-        "DATAFLOW", "DATA_FLOW" -> DataFlowEdge::class.java
-        "CALL" -> CallEdge::class.java
-        "TYPE" -> TypeEdge::class.java
-        "CONTROL_FLOW", "CONTROLFLOW" -> ControlFlowEdge::class.java
-        "RESOURCE", "RESOURCE_OPEN", "RESOURCE_LOAD",
-        "RESOURCE_BUNDLE_CANDIDATE", "RESOURCE_LOOKUP", "RESOURCE_KEYS" -> ResourceEdge::class.java
-        else -> null
-    }
+    /** Maps a Cypher relationship type string to the corresponding Graphite [Edge] subclass. */
+    fun resolveEdgeType(type: String): Class<out Edge>? =
+        when (type.uppercase()) {
+            "DATAFLOW",
+            "DATA_FLOW" -> DataFlowEdge::class.java
+            "CALL" -> CallEdge::class.java
+            "TYPE" -> TypeEdge::class.java
+            "CONTROL_FLOW",
+            "CONTROLFLOW" -> ControlFlowEdge::class.java
+            "RESOURCE",
+            "RESOURCE_OPEN",
+            "RESOURCE_LOAD",
+            "RESOURCE_BUNDLE_CANDIDATE",
+            "RESOURCE_LOOKUP",
+            "RESOURCE_KEYS" -> ResourceEdge::class.java
+            else -> null
+        }
 }
