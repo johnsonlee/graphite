@@ -7,9 +7,32 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AbandonedMmapGraphTest {
+    @Test
+    fun `abort preserves unrelated files in a caller supplied directory`() {
+        val directory = Files.createTempDirectory("shared-mmap-directory")
+        try {
+            val marker = directory.resolve("keep.txt")
+            val nested = Files.createDirectory(directory.resolve("unrelated"))
+            Files.writeString(marker, "user data")
+            Files.writeString(directory.resolve("outgoing-offsets.dat"), "untouched index")
+            Files.writeString(nested.resolve("nested.txt"), "nested user data")
+            val builder = MmapGraphBuilder(directory)
+            builder.abort()
+            assertEquals("user data", Files.readString(marker))
+            assertEquals("nested user data", Files.readString(nested.resolve("nested.txt")))
+            assertEquals("untouched index", Files.readString(directory.resolve("outgoing-offsets.dat")))
+            assertEquals(setOf("keep.txt", "unrelated", "outgoing-offsets.dat"), Files.list(directory).use { files ->
+                files.map { it.fileName.toString() }.toList().toSet()
+            })
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
     @Test
     fun `abort closes outputs and removes incomplete graph files`() {
         val directory = Files.createTempDirectory("abandoned-mmap-test")

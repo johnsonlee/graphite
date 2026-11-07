@@ -291,6 +291,14 @@ class SootUpAdapter(
     internal var methodFoldObservation: (MethodSignature) -> MethodFoldObservation? = { null }
     internal var methodRecovery: (MethodSignature) -> BodyInterceptionEvidence? = { null }
 
+    /** A diagnostic rematerialization must not silently replace the observed body's fold evidence. */
+    internal fun verifyObservedFolding() {
+        val delivery = bodyDelivery ?: return
+        methodDescriptorCache.forEach { (signature, method) ->
+            delivery.verifyFolding(method.identity, methodFoldObservation(signature))
+        }
+    }
+
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
     /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */
@@ -1353,7 +1361,7 @@ class SootUpAdapter(
                 JvmMethodIdentity.of(methodDescriptor), method.modifiers, origin, role,
                 methodDescriptor.declaringClass.className in applicationClasses, status, failure,
                 methodRecovery(method.signature), methodFoldObservation(method.signature)
-            ), analyzedBody)
+            ), analyzedBody, methodDescriptor.declaringClass.className in duplicateClasses)
         }
     }
 

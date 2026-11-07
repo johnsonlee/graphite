@@ -22,6 +22,7 @@ import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.BranchingStmt
 import sootup.core.model.Body
 import sootup.core.model.SourceType
+import sootup.core.signatures.MethodSignature
 import sootup.java.core.views.JavaView
 
 class RecoveringBodyInterceptorTest {
@@ -288,6 +289,62 @@ class RecoveringBodyInterceptorTest {
         assertSame(failure, assertFailsWith<IllegalArgumentException> { guard.interceptBody(builder, view) })
         assertEquals(original, builder.build().toString())
         assertEquals(listOf("discard", "recovered", "fallback", "observation"), events)
+    }
+
+    @Test
+    fun `a successful rematerialization clears the same method's earlier recovery receipt`() {
+        val (_, view) = fixture()
+        val first = method(view, "value")
+        val recoveries = mutableMapOf<MethodSignature, BodyInterceptionRecovery>()
+        val attempts = mutableListOf<MethodSignature>()
+        val warnings = mutableListOf<String>()
+        var failPrimary = true
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { builder, _ ->
+                assertNull(recoveries[builder.methodSignature], "each primary attempt must start without stale evidence")
+                if (failPrimary) error("first materialization failed")
+                val returned = builder.stmts.filterIsInstance<JReturnStmt>().single()
+                builder.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
+            }),
+            warnings::add,
+            onRecovery = { recoveries[it.method] = it },
+            onAttempt = {
+                attempts.add(it)
+                recoveries.remove(it)
+            }
+        )
+        guard.interceptBody(first, view)
+        val recovered = assertNotNull(recoveries[first.methodSignature])
+        assertEquals("unintercepted body", recovered.chain)
+        assertTrue(recovered.reason.endsWith("failed: first materialization failed"))
+        assertEquals(IntConstant.getInstance(7), first.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+
+        failPrimary = false
+        val next = method(view, "value")
+        assertEquals(first.methodSignature, next.methodSignature)
+        guard.interceptBody(next, view)
+        assertEquals(IntConstant.getInstance(42), next.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+        assertTrue(recoveries.isEmpty(), "success must not inherit the previous body materialization's recovery")
+        assertEquals(listOf(first.methodSignature, first.methodSignature), attempts)
+        assertEquals(1, warnings.size, "clearing evidence must not change cumulative fallback accounting")
+    }
+
+    @Test
+    fun `attempt callback failure propagates before interception or recovery`() {
+        val (builder, view) = fixture()
+        val original = builder.build().toString()
+        val failure = IllegalStateException("cannot clear recovery receipt")
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> error("the primary chain must not run after attempt failure") }),
+            { error("attempt callback failure must not count as a fallback") },
+            onRecovery = { error("attempt callback failure must not trigger recovery") },
+            onAttempt = {
+                assertEquals(builder.methodSignature, it)
+                throw failure
+            }
+        )
+        assertSame(failure, assertFailsWith<IllegalStateException> { guard.interceptBody(builder, view) })
+        assertEquals(original, builder.build().toString())
     }
 
     @Test

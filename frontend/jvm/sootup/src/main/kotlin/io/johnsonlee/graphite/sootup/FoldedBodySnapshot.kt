@@ -1,5 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import java.io.DataOutputStream
+import java.io.OutputStream
+import java.security.DigestOutputStream
+import java.security.MessageDigest
 import java.util.Collections
 import java.util.IdentityHashMap
 import sootup.core.graph.BasicBlock
@@ -12,12 +16,35 @@ import sootup.core.jimple.basic.SimpleStmtPositionInfo
 import sootup.core.jimple.basic.StmtPositionInfo
 import sootup.core.jimple.common.Local
 import sootup.core.jimple.common.Value
+import sootup.core.jimple.common.constant.BooleanConstant
+import sootup.core.jimple.common.constant.ClassConstant
 import sootup.core.jimple.common.constant.Constant
+import sootup.core.jimple.common.constant.DoubleConstant
+import sootup.core.jimple.common.constant.EnumConstant
+import sootup.core.jimple.common.constant.FloatConstant
+import sootup.core.jimple.common.constant.IntConstant
+import sootup.core.jimple.common.constant.LongConstant
+import sootup.core.jimple.common.constant.MethodHandle
+import sootup.core.jimple.common.constant.MethodType
+import sootup.core.jimple.common.constant.NullConstant
+import sootup.core.jimple.common.constant.StringConstant
+import sootup.core.jimple.common.expr.AbstractBinopExpr
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr
+import sootup.core.jimple.common.expr.AbstractUnopExpr
 import sootup.core.jimple.common.expr.AbstractInvokeExpr
+import sootup.core.jimple.common.expr.JCastExpr
 import sootup.core.jimple.common.expr.JDynamicInvokeExpr
+import sootup.core.jimple.common.expr.JInstanceOfExpr
+import sootup.core.jimple.common.expr.JNewArrayExpr
+import sootup.core.jimple.common.expr.JNewExpr
 import sootup.core.jimple.common.expr.JNewMultiArrayExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
+import sootup.core.jimple.common.ref.JArrayRef
+import sootup.core.jimple.common.ref.JCaughtExceptionRef
+import sootup.core.jimple.common.ref.JFieldRef
+import sootup.core.jimple.common.ref.JInstanceFieldRef
+import sootup.core.jimple.common.ref.JParameterRef
+import sootup.core.jimple.common.ref.JThisRef
 import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.jimple.common.stmt.JGotoStmt
 import sootup.core.jimple.common.stmt.JIdentityStmt
@@ -36,6 +63,11 @@ import sootup.core.jimple.javabytecode.stmt.JSwitchStmt
 import sootup.core.model.Body
 import sootup.core.model.FullPosition
 import sootup.core.model.Position
+import sootup.core.signatures.MethodSignature
+import sootup.core.signatures.SootClassMemberSignature
+import sootup.core.types.ArrayType
+import sootup.core.types.ClassType
+import sootup.core.types.Type
 import sootup.java.core.AnnotationUsage
 import sootup.java.core.jimple.basic.JavaLocal
 
@@ -53,6 +85,9 @@ import sootup.java.core.jimple.basic.JavaLocal
  * than provide a snapshot with incomplete semantics or mutable aliases.
  */
 class FoldedBodySnapshot private constructor(val body: Body) {
+    /** Used only to verify opted-in duplicate-class rematerialization; never retains another body. */
+    internal fun semanticFingerprint(): String = fingerprint { writeBody(body) }
+
     internal companion object {
         fun capture(body: Body): FoldedBodySnapshot {
             val graph = SnapshotGraph(body.controlFlowGraph)
@@ -216,4 +251,243 @@ private fun copyAnnotationValue(value: Any): Any = when (value) {
     is Constant -> value.also(::checkValue)
     is String, is Boolean, is Byte, is Short, is Int, is Long, is Float, is Double, is Char -> value
     else -> error("Unsupported folded-body annotation value: ${value.javaClass.name}")
+}
+
+/** A typed, length-delimited codec for comparing repeated observations, not a public IR format. */
+private fun fingerprint(write: BodyFingerprintWriter.() -> Unit): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    DataOutputStream(DigestOutputStream(OutputStream.nullOutputStream(), digest)).use {
+        BodyFingerprintWriter(it).write()
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
+}
+
+@Suppress("TooManyFunctions") // Each supported IR component has one typed serialization boundary.
+private class BodyFingerprintWriter(private val out: DataOutputStream) {
+    fun writeBody(body: Body) {
+        writeString("graphite-folded-body-v1")
+        writeSignature(body.methodSignature)
+        writePosition(body.position)
+        val locals = body.locals.sortedBy { fingerprint { writeValue(it) } }
+        out.writeInt(locals.size)
+        locals.forEach(::writeValue)
+        val graph = body.controlFlowGraph
+        val statements = orderedStatements(body)
+        val indices = IdentityHashMap<Stmt, Int>()
+        statements.forEachIndexed { index, stmt -> indices[stmt] = index }
+        fun index(stmt: Stmt): Int = checkNotNull(indices[stmt]) { "Fingerprint edge leaves the body" }
+        out.writeInt(graph.startingStmt?.let(::index) ?: -1)
+        out.writeInt(statements.size)
+        statements.forEach { stmt ->
+            writeStatement(stmt)
+            val successors = graph.successors(stmt)
+            out.writeInt(successors.size)
+            successors.forEach { out.writeInt(index(it)) }
+            val exceptional = graph.exceptionalSuccessors(stmt).entries.sortedBy { it.key.fullyQualifiedName }
+            out.writeInt(exceptional.size)
+            exceptional.forEach { (exception, target) -> writeType(exception); out.writeInt(index(target)) }
+        }
+        val blocks = graph.blocks.sortedBy { block -> block.stmts.minOf(::index) }
+        out.writeInt(blocks.size)
+        blocks.forEach { block ->
+            out.writeInt(block.stmtCount)
+            block.stmts.forEach { out.writeInt(index(it)) }
+            out.writeInt(block.successors.size)
+            block.successors.forEach { out.writeInt(index(it.head)) }
+            val exceptional = block.exceptionalSuccessors.entries.sortedBy { it.key.fullyQualifiedName }
+            out.writeInt(exceptional.size)
+            exceptional.forEach { (exception, target) -> writeType(exception); out.writeInt(index(target.head)) }
+        }
+    }
+
+    /** Preserve successor slots, while disregarding incidental block-enumeration order. */
+    private fun orderedStatements(body: Body): List<Stmt> {
+        val graph = body.controlFlowGraph
+        val ordered = mutableListOf<Stmt>()
+        val seen = Collections.newSetFromMap(IdentityHashMap<Stmt, Boolean>())
+        fun admit(stmt: Stmt) { if (seen.add(stmt)) ordered.add(stmt) }
+        var next = 0
+        fun drain() {
+            while (next < ordered.size) {
+                val stmt = ordered[next++]
+                graph.successors(stmt).forEach(::admit)
+                graph.exceptionalSuccessors(stmt).entries.sortedBy { it.key.fullyQualifiedName }
+                    .forEach { admit(it.value) }
+            }
+        }
+        graph.startingStmt?.let(::admit)
+        drain()
+        // A supported immutable body may also enumerate unreachable blocks. Include all of
+        // them; instruction keys make their ordering independent of object identity where possible.
+        graph.nodes.filter { it !in seen }.sortedBy { fingerprint { writeStatement(it) } }
+            .forEach { admit(it); drain() }
+        return ordered
+    }
+
+    @Suppress("CyclomaticComplexMethod") // Exhaustive supported typed statements; unknown instructions fail closed.
+    private fun writeStatement(stmt: Stmt) {
+        writeString(stmt.javaClass.name)
+        writePositionInfo(stmt.positionInfo)
+        when (stmt) {
+            is JAssignStmt -> { writeValue(stmt.leftOp); writeValue(stmt.rightOp) }
+            is JInvokeStmt -> writeValue(stmt.invokeExpr.orElseThrow())
+            is JIdentityStmt -> { writeValue(stmt.leftOp); writeValue(stmt.rightOp) }
+            is JIfStmt -> writeValue(stmt.condition)
+            is JSwitchStmt -> {
+                writeValue(stmt.key)
+                out.writeBoolean(stmt.isTableSwitch)
+                out.writeInt(stmt.values.size)
+                stmt.values.forEach { out.writeInt(it.value) }
+            }
+            is JReturnStmt -> writeValue(stmt.op)
+            is JThrowStmt -> writeValue(stmt.op)
+            is JRetStmt -> writeValue(stmt.stmtAddress)
+            is JEnterMonitorStmt -> writeValue(stmt.op)
+            is JExitMonitorStmt -> writeValue(stmt.op)
+            is JGotoStmt, is JReturnVoidStmt, is JNopStmt, is JBreakpointStmt -> Unit
+            else -> error("Unsupported folded-body fingerprint statement: ${stmt.javaClass.name}")
+        }
+    }
+
+    @Suppress("CyclomaticComplexMethod") // The finite supported value vocabulary is serialized without textual IR dumps.
+    private fun writeValue(value: Value) {
+        checkValue(value)
+        writeString(value.javaClass.name)
+        writeType(value.type)
+        when (value) {
+            is Local -> {
+                writeString(value.name)
+                val annotations = (value as? JavaLocal)?.annotations?.toList().orEmpty()
+                out.writeInt(annotations.size)
+                annotations.forEach(::writeAnnotation)
+            }
+            is Constant -> writeConstant(value)
+            is AbstractInvokeExpr -> writeInvocation(value)
+            is AbstractBinopExpr -> { writeValue(value.op1); writeValue(value.op2) }
+            is AbstractUnopExpr -> writeValue(value.op)
+            is JCastExpr -> writeValue(value.op)
+            is JInstanceOfExpr -> { writeValue(value.op); writeType(value.checkType) }
+            is JNewArrayExpr -> { writeType(value.baseType); writeValue(value.size) }
+            is JNewMultiArrayExpr -> {
+                writeType(value.baseType)
+                out.writeInt(value.sizes.size)
+                value.sizes.forEach(::writeValue)
+            }
+            is JFieldRef -> {
+                writeSignature(value.fieldSignature)
+                if (value is JInstanceFieldRef) writeValue(value.base)
+            }
+            is JArrayRef -> { writeValue(value.base); writeValue(value.index) }
+            is JParameterRef -> out.writeInt(value.index)
+            is JThisRef, is JCaughtExceptionRef, is JNewExpr -> Unit // Their complete payload is their type.
+            else -> error("Unsupported folded-body fingerprint value: ${value.javaClass.name}")
+        }
+    }
+
+    private fun writeInvocation(invoke: AbstractInvokeExpr) {
+        writeSignature(invoke.methodSignature)
+        if (invoke is AbstractInstanceInvokeExpr) writeValue(invoke.base)
+        out.writeInt(invoke.args.size)
+        invoke.args.forEach(::writeValue)
+        if (invoke is JDynamicInvokeExpr) {
+            out.writeInt(invoke.handleTag)
+            writeSignature(invoke.bootstrapMethodSignature)
+            out.writeInt(invoke.bootstrapArgs.size)
+            invoke.bootstrapArgs.forEach(::writeValue)
+        }
+    }
+
+    private fun writeConstant(constant: Constant) {
+        when (constant) {
+            is IntConstant -> out.writeInt(constant.value)
+            is LongConstant -> out.writeLong(constant.value)
+            is FloatConstant -> out.writeInt(constant.value.toRawBits())
+            is DoubleConstant -> out.writeLong(constant.value.toRawBits())
+            is BooleanConstant -> out.writeBoolean(constant.value)
+            is StringConstant -> writeString(constant.value)
+            is ClassConstant -> writeString(constant.value)
+            is EnumConstant -> writeString(constant.value)
+            is MethodHandle -> { writeString(constant.kind.name); writeSignature(constant.referenceSignature) }
+            is MethodType -> {
+                out.writeInt(constant.parameterTypes.size)
+                constant.parameterTypes.forEach(::writeType)
+                writeType(constant.returnType)
+            }
+            is NullConstant -> Unit
+            else -> error("Unsupported folded-body fingerprint constant: ${constant.javaClass.name}")
+        }
+    }
+
+    private fun writeSignature(signature: SootClassMemberSignature<*>) {
+        writeString(signature.javaClass.name)
+        writeType(signature.declClassType)
+        writeString(signature.name)
+        writeType(signature.type)
+        if (signature is MethodSignature) {
+            out.writeInt(signature.parameterTypes.size)
+            signature.parameterTypes.forEach(::writeType)
+        }
+    }
+
+    private fun writeType(type: Type) {
+        writeString(type.javaClass.name)
+        when (type) {
+            is ClassType -> writeString(type.fullyQualifiedName)
+            is ArrayType -> { out.writeInt(type.dimension); writeType(type.baseType) }
+            else -> writeString(type.toString()) // Primitive, void, null and frontend inference types have no operands.
+        }
+    }
+
+    private fun writePosition(position: Position?) {
+        out.writeBoolean(position != null)
+        if (position != null) {
+            out.writeInt(position.firstLine)
+            out.writeInt(position.firstCol)
+            out.writeInt(position.lastLine)
+            out.writeInt(position.lastCol)
+        }
+    }
+
+    private fun writePositionInfo(info: StmtPositionInfo) {
+        writeString(info.javaClass.name)
+        writePosition(info.stmtPosition)
+        if (info is FullStmtPositionInfo) {
+            val field = FullStmtPositionInfo::class.java.getDeclaredField("operandPositions")
+            field.isAccessible = true
+            @Suppress("UNCHECKED_CAST")
+            val positions = field.get(info) as Array<Position?>?
+            out.writeInt(positions?.size ?: -1)
+            positions?.forEach(::writePosition)
+        }
+    }
+
+    private fun writeAnnotation(annotation: AnnotationUsage) {
+        writeType(annotation.annotation)
+        val values = annotation.values.toSortedMap()
+        out.writeInt(values.size)
+        values.forEach { (name, value) -> writeString(name); writeAnnotationValue(value) }
+    }
+
+    private fun writeAnnotationValue(value: Any) {
+        writeString(value.javaClass.name)
+        when (value) {
+            is AnnotationUsage -> writeAnnotation(value)
+            is List<*> -> {
+                out.writeInt(value.size)
+                value.forEach { writeAnnotationValue(checkNotNull(it)) }
+            }
+            is Constant -> writeValue(value)
+            is Float -> out.writeInt(value.toRawBits())
+            is Double -> out.writeLong(value.toRawBits())
+            is String, is Boolean, is Byte, is Short, is Int, is Long, is Char -> writeString(value.toString())
+            else -> error("Unsupported folded-body fingerprint annotation value: ${value.javaClass.name}")
+        }
+    }
+
+    private fun writeString(value: String) {
+        // JVM strings can contain unpaired UTF-16 surrogates. Charset encoders replace
+        // those, so encode the original code units rather than an optionally lossy charset.
+        out.writeInt(value.length)
+        out.writeChars(value)
+    }
 }

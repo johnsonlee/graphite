@@ -118,20 +118,38 @@ class ObservedJavaLoad internal constructor(
 /** Internal delivery state exists only for an opted-in invocation. */
 internal class FoldedBodyDelivery(private val observer: FoldedBodyObserver) {
     private val observations = LinkedHashMap<String, MethodObservationEvidence>()
+    private val bodyFingerprints = HashMap<String, String?>()
 
-    fun deliver(evidence: MethodObservationEvidence, body: Body?) {
+    fun deliver(evidence: MethodObservationEvidence, body: Body?, verifyRematerialization: Boolean = false) {
         val identity = evidence.method.identity
         observations[identity]?.let { prior ->
             // JavaView's first enumeration can yield its selected cached class once per
             // duplicate classpath entry. Preserve graph behavior but deliver that definition once.
             check(prior.agreesWith(evidence)) { "Conflicting folded-body observations: $identity" }
+            if (verifyRematerialization || identity in bodyFingerprints) {
+                check(identity in bodyFingerprints) { "Missing original folded-body fingerprint: $identity" }
+                val current = body?.let { FoldedBodySnapshot.capture(it).semanticFingerprint() }
+                check(bodyFingerprints[identity] == current) { "Conflicting rematerialized folded body: $identity" }
+            }
             return
         }
         check(!evidence.status.bodyComplete || body != null) { "Analyzed method has no captured body: $identity" }
         val snapshot = body?.let(FoldedBodySnapshot::capture)
+        val fingerprint = if (verifyRematerialization) snapshot?.semanticFingerprint() else null
         // Keep capture and callback failures outside the adapter's legacy OOM recovery.
         observer.observe(FoldedMethodObservation(evidence, snapshot))
         observations[identity] = evidence
+        if (verifyRematerialization) bodyFingerprints[identity] = fingerprint
+    }
+
+    fun verifyFolding(identity: String, current: MethodFoldObservation?) {
+        val prior = observations[identity]?.folding ?: run {
+            if (identity in observations) {
+                check(current == null) { "Conflicting final fold evidence: $identity" }
+            }
+            return
+        }
+        check(current?.let(prior::agreesWith) == true) { "Conflicting final fold evidence: $identity" }
     }
 
     fun finish(graph: Graph, report: FoldReport?): ObservedJavaLoad {

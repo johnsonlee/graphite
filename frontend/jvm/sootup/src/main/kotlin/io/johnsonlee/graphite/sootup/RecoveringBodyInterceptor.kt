@@ -14,6 +14,12 @@ internal data class BodyRecoveryChain(val description: String, val interceptors:
 /** The primary interception failure and the successful recovery used for this method body. */
 internal data class BodyInterceptionRecovery(val method: MethodSignature, val chain: String, val reason: String)
 
+/** Invocation-local tracking supplied only when folded-body observation is enabled. */
+internal class BodyInterceptionTracking(
+    val onRecovery: (BodyInterceptionRecovery) -> Unit,
+    val onAttempt: (MethodSignature) -> Unit
+)
+
 /** Must escape the adapter's legacy handling of IllegalStateException during class resolution. */
 internal class BodyRecoveryException(message: String, cause: Exception) : RuntimeException(message, cause)
 
@@ -29,9 +35,13 @@ internal class RecoveringBodyInterceptor(
     private val discard: (Body.BodyBuilder) -> Unit = {},
     private val recoveryChains: List<BodyRecoveryChain> = listOf(BodyRecoveryChain("unintercepted body", emptyList())),
     private val onRecovered: (Body.BodyBuilder, Body.BodyBuilder, View, String) -> Unit = { _, _, _, _ -> },
-    private val onRecovery: (BodyInterceptionRecovery) -> Unit = {}
+    private val onRecovery: (BodyInterceptionRecovery) -> Unit = {},
+    private val onAttempt: (MethodSignature) -> Unit = {}
 ) : BodyInterceptor {
     override fun interceptBody(builder: Body.BodyBuilder, view: View) {
+        // Rematerializing this method may complete normally after an earlier recovery.
+        // Notify before allocating or entering recovery so stale receipts cannot survive.
+        onAttempt(builder.methodSignature)
         val backup = Body.builder(MutableBlockControlFlowGraph(builder.controlFlowGraph))
             .setMethodSignature(builder.methodSignature)
             .setModifiers(LinkedHashSet(builder.modifiers))

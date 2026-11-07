@@ -53,6 +53,11 @@ unique for covariant bridges. Its public constructors and serialized report form
 
 Callbacks run synchronously and exactly once per included identifiable method, regardless of internal body
 rematerialization. Abstract/native/no-body declarations have typed statuses and null snapshots.
+Duplicate classpath entries can enumerate the same selected definition more than once. These
+deliver one callback; observation verifies matching metadata and a typed body/control-flow
+fingerprint, failing the load on a conflicting representation. Only these duplicate candidates
+pay fingerprinting cost. Final folding evidence is checked against the delivered receipts after
+all graph processing, so a later diagnostic rematerialization cannot silently change the report.
 An incomplete method may have a snapshot, but that does not establish complete graph extraction.
 Known resolution failures before method processing are delivered before successful return,
 with unknown modifiers/application classification explicitly null. A class that cannot enumerate

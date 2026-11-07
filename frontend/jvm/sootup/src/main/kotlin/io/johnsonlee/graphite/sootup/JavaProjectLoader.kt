@@ -99,7 +99,7 @@ private fun createApkInputLocations(
     interceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor>,
     onFallback: (String) -> Unit,
     log: (String) -> Unit,
-    onRecovery: (BodyInterceptionRecovery) -> Unit = {}
+    tracking: BodyInterceptionTracking? = null
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
     // Dex registers hold unrelated values over time: split them before functional dispatch.
@@ -116,7 +116,8 @@ private fun createApkInputLocations(
         { builder -> folding?.discard(builder) },
         recoveries.map { it.copy(interceptors = interceptorFactory(it.interceptors)) },
         { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) },
-        onRecovery
+        tracking?.onRecovery ?: {},
+        tracking?.onAttempt ?: {}
     )
     val androidVersion = AndroidVersionInfo(path, platforms.toString())
     val apkLocation = ApkAnalysisInputLocation(
@@ -385,9 +386,15 @@ class JavaProjectLoader(
         val folding = config.folding?.let { ConstantFolding(it.rules) }
         foldInterceptors = folding?.bodyInterceptors(emptyList())
         val recoveries = delivery?.let { HashMap<MethodSignature, BodyInterceptionEvidence>() }
-        val inputLocations = createInputLocations(path, folding) { recovery ->
-            recoveries?.set(recovery.method, BodyInterceptionEvidence(recovery.chain, recovery.reason))
+        val tracking = recoveries?.let { receipts ->
+            BodyInterceptionTracking(
+                onRecovery = { recovery ->
+                    receipts[recovery.method] = BodyInterceptionEvidence(recovery.chain, recovery.reason)
+                },
+                onAttempt = { signature -> receipts.remove(signature) }
+            )
         }
+        val inputLocations = createInputLocations(path, folding, tracking)
         val view = createJavaView(inputLocations.locations)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path, inputLocations.dexApi)
@@ -410,6 +417,7 @@ class JavaProjectLoader(
                 adapter.methodRecovery = { signature -> recoveries?.get(signature) }
             }
             val graph = adapter.buildGraph()
+            if (delivery != null) adapter.verifyObservedFolding()
             if (bodyInterceptionFallbackCount > 0) {
                 warn("Recovered $bodyInterceptionFallbackCount APK method body/bodies after interceptor failures")
             }
@@ -450,7 +458,7 @@ class JavaProjectLoader(
     }
 
     private fun createInputLocations(
-        path: Path, folding: ConstantFolding?, onRecovery: (BodyInterceptionRecovery) -> Unit
+        path: Path, folding: ConstantFolding?, tracking: BodyInterceptionTracking?
     ): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
@@ -459,7 +467,7 @@ class JavaProjectLoader(
                 { message ->
                     bodyInterceptionFallbackCount++
                     warn(message)
-                }, ::log, onRecovery
+                }, ::log, tracking
             )
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
