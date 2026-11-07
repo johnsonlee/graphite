@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.MethodFoldObservation
+
 import io.johnsonlee.graphite.core.jvmMethodDescriptor
 import io.johnsonlee.graphite.input.CallSiteKey
 import io.johnsonlee.graphite.input.ConstantFold
@@ -189,6 +191,17 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
      * same call as one read off the graph built without rules.
      */
     fun ordinalsBeforeFolding(signature: MethodSignature): Map<Stmt, Int>? = preFoldOrdinals[signature]
+
+    /** Per-method evidence read only by an opted-in observer, after graph extraction of that body. */
+    fun observation(signature: MethodSignature): MethodFoldObservation {
+        val identity = signature.toString()
+        val method = methods[identity]
+        val calls = folds.indices.mapNotNull { index -> sites[index][identity]?.let { index to it.calls } }.toMap()
+        val reasons = folds.indices.mapNotNull { index ->
+            unsupported[index][identity]?.let { entries -> index to entries.map { it.reason } }
+        }.toMap()
+        return MethodFoldObservation(calls, reasons, method?.statementsBefore, method?.statementsAfter)
+    }
 
     /** A failed APK interception keeps the original body, so none of this run's folds survive. */
     fun discard(builder: Body.BodyBuilder) {

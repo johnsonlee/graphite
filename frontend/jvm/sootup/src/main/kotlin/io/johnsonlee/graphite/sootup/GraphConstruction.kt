@@ -1,5 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.bytecode.DeclaredTypesReader
+import io.johnsonlee.graphite.bytecode.InheritedFieldTypes
+
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DeclaredTypeTable

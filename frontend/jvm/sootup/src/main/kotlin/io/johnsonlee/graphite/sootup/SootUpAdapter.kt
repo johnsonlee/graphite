@@ -1,5 +1,17 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.PendingDispatch
+import io.johnsonlee.graphite.analysis.SlotAdapter
+import io.johnsonlee.graphite.analysis.UntrackedDispatch
+
+import io.johnsonlee.graphite.input.BodyInterceptionEvidence
+import io.johnsonlee.graphite.input.MethodFoldObservation
+
+import io.johnsonlee.graphite.analysis.InterproceduralDataflow
+import io.johnsonlee.graphite.bytecode.BytecodeSignatureReader
+
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.FieldNode
@@ -183,6 +195,19 @@ class SootUpAdapter(
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     internal val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
 ) {
+    /** Configured only by an observed load; ordinary loads allocate no snapshots or receipts. */
+    internal var bodyDelivery: FoldedBodyDelivery? = null
+    internal var methodFoldObservation: (MethodSignature) -> MethodFoldObservation? = { null }
+    internal var methodRecovery: (MethodSignature) -> BodyInterceptionEvidence? = { null }
+
+    /** A diagnostic rematerialization must not silently replace the observed body's fold evidence. */
+    internal fun verifyObservedFolding() {
+        val delivery = bodyDelivery ?: return
+        methodDescriptorCache.forEach { (signature, method) ->
+            delivery.verifyFolding(method.identity, methodFoldObservation(signature))
+        }
+    }
+
     internal val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     internal val extractAnnotationsEnabled = config.extractAnnotations
     /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */

@@ -47,6 +47,7 @@ import java.io.EOFException
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.DirectoryNotEmptyException
 import java.util.IdentityHashMap
 
 /**
@@ -71,6 +72,7 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
 
     private val nodeStream = workDir.resolve(NODES_FILE).toFile().outputStream().buffered()
     private val edgeStream = workDir.resolve(EDGES_FILE).toFile().outputStream().buffered()
+    private var ownsOutgoingOffsets = !Files.exists(workDir.resolve(OUTGOING_OFFSETS_FILE))
 
     private var nodeCount = 0
     private var edgeCount = 0L
@@ -92,6 +94,24 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
     private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
     private var analysisCompleteness: AnalysisCompleteness? = null
+
+    /**
+     * Abandon a failed build, closing both output streams and removing its data files.
+     * Never call this after handing the built graph to a consumer: it owns these files then.
+     */
+    fun abort() {
+        try {
+            nodeStream.use { edgeStream.close() }
+        } finally {
+            listOf(NODES_FILE, EDGES_FILE).forEach { Files.deleteIfExists(workDir.resolve(it)) }
+            if (ownsOutgoingOffsets) Files.deleteIfExists(workDir.resolve(OUTGOING_OFFSETS_FILE))
+            try {
+                Files.deleteIfExists(workDir)
+            } catch (_: DirectoryNotEmptyException) {
+                // A caller-supplied directory can also hold files the builder does not own.
+            }
+        }
+    }
 
     override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
         declaredTypeTable = table
@@ -280,6 +300,7 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
         val outgoingOffsetsFile = workDir.resolve(OUTGOING_OFFSETS_FILE)
         System.arraycopy(outgoingStarts, 0, outgoingCounts, 0, outgoingCounts.size)
         MmapGraph.createMappedLongOffsetIndex(outgoingOffsetsFile, totalEdges).use { outgoingOffsets ->
+            ownsOutgoingOffsets = true
             var offset = 0L
             DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
                 while (offset < edgeFileLen) {

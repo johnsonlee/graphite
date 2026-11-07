@@ -1,4 +1,4 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.analysis
 
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.MethodDescriptor

@@ -1,6 +1,5 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.input
 
-import io.johnsonlee.graphite.input.JavaArchiveLayout
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry

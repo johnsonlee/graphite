@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files

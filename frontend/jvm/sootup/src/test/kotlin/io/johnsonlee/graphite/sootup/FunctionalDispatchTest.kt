@@ -1,5 +1,16 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.SlotAdapter
+import io.johnsonlee.graphite.analysis.adaptedChain
+import io.johnsonlee.graphite.analysis.isAnonymousClassName
+import io.johnsonlee.graphite.analysis.isKotlinCallableReferenceBaseClass
+import io.johnsonlee.graphite.analysis.isKotlinFunctionBaseClass
+import io.johnsonlee.graphite.analysis.isKotlinFunctionInterface
+import io.johnsonlee.graphite.analysis.isKotlinPropertyReferenceClass
+import io.johnsonlee.graphite.analysis.isNonFunctionType
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor

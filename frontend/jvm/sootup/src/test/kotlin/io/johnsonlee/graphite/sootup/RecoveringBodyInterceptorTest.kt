@@ -22,6 +22,7 @@ import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.BranchingStmt
 import sootup.core.model.Body
 import sootup.core.model.SourceType
+import sootup.core.signatures.MethodSignature
 import sootup.java.core.views.JavaView
 
 class RecoveringBodyInterceptorTest {
@@ -68,6 +69,7 @@ class RecoveringBodyInterceptorTest {
         val locals = builder.locals.toSet()
         val starting = builder.controlFlowGraph.startingStmt
         val failures = mutableListOf<String>()
+        val recoveries = mutableListOf<BodyInterceptionRecovery>()
         val mutateThenFail = BodyInterceptor { candidate, _ ->
             if (candidate.methodSignature.name == "branches") {
                 candidate.controlFlowGraph.blocks.toList().forEach(candidate.controlFlowGraph::removeBlock)
@@ -77,7 +79,7 @@ class RecoveringBodyInterceptorTest {
             val returned = candidate.stmts.filterIsInstance<JReturnStmt>().single()
             candidate.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
         }
-        val guard = RecoveringBodyInterceptor(listOf(mutateThenFail), failures::add)
+        val guard = RecoveringBodyInterceptor(listOf(mutateThenFail), failures::add, onRecovery = recoveries::add)
         guard.interceptBody(builder, view)
         assertEquals(original, builder.build().toString())
         assertEquals(locals, builder.locals)
@@ -85,11 +87,15 @@ class RecoveringBodyInterceptorTest {
         assertEquals(1, failures.size)
         assertTrue(failures.single().contains("Shapes: int branches(int)"))
         assertTrue(failures.single().contains("deliberate failure after mutation"))
+        assertEquals(builder.methodSignature, recoveries.single().method)
+        assertEquals("unintercepted body", recoveries.single().chain)
+        assertTrue(recoveries.single().reason.endsWith("failed: deliberate failure after mutation"))
 
         val next = method(view, "value")
         guard.interceptBody(next, view)
         assertEquals(IntConstant.getInstance(42), next.build().stmts.filterIsInstance<JReturnStmt>().single().op)
         assertEquals(1, failures.size)
+        assertEquals(1, recoveries.size, "a successful primary chain produces no recovery observation")
     }
 
     @Test
@@ -102,7 +108,10 @@ class RecoveringBodyInterceptorTest {
         val blocks = graph.blocks.toList()
         assertTrue(exceptional.values.any { it.isNotEmpty() }, "fixture must contain trap edges")
         assertTrue(successors.values.any { it.size > it.toSet().size }, "fixture must have duplicate switch targets")
-        RecoveringBodyInterceptor(listOf(BodyInterceptor { _, _ -> }), { error(it) }).interceptBody(builder, view)
+        RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> }), { error(it) },
+            onRecovery = { error("successful interception must not report recovery: $it") }
+        ).interceptBody(builder, view)
         assertEquals(original, builder.build().toString())
         assertEquals(successors, graph.nodes.associateWith { graph.successors(it).toList() })
         assertEquals(exceptional, graph.nodes.associateWith { graph.exceptionalSuccessors(it).toMap() })
@@ -138,14 +147,18 @@ class RecoveringBodyInterceptorTest {
         val (builder, view) = fixture()
         val original = builder.build().toString()
         val failures = mutableListOf<String>()
+        val recoveries = mutableListOf<BodyInterceptionRecovery>()
         RecoveringBodyInterceptor(listOf(BodyInterceptor { candidate, _ ->
             val graph = candidate.controlFlowGraph
             val branching = graph.nodes.first { graph.successors(it).size > 1 }
             graph.successors(branching).toList().forEach { graph.removeEdge(branching, it) }
-        }), failures::add).interceptBody(builder, view)
+        }), failures::add, onRecovery = recoveries::add).interceptBody(builder, view)
         assertEquals(original, builder.build().toString())
         assertEquals(1, failures.size)
         assertTrue(failures.single().contains("body validation failed"), failures.single())
+        assertEquals(builder.methodSignature, recoveries.single().method)
+        assertEquals("unintercepted body", recoveries.single().chain)
+        assertTrue(recoveries.single().reason.startsWith("body validation failed:"))
     }
 
     @Test
@@ -155,7 +168,8 @@ class RecoveringBodyInterceptorTest {
         val guard = RecoveringBodyInterceptor(listOf(BodyInterceptor { candidate, _ ->
             candidate.locals.clear()
             throw failure
-        }), { error("OOM must not be reported as an interceptor fallback") })
+        }), { error("OOM must not be reported as an interceptor fallback") },
+            onRecovery = { error("OOM must not be reported as recovery: $it") })
         assertSame(failure, assertFailsWith<OutOfMemoryError> { guard.interceptBody(builder, view) })
         assertTrue(builder.locals.isEmpty(), "VM errors propagate without allocating a replacement graph")
     }
@@ -195,17 +209,22 @@ class RecoveringBodyInterceptorTest {
             active.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
         }
         val warnings = mutableListOf<String>()
+        val recoveries = mutableListOf<BodyInterceptionRecovery>()
         RecoveringBodyInterceptor(
             listOf(failing("primary")), warnings::add,
             recoveryChains = listOf(
                 BodyRecoveryChain("split defaults", listOf(failing("splitter"))),
                 BodyRecoveryChain("defaults", listOf(normalize))
-            )
+            ),
+            onRecovery = recoveries::add
         ).interceptBody(builder, view)
         assertEquals(listOf("primary", "splitter", "defaults"), attempts)
         assertEquals(IntConstant.getInstance(42), builder.build().stmts.filterIsInstance<JReturnStmt>().single().op)
         assertEquals(1, warnings.size)
         assertTrue(warnings.single().contains("using defaults"))
+        assertEquals(builder.methodSignature, recoveries.single().method)
+        assertEquals("defaults", recoveries.single().chain)
+        assertTrue(recoveries.single().reason.endsWith("failed: primary failure"), "report the original failure, not a failed retry")
     }
 
     @Test
@@ -217,16 +236,21 @@ class RecoveringBodyInterceptorTest {
             active.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
         }
         val warnings = mutableListOf<String>()
+        val recoveries = mutableListOf<BodyInterceptionRecovery>()
         RecoveringBodyInterceptor(
             listOf(BodyInterceptor { _, _ -> error("fold failed") }), warnings::add,
             recoveryChains = listOf(
                 BodyRecoveryChain("split defaults", listOf(normalize)),
                 BodyRecoveryChain("defaults", listOf(BodyInterceptor { _, _ -> error("weaker retry must not run") }))
-            )
+            ),
+            onRecovery = recoveries::add
         ).interceptBody(builder, view)
         assertEquals(IntConstant.getInstance(42), builder.build().stmts.filterIsInstance<JReturnStmt>().single().op)
         assertEquals(1, warnings.size)
         assertTrue(warnings.single().contains("using split defaults"))
+        assertEquals(builder.methodSignature, recoveries.single().method)
+        assertEquals("split defaults", recoveries.single().chain)
+        assertTrue(recoveries.single().reason.endsWith("failed: fold failed"))
     }
 
     @Test
@@ -236,11 +260,91 @@ class RecoveringBodyInterceptorTest {
         val fail = BodyInterceptor { _, _ -> error("cannot normalize constants") }
         val guard = RecoveringBodyInterceptor(
             listOf(fail), { error("failed retries must not be counted as recovery") },
-            recoveryChains = listOf(BodyRecoveryChain("required defaults", listOf(fail)))
+            recoveryChains = listOf(BodyRecoveryChain("required defaults", listOf(fail))),
+            onRecovery = { error("failed retries must not be reported as recovery: $it") }
         )
         val failure = assertFailsWith<BodyRecoveryException> { guard.interceptBody(builder, view) }
         assertTrue(failure.message!!.contains("required dex normalization failed"))
         assertEquals("cannot normalize constants", failure.cause!!.message)
+    }
+
+    @Test
+    fun `recovery callback failure propagates after restoring the body and existing accounting`() {
+        val (builder, view) = fixture()
+        val original = builder.build().toString()
+        val failure = IllegalArgumentException("cannot capture recovery")
+        val events = mutableListOf<String>()
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> error("primary failure") }),
+            { events.add("fallback") },
+            discard = { events.add("discard") },
+            onRecovered = { _, _, _, _ -> events.add("recovered") },
+            onRecovery = {
+                events.add("observation")
+                assertEquals(builder.methodSignature, it.method)
+                assertEquals("unintercepted body", it.chain)
+                throw failure
+            }
+        )
+        assertSame(failure, assertFailsWith<IllegalArgumentException> { guard.interceptBody(builder, view) })
+        assertEquals(original, builder.build().toString())
+        assertEquals(listOf("discard", "recovered", "fallback", "observation"), events)
+    }
+
+    @Test
+    fun `a successful rematerialization clears the same method's earlier recovery receipt`() {
+        val (_, view) = fixture()
+        val first = method(view, "value")
+        val recoveries = mutableMapOf<MethodSignature, BodyInterceptionRecovery>()
+        val attempts = mutableListOf<MethodSignature>()
+        val warnings = mutableListOf<String>()
+        var failPrimary = true
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { builder, _ ->
+                assertNull(recoveries[builder.methodSignature], "each primary attempt must start without stale evidence")
+                if (failPrimary) error("first materialization failed")
+                val returned = builder.stmts.filterIsInstance<JReturnStmt>().single()
+                builder.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
+            }),
+            warnings::add,
+            onRecovery = { recoveries[it.method] = it },
+            onAttempt = {
+                attempts.add(it)
+                recoveries.remove(it)
+            }
+        )
+        guard.interceptBody(first, view)
+        val recovered = assertNotNull(recoveries[first.methodSignature])
+        assertEquals("unintercepted body", recovered.chain)
+        assertTrue(recovered.reason.endsWith("failed: first materialization failed"))
+        assertEquals(IntConstant.getInstance(7), first.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+
+        failPrimary = false
+        val next = method(view, "value")
+        assertEquals(first.methodSignature, next.methodSignature)
+        guard.interceptBody(next, view)
+        assertEquals(IntConstant.getInstance(42), next.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+        assertTrue(recoveries.isEmpty(), "success must not inherit the previous body materialization's recovery")
+        assertEquals(listOf(first.methodSignature, first.methodSignature), attempts)
+        assertEquals(1, warnings.size, "clearing evidence must not change cumulative fallback accounting")
+    }
+
+    @Test
+    fun `attempt callback failure propagates before interception or recovery`() {
+        val (builder, view) = fixture()
+        val original = builder.build().toString()
+        val failure = IllegalStateException("cannot clear recovery receipt")
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> error("the primary chain must not run after attempt failure") }),
+            { error("attempt callback failure must not count as a fallback") },
+            onRecovery = { error("attempt callback failure must not trigger recovery") },
+            onAttempt = {
+                assertEquals(builder.methodSignature, it)
+                throw failure
+            }
+        )
+        assertSame(failure, assertFailsWith<IllegalStateException> { guard.interceptBody(builder, view) })
+        assertEquals(original, builder.build().toString())
     }
 
     @Test

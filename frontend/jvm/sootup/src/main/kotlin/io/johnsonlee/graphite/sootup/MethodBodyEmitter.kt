@@ -1,5 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+
+import io.johnsonlee.graphite.input.JvmMethodIdentity
+
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -11,6 +15,7 @@ import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.AnalysisStatus
+import io.johnsonlee.graphite.graph.ArtifactRole
 import java.util.IdentityHashMap
 import sootup.core.jimple.common.Local
 import sootup.core.jimple.common.Value
@@ -28,6 +33,7 @@ import sootup.core.jimple.common.stmt.JIfStmt
 import sootup.core.jimple.common.stmt.JInvokeStmt
 import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.Stmt
+import sootup.core.model.Body
 import sootup.core.model.SootMethod
 import io.johnsonlee.graphite.sootup.SootUpAdapter.LocaleBuilderSpec
 import io.johnsonlee.graphite.sootup.SootUpAdapter.Companion.MAX_CONTROL_FLOW_STATEMENTS
@@ -126,11 +132,13 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
         activeControlFlowTruncated = false
         var status = AnalysisStatus.ANALYZED
         var failure: String? = null
+        var analyzedBody: Body? = null
 
         try {
             // Process method body if available
             if (method.hasBody()) {
-                processMethodBody(method, methodDescriptor)
+                analyzedBody = method.body
+                processMethodBody(method, methodDescriptor, analyzedBody)
                 if (activeControlFlowTruncated) status = AnalysisStatus.ANALYZED_WITHOUT_CONTROL_FLOW
             } else {
                 status = when {
@@ -159,10 +167,22 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
             metadata.clearMethodState(methodDescriptor)
             methodSources.releaseConversionState(method)
         }
+        context.bodyDelivery?.let { delivery ->
+            val className = methodDescriptor.declaringClass.className
+            val owner = checkNotNull(context.classesByNameCache?.get(className))
+            val origin = context.construction.evidenceOrigin(owner)
+            val role = if (origin == null) null else context.artifactRoles[origin]
+                ?: if (origin == context.singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
+            delivery.deliver(createMethodObservationEvidence(
+                JvmMethodIdentity.of(methodDescriptor), method.modifiers, origin, role,
+                className in context.applicationClasses, status, failure,
+                context.methodRecovery(method.signature), context.methodFoldObservation(method.signature)
+            ), analyzedBody, className in context.duplicateClasses)
+        }
     }
 
-    fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor) {
-        val stmtGraph = method.body.controlFlowGraph
+    fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor, body: Body) {
+        val stmtGraph = body.controlFlowGraph
         val statements = stmtGraph.stmts
         // A body a rule folded in keeps the numbering it had before the fold, so a surviving call's
         // ordinal is the one the unfolded graph gave it; every other body is numbered as it stands.

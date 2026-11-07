@@ -5,6 +5,95 @@ call matching the listed call-site patterns by a constant while SootUp builds ea
 before the graph has a single node. It exists for one job: a diff of two graphs built from a base and a
 head must not see the code a feature flag or experiment keeps switched off.
 
+## Observing the analyzed bodies (SootUp API)
+
+`JavaProjectLoader.loadObserved(path, observer)` streams immutable, owned snapshots of the
+folded bodies consumed by that same build. It returns the `ObservedJavaLoad` interface, which exposes
+the original graph, the final fold report (null without a fold plan), and final completeness.
+Each callback delivers a method's evidence together with its snapshot. The consumer chooses which
+observations to retain. Graphite keeps validation state for the duration of the build.
+
+`ObservedJavaLoad`, `JvmMethodIdentity`, `BodyInterceptionEvidence`, and `MethodFoldObservation`
+are frontend-independent interfaces in `io.johnsonlee.graphite.input` in the core module.
+The observer, method event, and method evidence expose SootUp snapshots or modifiers and live
+in `io.johnsonlee.graphite.sootup`. `FoldedBodySnapshot` is a concrete immutable value whose
+private construction enforces ownership of the copied SootUp body.
+
+```kotlin
+val retained = mutableMapOf<String, FoldedMethodObservation>()
+val result = JavaProjectLoader(config).loadObserved(input) { observation ->
+    if (observation.evidence.method.owner.startsWith("com.example.")) {
+        retained[observation.evidence.method.identity] = observation
+    }
+}
+val graph = result.graph
+val completeness = result.completeness
+// Use retained observations only after this load succeeds. Reconcile the required methods,
+// their final statuses, class origins, and completeness.callSiteGaps before proving effects.
+```
+
+The observer receives application methods and library methods admitted by
+`LoaderConfig.dependencyBodies`, including late reachable expansion. It does not run domain
+extensions on library classes, create application roots, widen scope, evaluate Cypher again,
+rerun interception, or build an auxiliary graph. A delivered method can be inactive: the graph
+and the consumer's declared roots determine which effects matter.
+
+Each event carries the owner, name and JVM descriptor (including the return type), copied
+modifiers, the selected class/artifact origin, artifact role, application classification, and
+local processing status. Its `evidence.method.identity` joins the returned graph's method
+identity and completeness method keys. Origin joins `completeness.classes[owner].origin` and
+`completeness.artifacts[origin]`; duplicate definitions and multi-release limitations remain in
+that final evidence. Artifact role and application classification are separate: a class in an
+application package can reside in an artifact whose role is library.
+
+The snapshot preserves typed SootUp instructions, locals, positions, branch successor ordering
+and exceptional control flow. It can be retained after the callback or load; no copying by the
+consumer is required. Graphite releases each snapshot after delivery unless the observer retains
+it. Evidence retained by the consumer remains available after the load. Build-time validation
+state is released when the invocation finishes. SootUp's non-SSA representation is
+the first supported backend contract; unknown representations (including SSA phi) fail capture
+rather than silently omit semantics. Some SootUp accessors return mutable computed copies;
+changing those does not change the snapshot. No original builder, view or body source is exposed.
+
+Folding evidence in each receipt is read when that method is consumed by graph extraction.
+`folding.foldedCalls` and `folding.unsupportedReasons` are keyed by rule index in the returned
+fold report; statement counts cover all folds in that method. Use the receipt's full JVM
+identity for this join. The legacy report's display signatures omit return types and are not
+unique for covariant bridges. Its public constructors and serialized report format are unchanged.
+
+Callbacks run synchronously and exactly once per included identifiable method, regardless of internal body
+rematerialization. Abstract/native/no-body declarations have typed statuses and null snapshots.
+Duplicate classpath entries can enumerate the same selected definition more than once. These
+deliver one callback; observation verifies matching metadata and a typed body/control-flow
+fingerprint, failing the load on a conflicting representation. Only these duplicate candidates
+pay fingerprinting cost. Final folding evidence is checked against the delivered receipts after
+all graph processing, so a later diagnostic rematerialization cannot silently change the report.
+An incomplete method may have a snapshot, but that does not establish complete graph extraction.
+Known resolution failures before method processing are delivered before successful return,
+with unknown modifiers/application classification explicitly null. A class that cannot enumerate
+its methods retains class-level `RESOLUTION_FAILED`; excluded/unexpanded classes retain
+`EXCLUDED_BY_SCOPE`/`NOT_EXPANDED` without resolving their methods to manufacture callbacks.
+Absent callbacks and empty instruction lists never establish effect-free behavior.
+
+An APK interception fallback records the retained recovery chain and original failure reason
+per observed method, even without a fold plan. Recovery is separate from graph analysis status:
+a retained body can be analyzed while requested transformations were refused. Body delivery also
+precedes dispatch finalization. Final unresolved, partial and saturated `callSiteGaps` remain
+gaps after successful capture. `ANALYZED_WITHOUT_CONTROL_FLOW` means dataflow/calls were read
+but graph branch scopes were omitted; a full snapshot does not change that graph status.
+
+All observations are provisional until `loadObserved` returns. Snapshot or observer failure
+aborts the load, propagates the failure, and discards the failed build's private mmap files.
+Consumers must discard that invocation's provisional captures. One loader permits one active
+load, including callbacks; overlapping/reentrant loads fail immediately. Use separate loaders
+and mutable sinks for concurrent/base/head loads. There is no process-wide observer registry.
+
+Snapshot copying and consumer work add opt-in CPU, memory and load time; retaining all bodies
+is the consumer's choice. Correctness tests compare observation on/off graph facts, folding,
+roles and final completeness. Performance acceptance requires matched real dependency-heavy
+multi-graph loads and actual cross-graph requests; small fixtures and single-graph timings are
+not performance evidence.
+
 ## Why on the body, not on the graph
 
 The graph records the two sides of a branch as node sets (`BranchScope`). Three kinds of

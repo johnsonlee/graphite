@@ -1,5 +1,10 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.bytecode.MemberDeclaration
+import io.johnsonlee.graphite.bytecode.classDescriptor
+import io.johnsonlee.graphite.input.ArchiveResourceAccessor
+
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.DeclaredTypeExpansionBudget
 import io.johnsonlee.graphite.input.ResourceAccessor

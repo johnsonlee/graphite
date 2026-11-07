@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.bytecode.DeclaredTypesReader
+
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.input.LoaderConfig

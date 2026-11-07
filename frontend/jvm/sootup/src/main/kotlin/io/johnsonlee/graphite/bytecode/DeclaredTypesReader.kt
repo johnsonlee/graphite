@@ -1,4 +1,4 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.bytecode
 
 import io.johnsonlee.graphite.graph.ClassTypes
 import io.johnsonlee.graphite.graph.DeclaredType

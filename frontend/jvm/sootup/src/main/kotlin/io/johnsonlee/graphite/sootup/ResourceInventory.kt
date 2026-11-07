@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ASM_API_VERSION
+
 import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.nio.file.Files

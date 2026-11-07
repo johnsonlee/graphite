@@ -5,10 +5,20 @@ import sootup.core.graph.MutableBasicBlock
 import sootup.core.interceptor.BodyInterceptor
 import sootup.core.jimple.basic.NoPositionInformation
 import sootup.core.model.Body
+import sootup.core.signatures.MethodSignature
 import sootup.core.views.View
 
 /** A less ambitious chain that still produces a usable body after the primary chain fails. */
 internal data class BodyRecoveryChain(val description: String, val interceptors: List<BodyInterceptor>)
+
+/** The primary interception failure and the successful recovery used for this method body. */
+internal data class BodyInterceptionRecovery(val method: MethodSignature, val chain: String, val reason: String)
+
+/** Invocation-local tracking supplied only when folded-body observation is enabled. */
+internal class BodyInterceptionTracking(
+    val onRecovery: (BodyInterceptionRecovery) -> Unit,
+    val onAttempt: (MethodSignature) -> Unit
+)
 
 /** Must escape the adapter's legacy handling of IllegalStateException during class resolution. */
 internal class BodyRecoveryException(message: String, cause: Exception) : RuntimeException(message, cause)
@@ -24,9 +34,14 @@ internal class RecoveringBodyInterceptor(
     private val onFallback: (String) -> Unit,
     private val discard: (Body.BodyBuilder) -> Unit = {},
     private val recoveryChains: List<BodyRecoveryChain> = listOf(BodyRecoveryChain("unintercepted body", emptyList())),
-    private val onRecovered: (Body.BodyBuilder, Body.BodyBuilder, View, String) -> Unit = { _, _, _, _ -> }
+    private val onRecovered: (Body.BodyBuilder, Body.BodyBuilder, View, String) -> Unit = { _, _, _, _ -> },
+    private val onRecovery: (BodyInterceptionRecovery) -> Unit = {},
+    private val onAttempt: (MethodSignature) -> Unit = {}
 ) : BodyInterceptor {
     override fun interceptBody(builder: Body.BodyBuilder, view: View) {
+        // Rematerializing this method may complete normally after an earlier recovery.
+        // Notify before allocating or entering recovery so stale receipts cannot survive.
+        onAttempt(builder.methodSignature)
         val backup = Body.builder(MutableBlockControlFlowGraph(builder.controlFlowGraph))
             .setMethodSignature(builder.methodSignature)
             .setModifiers(LinkedHashSet(builder.modifiers))
@@ -41,6 +56,7 @@ internal class RecoveringBodyInterceptor(
             if (retryFailure == null) {
                 onRecovered(builder, backup, view, failure.description)
                 onFallback("Recovered body for ${builder.methodSignature} using ${recovery.description}: ${failure.description}")
+                onRecovery(BodyInterceptionRecovery(builder.methodSignature, recovery.description, failure.description))
                 return
             }
             lastFailure = retryFailure

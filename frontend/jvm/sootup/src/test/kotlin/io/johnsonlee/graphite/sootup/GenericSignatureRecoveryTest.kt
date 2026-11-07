@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.GenericSignatureParser
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
