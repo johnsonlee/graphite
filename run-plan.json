@@ -1,0 +1,12 @@
+{
+  "pullRequest": 210,
+  "base": "1c28f4aea222b4696f3280c769589dec0704a694",
+  "head": "fb41a6398fa96d9d37d6d5849e6dde95049d5228",
+  "trustedHarness": "1c28f4aea222b4696f3280c769589dec0704a694",
+  "environment": "Local Darwin arm64, matched baseline/head on the same host; fixed controller and prepared fixtures from current target main; no unrelated test or compiler work during measured phases",
+  "frontend": "Fresh usable build/save/readback of 64 real shards across Android-all, Tika, Hive, and Kotlin compiler. Both JAR arms use G1, 4 GiB ceiling, exit on OOM. Whole Tika/Hive/Kotlin JARs are correctness/readback/OOM checks only; do not use their timings.",
+  "native": "Fixed 73-case production Rust HTTP real64 workload; each measured request must actually address multiple graphs. Inspect the final raw graphIds scope for every sample. Fresh server per arm; registry readiness and startup through first-use oracle separately. Per case: 1 oracle, 2 warmups, 20 pressure requests at 4 workers; 40 isolated requests at 1 worker when the declared pressure p50 <100 ms condition is met. Nearest-rank p50/p95 per case; end at full HTTP-body consumption before validation/writes. Retain every sample and failure.",
+  "correctness": "Same complete typed responses, final scope, repeated results, error/recovery/capacity checks; all applicable JVM check tasks except duplicate whole-JAR task covered by controller. Observer on/off correctness additionally uses both pinned GraphFold production distributions under 4 GiB.",
+  "reviewSummarySelection": "Include the three highest baseline pressure p95 cases, and the two largest positive absolute increases in each of pressure p50, pressure p95, isolated p50, isolated p95, deduplicated by case and mode. Display both p50 and p95 for each selected row, base/head and absolute ms before percentages. Publish the full report and all samples; selection affects summary only.",
+  "acceptanceLimits": "Correctness, complete execution and JVM heap/OOM checks precede interpretation. Timing REPORT_ONLY; no performance threshold waived. CPU and RSS unavailable unless collected at the required operation boundaries. No Linux cgroup OOM evidence on Darwin. Fixed real64 exercises the existing path without observer or dependencyBodies, so no observer-enabled performance or GraphFold precision claim. Batched pressure is not sustained saturation."
+}

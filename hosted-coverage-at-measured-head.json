@@ -1,0 +1,9 @@
+{
+  "source": "https://github.com/johnsonlee/graphite/actions/runs/42332970083",
+  "head": "fb41a6398fa96d9d37d6d5849e6dde95049d5228",
+  "result": "FAIL",
+  "module": "sootup",
+  "coveredLines": 5871,
+  "totalLines": 6030,
+  "requiredPercent": 98
+}

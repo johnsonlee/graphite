@@ -1,0 +1,56 @@
+{
+  "productRevision": "fb41a6398fa96d9d37d6d5849e6dde95049d5228",
+  "result": "PASS",
+  "command": "JAVA_TOOL_OPTIONS='-Xmx4g -XX:+ExitOnOutOfMemoryError' ./gradlew check -x :webgraph:largeCorpusTest --console=plain",
+  "largeCorpusCoverage": "The separate fixed controller run supplies complete whole-JAR correctness/OOM/readback, under 4 GiB; not timing evidence.",
+  "modules": {
+    "core": {
+      "tests": 513,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sootup": {
+      "tests": 749,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ir": {
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "cypher": {
+      "tests": 1394,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "query": {
+      "tests": 50,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "explore": {
+      "tests": 228,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "webgraph": {
+      "tests": 410,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "total": {
+    "tests": 3353,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

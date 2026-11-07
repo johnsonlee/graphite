@@ -1,0 +1,22 @@
+{
+  "os": "Darwin 23.3.0 arm64",
+  "processor": "Apple M3 Max",
+  "logicalCpus": 16,
+  "physicalMemoryBytes": 68719476736,
+  "java": [
+    "openjdk version \"17.0.21.0.3\" 2026-10-24",
+    "OpenJDK Runtime Environment Homebrew (build 17.0.21.0.3+0)",
+    "OpenJDK 64-Bit Server VM Homebrew (build 17.0.21.0.3+0, mixed mode, sharing)"
+  ],
+  "rustc": [
+    "rustc 1.93.0 (254b59607 2026-01-19)",
+    "binary: rustc",
+    "commit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c",
+    "commit-date: 2026-01-19",
+    "host: aarch64-apple-darwin",
+    "release: 1.93.0",
+    "LLVM version: 21.1.8"
+  ],
+  "comparison": "Baseline and head measured on this same local Darwin host with the trusted fixed controller",
+  "linuxHostOomEvidence": false
+}
