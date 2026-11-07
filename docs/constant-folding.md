@@ -8,9 +8,9 @@ head must not see the code a feature flag or experiment keeps switched off.
 ## Observing the analyzed bodies (SootUp API)
 
 `JavaProjectLoader.loadObserved(path, observer)` streams immutable, owned snapshots of the
-folded bodies consumed by that same build. It returns `ObservedJavaLoad`: the original graph,
-the final fold report (null without a fold plan), final completeness, and method observation
-receipts. The existing `load(path)` API remains available and creates no snapshots or receipts.
+folded bodies consumed by that same build. It returns the `ObservedJavaLoad` interface, which exposes
+the original graph, the final fold report (null without a fold plan), final completeness, and method
+observation receipts. The existing `load(path)` API remains available and creates no snapshots or receipts.
 
 ```kotlin
 val snapshots = mutableMapOf<String, FoldedBodySnapshot>()

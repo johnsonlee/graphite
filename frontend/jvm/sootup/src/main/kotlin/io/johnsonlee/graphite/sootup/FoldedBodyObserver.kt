@@ -106,13 +106,21 @@ fun interface FoldedBodyObserver {
  * its missing method callbacks never establish successful capture. EXTERNAL/UNKNOWN_MEMBER
  * retain their existing meaning. This result adds no persistent graph format or IR storage.
  */
-class ObservedJavaLoad internal constructor(
-    val graph: Graph,
-    val foldReport: FoldReport?,
+interface ObservedJavaLoad {
+    val graph: Graph
+    val foldReport: FoldReport?
+    val observations: Map<String, MethodObservationEvidence>
+    val completeness: AnalysisCompleteness
+}
+
+private class SootUpObservedJavaLoad(
+    override val graph: Graph,
+    override val foldReport: FoldReport?,
+    override val completeness: AnalysisCompleteness,
     observations: Map<String, MethodObservationEvidence>
-) {
-    val observations: Map<String, MethodObservationEvidence> = Collections.unmodifiableMap(LinkedHashMap(observations))
-    val completeness: AnalysisCompleteness = requireNotNull(graph.analysisCompleteness())
+) : ObservedJavaLoad {
+    override val observations: Map<String, MethodObservationEvidence> =
+        Collections.unmodifiableMap(LinkedHashMap(observations))
 }
 
 /** Internal delivery state exists only for an opted-in invocation. */
@@ -173,6 +181,6 @@ internal class FoldedBodyDelivery(private val observer: FoldedBodyObserver) {
         graph.methods(MethodPattern()).forEach { method ->
             check(method.identity in observations) { "Missing body observation: ${method.identity}" }
         }
-        return ObservedJavaLoad(graph, report, observations)
+        return SootUpObservedJavaLoad(graph, report, completeness, observations)
     }
 }
