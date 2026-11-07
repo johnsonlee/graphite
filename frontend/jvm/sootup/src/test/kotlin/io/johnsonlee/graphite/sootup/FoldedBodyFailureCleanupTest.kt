@@ -3,14 +3,41 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.input.FoldPlan
 import java.nio.file.Files
+import java.nio.file.DirectoryNotEmptyException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class FoldedBodyFailureCleanupTest : FoldedBodyObservationFixture() {
+    @Test
+    fun `cleanup failure is suppressed on the original observer error`() {
+        val input = smallInput()
+        val directory = Files.createTempDirectory("observer-cleanup-failure")
+        val failure = IllegalArgumentException("cannot consume observed body")
+        val loader = JavaProjectLoader(graphBuilderFactory = { MmapGraphBuilder(directory) })
+        try {
+            val failed = assertFails {
+                loader.loadObserved(input) {
+                    // Simulate a filesystem cleanup error on an output that has not yet been mapped.
+                    val blockedIndex = Files.createDirectory(directory.resolve("outgoing-offsets.dat"))
+                    Files.writeString(blockedIndex.resolve("keep"), "unrelated data")
+                    throw failure
+                }
+            }
+            assertSame(failure, failed)
+            assertIs<DirectoryNotEmptyException>(failed.suppressed.single())
+            assertEquals("unrelated data", Files.readString(directory.resolve("outgoing-offsets.dat/keep")))
+            assertFalse(Files.exists(directory.resolve("nodes.dat")))
+            assertFalse(Files.exists(directory.resolve("edges.dat")))
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
     @Test
     fun `observer failure discards partial mmap files and subsequent load succeeds`() {
         val input = smallInput()

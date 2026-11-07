@@ -39,11 +39,13 @@ class FoldedBodyObservationTest : FoldedBodyObservationFixture() {
     fun `declared observation preserves folded graph facts and reports explicit body availability`() {
         val input = bootJar()
         var normalReport: FoldReport? = null
+        val diagnostics = mutableListOf<String>()
         val config = LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true,
             dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar")),
-            folding = FoldPlan(listOf(gateOff)) { normalReport = it })
+            folding = FoldPlan(listOf(gateOff)) { normalReport = it }, verbose = diagnostics::add)
         val normal = JavaProjectLoader(config, false).load(input)
         val expectedReport = normalReport
+        diagnostics.clear()
         val (observed, events) = observe(input, config)
 
         assertEquals(graphFacts(normal), graphFacts(observed.graph))
@@ -81,6 +83,7 @@ class FoldedBodyObservationTest : FoldedBodyObservationFixture() {
         assertEquals(AnalysisStatus.ANALYZED_WITHOUT_CONTROL_FLOW, huge.evidence.status)
         assertNotNull(huge.snapshot)
         assertTrue(assertNotNull(huge.snapshot).body.stmts.any { it.isJIfStmt })
+        assertTrue(diagnostics.any { it.startsWith("Skipping control-flow extraction for $appPackage.Huge.count(int):") })
     }
 
     @Test

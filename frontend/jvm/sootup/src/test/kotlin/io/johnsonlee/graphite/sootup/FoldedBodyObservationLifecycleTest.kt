@@ -1,12 +1,17 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactEvidence
 import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.MethodEvidence
+import io.johnsonlee.graphite.graph.analysisStatus
+import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.AnalysisIdentity
 import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.FoldPlan
@@ -27,6 +32,48 @@ import kotlin.test.assertTrue
 import sootup.core.model.MethodModifier
 
 class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
+    @Test
+    fun `an observed body does not hide incomplete graph extraction`() {
+        val input = smallInput(mapOf(
+            "App.java" to """
+                package sample.scope.app;
+                public class App {
+                    public String run() {
+                        String first = sample.scope.dep.Helper.read();
+                        return sample.scope.dep.Helper.after(first);
+                    }
+                }
+            """.trimIndent(),
+            "Helper.java" to """
+                package sample.scope.dep;
+                public class Helper {
+                    public static String read() { return "first"; }
+                    public static String after(String value) { return value; }
+                }
+            """.trimIndent()
+        ))
+        val method = method("$appPackage.App", "run", returns = "java.lang.String")
+        val log = mutableListOf<String>()
+        val failure = OutOfMemoryError("injected graph extraction failure")
+        val backing = DefaultGraph.Builder()
+        val builder = object : FullGraphBuilder by backing {
+            override fun addNode(node: Node): FullGraphBuilder {
+                if (node is CallSiteNode && node.caller == method && node.callee.name == "after") throw failure
+                return backing.addNode(node)
+            }
+        }
+        val loader = JavaProjectLoader(config().copy(verbose = log::add), graphBuilderFactory = { builder })
+        val events = mutableListOf<FoldedMethodObservation>()
+        val result = loader.loadObserved(input, events::add)
+        val captured = events.single { it.evidence.method.identity == method.identity }
+        assertEquals(listOf("read", "after"), calls(assertNotNull(captured.snapshot).body).map { it.methodSignature.name })
+        assertEquals(listOf("read"), result.graph.nodes<CallSiteNode>().filter { it.caller == method }.map { it.callee.name }.toList())
+        assertEquals(AnalysisStatus.INCOMPLETE, captured.evidence.status)
+        assertEquals(AnalysisStatus.INCOMPLETE, result.graph.analysisStatus(method))
+        assertEquals(failure.message, result.completeness.methods.getValue(method.identity).message)
+        assertTrue(log.any { it.contains(method.signature) && it.contains(failure.message.orEmpty()) })
+    }
+
     @Test
     fun `observer exceptions and OOM escape and the loader can be reused after failure`() {
         val input = smallInput()
