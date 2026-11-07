@@ -342,8 +342,9 @@ class GenericSignatureParserTest {
     fun `should parse unknown primitive descriptor defensively`() {
         val visitorClass = Class.forName("io.johnsonlee.graphite.bytecode.GenericSignatureParser\$TypeSignatureVisitor")
         val visitor = visitorClass.getDeclaredConstructor().apply { isAccessible = true }.newInstance()
-        visitorClass.getDeclaredMethod("visitBaseType", Char::class.javaPrimitiveType).invoke(visitor, 'X')
-        val result = visitorClass.getDeclaredMethod("toTypeDescriptor").invoke(visitor) as TypeDescriptor
+        visitorClass.getDeclaredMethod("visitBaseType", Char::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(visitor, 'X')
+        val result = visitorClass.getDeclaredMethod("toTypeDescriptor").apply { isAccessible = true }.invoke(visitor) as TypeDescriptor
 
         assertEquals("unknown", result.className)
     }
