@@ -1,5 +1,15 @@
 # Conventions
 
+## Public API Design
+
+- Use an interface-first design for every public Graphite API. Define the caller-facing contract
+  before choosing an implementation. Prefer interfaces in JVM APIs and traits in Rust APIs wherever
+  callers need a behavioral contract.
+- Apply this rule to services, extension points, callbacks, and result types. Accept and return the
+  public contract in API signatures, and keep implementation types out of the public API.
+- If a public API exposes a concrete type, explain in review why that type itself belongs in the
+  public contract.
+
 ## Unit Tests
 
 - New or changed unit tests must verify the behavior that matters, not only that code executes.
