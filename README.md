@@ -57,9 +57,10 @@ analysis. Those are substantial analysis layers beyond the parser. Graphite
 provides a program-graph foundation, persistent storage, and Cypher/MCP access
 in one system.
 
-That foundation also operates at production scale: **100M+ nodes across 40+
-graphs in one process**, with a [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
-containing 19.4 million nodes.
+That foundation also operates at production scale: **120M nodes across 50
+graphs in one process**, with 8 GB default memory and a 16 GB maximum in the
+production deployment. A [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
+contains 19.4 million nodes.
 
 | Question | Information beyond syntax | Graphite's queryable context |
 |----------|---------------------------|-----------------------------|
@@ -81,15 +82,24 @@ for the exact versions, query scope and larger-project findings.
 
 ## Production Scale
 
-**100M+ nodes across 40+ graphs, served by one process.**
+**120M nodes across 50 graphs, served by one process with 8 GB default memory and a 16 GB maximum.**
 
-Measured on a production deployment of `graphite serve` (Rust backend, graphs
-memory-mapped):
+The current production deployment uses `graphite serve` with the Rust backend
+and memory-mapped graphs:
 
 | | |
 |---|---|
-| Graphs served by one process | 40+ |
-| Nodes | 100M+ |
+| Default memory | 8 GB |
+| Maximum memory | 16 GB |
+| Graphs served by one process | 50 |
+| Nodes | 120M |
+
+An earlier production snapshot with 40+ graphs and 100M+ nodes recorded the
+following counts and latency. These measurements have not been refreshed for the
+current 50-graph deployment:
+
+| | |
+|---|---|
 | Edges | 100M+ |
 | Methods | 10M+ |
 | Call sites | 20M+ |
@@ -101,6 +111,15 @@ queries (a class, a method, a constant) answer from the string indexes in
 milliseconds; the P95 is the broad shapes that search every property of every
 node. `--metrics` exposes the same figures for your own deployment as
 `http_server_requests_seconds` and the Cypher families.
+
+For reproducible local comparisons, the [benchmark runner](benchmark/README.md)
+builds 64 distinct graphs from four public JAR corpora and compares two revisions
+on the same machine. This is a public test workload, not a graph-count limit.
+It measures cross-graph queries through the production Rust
+server and reports p50/p95 for each query case. The
+[CI benchmark gate](docs/benchmark-regression-gate.md) checks correctness,
+complete execution and OOM failures; timing observations alone do not establish
+performance acceptance.
 
 ## Try It Locally
 
@@ -131,12 +150,30 @@ open the saved graph in the web Explorer.
 | **Lambda/method ref** | `items.stream().map(User::getName)` | Which method does this reference target? |
 | **Resources** | `config/application.yml` inside a fat JAR | Where is a packaged configuration key read? |
 
-Graphite uses a **read-oriented Cypher subset** for querying. The `graphite` binary
-runs the Rust engine in `backend/cypher` for `query`, `serve`, and `mcp`; the Kotlin
-API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. A
-differential harness (`backend/bench`) checks the two implementations against each
-other. The [official openCypher TCK integration](docs/cypher-tck.md) separately
-records standard scenario passes, failures and adapter coverage gaps.
+## Cypher compatibility
+
+Graphite queries saved program graphs with Cypher; these graphs remain read-only.
+The native `graphite query`, `serve`, and `mcp` commands support two dialects:
+
+- `graphite` (default) preserves Graphite's existing query and error behavior.
+- `opencypher-m23` opts into standard openCypher M23 semantics.
+
+```bash
+graphite query app.graphite 'MATCH (n) RETURN count(n)' --dialect opencypher-m23
+```
+
+For HTTP queries, set the JSON field `"dialect": "opencypher-m23"` or the
+`dialect=opencypher-m23` URL parameter. The MCP `cypher` tool accepts the same
+`dialect` argument. Selection also applies to cross-graph and fanout queries;
+unknown dialects are rejected.
+
+The production Rust engine passes all **3,897 scenarios** in the pinned official
+openCypher M23 Technology Compatibility Kit (TCK) using `opencypher-m23`.
+This covers that suite's cases, not every Cypher query, Neo4j extension, or
+multi-graph performance. The Kotlin API's `graph.query(...)` uses a separate JVM
+engine; the M23 result applies to the native Rust engine. See the
+[TCK documentation](docs/cypher-tck.md) for compatibility details, scope and
+instructions to reproduce the suite.
 
 ## Frontend Support
 
@@ -1057,12 +1094,7 @@ accepted, loopback origins are accepted, any other origin is refused with 403 un
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
 all). The REST API is unaffected.
 
-Cypher queries default to Graphite compatibility. To select standard M23 behavior,
-pass `--dialect opencypher-m23` to `graphite query`, `"dialect": "opencypher-m23"`
-to the MCP `cypher` tool, or the same JSON field / `dialect` URL parameter to any
-Cypher REST route, including selected-graph cross queries and fanout. Invalid
-modes are rejected before execution. See [query compatibility modes](docs/cypher-tck.md#query-compatibility-mode)
-for the preserved Graphite extensions and TCK scope.
+For query dialect selection, see [Cypher compatibility](#cypher-compatibility).
 
 Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
 unchanged, and every protocol revision the npm package negotiated (`2024-11-05` through
