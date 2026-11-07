@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.MethodFoldObservation
+
 import io.johnsonlee.graphite.core.jvmMethodDescriptor
 import io.johnsonlee.graphite.input.CallSiteKey
 import io.johnsonlee.graphite.input.ConstantFold

@@ -9,17 +9,26 @@ head must not see the code a feature flag or experiment keeps switched off.
 
 `JavaProjectLoader.loadObserved(path, observer)` streams immutable, owned snapshots of the
 folded bodies consumed by that same build. It returns the `ObservedJavaLoad` interface, which exposes
-the original graph, the final fold report (null without a fold plan), final completeness, and method
-observation receipts. The existing `load(path)` API remains available and creates no snapshots or receipts.
+the original graph, the final fold report (null without a fold plan), and final completeness.
+Each callback delivers a method's evidence together with its snapshot. The consumer chooses which
+observations to retain. Graphite keeps validation state for the duration of the build.
+
+`ObservedJavaLoad`, `JvmMethodIdentity`, `BodyInterceptionEvidence`, and `MethodFoldObservation`
+are frontend-independent interfaces in `io.johnsonlee.graphite.input` in the core module.
+The observer, method event, and method evidence expose SootUp snapshots or modifiers and live
+in `io.johnsonlee.graphite.sootup`. `FoldedBodySnapshot` is a concrete immutable value whose
+private construction enforces ownership of the copied SootUp body.
 
 ```kotlin
-val snapshots = mutableMapOf<String, FoldedBodySnapshot>()
+val retained = mutableMapOf<String, FoldedMethodObservation>()
 val result = JavaProjectLoader(config).loadObserved(input) { observation ->
-    observation.snapshot?.let { snapshots[observation.evidence.method.identity] = it }
+    if (observation.evidence.method.owner.startsWith("com.example.")) {
+        retained[observation.evidence.method.identity] = observation
+    }
 }
 val graph = result.graph
 val completeness = result.completeness
-// Read snapshots only as evidence of this successful load. Reconcile the required methods,
+// Use retained observations only after this load succeeds. Reconcile the required methods,
 // their final statuses, class origins, and completeness.callSiteGaps before proving effects.
 ```
 
@@ -40,7 +49,8 @@ application package can reside in an artifact whose role is library.
 The snapshot preserves typed SootUp instructions, locals, positions, branch successor ordering
 and exceptional control flow. It can be retained after the callback or load; no copying by the
 consumer is required. Graphite releases each snapshot after delivery unless the observer retains
-it. The retained result contains receipts, not all IR bodies. SootUp's non-SSA representation is
+it. Evidence retained by the consumer remains available after the load. Build-time validation
+state is released when the invocation finishes. SootUp's non-SSA representation is
 the first supported backend contract; unknown representations (including SSA phi) fail capture
 rather than silently omit semantics. Some SootUp accessors return mutable computed copies;
 changing those does not change the snapshot. No original builder, view or body source is exposed.

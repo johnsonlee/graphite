@@ -50,8 +50,9 @@ class FoldedBodyFailureCleanupTest : FoldedBodyObservationFixture() {
             assertSame(failure, assertFails { loader.loadObserved(input) { throw failure } })
             assertEquals(1, directories.size)
             assertFalse(Files.exists(directories.single()), "the failed callback must not leave open graph outputs")
-            val loaded = loader.loadObserved(input) { }
-            assertTrue(loaded.observations.values.any { it.method.name == "run" })
+            val names = mutableListOf<String>()
+            loader.loadObserved(input) { names += it.evidence.method.name }
+            assertTrue("run" in names)
             assertTrue(Files.exists(directories.last()), "the successful graph retains its own files")
         } finally {
             directories.forEach { it.toFile().deleteRecursively() }

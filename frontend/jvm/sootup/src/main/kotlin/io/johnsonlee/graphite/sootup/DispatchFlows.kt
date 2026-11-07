@@ -1,5 +1,11 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.HandleKind
+import io.johnsonlee.graphite.analysis.isKotlinCallableReferenceBaseClass
+import io.johnsonlee.graphite.analysis.isNonFunctionType
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.TypeDescriptor
 import sootup.core.jimple.common.Local

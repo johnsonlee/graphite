@@ -1,5 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.bytecode.DeclaredTypesReader
+import io.johnsonlee.graphite.bytecode.MemberDeclaration
+
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.jvmTypeDescriptor
 import io.johnsonlee.graphite.graph.DeclaredType

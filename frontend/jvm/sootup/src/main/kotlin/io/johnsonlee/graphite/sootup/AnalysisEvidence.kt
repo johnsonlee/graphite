@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.PendingDispatch
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus

@@ -1,5 +1,11 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.BodyInterceptionEvidence
+import io.johnsonlee.graphite.input.JvmMethodIdentity
+import io.johnsonlee.graphite.input.MethodFoldObservation
+import io.johnsonlee.graphite.graph.AnalysisCompleteness
+import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.input.AnalysisIdentity
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactRole
 import kotlin.test.Test
@@ -32,6 +38,36 @@ class FoldedBodyRematerializationTest {
     private val position = StmtPositionInfo.getNoStmtPositionInfo()
 
     @Test
+    fun `delivery releases validation indexes after success and failure while consumer retains its event`() {
+        for (fail in listOf(false, true)) {
+            val events = mutableListOf<FoldedMethodObservation>()
+            val delivery = FoldedBodyDelivery { events += it }
+            val graph = DefaultGraph.Builder().setAnalysisCompleteness(
+                AnalysisCompleteness(AnalysisIdentity(), emptyMap(), emptyMap(), emptyMap())
+            ).build()
+            val load = {
+                delivery.use {
+                    it.deliver(evidence(), literalBody(7), verifyRematerialization = true)
+                    if (fail) it.verifyFolding("sample.Duplicate.read()I", folds(calls = 2))
+                    it.finish(graph, null)
+                }
+            }
+            if (fail) assertFailsWith<IllegalStateException> { load() } else assertEquals(graph, load().graph)
+            // Inspect retained references directly so the memory lifecycle check does not depend on GC timing.
+            val indexes = FoldedBodyDelivery::class.java.declaredFields.filter { Map::class.java.isAssignableFrom(it.type) }
+            assertEquals(2, indexes.size)
+            indexes.forEach { field ->
+                field.isAccessible = true
+                assertTrue((field.get(delivery) as Map<*, *>).isEmpty(), "${field.name} retained build validation state")
+            }
+            assertEquals(1, events.size)
+            assertEquals(1, events.single().evidence.folding!!.foldedCalls[0])
+            val statement = events.single().snapshot!!.body.stmts.single() as JReturnStmt
+            assertEquals(7, (statement.op as IntConstant).value)
+        }
+    }
+
+    @Test
     fun `same body and fold evidence deliver once across independent materializations`() {
         val events = mutableListOf<FoldedMethodObservation>()
         val delivery = FoldedBodyDelivery { events += it }
@@ -42,6 +78,37 @@ class FoldedBodyRematerializationTest {
         assertEquals(1, events.size)
         val returned = events.single().snapshot!!.body.stmts.single() as JReturnStmt
         assertEquals(7, (returned.op as IntConstant).value)
+    }
+
+    @Test
+    fun `alternate identity and recovery implementations preserve duplicate validation`() {
+        val events = mutableListOf<FoldedMethodObservation>()
+        val original = object : MethodObservationEvidence by evidence() {
+            override val recovery = BodyInterceptionEvidence("fallback", "unavailable instruction")
+        }
+        val alternate = object : MethodObservationEvidence by original {
+            override val method = object : JvmMethodIdentity {
+                override val owner = original.method.owner
+                override val name = original.method.name
+                override val descriptor = original.method.descriptor
+            }
+            override val recovery = object : BodyInterceptionEvidence {
+                override val chain = original.recovery.chain
+                override val reason = original.recovery.reason
+            }
+            override val folding = object : MethodFoldObservation {
+                override val foldedCalls = mapOf(0 to 1)
+                override val unsupportedReasons = emptyMap<Int, List<String>>()
+                override val statementsBefore = 8
+                override val statementsAfter = 6
+            }
+        }
+        FoldedBodyDelivery { events += it }.use { delivery ->
+            delivery.deliver(original, literalBody(7), verifyRematerialization = true)
+            delivery.deliver(alternate, literalBody(7), verifyRematerialization = true)
+        }
+        assertEquals(1, events.size)
+        assertEquals("fallback", events.single().evidence.recovery!!.chain)
     }
 
     @Test

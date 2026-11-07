@@ -1,4 +1,4 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.analysis
 
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind

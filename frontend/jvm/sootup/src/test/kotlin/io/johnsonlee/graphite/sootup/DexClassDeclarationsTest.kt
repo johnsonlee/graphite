@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.input.ArchiveResourceAccessor
+
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.io.ByteArrayInputStream

@@ -1,5 +1,10 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.isAnonymousClassName
+import io.johnsonlee.graphite.analysis.isKotlinFunctionBaseClass
+import io.johnsonlee.graphite.analysis.isKotlinFunctionInterface
+
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.MethodDescriptor

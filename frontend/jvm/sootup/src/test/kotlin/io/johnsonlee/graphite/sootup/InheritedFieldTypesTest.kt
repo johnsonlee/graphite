@@ -1,5 +1,10 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.ClassDeclarations
+import io.johnsonlee.graphite.bytecode.DeclaredTypesReader
+import io.johnsonlee.graphite.bytecode.InheritedFieldTypes
+import io.johnsonlee.graphite.bytecode.MemberDeclaration
+
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.NodeId

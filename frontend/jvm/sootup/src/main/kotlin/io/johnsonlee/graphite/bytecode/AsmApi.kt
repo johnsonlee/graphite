@@ -1,4 +1,4 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.bytecode
 
 import org.objectweb.asm.Opcodes
 

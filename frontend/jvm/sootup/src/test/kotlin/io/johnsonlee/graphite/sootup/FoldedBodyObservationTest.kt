@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.ObservedJavaLoad
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.AnalysisStatus
@@ -53,7 +54,6 @@ class FoldedBodyObservationTest : FoldedBodyObservationFixture() {
             observed.completeness.copy(callSiteGaps = emptyMap()))
         assertEquals(expectedReport, observed.foldReport)
         assertEquals(observed.graph.methods(MethodPattern()).map { it.identity }.toSet(), events.keys)
-        assertEquals(events.keys, observed.observations.keys)
         val value = events.getValue(method(example, "value", returns = "java.lang.String").identity)
         val body = assertNotNull(value.snapshot).body
         assertEquals(listOf("old"), calls(body).filter { it.methodSignature.name == "getString" }
@@ -332,7 +332,7 @@ class FoldedBodyObservationTest : FoldedBodyObservationFixture() {
             assertEquals(false, events.getValue("$depPackage.Helper.read()Ljava/lang/String;").evidence.application)
             assertEquals(setOf("$appPackage.App.<init>()V", "$appPackage.App.run()Ljava/lang/String;",
                 "$depPackage.Helper.<init>()V", "$depPackage.Helper.read()Ljava/lang/String;"), events.keys)
-            assertEquals(events.keys, result.observations.keys)
+            assertEquals(result.graph.methods(MethodPattern()).map { it.identity }.toSet(), events.keys)
         } finally {
             appLocation.close()
             depLocation.close()

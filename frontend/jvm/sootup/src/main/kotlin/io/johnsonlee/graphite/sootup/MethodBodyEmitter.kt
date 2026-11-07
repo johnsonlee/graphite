@@ -1,5 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+
+import io.johnsonlee.graphite.input.JvmMethodIdentity
+
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge

@@ -1,5 +1,12 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.PendingDispatch
+
+import io.johnsonlee.graphite.bytecode.ASM_API_VERSION
+import io.johnsonlee.graphite.bytecode.BytecodeSignatureReader
+
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig

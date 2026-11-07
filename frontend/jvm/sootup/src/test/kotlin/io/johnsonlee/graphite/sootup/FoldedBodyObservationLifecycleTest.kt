@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
+import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.graph.analysisStatus
 import io.johnsonlee.graphite.graph.nodes
@@ -75,15 +76,47 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
     }
 
     @Test
+    fun `consumers can retain selected observations or discard all events without changing the graph`() {
+        val input = smallInput()
+        val loader = JavaProjectLoader(config(), false)
+        val selected = linkedMapOf<String, FoldedMethodObservation>()
+        val retainedIdentity = "$depPackage.Helper.read()Ljava/lang/String;"
+        var discarded = 0
+        val retainedResult = loader.loadObserved(input) { event ->
+            if (event.evidence.method.identity == retainedIdentity) {
+                assertNull(selected.put(retainedIdentity, event))
+            } else {
+                discarded++
+            }
+        }
+        assertEquals(setOf(retainedIdentity), selected.keys)
+        assertEquals(3, discarded)
+        val retained = selected.getValue(retainedIdentity)
+        assertEquals(AnalysisStatus.ANALYZED, retained.evidence.status)
+        assertTrue(assertNotNull(retained.snapshot).body.toString().contains("\"dependency\""))
+        var delivered = 0
+        val discardedResult = loader.loadObserved(input) { delivered++ }
+        assertEquals(4, delivered)
+        assertEquals(graphFacts(retainedResult.graph), graphFacts(discardedResult.graph))
+        assertEquals(retainedResult.completeness.copy(callSiteGaps = emptyMap()),
+            discardedResult.completeness.copy(callSiteGaps = emptyMap()))
+        assertEquals(retainedResult.foldReport, discardedResult.foldReport)
+        assertTrue(assertNotNull(retained.snapshot).body.toString().contains("\"dependency\""))
+        selected.clear()
+        assertEquals(4, retainedResult.graph.methods(MethodPattern()).count())
+    }
+
+    @Test
     fun `observer exceptions and OOM escape and the loader can be reused after failure`() {
         val input = smallInput()
         val loader = JavaProjectLoader(config(), false)
         for (failure in listOf(IllegalArgumentException("capture failed"), OutOfMemoryError("observer allocation failed"))) {
             assertSame(failure, assertFails { loader.loadObserved(input) { throw failure } })
-            val result = loader.loadObserved(input) { }
+            val evidence = linkedMapOf<String, MethodObservationEvidence>()
+            loader.loadObserved(input) { evidence[it.evidence.method.identity] = it.evidence }
             assertEquals(AnalysisStatus.ANALYZED,
-                result.observations.getValue("$depPackage.Helper.read()Ljava/lang/String;").status)
-            assertEquals(setOf("read", "<init>"), result.observations.values
+                evidence.getValue("$depPackage.Helper.read()Ljava/lang/String;").status)
+            assertEquals(setOf("read", "<init>"), evidence.values
                 .filter { it.method.owner == "$depPackage.Helper" }.map { it.method.name }.toSet())
         }
     }
@@ -107,9 +140,9 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
         assertTrue(headBody.toString().contains("\"head\""))
         assertFalse(headBody.toString().contains("\"dependency\""))
         assertEquals(before, baseBody.toString(), "the previous invocation's owned snapshot is still intact")
-        assertEquals(baseEvents.keys, base.observations.keys)
-        assertEquals(headEvents.keys, head.observations.keys)
-        assertEquals(AnalysisStatus.ANALYZED, base.observations.getValue("$depPackage.Helper.read()Ljava/lang/String;").status)
+        assertEquals(base.graph.methods(MethodPattern()).map { it.identity }.toSet(), baseEvents.keys)
+        assertEquals(head.graph.methods(MethodPattern()).map { it.identity }.toSet(), headEvents.keys)
+        assertEquals(AnalysisStatus.ANALYZED, baseEvents.getValue("$depPackage.Helper.read()Ljava/lang/String;").evidence.status)
     }
 
     @Test
@@ -133,7 +166,7 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
                     }
                     assertNull(events.put(event.evidence.method.identity, event))
                 }
-                assertEquals(events.keys, result.observations.keys)
+                assertEquals(result.graph.methods(MethodPattern()).map { it.identity }.toSet(), events.keys)
                 assertNotNull(events["$depPackage.Helper.read()Ljava/lang/String;"]?.snapshot).body.toString()
             } }
             val futures = tasks.map { pool.submit(it) }
@@ -193,9 +226,6 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
             dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar")), folding = FoldPlan(listOf(gateOff))))
         val event = events.getValue(method(example, "value", returns = "java.lang.String").identity)
         assertFailsWith<UnsupportedOperationException> {
-            (result.observations as MutableMap).clear()
-        }
-        assertFailsWith<UnsupportedOperationException> {
             (assertNotNull(event.evidence.modifiers) as MutableSet<MethodModifier>).clear()
         }
         val folded = assertNotNull(event.evidence.folding)
@@ -203,7 +233,7 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
         assertFailsWith<UnsupportedOperationException> { (folded.foldedCalls as MutableMap)[0] = 99 }
         assertFailsWith<UnsupportedOperationException> { (folded.unsupportedReasons as MutableMap)[0] = listOf("invented") }
         assertEquals(mapOf(0 to 1), folded.foldedCalls)
-        assertEquals(events.keys, result.observations.keys)
+        assertEquals(result.graph.methods(MethodPattern()).map { it.identity }.toSet(), events.keys)
     }
 
     @Test
@@ -228,7 +258,7 @@ class FoldedBodyObservationLifecycleTest : FoldedBodyObservationFixture() {
         assertNull(failure.evidence.modifiers)
         assertNull(failure.evidence.application)
         assertEquals(AnalysisStatus.RESOLUTION_FAILED, result.completeness.classStatus("$depPackage.Unenumerable"))
-        assertFalse(result.observations.values.any { it.method.owner == "$depPackage.Unenumerable" })
+        assertFalse(events.any { it.evidence.method.owner == "$depPackage.Unenumerable" })
     }
 
     private fun config() = LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true,

@@ -1,5 +1,11 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.HandleKind
+import io.johnsonlee.graphite.analysis.ResolvedDispatch
+import io.johnsonlee.graphite.analysis.isKotlinPropertyReferenceClass
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import org.objectweb.asm.Handle

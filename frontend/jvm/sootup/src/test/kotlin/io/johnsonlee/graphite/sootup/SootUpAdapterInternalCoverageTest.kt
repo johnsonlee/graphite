@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.TypeDescriptor
 import kotlin.test.Test

@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.BytecodeSignatureReader
+
 import java.io.File
 import java.io.InputStream
 import java.io.IOException

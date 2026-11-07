@@ -1,5 +1,12 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.HandleKind
+import io.johnsonlee.graphite.analysis.PendingDispatch
+import io.johnsonlee.graphite.analysis.SlotAdapter
+import io.johnsonlee.graphite.analysis.UntrackedDispatch
+
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.NodeId

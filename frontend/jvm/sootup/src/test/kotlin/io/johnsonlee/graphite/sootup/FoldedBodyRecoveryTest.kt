@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.ObservedJavaLoad
+import io.johnsonlee.graphite.input.JvmMethodIdentity
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -83,7 +85,6 @@ class FoldedBodyRecoveryTest : FoldedBodyObservationFixture() {
         assertEquals(0, report.outcomes.single().matched)
         assertTrue(report.methods.isEmpty())
         assertEquals(reason, report.outcomes.single().unsupported.single().reason)
-        assertSame(observation.evidence, result.observations.getValue(METHOD))
         factoryCalls = 0
         val unobserved = loader.load(apk)
         assertSameAnalysis(unobserved, result)
@@ -119,7 +120,7 @@ class FoldedBodyRecoveryTest : FoldedBodyObservationFixture() {
         assertRetainedCall(successful, successfulObservation)
         assertNull(successfulObservation.evidence.recovery, "recovery belongs to its own load only")
         assertEquals(0, loader.bodyInterceptionFallbackCount)
-        assertNotNull(recovered.observations.getValue(METHOD).recovery, "a later load must not mutate earlier receipts")
+        assertEquals(recovery, observation.evidence.recovery, "a later load must not mutate earlier receipts")
         assertSameAnalysis(loader.load(apk), successful)
     }
 
@@ -148,7 +149,7 @@ class FoldedBodyRecoveryTest : FoldedBodyObservationFixture() {
         assertNull(evidence.modifiers)
         assertNull(evidence.application)
         assertNull(observation.snapshot, "missing resolution must never turn into a successful empty body")
-        assertEquals(setOf(identity), result.observations.keys)
+        assertEquals(listOf(identity), delivered.map { it.evidence.method.identity })
         assertEquals(AnalysisStatus.RESOLUTION_FAILED, result.completeness.classStatus("lib.Broken"))
         assertEquals(AnalysisStatus.EXTERNAL, result.completeness.classStatus("outside.Unknown"))
         assertSame(completeness, result.completeness)

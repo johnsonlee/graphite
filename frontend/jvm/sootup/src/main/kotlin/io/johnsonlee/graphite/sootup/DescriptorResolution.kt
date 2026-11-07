@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.bytecode.GenericSignatureParser
+
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.TypeDescriptor
 import org.objectweb.asm.ClassReader

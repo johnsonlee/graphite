@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.input.ObservedJavaLoad
+import io.johnsonlee.graphite.input.BodyInterceptionEvidence
+
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
@@ -8,6 +11,8 @@ import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.input.GlobPatterns
 import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.input.ArchiveResourceAccessor
+import io.johnsonlee.graphite.input.NestedArchiveLibraries
 import io.johnsonlee.graphite.input.ProjectLoader
 import io.johnsonlee.graphite.input.FoldReport
 import sootup.apk.frontend.ApkAnalysisInputLocation
@@ -365,8 +370,9 @@ class JavaProjectLoader(
      * invocations fail immediately. Use distinct loaders and mutable sinks for concurrent loads.
      */
     fun loadObserved(path: Path, observer: FoldedBodyObserver): ObservedJavaLoad = withLoad {
-        val delivery = FoldedBodyDelivery(observer)
-        loadGraph(path, delivery) { graph, report -> delivery.finish(graph, report) }
+        FoldedBodyDelivery(observer).use { delivery ->
+            loadGraph(path, delivery) { graph, report -> delivery.finish(graph, report) }
+        }
     }
 
     private inline fun <T> withLoad(action: () -> T): T {
@@ -374,6 +380,7 @@ class JavaProjectLoader(
         return try {
             action()
         } finally {
+            foldInterceptors = null
             loading.set(false)
         }
     }

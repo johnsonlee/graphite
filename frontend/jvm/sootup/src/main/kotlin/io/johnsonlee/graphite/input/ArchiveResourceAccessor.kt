@@ -1,8 +1,5 @@
-package io.johnsonlee.graphite.sootup
+package io.johnsonlee.graphite.input
 
-import io.johnsonlee.graphite.input.ResourceAccessor
-import io.johnsonlee.graphite.input.ResourceEntry
-import io.johnsonlee.graphite.input.JavaArchiveLayout
 import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream

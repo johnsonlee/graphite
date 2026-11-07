@@ -9,6 +9,9 @@
   public contract in API signatures, and keep implementation types out of the public API.
 - If a public API exposes a concrete type, explain in review why that type itself belongs in the
   public contract.
+- Keep `io.johnsonlee.graphite.sootup` for types coupled to SootUp models or adapter behavior.
+  Put frontend-independent contracts in core and place general bytecode, archive, and analysis
+  utilities in packages matching their responsibilities.
 
 ## Unit Tests
 

@@ -1,5 +1,17 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.analysis.DispatchSlot
+import io.johnsonlee.graphite.analysis.DispatchTarget
+import io.johnsonlee.graphite.analysis.PendingDispatch
+import io.johnsonlee.graphite.analysis.SlotAdapter
+import io.johnsonlee.graphite.analysis.UntrackedDispatch
+
+import io.johnsonlee.graphite.input.BodyInterceptionEvidence
+import io.johnsonlee.graphite.input.MethodFoldObservation
+
+import io.johnsonlee.graphite.analysis.InterproceduralDataflow
+import io.johnsonlee.graphite.bytecode.BytecodeSignatureReader
+
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.FieldNode
