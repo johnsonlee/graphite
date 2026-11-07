@@ -31,8 +31,8 @@ interface MethodObservationEvidence {
     val folding: MethodFoldObservation?
 }
 
-@Suppress("LongParameterList", "FunctionNaming")
-internal fun MethodObservationEvidence(
+@Suppress("LongParameterList")
+internal fun createMethodObservationEvidence(
     method: JvmMethodIdentity,
     modifiers: Set<MethodModifier>?,
     origin: String?,
@@ -154,7 +154,7 @@ internal class FoldedBodyDelivery(private val observer: FoldedBodyObserver) : Au
                     identity.substring(descriptorStart)
                 )
                 val origin = completeness.classes[method.owner]?.origin
-                deliver(MethodObservationEvidence(method, null, origin, completeness.artifacts[origin]?.role,
+                deliver(createMethodObservationEvidence(method, null, origin, completeness.artifacts[origin]?.role,
                     null, failure.status, failure.message, null, null), null)
             }
         }

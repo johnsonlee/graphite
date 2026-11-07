@@ -189,7 +189,7 @@ class FoldedBodyRematerializationTest {
     private fun evidence(
         folding: MethodFoldObservation? = folds(), descriptor: String = "()I"
     ): MethodObservationEvidence =
-        MethodObservationEvidence(JvmMethodIdentity("sample.Duplicate", "read", descriptor),
+        createMethodObservationEvidence(JvmMethodIdentity("sample.Duplicate", "read", descriptor),
             setOf(MethodModifier.PUBLIC, MethodModifier.STATIC), "duplicates.jar", ArtifactRole.LIBRARY,
             false, AnalysisStatus.ANALYZED, null, null, folding)
 

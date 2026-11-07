@@ -173,7 +173,7 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
             val origin = context.construction.evidenceOrigin(owner)
             val role = if (origin == null) null else context.artifactRoles[origin]
                 ?: if (origin == context.singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
-            delivery.deliver(MethodObservationEvidence(
+            delivery.deliver(createMethodObservationEvidence(
                 JvmMethodIdentity.of(methodDescriptor), method.modifiers, origin, role,
                 className in context.applicationClasses, status, failure,
                 context.methodRecovery(method.signature), context.methodFoldObservation(method.signature)
