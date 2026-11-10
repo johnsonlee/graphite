@@ -92,7 +92,7 @@ internal class LocaleValues(private val context: SootUpAdapter) {
         return match?.groupValues?.getOrNull(1)
     }
     private companion object {
-        val STANDARD_LOCALES = mapOf(
+        private val STANDARD_LOCALES = mapOf(
             "ROOT" to "",
             "ENGLISH" to "en",
             "US" to "en_US",
