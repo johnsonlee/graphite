@@ -3,6 +3,14 @@ package io.johnsonlee.graphite.graph
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.input.AnalysisIdentity
 
+private val CLASS_STATUSES = setOf(
+    AnalysisStatus.ANALYZED, AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.RESOLUTION_FAILED
+)
+
+private val NEVER_A_METHODS = setOf(
+    AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.EXTERNAL, AnalysisStatus.UNKNOWN_MEMBER
+)
+
 /**
  * What the build did with a class or a method, as a finite code a proof can act on. A node's
  * existence says nothing of the kind: a method's `ReturnNode` is created before its body is read,
@@ -82,24 +90,12 @@ data class ClassEvidence(val origin: String?, val status: AnalysisStatus) {
     init {
         require(status in CLASS_STATUSES) { "a class is ANALYZED, EXCLUDED_BY_SCOPE, NOT_EXPANDED or RESOLUTION_FAILED, not $status" }
     }
-
-    private companion object {
-        val CLASS_STATUSES = setOf(
-            AnalysisStatus.ANALYZED, AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.RESOLUTION_FAILED
-        )
-    }
 }
 
 /** A method's status and, for a failure, what the frontend said about it. */
 data class MethodEvidence(val status: AnalysisStatus, val message: String? = null) {
     init {
         require(status !in NEVER_A_METHODS) { "a method's own status is never $status" }
-    }
-
-    private companion object {
-        val NEVER_A_METHODS = setOf(
-            AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.EXTERNAL, AnalysisStatus.UNKNOWN_MEMBER
-        )
     }
 }
 

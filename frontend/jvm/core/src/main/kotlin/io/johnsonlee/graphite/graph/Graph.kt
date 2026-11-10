@@ -64,7 +64,9 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
 }
 
 /** A thread-safe batch consumer that explicitly permits one storage lookup to invoke it concurrently from multiple scan workers. */
-fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
+fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer {
+    override fun consume() = consume(1L)
+}
 
 /**
  * A thread-safe batch consumer for a cross-graph lookup that splits one process-wide CPU budget between graph workers and a shared
@@ -111,13 +113,19 @@ data class GraphScanParallelismPlan(val graphWorkerCount: Int, val segmentWorker
  * A batch consumer that explicitly requests one storage lookup to stay serial because its caller already parallelizes independent graph
  * sources. This avoids nested scan pools while preserving the same shared work and cancellation accounting.
  */
-fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
+fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer {
+    override fun consume() = consume(1L)
+}
 
 /** Requests a bounded serial lookup to prefer raw storage so it can stop as soon as LIMIT is full. */
-fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
+fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer {
+    override fun consume() = consume(1L)
+}
 
 /** Permits one parallel raw build, then requests retained string-index lookups without segment fanout. */
-fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer, ParallelGraphWorkBatchConsumer
+fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer, ParallelGraphWorkBatchConsumer {
+    override fun consume() = consume(1L)
+}
 
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {

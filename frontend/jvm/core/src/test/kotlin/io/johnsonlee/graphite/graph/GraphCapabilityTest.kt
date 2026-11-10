@@ -82,6 +82,8 @@ class GraphCapabilityTest {
 
         assertEquals(3, work)
         assertEquals(0L, aggregate.aggregateStringPropertyDisjunction(CallSiteNode::class.java, emptyList())?.count)
+        assertEquals(emptySet(), aggregate.aggregateStringPropertyDisjunction(
+            CallSiteNode::class.java, emptyList(), workConsumer = batch)?.distinctValues)
         assertEquals(
             setOf("caller_name"),
             aggregate.aggregateStringPropertyDisjunction(

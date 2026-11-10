@@ -43,7 +43,6 @@ import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutput
 import java.io.DataOutputStream
-import java.io.EOFException
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -244,9 +243,7 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
         }
         val nodeTypeIndex = nodeTypeArrays
         val nodeCapacity = nodeIndex.size
-        require(edgeCount <= Int.MAX_VALUE.toLong()) {
-            "MmapGraphBuilder supports at most ${Int.MAX_VALUE} edges in memory-mapped indexes, got $edgeCount"
-        }
+        validateMappedEdgeCount(edgeCount)
         val totalEdges = edgeCount.toInt()
         val outgoingCounts = IntArray(nodeCapacity)
 
@@ -506,22 +503,6 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
         private fun nodeClassForTag(tag: Int): Class<out Node> {
             require(tag in NODE_CLASSES_BY_TAG.indices) { "Unknown node type tag during index build: $tag" }
             return NODE_CLASSES_BY_TAG[tag]
-        }
-
-        private fun skipFully(input: DataInputStream, bytes: Int) {
-            require(bytes >= 0) { "Cannot skip a negative byte count: $bytes" }
-            var remaining = bytes
-            while (remaining > 0) {
-                val skipped = input.skipBytes(remaining)
-                if (skipped <= 0) {
-                    if (input.read() == -1) {
-                        throw EOFException("Unexpected EOF while skipping node payload")
-                    }
-                    remaining--
-                } else {
-                    remaining -= skipped
-                }
-            }
         }
 
         /**
