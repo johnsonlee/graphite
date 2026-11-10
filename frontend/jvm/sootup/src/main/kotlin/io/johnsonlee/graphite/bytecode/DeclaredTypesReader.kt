@@ -439,8 +439,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         id: Int,
         erasedId: Int,
         bounds: Map<Pair<String, String>, List<Int>>,
-        localBounds: Map<Pair<String, String>, List<Int>> = emptyMap(),
-        allowUnknown: Boolean = false
+        localBounds: Map<Pair<String, String>, List<Int>>,
+        allowUnknown: Boolean
     ): Boolean {
         val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap(), emptyMap()))
         return erasesTo(id, expected, bounds, localBounds, allowUnknown)

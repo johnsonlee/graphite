@@ -36,6 +36,16 @@ class MappedDeclaredTypeBindingTest {
         val binding = assertNotNull(graph.declaredTypeBinding(), "a GTY05 mapped graph binds by IDs")
         val table = graph.declaredTypes()
         assertTrue(table.fields.isNotEmpty() && table.methods.isNotEmpty())
+        // Zero-row and persisted rows obey the same positional bounds contract.
+        @Suppress("UNCHECKED_CAST")
+        val rawFields = table.fields as MappedMemberRows<Int>
+        assertEquals(table.fields.size, rawFields.rowCount)
+        assertEquals(table.fields.values.first(), rawFields.valueAt(0))
+        assertEquals(table.fields.values.last(), rawFields.valueAt(rawFields.rowCount - 1))
+        for (row in listOf(-1, rawFields.rowCount)) {
+            assertFailsWith<IndexOutOfBoundsException> { rawFields.ownerAt(row) }
+            assertFailsWith<IndexOutOfBoundsException> { rawFields.valueAt(row) }
+        }
         var fields = 0
         for (node in graph.nodes(FieldNode::class.java)) {
             val descriptor = node.descriptor
@@ -176,6 +186,9 @@ class MappedDeclaredTypeBindingTest {
     fun `a presence sidecar of another table reads as absent and a corrupted one refuses`() = fixture { dir, graph ->
         val file = dir.resolve(DeclaredPresence.FILE_NAME)
         val original = Files.readAllBytes(file)
+        Files.write(file, byteArrayOf(0, 1, 2))
+        assertNull(presence(dir, graph), "a truncated header cannot carry a declaration presence answer")
+        Files.write(file, original)
         val someField = graph.nodes(FieldNode::class.java).first()
         val expected = assertNotNull(graph.declaredTypeBinding()).nodePresence(someField)
         assertTrue(expected == DeclaredTypeBinding.PRESENT || expected == DeclaredTypeBinding.ABSENT)

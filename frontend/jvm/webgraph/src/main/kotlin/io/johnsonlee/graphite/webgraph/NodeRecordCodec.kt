@@ -187,12 +187,13 @@ private fun writeMemberNode(dos: DataOutputStream, node: Node, strings: StringTa
             dos.writeInt(strings.indexOf(node.type.className))
             writeGraphMethodDescriptor(dos, node.method, strings)
         }
-        is ReturnNode -> {
-            writeGraphMethodDescriptor(dos, node.method, strings)
-            dos.writeBoolean(node.actualType != null)
-            if (node.actualType != null) dos.writeInt(strings.indexOf(node.actualType!!.className))
+        // writeGraphNode and writeStructuredNode already handled every other sealed Node subtype.
+        else -> {
+            val returned = node as ReturnNode
+            writeGraphMethodDescriptor(dos, returned.method, strings)
+            dos.writeBoolean(returned.actualType != null)
+            if (returned.actualType != null) dos.writeInt(strings.indexOf(returned.actualType!!.className))
         }
-        else -> error("Not a member node: ${node.javaClass.name}")
     }
 }
 

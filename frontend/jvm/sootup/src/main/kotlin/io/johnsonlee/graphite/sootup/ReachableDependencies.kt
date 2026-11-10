@@ -31,9 +31,8 @@ internal class ReachableDependencies(private val context: SootUpAdapter) {
     private val seededMethods = context.seededMethods
     private val heldNotes = context.heldNotes
     private val applicationClasses = context.applicationClasses
-    private var classesByNameCache
+    private val classesByNameCache
         get() = context.classesByNameCache
-        set(value) { context.classesByNameCache = value }
     private val view = context.view
     private val artifactRoles = context.artifactRoles
     private val construction get() = context.construction

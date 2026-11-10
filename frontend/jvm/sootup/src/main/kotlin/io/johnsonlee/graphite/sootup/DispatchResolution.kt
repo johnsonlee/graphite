@@ -25,12 +25,6 @@ internal class DispatchResolution(private val context: SootUpAdapter) {
     private val flowTo = context.flowTo
     private val slotAdapters = context.slotAdapters
     private val slotCalls = context.slotCalls
-    private var openSlots
-        get() = context.openSlots
-        set(value) { context.openSlots = value }
-    private var lostSlots
-        get() = context.lostSlots
-        set(value) { context.lostSlots = value }
     private val lostSeeds = context.lostSeeds
     private val resolvedFields = context.resolvedFields
     private val functionObjectClasses = context.functionObjectClasses
@@ -48,7 +42,6 @@ internal class DispatchResolution(private val context: SootUpAdapter) {
     private val nestedDispatches = context.nestedDispatches
     private val openLocals = context.openLocals
     private val graphBuilder = context.graphBuilder
-    private val calls get() = context.calls
     private val descriptors get() = context.descriptors
     private val dispatchFlows get() = context.dispatchFlows
     private val dispatchHierarchy get() = context.dispatchHierarchy
@@ -162,8 +155,8 @@ internal class DispatchResolution(private val context: SootUpAdapter) {
                 !hasIncoming.get(id) && targets.isNullOrEmpty() -> open.set(id)
             }
         }
-        openSlots = closeOverFlows(open, propagation)
-        lostSlots = closeOverFlows(lost, propagation)
+        context.openSlots = closeOverFlows(open, propagation)
+        context.lostSlots = closeOverFlows(lost, propagation)
     }
 
     /** Record the flows the override boundaries of slot [id] imply, once per slot, see [overrideFlows]. */

@@ -32,18 +32,14 @@ internal class ControlFlowEmitter(private val context: SootUpAdapter) {
     private val localNodes = context.localNodes
     private val methodReturnNodes = context.methodReturnNodes
     private val allocationNodes = context.allocationNodes
-    private var stmtNodeIds
+    private val stmtNodeIds
         get() = context.stmtNodeIds
-        set(value) { context.stmtNodeIds = value }
-    private var stmtLocalWrites
+    private val stmtLocalWrites
         get() = context.stmtLocalWrites
-        set(value) { context.stmtLocalWrites = value }
-    private var stmtIdentityWrites
+    private val stmtIdentityWrites
         get() = context.stmtIdentityWrites
-        set(value) { context.stmtIdentityWrites = value }
-    private var activeMethod
+    private val activeMethod
         get() = context.activeMethod
-        set(value) { context.activeMethod = value }
     private val graphBuilder = context.graphBuilder
     private val dispatchFlows get() = context.dispatchFlows
     private val metadata get() = context.metadata

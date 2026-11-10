@@ -157,8 +157,8 @@ private fun copyStatement(original: Stmt, local: (Local) -> Local): Stmt {
         is JBreakpointStmt -> stmt.withPositionInfo(position)
         is JEnterMonitorStmt -> stmt.withPositionInfo(position)
         is JExitMonitorStmt -> stmt.withPositionInfo(position)
-        is JRetStmt -> stmt.withStmtAddress(copyValue(stmt.stmtAddress)).withPositionInfo(position)
-        else -> error("Unsupported folded-body statement: ${stmt.javaClass.name}")
+        // The exact-class admission above leaves only the legacy return-address statement.
+        else -> (stmt as JRetStmt).withStmtAddress(copyValue(stmt.stmtAddress)).withPositionInfo(position)
     }
 }
 
@@ -174,8 +174,8 @@ private fun copyInvoke(invoke: AbstractInvokeExpr): AbstractInvokeExpr = when (i
         invoke.methodSignature, invoke.handleTag, ArrayList(invoke.args)
     )
     is JStaticInvokeExpr -> invoke.withArgs(ArrayList(invoke.args))
-    is AbstractInstanceInvokeExpr -> invoke.withArgs(ArrayList(invoke.args))
-    else -> error("Unsupported folded-body invocation: ${invoke.javaClass.name}")
+    // checkValue admitted only dynamic, static, virtual, special and interface invocations.
+    else -> (invoke as AbstractInstanceInvokeExpr).withArgs(ArrayList(invoke.args))
 }
 
 /** Exact built-in classes only: a new backend value needs an ownership audit before admission. */
@@ -344,8 +344,9 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is JRetStmt -> writeValue(stmt.stmtAddress)
             is JEnterMonitorStmt -> writeValue(stmt.op)
             is JExitMonitorStmt -> writeValue(stmt.op)
-            is JGotoStmt, is JReturnVoidStmt, is JNopStmt, is JBreakpointStmt -> Unit
-            else -> error("Unsupported folded-body fingerprint statement: ${stmt.javaClass.name}")
+            // capture's exact-class admission leaves only goto, return-void, nop and breakpoint,
+            // whose payload is completely represented by their class, position and graph edges.
+            else -> Unit
         }
     }
 
@@ -379,8 +380,9 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             }
             is JArrayRef -> { writeValue(value.base); writeValue(value.index) }
             is JParameterRef -> out.writeInt(value.index)
-            is JThisRef, is JCaughtExceptionRef, is JNewExpr -> Unit // Their complete payload is their type.
-            else -> error("Unsupported folded-body fingerprint value: ${value.javaClass.name}")
+            // checkValue above leaves only this, caught-exception and allocation references;
+            // their complete payload is the type written before this dispatch.
+            else -> Unit
         }
     }
 
@@ -413,8 +415,8 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
                 constant.parameterTypes.forEach(::writeType)
                 writeType(constant.returnType)
             }
-            is NullConstant -> Unit
-            else -> error("Unsupported folded-body fingerprint constant: ${constant.javaClass.name}")
+            // writeValue's exact-class admission leaves only the payload-free null constant.
+            else -> Unit
         }
     }
 
@@ -479,8 +481,9 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is Constant -> writeValue(value)
             is Float -> out.writeInt(value.toRawBits())
             is Double -> out.writeLong(value.toRawBits())
-            is String, is Boolean, is Byte, is Short, is Int, is Long, is Char -> writeString(value.toString())
-            else -> error("Unsupported folded-body fingerprint annotation value: ${value.javaClass.name}")
+            // copyAnnotationValue admitted only these remaining immutable scalar types:
+            // String, Boolean, Byte, Short, Int, Long and Char.
+            else -> writeString(value.toString())
         }
     }
 

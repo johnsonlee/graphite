@@ -15,6 +15,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import sootup.core.jimple.common.Immediate
+import sootup.core.jimple.common.constant.NullConstant
+import sootup.core.jimple.common.expr.JLtExpr
+import sootup.core.jimple.common.expr.JStaticInvokeExpr
+import sootup.core.jimple.common.stmt.JAssignStmt
+import sootup.core.jimple.common.stmt.JIfStmt
+import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.model.Body
 import sootup.core.model.SootClass
 import sootup.core.model.SourceType
@@ -40,6 +47,7 @@ class FoldFallbackReportTest {
                 static int run() { return value() + other(); }
                 static int from(int key) { return key; }
                 static int shared(int key) { return from(key); }
+                static int branch(int key) { if (value() > key) return 1; else return 2; }
             }
         """.trimIndent())
         assertEquals(0, ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", root.toString(), source.toString()))
@@ -146,14 +154,80 @@ class FoldFallbackReportTest {
         val brokenView = object : View by view {
             override fun getClass(type: ClassType): Optional<SootClass> = error("class resolution failed")
         }
-        val folding = ConstantFolding(listOf(selected()))
+        val matching = ConstantFold(mapOf("callee_name" to "value"), value = ConstantPattern.parse(42, "value"))
+        val unrelated = ConstantFold(mapOf("callee_name" to "absent"), value = ConstantPattern.parse(42, "value"))
+        val folding = ConstantFolding(listOf(selected(), matching, unrelated))
         folding.discard(retained, retained, brokenView, "Fold failed")
-        val outcome = folding.report().outcomes.single()
+        val outcomes = folding.report().outcomes
+        val outcome = outcomes.first()
+        assertEquals(1, outcomes[1].unsupported.size, "matching pattern rule also retains the failed call")
+        assertTrue(outcomes[2].unsupported.isEmpty(), "unrelated pattern does not acquire another rule's failure")
         assertEquals(1, outcome.unsupported.size)
         assertTrue(outcome.unsupported.single().reason.contains("fold eligibility could not be checked"))
         assertTrue(outcome.unsupported.single().reason.contains("class resolution failed"))
         assertEquals(0, outcome.matched)
         assertTrue(outcome.hints.isEmpty())
         assertEquals(original, retained.build().toString())
+    }
+
+    @Test
+    fun `module-qualified methods colliding in a persisted selection key are refused`() {
+        val (builder, view) = fixture()
+        val original = builder.build().toString()
+        val owner = view.getClass(builder.methodSignature.declClassType).get()
+        val method = owner.methods.single { it.name == "run" }
+        val moduleType = sootup.java.core.JavaModuleIdentifierFactory.getInstance().getClassType("Fallback", "", "alternate.module")
+        val signature = sootup.core.signatures.MethodSignature(moduleType, method.subSignature)
+        val alias = sootup.java.core.JavaSootMethod(
+            method.bodySource, signature, method.modifiers, method.exceptionSignatures, method.position)
+        val colliding = owner.withMethods(owner.methods + alias)
+        val ambiguousView = object : View by view {
+            override fun getClass(type: ClassType): Optional<SootClass> = Optional.of(colliding)
+        }
+        val folding = ConstantFolding(listOf(selected()))
+        val chain = folding.bodyInterceptors(emptyList())
+        assertEquals(listOf("Gated(FoldBranches)", "Gated(DeadAssignmentEliminator)", "Gated(NopEliminator)"),
+            chain.map { it.toString() }.filter { it.startsWith("Gated(") }, "recovery diagnostics identify the exact cleanup stage")
+        chain.forEach { it.interceptBody(builder, ambiguousView) }
+        val outcome = folding.report().outcomes.single()
+        assertEquals(0, outcome.matched)
+        assertTrue(outcome.unsupported.single().reason.contains("names 2 methods with the same rendered identity"), outcome.toString())
+        assertEquals(original, builder.build().toString(), "ambiguous persisted identity must not select either source method")
+    }
+
+    @Test
+    fun `unknown immediate arguments retain the call and report unresolved matching`() {
+        val (builder, view) = fixture("shared")
+        val call = builder.controlFlowGraph.nodes.filterIsInstance<JAssignStmt>()
+            .single { it.rightOp is JStaticInvokeExpr }
+        val invoke = call.rightOp as JStaticInvokeExpr
+        val opaque = object : Immediate by invoke.args.single() {}
+        builder.controlFlowGraph.replaceNode(call, call.withRValue(invoke.withArgs(listOf(opaque))))
+        val original = builder.build().toString()
+        val rule = ConstantFold(mapOf("callee_name" to "from"),
+            arguments = mapOf(0 to ConstantPattern.parse(7, "args.0")), value = ConstantPattern.parse(42, "value"))
+        val folding = ConstantFolding(listOf(rule))
+        folding.bodyInterceptors(emptyList()).forEach { it.interceptBody(builder, view) }
+        assertEquals(original, builder.build().toString(), "unrecognized provider values cannot establish a constant argument")
+        val outcome = folding.report().outcomes.single()
+        assertEquals(0, outcome.matched)
+        assertTrue(outcome.unsupported.single().reason.contains("argument 0 of Fallback.from(int) is not a constant"))
+    }
+
+    @Test
+    fun `reference ordering is retained instead of inventing constant truth`() {
+        val (builder, view) = fixture("branch")
+        val graph = builder.controlFlowGraph
+        val branch = graph.nodes.filterIsInstance<JIfStmt>().single()
+        val nullOrder = branch.withCondition(JLtExpr(NullConstant.getInstance(), NullConstant.getInstance()))
+        graph.replaceNode(branch, nullOrder)
+        val successors = graph.successors(nullOrder).toList()
+        val folding = ConstantFolding(listOf(ConstantFold(mapOf("callee_name" to "value"),
+            value = ConstantPattern.parse(42, "value"))))
+        folding.bodyInterceptors(emptyList()).forEach { it.interceptBody(builder, view) }
+        assertEquals(1, folding.report().outcomes.single().matched, "the independent selected call still folds")
+        assertEquals(listOf(nullOrder), graph.nodes.filterIsInstance<JIfStmt>(), "meaningless reference ordering remains conditional")
+        assertEquals(successors, graph.successors(nullOrder), "neither branch may be discarded")
+        assertEquals(setOf("1", "2"), graph.nodes.filterIsInstance<JReturnStmt>().map { it.op.toString() }.toSet())
     }
 }

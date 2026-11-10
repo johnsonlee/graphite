@@ -3,10 +3,8 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.CallSiteNode
 import java.io.BufferedOutputStream
 import java.io.DataOutputStream
-import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.util.concurrent.CancellationException
 
 private const val CALL_SITE_INDEX_PERSISTENCE_BUFFER_BYTES = 1 shl 20
@@ -31,7 +29,7 @@ internal fun persistCallSiteStringIndex(
                 )
             ).use(index::writePersistent)
             checkCallSiteIndexPersistenceInterrupted()
-            replaceCallSiteIndex(checkNotNull(temporary), dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
+            replaceAtomically(checkNotNull(temporary), dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
             temporary = null
         }
         true
@@ -41,14 +39,6 @@ internal fun persistCallSiteStringIndex(
         false
     } finally {
         temporary?.let { path -> runCatching { Files.deleteIfExists(path) } }
-    }
-}
-
-private fun replaceCallSiteIndex(source: Path, target: Path) {
-    try {
-        Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-    } catch (_: AtomicMoveNotSupportedException) {
-        Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
     }
 }
 

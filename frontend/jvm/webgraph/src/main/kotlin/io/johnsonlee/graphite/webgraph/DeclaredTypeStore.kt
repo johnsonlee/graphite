@@ -14,10 +14,8 @@ import java.io.BufferedOutputStream
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
-import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.security.DigestOutputStream
 import java.security.MessageDigest
@@ -99,11 +97,7 @@ internal object DeclaredTypeStore {
             // Do not retain descriptor/scope indexes through the remaining graph index writes.
             val plan = prepared ?: DeclaredTypeSavePlan.prepare(table, if (strings == null) SHARED_VERSION else maximumVersion)
             val digest = plan.use { writeTable(table, dir, temporary, strings, it) }
-            try {
-                Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-            } catch (_: AtomicMoveNotSupportedException) {
-                Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
-            }
+            replaceAtomically(temporary, path)
             writeBinding(dir, HexFormat.of().formatHex(digest))
             return digest
         } finally {
@@ -458,7 +452,7 @@ internal object DeclaredTypeStore {
     private const val FORMAL_SCOPE_BYTES = 1 + StructuralDeclaredTypeWire.FORMAL_RESERVED_BYTES + Int.SIZE_BYTES
 
 
-    private object EmptyMemberRows : MappedMemberRows<Nothing> {
+    internal object EmptyMemberRows : MappedMemberRows<Nothing> {
         override val rowCount: Int get() = 0
         override fun ownerAt(row: Int): Int = none(row)
         override fun nameAt(row: Int): Int = none(row)

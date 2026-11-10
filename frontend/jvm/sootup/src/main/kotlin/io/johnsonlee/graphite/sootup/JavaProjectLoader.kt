@@ -104,7 +104,7 @@ private fun createApkInputLocations(
     interceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor>,
     onFallback: (String) -> Unit,
     log: (String) -> Unit,
-    tracking: BodyInterceptionTracking? = null
+    tracking: BodyInterceptionTracking?
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
     // Dex registers hold unrelated values over time: split them before functional dispatch.

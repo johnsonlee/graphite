@@ -14,11 +14,35 @@ import kotlin.test.assertFalse
 class GraphStoreLayoutTest : GraphStoreTestFixture() {
 
     @Test
+    fun `transient backward compression preserves adjacency and contains storage failures`() {
+        val source = GraphStore.PrecomputedImmutableGraph(GraphStore.PrecomputedAdjacency(
+            3, intArrayOf(1, 2, 2), intArrayOf(0, 2, 3, 3)))
+        assertEquals(3L, source.numArcs())
+        val restored = kotlin.test.assertNotNull(compressAndLoadTransientBackwardGraph(source))
+        assertEquals(3, restored.numNodes())
+        for (node in 0 until source.numNodes()) {
+            kotlin.test.assertContentEquals(source.successorArray(node), restored.successorArray(node).copyOf(restored.outdegree(node)))
+        }
+        val damaged = object : it.unimi.dsi.webgraph.ImmutableGraph() {
+            override fun numNodes(): Int = throw java.io.IOException("source unavailable")
+            override fun randomAccess() = true
+            override fun outdegree(node: Int) = 0
+            override fun copy(): it.unimi.dsi.webgraph.ImmutableGraph = this
+        }
+        kotlin.test.assertNull(compressAndLoadTransientBackwardGraph(damaged))
+        val notDirectory = Files.createTempFile("backward-not-directory", ".file")
+        try {
+            kotlin.test.assertNull(persistAndLoadBackwardGraph(notDirectory, source))
+        } finally { Files.delete(notDirectory) }
+    }
+
+    @Test
     fun `round-trip preserves backward adjacency`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("backward-test")
         try {
             GraphStore.save(graph, dir)
+            GraphStore.buildNodeIndex(dir.resolve(GraphStore.NODE_DATA_FILE), dir.resolve("graph.nodeindex"), StringTable.load(dir))
             val loaded = GraphStore.load(dir)
             // Verify incoming edges for every node
             for (node in graph.nodes(Node::class.java)) {

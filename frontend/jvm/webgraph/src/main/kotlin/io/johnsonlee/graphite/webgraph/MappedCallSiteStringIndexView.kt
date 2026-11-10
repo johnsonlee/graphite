@@ -512,7 +512,7 @@ private class PersistentIndexViewValidator(
         consumeGraphWork(workConsumer, values.size.toLong())
     }
 
-    fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
+    fun updateInts(values: IntBuffer, validate: (Int) -> Unit) {
         var index = 0
         while (index < values.limit()) {
             checkViewInterrupted()
@@ -527,10 +527,6 @@ private class PersistentIndexViewValidator(
             checksum.update(scratch.array(), 0, scratch.position())
             consumeGraphWork(workConsumer, (end - start).toLong())
         }
-    }
-
-    fun updateInts(offset: Long, count: Int) {
-        updateInts(mappedSlice(offset, count, Int.SIZE_BYTES).asIntBuffer())
     }
 
     fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {

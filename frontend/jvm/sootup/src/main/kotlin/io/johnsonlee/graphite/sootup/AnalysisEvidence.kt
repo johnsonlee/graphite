@@ -17,12 +17,10 @@ import sootup.core.types.ClassType
 internal class AnalysisEvidence(private val context: SootUpAdapter) {
     private val slotTargets = context.slotTargets
     private val slotCalls = context.slotCalls
-    private var openSlots
+    private val openSlots
         get() = context.openSlots
-        set(value) { context.openSlots = value }
-    private var lostSlots
+    private val lostSlots
         get() = context.lostSlots
-        set(value) { context.lostSlots = value }
     private val classEvidence = context.classEvidence
     private val methodEvidence = context.methodEvidence
     private val duplicateClasses = context.duplicateClasses

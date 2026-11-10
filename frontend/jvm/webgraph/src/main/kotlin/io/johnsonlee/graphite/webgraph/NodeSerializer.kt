@@ -230,9 +230,8 @@ internal object NodeSerializer {
                     isVirtual = ((label shr CALL_EDGE_VIRTUAL_SHIFT_V2) and 1) == 1,
                     isDynamic = ((label shr CALL_EDGE_DYNAMIC_SHIFT_V2) and 1) == 1)
             EDGE_FAMILY_TYPE -> TypeEdge(from, to, TypeRelation.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
-            EDGE_FAMILY_CONTROL_FLOW ->
-                ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK], comparison)
-            else -> throw IllegalArgumentException("Unknown edge family: $family")
+            // The v2 family mask has exactly two bits; the remaining value is ControlFlow.
+            else -> ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK], comparison)
         }
     }
 

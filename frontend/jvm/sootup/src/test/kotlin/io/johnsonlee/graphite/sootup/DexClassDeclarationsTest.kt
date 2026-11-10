@@ -597,6 +597,42 @@ class DexClassDeclarationsTest {
         return store.data
     }
 
+    @Test
+    @Suppress("IteratorNotThrowingNoSuchElementException") // Models a damaged third-party DEX iterator, not a valid collection.
+    fun `damaged dex enumeration retains preceding classes and reports the failed operation`() {
+        val first = testDefinition()
+        for (failureAt in listOf("iterator", "hasNext", "next")) {
+            val warnings = mutableListOf<String>()
+            val classes = object : AbstractSet<ClassDef>() {
+                override val size = 2
+                override fun iterator(): Iterator<ClassDef> {
+                    require(failureAt != "iterator") { "broken iterator" }
+                    return object : Iterator<ClassDef> {
+                        var delivered = false
+                        override fun hasNext(): Boolean {
+                            require(!delivered || failureAt != "hasNext") { "broken hasNext" }
+                            return true
+                        }
+                        override fun next(): ClassDef {
+                            require(!delivered) { "broken next" }
+                            delivered = true
+                            return first
+                        }
+                    }
+                }
+            }
+            val file = object : org.jf.dexlib2.iface.DexFile {
+                override fun getOpcodes() = Opcodes.getDefault()
+                override fun getClasses(): Set<ClassDef> = classes
+            }
+            val observed = safeDexClasses(file, "damaged.dex", warnings::add).toList()
+            assertEquals(if (failureAt == "iterator") emptyList() else listOf(first), observed)
+            assertEquals(1, warnings.size)
+            assertTrue(warnings.single().contains("damaged.dex"))
+            assertTrue(warnings.single().endsWith("broken $failureAt"))
+        }
+    }
+
     private fun dexResources(vararg entries: Pair<String, ByteArray>): ResourceAccessor {
         val content = entries.toMap()
         return object : ResourceAccessor {

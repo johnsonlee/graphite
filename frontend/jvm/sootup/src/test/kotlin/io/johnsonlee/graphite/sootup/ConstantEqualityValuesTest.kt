@@ -36,6 +36,24 @@ class ConstantEqualityValuesTest {
     }
 
     @Test
+    fun `malformed boxing arguments are unknown rather than an equals proof`() {
+        val boxedType = factory.getClassType("java.lang.Long")
+        val signature = factory.getMethodSignature(boxedType, "valueOf", boxedType, listOf(factory.getType("long")))
+        for (argument in listOf(IntConstant.getInstance(3), StringConstant("3", stringType))) {
+            val local = Local("malformedBox", boxedType)
+            val malformed = JStaticInvokeExpr(signature, listOf(argument))
+            assertNull(equal(local, local, mapOf(local to JAssignStmt(local, malformed, position))))
+        }
+    }
+
+    @Test
+    fun `unknown Boolean singleton fields do not acquire TRUE or FALSE values`() {
+        val type = factory.getClassType("java.lang.Boolean")
+        val unknown = sootup.core.jimple.common.ref.JStaticFieldRef(factory.getFieldSignature("UNKNOWN", type, type))
+        assertNull(booleanBoxOf(unknown))
+    }
+
+    @Test
     fun `a retained cast preserves the known string value for later equality`() {
         val local = Local("castResult", stringType)
         val cast = JCastExpr(StringConstant("value", stringType), stringType)

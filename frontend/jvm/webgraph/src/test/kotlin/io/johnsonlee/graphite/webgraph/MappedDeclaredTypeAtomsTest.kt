@@ -28,6 +28,23 @@ class MappedDeclaredTypeAtomsTest {
     )
 
     @Test
+    fun `atom interface without optional accelerators preserves candidate semantics`() = mapped(types) { rows ->
+        val raw = rows as DeclaredTypeAtoms
+        val basic = object : AbstractList<DeclaredType>(), DeclaredTypeAtoms {
+            override val size get() = rows.size
+            override fun get(index: Int) = rows[index]
+            override fun typeOffset(index: Int) = raw.typeOffset(index)
+            override fun atomInt(offset: Int) = raw.atomInt(offset)
+            override fun atomByte(offset: Int) = raw.atomByte(offset)
+            override fun atomTextOffset(position: Int) = raw.atomTextOffset(position)
+            override fun nextTextField(position: Int) = raw.nextTextField(position)
+        }
+        for (fragments in listOf(listOf("Outer"), listOf("Outer", "String"), listOf("Missing"))) {
+            assertEquals(resultAndWork(types, fragments), resultAndWork(basic, fragments))
+        }
+    }
+
+    @Test
     fun `validated mapped atoms retain rendered and sparse structured candidates without decoding`() = mapped(types) { rows ->
         val counted = CountingTypes(rows)
         for (needle in listOf(
