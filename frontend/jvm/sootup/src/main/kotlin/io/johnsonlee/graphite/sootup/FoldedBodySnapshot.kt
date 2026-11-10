@@ -344,9 +344,10 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is JRetStmt -> writeValue(stmt.stmtAddress)
             is JEnterMonitorStmt -> writeValue(stmt.op)
             is JExitMonitorStmt -> writeValue(stmt.op)
-            // capture's exact-class admission leaves only goto, return-void, nop and breakpoint,
-            // whose payload is completely represented by their class, position and graph edges.
-            else -> Unit
+            // These exact classes have no payload beyond class, position and graph edges.
+            // A future admission must not silently bypass this codec's payload dispatch.
+            else -> check(stmt.javaClass === JGotoStmt::class.java || stmt.javaClass === JReturnVoidStmt::class.java ||
+                stmt.javaClass === JNopStmt::class.java || stmt.javaClass === JBreakpointStmt::class.java)
         }
     }
 
@@ -380,9 +381,9 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             }
             is JArrayRef -> { writeValue(value.base); writeValue(value.index) }
             is JParameterRef -> out.writeInt(value.index)
-            // checkValue above leaves only this, caught-exception and allocation references;
-            // their complete payload is the type written before this dispatch.
-            else -> Unit
+            // Only these exact values are completely described by the type already written.
+            else -> check(value.javaClass === JThisRef::class.java || value.javaClass === JCaughtExceptionRef::class.java ||
+                value.javaClass === JNewExpr::class.java)
         }
     }
 
@@ -415,8 +416,8 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
                 constant.parameterTypes.forEach(::writeType)
                 writeType(constant.returnType)
             }
-            // writeValue's exact-class admission leaves only the payload-free null constant.
-            else -> Unit
+            // Null alone has no payload; admitting another constant must also extend this codec.
+            else -> check(constant.javaClass === NullConstant::class.java)
         }
     }
 
@@ -481,9 +482,12 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is Constant -> writeValue(value)
             is Float -> out.writeInt(value.toRawBits())
             is Double -> out.writeLong(value.toRawBits())
-            // copyAnnotationValue admitted only these remaining immutable scalar types:
-            // String, Boolean, Byte, Short, Int, Long and Char.
-            else -> writeString(value.toString())
+            else -> {
+                // Extending capture's annotation vocabulary must not admit arbitrary textual encodings.
+                check(value is String || value is Boolean || value is Byte || value is Short ||
+                    value is Int || value is Long || value is Char)
+                writeString(value.toString())
+            }
         }
     }
 
