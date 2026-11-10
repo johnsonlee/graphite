@@ -8,7 +8,6 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.lang.MutableString
 import java.io.Closeable
 import java.io.IOException
-import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.IntBuffer
@@ -377,8 +376,6 @@ internal class MappedCallSiteStringIndexView private constructor(
             } catch (_: IllegalArgumentException) {
                 null
             } catch (_: ArithmeticException) {
-                null
-            } catch (_: BufferUnderflowException) {
                 null
             } catch (expectedMalformedIndex: IndexOutOfBoundsException) {
                 null

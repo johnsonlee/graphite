@@ -100,7 +100,7 @@ internal class MappedGraphContext(
             val owner = mappedNodeData.getInt(methodAt)
             val name = mappedNodeData.getInt(methodAt + Int.SIZE_BYTES)
             val count = mappedNodeData.getInt(methodAt + 2 * Int.SIZE_BYTES)
-            val end = methodAt + (METHOD_DESCRIPTOR_FIXED_INTS + count) * Int.SIZE_BYTES
+            val end = methodAt.toLong() + (METHOD_DESCRIPTOR_FIXED_INTS.toLong() + count) * Int.SIZE_BYTES
             if (count < 0 || end > mappedNodeData.limit()) {
                 return DeclaredTypeBinding.UNANSWERED
             }
