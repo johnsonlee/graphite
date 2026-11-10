@@ -164,18 +164,18 @@ private fun bytecodeInterceptors(folding: ConstantFolding): List<BodyInterceptor
     folding.bodyInterceptors(BytecodeBodyInterceptors.Default.bodyInterceptors)
 
 private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path =
-    resolveAndroidPlatformsPath(config, System.getenv(), ::defaultAndroidSdkRoots)
+    resolveAndroidPlatformsPath(config, System.getenv())
 
 internal fun resolveAndroidPlatformsPath(
     config: LoaderConfig,
     environment: Map<String, String>,
-    defaultRoots: () -> List<Path>
+    defaultRoots: List<Path>? = null
 ): Path {
     val configured = config.androidSdk ?: findAndroidSdkRootFromEnvironment(environment)
     if (configured != null) {
         return validateAndroidSdkRoot(configured)
     }
-    return discoverAndroidPlatformsPath(defaultRoots(), environment[PATH_ENV])
+    return discoverAndroidPlatformsPath(defaultRoots ?: defaultAndroidSdkRoots(), environment[PATH_ENV])
         ?: throw IllegalArgumentException(
             "APK input requires an Android SDK. Pass --android-sdk <sdk-root>, set " +
                 "$ANDROID_HOME_ENV or $ANDROID_SDK_ROOT_ENV, " +

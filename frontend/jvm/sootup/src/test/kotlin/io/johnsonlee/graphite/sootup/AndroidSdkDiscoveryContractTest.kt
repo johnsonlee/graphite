@@ -17,12 +17,13 @@ class AndroidSdkDiscoveryContractTest {
             Files.createFile(platforms.resolve("android.jar"))
             val expected = platforms.parent
             assertEquals(expected, resolveAndroidPlatformsPath(
-                LoaderConfig(androidSdk = sdk), mapOf("ANDROID_HOME" to "does-not-exist")
-            ) { error("Explicit configuration must not inspect fallback roots") })
+                LoaderConfig(androidSdk = sdk), mapOf("ANDROID_HOME" to "does-not-exist"), listOf(sdk.resolve("missing"))
+            ))
             assertEquals(expected, resolveAndroidPlatformsPath(
-                LoaderConfig(), mapOf("ANDROID_HOME" to sdk.toString(), "ANDROID_SDK_ROOT" to "does-not-exist")
-            ) { error("Environment configuration must not inspect fallback roots") })
-            assertEquals(expected, resolveAndroidPlatformsPath(LoaderConfig(), emptyMap()) { listOf(sdk) })
+                LoaderConfig(), mapOf("ANDROID_HOME" to sdk.toString(), "ANDROID_SDK_ROOT" to "does-not-exist"),
+                listOf(sdk.resolve("missing"))
+            ))
+            assertEquals(expected, resolveAndroidPlatformsPath(LoaderConfig(), emptyMap(), listOf(sdk)))
         } finally {
             sdk.toFile().deleteRecursively()
         }
@@ -31,7 +32,7 @@ class AndroidSdkDiscoveryContractTest {
     @Test
     fun `missing SDK provides all supported installation choices`() {
         val failure = assertFailsWith<IllegalArgumentException> {
-            resolveAndroidPlatformsPath(LoaderConfig(), mapOf("PATH" to "")) { emptyList() }
+            resolveAndroidPlatformsPath(LoaderConfig(), mapOf("PATH" to ""), emptyList())
         }
         assertEquals(
             "APK input requires an Android SDK. Pass --android-sdk <sdk-root>, set " +
