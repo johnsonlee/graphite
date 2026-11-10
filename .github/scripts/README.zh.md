@@ -4,7 +4,7 @@
 
 CI 辅助脚本主要使用 TypeScript 编写，由 Bun 直接执行。覆盖率门禁
 `check-coverage.py` 使用 Python 标准库 XML 解析器校验全部七个 JVM 模块的
-Kover 报告，严格执行 98% 行覆盖率阈值；报告缺失、畸形、模块重复或未知、
+Kover 报告，严格执行 100% 行覆盖率阈值；报告缺失、畸形、模块重复或未知、
 覆盖行数分母为零都会失败。控制台日志和未配置规则的原生 Kover 校验任务
 不能替代这些证据。Bun 运行时版本固定在
 `package.json` 的 `packageManager` 字段中；`bun.lock` 固定开发依赖版本。

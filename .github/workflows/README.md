@@ -10,7 +10,7 @@ configuration live in [`.github/scripts/`](../scripts/README.md).
 
 | Workflow | Trigger | Responsibility |
 | --- | --- | --- |
-| [`build.yml`](build.yml) — Run unit tests | Branch pushes matching `*`, PRs targeting `**`, `repository_dispatch: test` | Check TypeScript helpers, test Explorer web state, run Gradle checks, enforce 98% application line coverage on PRs, and update coverage/CI status comments. |
+| [`build.yml`](build.yml) — Run unit tests | Branch pushes matching `*`, PRs targeting `**`, `repository_dispatch: test` | Check TypeScript helpers, test Explorer web state, run Gradle checks, enforce 100% application line coverage on PRs, and update coverage/CI status comments. |
 | [`rust.yml`](rust.yml) — Rust | Branch pushes matching `*`, PRs targeting `**` | Format, lint, build and test Rust; check static Linux binaries and container startup; exercise real JVM construction, persisted graphs and Kotlin/Rust response parity. Also compile-check the workspace on Windows. |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | PRs targeting `**` | Compare the product merge-base and exact PR head on one runner. Gate correctness, execution completeness and OOM; report timing differences without thresholds. |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Completion of Benchmark correctness and OOM; only PR-originated runs are published | Validate report provenance and update one benchmark comment for the current PR head. |

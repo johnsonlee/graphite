@@ -10,7 +10,7 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 
 | Workflow | 触发条件 | 职责 |
 | --- | --- | --- |
-| [`build.yml`](build.yml) — Run unit tests | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR、`repository_dispatch: test` | 检查 TypeScript 辅助脚本，测试 Explorer 网页状态，运行 Gradle 检查，在 PR 上要求应用代码行覆盖率达到 98%，更新覆盖率和 CI 状态评论。 |
+| [`build.yml`](build.yml) — Run unit tests | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR、`repository_dispatch: test` | 检查 TypeScript 辅助脚本，测试 Explorer 网页状态，运行 Gradle 检查，在 PR 上要求应用代码行覆盖率达到 100%，更新覆盖率和 CI 状态评论。 |
 | [`rust.yml`](rust.yml) — Rust | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR | 检查 Rust 格式、lint、构建和测试；校验 Linux 静态二进制与容器启动；验证真实 JVM 构图、持久化图及 Kotlin/Rust 响应一致性。同时在 Windows 上进行 workspace 编译检查。 |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | 目标分支匹配 `**` 的 PR | 在同一个 runner 上比较产品 merge-base 和精确 PR head。以正确性、执行完整性和 OOM 为 gate，计时差异只生成报告，不设阈值。 |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Benchmark correctness and OOM 执行完成；仅为 PR 触发的运行发布评论 | 校验报告来源，更新当前 PR head 对应的唯一 benchmark 评论。 |

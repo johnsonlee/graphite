@@ -17,7 +17,7 @@ class CoverageGateTest(unittest.TestCase):
         self.root = Path(self.directory.name)
         self.paths = [self.write(module) for module in coverage.MODULES]
 
-    def write(self, module, counters='<counter type="LINE" missed="2" covered="98"/>', name=None):
+    def write(self, module, counters='<counter type="LINE" missed="0" covered="100"/>', name=None):
         path = self.root / "frontend/jvm" / module / "build/reports/kover/report.xml"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f'<report name="{coverage.REPORT_PREFIX}{name or module}">{counters}</report>')
@@ -32,20 +32,21 @@ class CoverageGateTest(unittest.TestCase):
     def test_exact_boundary_and_unrounded_below_boundary(self):
         rows = coverage.read_reports(self.paths)
         self.assertEqual(list(coverage.MODULES), [row["module"] for row in rows])
-        self.assertTrue(all(row["passed"] and row["percent"] == 98 for row in rows))
+        self.assertTrue(all(row["passed"] and row["percent"] == 100 for row in rows))
         self.assertEqual(0, self.invoke().returncode)
-        self.write("core", '<counter type="LINE" missed="201" covered="9799"/>')
+        self.write("core", '<counter type="LINE" missed="1" covered="9999"/>')
         row = coverage.read_reports(self.paths)[0]
         self.assertFalse(row["passed"])
-        self.assertEqual(97.99, row["percent"])
+        self.assertEqual(99.99, row["percent"])
         self.assertEqual(1, self.invoke().returncode)
-        self.write("core", '<counter type="LINE" missed="20001" covered="979999"/>')
+        self.write("core", '<counter type="LINE" missed="1" covered="999999"/>')
         row = coverage.read_reports(self.paths)[0]
-        self.assertFalse(row["passed"], "A percentage displayed as 98.00 still fails below the exact threshold")
-        self.write("core", '<counter type="LINE" missed="19999" covered="980001"/>')
-        self.assertTrue(coverage.read_reports(self.paths)[0]["passed"])
+        self.assertEqual("100.00", f'{row["percent"]:.2f}')
+        self.assertFalse(row["passed"], "A percentage displayed as 100.00 still fails with an uncovered line")
+        self.assertEqual(1, self.invoke().returncode)
         self.write("core", '<counter type="LINE" missed="0" covered="1"/>')
         self.assertEqual(100, coverage.read_reports(self.paths)[0]["percent"])
+        self.assertEqual(0, self.invoke().returncode)
 
     def test_missing_empty_and_malformed_reports_fail(self):
         for text in ("", "console format changed", "<report>", '<report name="changed"><counter type="LINE" covered="100" missed="0"/></report>'):
@@ -110,7 +111,7 @@ class CoverageGateTest(unittest.TestCase):
         )
         self.assertEqual(1, result.returncode)
         data = json.loads(summary.read_text())
-        self.assertEqual(98, data["threshold"])
+        self.assertEqual(100, data["threshold"])
         row = next(row for row in data["modules"] if row["module"] == "query")
         self.assertEqual({"module": "query", "missed": 1, "covered": 0, "total": 1, "percent": 0, "passed": False}, row)
 
