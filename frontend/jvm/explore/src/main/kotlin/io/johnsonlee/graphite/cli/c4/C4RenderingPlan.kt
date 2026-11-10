@@ -262,9 +262,14 @@ internal fun plannedEdge(edge: Map<String, Any?>): PlannedEdge =
 internal fun dedupeAndSort(edges: List<PlannedEdge>): List<PlannedEdge> =
     edges.distinctBy { "${it.from}:${it.to}:${it.kind}" }.sortedByDescending { it.weight }
 
-private data class VisibleDiagramSelection(val elements: List<DiagramElement>, val edges: List<PlannedEdge>, val omittedEdges: Int)
+internal data class VisibleDiagramSelection(val elements: List<DiagramElement>, val edges: List<PlannedEdge>, val omittedEdges: Int)
 
-private fun selectVisibleDiagramSlice(elements: List<DiagramElement>, edges: List<PlannedEdge>, maxElements: Int): VisibleDiagramSelection {
+/** Retains complete relationships when possible, otherwise the first elements in display order. */
+internal fun selectVisibleDiagramSlice(
+    elements: List<DiagramElement>,
+    edges: List<PlannedEdge>,
+    maxElements: Int
+): VisibleDiagramSelection {
     if (maxElements <= 0 || edges.isEmpty()) {
         return VisibleDiagramSelection(elements.take(maxElements.coerceAtLeast(0)), emptyList(), edges.size)
     }
@@ -279,8 +284,9 @@ private fun selectVisibleDiagramSlice(elements: List<DiagramElement>, edges: Lis
         }
     }
 
-    // Every caller filters edges to the supplied elements and has room for at
-    // least one pair of endpoints, so a nonempty edge list selects a pair.
+    if (visibleIds.isEmpty()) {
+        visibleIds += elements.take(maxElements).map { it.id }
+    }
     val visibleElements = elements.filter { it.id in visibleIds }
     val visibleElementIds = visibleElements.map { it.id }.toSet()
     val visibleEdges = edges.filter { it.from in visibleElementIds && it.to in visibleElementIds }
