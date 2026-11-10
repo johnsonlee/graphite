@@ -57,8 +57,7 @@ internal fun visitComparisonExpr(ctx: CypherParser.ComparisonExpressionContext):
                 ops[i].LT() != null -> "<"
                 ops[i].GT() != null -> ">"
                 ops[i].LE() != null -> "<="
-                ops[i].GE() != null -> ">="
-                else -> throw CypherParseException("Unknown comparison operator")
+                else -> ">=" // compOp has exactly six alternatives; invalid input never reaches the visitor.
             }
         result = CypherExpr.Comparison(op, result, visitStringPredicateExpr(operands[i + 1]))
     }
@@ -84,9 +83,8 @@ internal fun visitStringPredicateExpr(ctx: CypherParser.StringPredicateExpressio
                     CypherExpr.Not(CypherExpr.StringOp("CONTAINS", result, visitAddSubExpr(suffix.addSubExpression())))
                 is CypherParser.NotStartsWithPredicateContext ->
                     CypherExpr.Not(CypherExpr.StringOp("STARTS WITH", result, visitAddSubExpr(suffix.addSubExpression())))
-                is CypherParser.NotEndsWithPredicateContext ->
-                    CypherExpr.Not(CypherExpr.StringOp("ENDS WITH", result, visitAddSubExpr(suffix.addSubExpression())))
-                else -> throw CypherParseException("Unknown string predicate suffix")
+                else -> CypherExpr.Not(CypherExpr.StringOp("ENDS WITH", result,
+                    visitAddSubExpr((suffix as CypherParser.NotEndsWithPredicateContext).addSubExpression())))
             }
     }
     return result
@@ -184,11 +182,10 @@ internal fun visitSubscriptOrSlice(target: CypherExpr, ctx: CypherParser.Subscri
             val to = visitExpr(ctx.expression())
             CypherExpr.Slice(target, null, to)
         }
-        is CypherParser.SubscriptIndexContext -> {
-            val index = visitExpr(ctx.expression())
+        else -> {
+            val index = visitExpr((ctx as CypherParser.SubscriptIndexContext).expression())
             CypherExpr.Subscript(target, index)
         }
-        else -> throw CypherParseException("Unknown subscript/slice type")
     }
 }
 

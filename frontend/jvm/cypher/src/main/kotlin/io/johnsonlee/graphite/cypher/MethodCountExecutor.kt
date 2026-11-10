@@ -106,12 +106,14 @@ private fun countGroupsInParallel(
         val batches =
             runMethodGraphTasks(
                 wave.map { source -> { checkPeerCancelled -> countSourceMethods(execution, source, groupItems, checkPeerCancelled) } })
-        if (batches.any { !mergeGroups(groups, it) }) return null
+        if (batches.any { !mergeMethodCountGroups(groups, it) }) return null
     }
     return groups
 }
 
-private fun mergeGroups(groups: LinkedHashMap<List<Any?>, MethodCountGroup>, batch: LinkedHashMap<List<Any?>, MethodCountGroup>?): Boolean =
+internal fun mergeMethodCountGroups(
+    groups: LinkedHashMap<List<Any?>, MethodCountGroup>, batch: LinkedHashMap<List<Any?>, MethodCountGroup>?
+): Boolean =
     batch != null &&
         batch.all { (key, source) ->
             val group = groups.getOrPut(key) { MethodCountGroup() }
@@ -200,4 +202,4 @@ private fun addCount(current: Long, increment: Long): Long? =
         null
     }
 
-private data class MethodCountGroup(var count: Long = 0L, val graphIds: LinkedHashSet<String> = linkedSetOf())
+internal data class MethodCountGroup(var count: Long = 0L, val graphIds: LinkedHashSet<String> = linkedSetOf())

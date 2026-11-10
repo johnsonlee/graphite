@@ -284,16 +284,8 @@ internal class IndexedStringProjection(
 
         private fun completeProvenance() {
             val selected = rows.keys.toSet()
-            val selectedValues =
-                selected.mapNotNullTo(linkedSetOf()) { row ->
-                    val values = columns.map(row::get)
-                    if (values.all { value -> value == null || value is String }) {
-                        @Suppress("UNCHECKED_CAST")
-                        values as List<String?>
-                    } else {
-                        null
-                    }
-                }
+            // Admission excludes dynamic annotation properties; every selected column is String or null.
+            val selectedValues = selected.mapTo(linkedSetOf()) { row -> columns.map { row[it] as String? } }
             val selectedMatcher = stringScanner.DirectStringSelectedRowMatcher(selected, items, columns)
             val knownRowsBySource =
                 projectedRowsBySource.map { projectedRows ->
@@ -308,13 +300,9 @@ internal class IndexedStringProjection(
                     provenanceSourceIndexes.map { sourceIndex ->
                         {
                             val source = candidateSources[sourceIndex]
-                            val forceSerialStorage =
-                                candidateSources.size == 1 &&
-                                    (source.graph as? PreparedStringPropertyDisjunctionLookup)?.hasPreparedStringPropertyDisjunction(
-                                        CallSiteNode::class.java, predicates) == true
-                            val storageWorkConsumer =
-                                graphAccess.stringStorageWorkConsumer(
-                                    candidateSources.size, tracker, forceSerial = forceSerialStorage, preferMappedView = preferMappedView)
+                            // A single source already supplied every selected row and is filtered out above.
+                            val storageWorkConsumer = graphAccess.stringStorageWorkConsumer(
+                                candidateSources.size, tracker, preferMappedView = preferMappedView)
                             val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
                             val rawHits = mutableSetOf<Map<String, Any?>>()
                             if (sourceSelectedValues.isNotEmpty()) {

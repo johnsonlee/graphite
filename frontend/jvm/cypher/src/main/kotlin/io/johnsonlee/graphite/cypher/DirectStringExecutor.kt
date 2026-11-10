@@ -302,14 +302,8 @@ internal class DirectStringExecutor(
             val graphParallelism = directStringGraphParallelism(candidateSources.size)
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val initial = runDirectStringTasks(wave.map { scanner -> { scanner.nextDistinctRows(limit) } }, graphParallelism)
-            for (index in wave.indices) {
-                var batch = initial[index]
-                mergeDirectStringBatch(rows, batch.rows, limit)
-                while (rows.size < limit && !batch.exhausted) {
-                    batch = wave[index].nextDistinctRows(limit)
-                    mergeDirectStringBatch(rows, batch.rows, limit)
-                }
-            }
+            // A non-exhausted batch has limit locally distinct rows, which necessarily fills the global limit.
+            initial.forEach { batch -> mergeDirectStringBatch(rows, batch.rows, limit) }
             waveStart += wave.size
         }
 

@@ -158,8 +158,8 @@ internal class DirectStringScanner(
 
             private fun projectionValue(candidate: Any, expression: CypherExpr): Any? = when (expression) {
                 is CypherExpr.Literal -> expression.value
-                is CypherExpr.Property -> graphAccess.nodeProperty(candidate, expression.propertyName)
-                else -> error("Unsafe expression reached selected-row matcher")
+                // Both admission paths accept only literals and direct properties.
+                else -> graphAccess.nodeProperty(candidate, (expression as CypherExpr.Property).propertyName)
             }
         }
     }

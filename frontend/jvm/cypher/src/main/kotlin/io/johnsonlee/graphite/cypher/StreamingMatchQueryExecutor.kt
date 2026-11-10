@@ -78,9 +78,7 @@ internal class StreamingMatchQueryExecutor(
     }
 
     private fun directMatches(query: MatchQuery, candidates: List<CypherGraph>): Sequence<Map<String, Any?>>? {
-        val direct = if (query.prefix.match.where == null) {
-            nodeMatcher.qualifiedIdBindings(query.pattern, query.prefix.where.condition, candidates)
-        } else null
+        val direct = nodeMatcher.qualifiedIdBindings(query.pattern, query.prefix.where.condition, candidates)
         return direct ?: (query.pattern.elements.singleOrNull() as? PatternElement.NodePattern)
             ?.let { matchSeeds.directStringBindings(it, query.prefix.where.condition, candidates) }
     }

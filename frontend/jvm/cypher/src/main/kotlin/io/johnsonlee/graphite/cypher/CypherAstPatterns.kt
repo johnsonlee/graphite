@@ -40,8 +40,7 @@ internal fun visitRelationshipPattern(ctx: CypherParser.RelationshipPatternConte
             is CypherParser.RelFullPatternContext -> ctx.relationDetail()
             is CypherParser.RelLeftPatternContext -> ctx.relationDetail()
             is CypherParser.RelRightPatternContext -> ctx.relationDetail()
-            is CypherParser.RelBothPatternContext -> ctx.relationDetail()
-            else -> null
+            else -> (ctx as CypherParser.RelBothPatternContext).relationDetail()
         }
 
     val direction =
@@ -49,7 +48,6 @@ internal fun visitRelationshipPattern(ctx: CypherParser.RelationshipPatternConte
             is CypherParser.RelLeftPatternContext -> Direction.INCOMING
             is CypherParser.RelRightPatternContext -> Direction.OUTGOING
             is CypherParser.RelFullPatternContext -> Direction.BOTH
-            is CypherParser.RelBothPatternContext -> Direction.BOTH
             else -> Direction.BOTH
         }
 
