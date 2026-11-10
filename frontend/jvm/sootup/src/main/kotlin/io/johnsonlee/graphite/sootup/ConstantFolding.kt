@@ -571,7 +571,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             val others = collidingOverloads.getOrPut(signature) {
                 val rendered = render(signature) to descriptorOf(signature)
                 view.getClass(signature.declClassType).map { sootClass ->
-                    sootClass.methods.map { it.signature }.filter { it != signature && (render(it) to descriptorOf(it)) == rendered }
+                    declaredMethodSignatures(sootClass, view.identifierFactory)
+                        .filter { it != signature && (render(it) to descriptorOf(it)) == rendered }
                 }.orElse(emptyList()).map { it.toString() }.sorted()
             }
             if (others.isEmpty()) return null
@@ -998,7 +999,11 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         }
 
     private fun declares(view: View, type: ClassType, subSignature: MethodSubSignature): Boolean =
-        runCatching { view.getClass(type).map { it.getMethod(subSignature).isPresent }.orElse(false) }.getOrDefault(false)
+        runCatching {
+            view.getClass(type).map { sootClass ->
+                declaredMethodSignatures(sootClass, view.identifierFactory).any { it.subSignature == subSignature }
+            }.orElse(false)
+        }.getOrDefault(false)
 
     /**
      * The constant reaching argument [index] of [invoke] as the graph would label it, or `null`
