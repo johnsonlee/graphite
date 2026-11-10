@@ -245,3 +245,18 @@ tasks.test {
         listOf("-Dkotlin.lambda.desugared.fixtures=${desugaredDir.get().absolutePath}")
     }
 }
+
+// ResourceBundle's optional parent inspection is supported only when the caller opens java.util.
+// Keep that JVM configuration isolated: the normal suite still verifies the closed-module fallback.
+val resourceBundleOpenModulesTest by tasks.registering(Test::class) {
+    description = "Verifies ResourceBundle parent traversal with the supported java.util module opening"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/ResourceBundleOpenModulesTest.class")
+    maxHeapSize = "4g"
+    jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
+    shouldRunAfter(tasks.test)
+}
+tasks.test { exclude("**/ResourceBundleOpenModulesTest.class") }
+tasks.check { dependsOn(resourceBundleOpenModulesTest) }
