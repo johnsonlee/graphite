@@ -254,6 +254,25 @@ class RecoveringBodyInterceptorTest {
     }
 
     @Test
+    fun `a failed rollback escapes instead of publishing a recovered or partially restored body`() {
+        val (original, view) = fixture()
+        val rollbackFailure = IllegalStateException("frontend graph no longer permits block removal")
+        val graph = object : MutableBlockControlFlowGraph(original.controlFlowGraph) {
+            override fun removeBlock(block: sootup.core.graph.BasicBlock<*>) = throw rollbackFailure
+        }
+        val builder = Body.builder(graph).setMethodSignature(original.methodSignature)
+            .setModifiers(original.modifiers).setLocals(original.locals)
+        val recovered = mutableListOf<BodyInterceptionRecovery>()
+        val guard = RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> error("primary transform failed") }),
+            { error("failed rollback must never report successful fallback") }, onRecovery = recovered::add)
+        val failure = assertFailsWith<BodyRecoveryException> { guard.interceptBody(builder, view) }
+        assertTrue(failure.message!!.contains("Cannot restore body"))
+        assertSame(rollbackFailure, failure.cause)
+        assertTrue(recovered.isEmpty())
+    }
+
+    @Test
     fun `essential normalization failure aborts instead of returning raw dex constants`() {
         val (_, view) = fixture()
         val builder = method(view, "value")

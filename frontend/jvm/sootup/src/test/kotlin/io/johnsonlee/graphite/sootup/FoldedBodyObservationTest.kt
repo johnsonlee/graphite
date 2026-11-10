@@ -325,10 +325,12 @@ class FoldedBodyObservationTest : FoldedBodyObservationFixture() {
             })
             val adapter = SootUpAdapter(createJavaView(listOf(appLocation, depLocation)), config,
                 extensions = listOf(extension), inputLocationSources = mapOf(appLocation to "app.jar", depLocation to "dep.jar"),
-                artifactRoles = mapOf("app.jar" to ArtifactRole.APPLICATION, "dep.jar" to ArtifactRole.LIBRARY))
+                artifactRoles = mapOf("dep.jar" to ArtifactRole.LIBRARY), singleArtifactSource = "app.jar")
             adapter.bodyDelivery = delivery
             val result = delivery.finish(adapter.buildGraph(), null)
             assertEquals(listOf("$appPackage.App"), visited)
+            assertEquals(ArtifactRole.APPLICATION, events.getValue("$appPackage.App.run()Ljava/lang/String;").evidence.role)
+            assertEquals(ArtifactRole.LIBRARY, events.getValue("$depPackage.Helper.read()Ljava/lang/String;").evidence.role)
             assertEquals(false, events.getValue("$depPackage.Helper.read()Ljava/lang/String;").evidence.application)
             assertEquals(setOf("$appPackage.App.<init>()V", "$appPackage.App.run()Ljava/lang/String;",
                 "$depPackage.Helper.<init>()V", "$depPackage.Helper.read()Ljava/lang/String;"), events.keys)

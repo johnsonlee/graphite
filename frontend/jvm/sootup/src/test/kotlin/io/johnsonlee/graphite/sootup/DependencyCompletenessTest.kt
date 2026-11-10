@@ -282,11 +282,13 @@ class DependencyCompletenessTest : DependencyScopeFixture() {
     @Test
     fun `a reachable scope stops at its budget and marks what it reached past it`() {
         val input = bootJar()
+        val logs = mutableListOf<String>()
         val config = LoaderConfig(
             includePackages = listOf(appPackage),
             includeLibraries = true,
             buildCallGraph = false,
-            dependencyBodies = DependencyBodyScope.Reachable(1)
+            dependencyBodies = DependencyBodyScope.Reachable(1),
+            verbose = logs::add
         )
         val graph = load(input, config)
         val completeness = assertNotNull(graph.analysisCompleteness())
@@ -298,6 +300,9 @@ class DependencyCompletenessTest : DependencyScopeFixture() {
         assertTrue(reader in read || reader in reached)
         assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("kotlin.collections.CollectionsKt"), "never reached at all")
         assertEquals(1, completeness.scope.dependencyReachable)
+        assertTrue(logs.any {
+            it.contains("Reachable expansion read 1 dependency class(es)") && it.contains("past the budget of 1")
+        }, logs.toString())
     }
 
     @Test
