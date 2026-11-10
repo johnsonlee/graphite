@@ -2,6 +2,8 @@ package io.johnsonlee.graphite.sootup
 
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -159,6 +161,47 @@ class FoldedBodyFingerprintTest {
         val unknownPosition = object : SimpleStmtPositionInfo(7) {}
         val returned = JReturnStmt(IntConstant.getInstance(7), unknownPosition)
         assertCaptureRejected("Unsupported folded-body position information") { capture(listOf(returned)) }
+    }
+
+    @org.junit.Test(timeout = 10_000)
+    fun `disconnected blocks remain fingerprinted independently of insertion order`() {
+        fun snapshot(value: Int, deadFirst: Boolean): FoldedBodySnapshot {
+            val graph = MutableBlockControlFlowGraph()
+            val entry = JReturnStmt(IntConstant.getInstance(7), position)
+            val local = Local("unreachable", intType)
+            val assign = JAssignStmt(local, IntConstant.getInstance(value), position)
+            val back = JGotoStmt(position)
+            if (!deadFirst) graph.addBlock(listOf(entry))
+            graph.addBlock(listOf(assign, back))
+            graph.putEdge(back, 0, assign)
+            if (deadFirst) graph.addBlock(listOf(entry))
+            graph.setStartingStmt(entry)
+            // Only the goto jumps backwards: a self-fallthrough if is not a linearizable Jimple body.
+            graph.validateStmtConnectionsInGraph()
+            assertTrue(assign.fallsThrough())
+            assertFalse(back.fallsThrough())
+            assertEquals(listOf(back), graph.successors(assign))
+            assertEquals(listOf(assign), graph.successors(back))
+            val sourceOrder = graph.stmts.map { it.javaClass }
+            return capture(graph, setOf(local)).also { snapshot ->
+                snapshot.body.controlFlowGraph.validateStmtConnectionsInGraph()
+                assertEquals(sourceOrder, snapshot.body.stmts.map { it.javaClass },
+                    "capture must preserve the source instruction order, including the unreachable block")
+            }
+        }
+        val original = snapshot(11, false)
+        val reordered = snapshot(11, true)
+        val graph = original.body.controlFlowGraph
+        val assign = graph.nodes.filterIsInstance<JAssignStmt>().single()
+        val back = graph.nodes.filterIsInstance<JGotoStmt>().single()
+        assertEquals(7, assertIs<IntConstant>(graph.nodes.filterIsInstance<JReturnStmt>().single().op).value)
+        assertEquals(11, assertIs<IntConstant>(assign.rightOp).value, "the unreachable assignment remains in the immutable body")
+        assertEquals("unreachable", assertIs<Local>(assign.leftOp).name)
+        assertEquals(listOf(back), graph.successors(assign))
+        assertEquals(listOf(assign), graph.successors(back))
+        assertEquals(original.semanticFingerprint(), reordered.semanticFingerprint(),
+            "backend block insertion order must not alter the identity of a disconnected loop")
+        assertDifferent(original, snapshot(12, false))
     }
 
     @Test
