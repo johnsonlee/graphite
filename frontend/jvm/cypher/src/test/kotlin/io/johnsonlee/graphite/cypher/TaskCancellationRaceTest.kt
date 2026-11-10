@@ -4,11 +4,13 @@ import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.RunnableFuture
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Test
@@ -105,6 +107,64 @@ class TaskCancellationRaceTest {
             runMethodGraphTasks(listOf({ _: () -> Unit -> throw wrapper }, { _: () -> Unit -> 1 }), InlineExecutor())
         }
         assertSame(original, failure)
+    }
+
+    @Test(timeout = 15_000)
+    fun `interrupting query cleanup still drains a running scan and restores interrupt status`() {
+        val workerStarted = CountDownLatch(1)
+        val workerCancelled = CountDownLatch(1)
+        val releaseWorker = CountDownLatch(1)
+        val workerFinished = AtomicBoolean()
+        val drainedAtReturn = AtomicBoolean()
+        val interruptedAtReturn = AtomicBoolean()
+        val observedFailure = AtomicReference<Throwable?>()
+        val failure = IllegalStateException("first source failed")
+        val executor = Executors.newFixedThreadPool(2) { runnable ->
+            Thread(runnable, "test-draining-scan").apply { isDaemon = true }
+        }
+        val query = Thread({
+            try {
+                runDirectStringTasks(listOf<() -> Int>(
+                    { assertTrue(workerStarted.await(5, TimeUnit.SECONDS)); throw failure },
+                    {
+                        workerStarted.countDown()
+                        try {
+                            try {
+                                releaseWorker.await()
+                            } catch (_: InterruptedException) {
+                                workerCancelled.countDown()
+                                releaseWorker.await()
+                            }
+                            42
+                        } finally {
+                            workerFinished.set(true)
+                        }
+                    }), 2, executor)
+            } catch (error: Throwable) {
+                observedFailure.set(error)
+            } finally {
+                drainedAtReturn.set(workerFinished.get())
+                interruptedAtReturn.set(Thread.currentThread().isInterrupted)
+            }
+        }, "test-cancelling-query").apply { isDaemon = true }
+        try {
+            query.start()
+            assertTrue(workerCancelled.await(5, TimeUnit.SECONDS), "cleanup must cancel the already-running sibling")
+            assertFalse(workerFinished.get(), "the sibling still owns its completion latch")
+            query.interrupt()
+            releaseWorker.countDown()
+            query.join(5_000)
+            assertFalse(query.isAlive, "cleanup must finish after the running worker drains")
+            assertSame(failure, observedFailure.get(), "interrupting cleanup must not replace the original source failure")
+            assertTrue(drainedAtReturn.get(), "query failure is published only after the sibling finally completes")
+            assertTrue(interruptedAtReturn.get(), "cleanup preserves the caller's interrupt for its owner")
+        } finally {
+            releaseWorker.countDown()
+            query.interrupt()
+            executor.shutdownNow()
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+            query.join(5_000)
+        }
     }
 
     /**
