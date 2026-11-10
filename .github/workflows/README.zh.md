@@ -98,7 +98,7 @@ Maven 发布及四个平台的 Linux/macOS 二进制构建。release job 收集�
 JVM JAR 和各平台的独立 JS 前端可执行文件、校验产物并生成 Homebrew formula。Docker 和 Homebrew job 使用这些
 release 产物。
 
-标签 push 和 `repository_dispatch: publish` 是真实发布路径，会更新 Sonatype、
+标签 push 和 `repository_dispatch: publish` 是真实发布路径，会更新 Sonatype、GitHub Packages、
 GitHub Releases 和容器镜像仓库。正式版本还会更新 Homebrew tap；预发布版本
 不会更新 tap 或 Docker 的 `latest` 标签。
 
@@ -110,9 +110,24 @@ gh workflow run publish.yml --ref <branch> -f tag=v2.11.4
 
 提供的标签用于标记版本，无需实际存在。dry-run 只将 Maven 产物发布到 runner
 本地仓库，以 Actions artifact 保存 `release-<tag>`，在本地安装和测试生成的
-formula，并以 `push: false` 构建两个镜像架构。它不会发布到 Sonatype、创建
+formula，并以 `push: false` 构建两个镜像架构。它不会发布到 Sonatype 或 GitHub Packages、创建
 GitHub Release、更新 tap 或推送容器镜像。这些远端发布步骤不在 dry-run 的验证
 范围内。
+
+GitHub Packages 的 Maven job 只依赖标签验证，通过 `GITHUB_TOKEN` 和
+`packages: write` 发布现有五个 `mavenJava` publication（`core`、`ir`、`cypher`、
+`sootup`、`webgraph`），不要求 Sonatype 或 GPG 凭证。GitHub Packages 的构建和发布、release 产物构建
+以及所有 dry-run 失败仍会令 workflow 失败。只有真实 Sonatype 发布步骤
+（包括其专用凭证和签名）的失败会作为 warning 和 job summary 保留，原始错误日志仍可查看，
+不再因此把整个 workflow 标为失败。GitHub Packages 和 release 产物独立执行；
+workflow 成功本身不代表 Maven Central 发布成功。
+
+GitHub Packages dry-run 执行真实的
+`publishMavenJavaPublicationToGitHubPackagesRepository` 任务，但通过
+`-PgithubPackagesLocalRepository=<本地目录>` 强制使用 `file:` 仓库，不使用发布凭证。
+`verifyGitHubPackagesLocalPublication` 发现所有 `mavenJava` publication，检查各自的
+POM 坐标、JAR、sources 和 javadoc；SNAPSHOT 文件名按仓库 metadata 验证。
+这不是用 `publishToMavenLocal` 替代 GitHub 仓库任务，也不验证远端认证或权限。
 
 ## 维护 workflow
 

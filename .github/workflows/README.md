@@ -103,7 +103,7 @@ publication and the four Linux/macOS binary builds follow validation. The releas
 collects binaries, builds the JVM JAR and the standalone JS frontend binaries, verifies assets and renders the Homebrew formula.
 Docker and Homebrew jobs consume those release assets.
 
-Tag pushes and `repository_dispatch: publish` are real publication paths: Sonatype,
+Tag pushes and `repository_dispatch: publish` are real publication paths: Sonatype, GitHub Packages,
 GitHub Releases and container registries can be updated. Stable releases also update
 the Homebrew tap; prereleases do not update the tap or the Docker `latest` tag.
 
@@ -116,8 +116,23 @@ gh workflow run publish.yml --ref <branch> -f tag=v2.11.4
 The supplied tag stamps the version and need not exist. Dry runs publish Maven artifacts
 only to the runner's local repository, retain `release-<tag>` as an Actions artifact,
 install/test the rendered formula locally, and build both image architectures with
-`push: false`. They do not publish to Sonatype, create a GitHub Release, update the tap
+`push: false`. They do not publish to Sonatype or GitHub Packages, create a GitHub Release, update the tap
 or push container images. These remote publication steps are not validated by a dry run.
+
+The GitHub Packages Maven job depends only on tag validation. It publishes the existing
+five `mavenJava` publications (`core`, `ir`, `cypher`, `sootup`, `webgraph`) using
+`GITHUB_TOKEN` and `packages: write`, without Sonatype or GPG credentials. GitHub
+Packages builds and publication, release asset builds, and all dry runs remain mandatory. Only the real Sonatype publication step (including its Sonatype-specific
+credentials and signing) may fail with a warning and job summary while retaining its original error logs. GitHub Packages and release assets
+run independently; a successful workflow does not alone confirm Maven Central availability.
+
+The GitHub Packages dry run executes the actual
+`publishMavenJavaPublicationToGitHubPackagesRepository` tasks with
+`-PgithubPackagesLocalRepository=<local-directory>` forcing a `file:` repository and
+no publication credentials. `verifyGitHubPackagesLocalPublication` discovers every
+`mavenJava` publication and checks its POM coordinates, JAR, sources and javadoc,
+resolving SNAPSHOT filenames from repository metadata. It does not substitute
+`publishToMavenLocal` for the GitHub repository tasks or validate remote authentication.
 
 ## Maintaining workflows
 

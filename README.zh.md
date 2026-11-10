@@ -654,7 +654,7 @@ class MyExtension : GraphiteExtension {
 
 ## Kotlin 依赖
 
-JVM 模块以 `io.johnsonlee.graphite` 为 group 发布到 Maven Central，artifact id 不带前缀（`core`、`sootup`、`cypher`、`webgraph`），自 2.x 以来保持不变。
+JVM 模块以 `io.johnsonlee.graphite` 为 group 发布到 Maven Central，artifact id 不带前缀（`core`、`ir`、`sootup`、`cypher`、`webgraph`），自 2.x 以来保持不变。
 
 ```kotlin
 repositories {
@@ -668,6 +668,30 @@ dependencies {
     implementation("io.johnsonlee.graphite:cypher:2.8.0")
     // Optional: disk persistence (WebGraph format)
     implementation("io.johnsonlee.graphite:webgraph:2.8.0")
+}
+```
+
+GitHub Packages 是独立的 Maven 发布通道，适用于通过此 workflow 发布的版本。
+它使用相同的 `io.johnsonlee.graphite` group、artifact 名和版本号，不会自动补发旧版本。
+使用该通道已有的版本时，添加下面的仓库配置，依赖坐标保持不变并选择对应版本；
+传递依赖仍可从 Maven Central 下载。
+
+即使是公开的 GitHub Maven 包，下载也需要认证。使用带 `read:packages` 权限的
+personal access token（classic），或对这些包有读取权限的 GitHub Actions
+`GITHUB_TOKEN`。将 `GITHUB_ACTOR` 设置为 GitHub 用户名，`GITHUB_TOKEN` 设置为
+对应 token；不要把凭证提交到仓库。详见 [GitHub Gradle registry 文档](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)。
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/johnsonlee/graphite")
+        credentials {
+            username = providers.environmentVariable("GITHUB_ACTOR").orNull
+            password = providers.environmentVariable("GITHUB_TOKEN").orNull
+        }
+        content { includeGroup("io.johnsonlee.graphite") }
+    }
 }
 ```
 
