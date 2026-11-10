@@ -279,9 +279,8 @@ private fun selectVisibleDiagramSlice(elements: List<DiagramElement>, edges: Lis
         }
     }
 
-    if (visibleIds.isEmpty()) {
-        visibleIds += elements.take(maxElements).map { it.id }
-    }
+    // Every caller filters edges to the supplied elements and has room for at
+    // least one pair of endpoints, so a nonempty edge list selects a pair.
     val visibleElements = elements.filter { it.id in visibleIds }
     val visibleElementIds = visibleElements.map { it.id }.toSet()
     val visibleEdges = edges.filter { it.from in visibleElementIds && it.to in visibleElementIds }

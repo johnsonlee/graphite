@@ -32,30 +32,32 @@ internal class ExploreRoutes(
         registerSpecRoutes(app)
     }
 
-    @Suppress("TooGenericExceptionCaught")
     internal fun register(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
         registerCypherLifecycle(app)
         registerRegistryRoutes(app, registry, topology)
-        app.get("$API_ROOT/topology") { ctx ->
-            val mapped = topology.openApiStream()
-            if (mapped == null) {
-                ctx.json(topology.toApiMap())
-            } else {
-                try {
-                    ctx.contentType("application/json; charset=utf-8")
-                        .header("Content-Length", mapped.contentLength.toString())
-                        .result(mapped.input)
-                } catch (error: RuntimeException) {
-                    mapped.input.close()
-                    throw error
-                }
-            }
-        }
+        app.get("$API_ROOT/topology") { ctx -> respondTopology(ctx, topology) }
         registerAllGraphRoutes(app) { registry.acquireAll() }
         val scopedPrefix = API_GRAPH_PATH
         val provider = RegistryPathGraphProvider(registry)
         registerGraphRoutes(app, scopedPrefix, provider)
         registerGraphLocalIdRoutes(app, scopedPrefix, provider)
         registerSpecRoutes(app)
+    }
+}
+
+@Suppress("TooGenericExceptionCaught")
+internal fun respondTopology(ctx: Context, topology: TopologyService) {
+    val mapped = topology.openApiStream()
+    if (mapped == null) {
+        ctx.json(topology.toApiMap())
+    } else {
+        try {
+            ctx.contentType("application/json; charset=utf-8")
+                .header("Content-Length", mapped.contentLength.toString())
+                .result(mapped.input)
+        } catch (error: RuntimeException) {
+            mapped.input.close()
+            throw error
+        }
     }
 }

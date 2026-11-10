@@ -38,6 +38,14 @@ import kotlin.test.assertTrue
 class CypherClientCancellationTest {
 
     @Test
+    fun `socket error probe uses operating system socket option constants`() {
+        assertEquals(SocketOptionCodes(1, 4), socketErrorOptionCodes("Linux"))
+        assertEquals(SocketOptionCodes(1, 4), socketErrorOptionCodes("linux 6.1"))
+        assertEquals(SocketOptionCodes(0xffff, 0x1007), socketErrorOptionCodes("Mac OS X"))
+        assertEquals(SocketOptionCodes(0xffff, 0x1007), socketErrorOptionCodes("FreeBSD"))
+    }
+
+    @Test
     fun `resetting a client connection stops its query and releases the concurrency permit`() {
         verifyResetDisconnect()
     }

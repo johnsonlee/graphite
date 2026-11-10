@@ -7,10 +7,52 @@ import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @Suppress("DEPRECATION")
 internal class ExploreRegistryTopologyTest : ExploreCommandTestSupport() {
+    @Test
+    fun `rollback rejects reentrant catalog mutation instead of overwriting its result`() {
+        GraphRegistry(graphDir.parent, GraphStore.LoadMode.EAGER).use { registry ->
+            registry.load("app", graphDir)
+            val loadFailure = assertFailsWith<IllegalStateException> {
+                registry.load("app", graphDir, afterLoad = {
+                    registry.unload("app")
+                    error("callback failed after unloading")
+                })
+            }
+            assertEquals("Graph registry changed during load rollback: app", loadFailure.message)
+            assertEquals(emptyList(), registry.ids())
+
+            registry.load("app", graphDir)
+            val unloadFailure = assertFailsWith<IllegalStateException> {
+                registry.unload("app", afterUnload = {
+                    registry.load("app", graphDir)
+                    error("callback failed after replacement")
+                })
+            }
+            assertEquals("Graph registry changed during unload rollback: app", unloadFailure.message)
+            assertEquals(listOf("app"), registry.ids())
+            registry.acquire("app")!!.use { lease ->
+                val expected = ExploreCommandTestSupport.Companion.paramNode
+                assertEquals(expected, lease.graph.node(expected.id))
+            }
+        }
+    }
+    @Test
+    fun `topology serves stale materialized snapshot when registry changes before rebuild`() {
+        val registry = GraphRegistry(graphDir.parent, GraphStore.LoadMode.MAPPED)
+        val topology = TopologyService(registry, emptyList()).also { it.rebuild() }
+        registry.load("new", graphDir)
+        withRegistryApp(registry, topology) { targetPort ->
+            val (code, body) = get(targetPort, "/api/topology")
+            assertEquals(200, code, body)
+            val response: Map<String, Any?> = parseJson(body)
+            assertEquals(true, response["stale"])
+            assertEquals(0.0, response["graphCount"])
+        }
+    }
     @Test
     fun `registry topology endpoint returns the materialized cross graph calls`() {
         val registry = GraphRegistry(graphDir.parent, GraphStore.LoadMode.MAPPED)

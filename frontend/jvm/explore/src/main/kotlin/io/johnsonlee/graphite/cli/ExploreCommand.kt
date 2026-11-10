@@ -136,7 +136,7 @@ open class ServeCommand : Callable<Int> {
             )
             System.err.println("Press Ctrl+C to stop")
 
-            Thread.currentThread().join()
+            app.jettyServer().server().join()
             return 0
         } finally {
             app?.stop()
@@ -156,7 +156,7 @@ open class ServeCommand : Callable<Int> {
         ).register(app, graph)
     }
 
-    internal fun registerApiRoutes(
+    internal open fun registerApiRoutes(
         app: Javalin,
         registry: GraphRegistry,
         topology: TopologyService,

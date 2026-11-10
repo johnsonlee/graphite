@@ -332,19 +332,19 @@ internal class OpenApiSpecBuilder {
 
     @Suppress("UNCHECKED_CAST")
     private fun addGraphScopedPaths(paths: MutableMap<String, Any?>) {
-        val graphBoundRoots =
-            listOf(
-                PATH_API_NODE_ID,
-                PATH_API_NODE_ID_OUTGOING,
-                PATH_API_NODE_ID_INCOMING,
-                PATH_API_ANNOTATIONS,
-                PATH_API_RESOURCES,
-                PATH_API_RESOURCES_PATH,
-                PATH_API_ENDPOINTS,
-                PATH_API_ARCHITECTURE_C4,
-                PATH_API_OVERVIEW,
-                PATH_API_SUBGRAPH)
-        graphBoundRoots.forEach { rootPath ->
+        val graphBoundSummaries = mapOf(
+            PATH_API_NODE_ID to "Fetch a node by graph-local id in one explicit graph",
+            PATH_API_NODE_ID_OUTGOING to "List outgoing edges in one explicit graph",
+            PATH_API_NODE_ID_INCOMING to "List incoming edges in one explicit graph",
+            PATH_API_ANNOTATIONS to "Fetch member annotations in one explicit graph",
+            PATH_API_RESOURCES to "List persisted resources in one explicit graph",
+            PATH_API_RESOURCES_PATH to "Read persisted resource content in one explicit graph",
+            PATH_API_ENDPOINTS to "Extract framework API endpoints from one explicit graph",
+            PATH_API_ARCHITECTURE_C4 to "Build C4 architecture views for one explicit graph",
+            PATH_API_OVERVIEW to "Build a class-level overview for one explicit graph",
+            PATH_API_SUBGRAPH to "Build a local subgraph in one explicit graph"
+        )
+        graphBoundSummaries.forEach { (rootPath, summary) ->
             val scopedPath = "/api/graphs/{graphId}" + rootPath.removePrefix("/api")
             val operations = paths.getValue(rootPath) as Map<String, Map<String, Any?>>
             paths[scopedPath] =
@@ -352,26 +352,11 @@ internal class OpenApiSpecBuilder {
                     operation.toMutableMap().apply {
                         val parameters = (this[TEXT_PARAMETERS] as? List<Map<String, Any?>>).orEmpty()
                         this[TEXT_PARAMETERS] = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, TEXT_UNIQUE_GRAPH_ID)) + parameters
-                        this["summary"] = scopedSummary(rootPath)
+                        this["summary"] = summary
                     }
                 }
         }
     }
-
-    private fun scopedSummary(rootPath: String): String =
-        when (rootPath) {
-            PATH_API_NODE_ID -> "Fetch a node by graph-local id in one explicit graph"
-            PATH_API_NODE_ID_OUTGOING -> "List outgoing edges in one explicit graph"
-            PATH_API_NODE_ID_INCOMING -> "List incoming edges in one explicit graph"
-            PATH_API_ANNOTATIONS -> "Fetch member annotations in one explicit graph"
-            PATH_API_RESOURCES -> "List persisted resources in one explicit graph"
-            PATH_API_RESOURCES_PATH -> "Read persisted resource content in one explicit graph"
-            PATH_API_ENDPOINTS -> "Extract framework API endpoints from one explicit graph"
-            PATH_API_ARCHITECTURE_C4 -> "Build C4 architecture views for one explicit graph"
-            PATH_API_OVERVIEW -> "Build a class-level overview for one explicit graph"
-            PATH_API_SUBGRAPH -> "Build a local subgraph in one explicit graph"
-            else -> error("Unknown graph-bound route: $rootPath")
-        }
 
     private fun operation(
         summary: String,
