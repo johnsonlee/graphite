@@ -41,6 +41,23 @@ class ErasedDeclaredTypeStoreTest {
     )
 
     @Test
+    fun `erased method equivalence compares parameter shapes before its shared return type`() {
+        val rows = listOf(DeclaredType("class", "example.First"), DeclaredType("class", "example.Second"),
+            DeclaredType("primitive", "void"))
+        val raw = ErasedDeclaredTypes(rows.size, type = rows::get)
+        val input = ByteBuffer.allocate(7 * Int.SIZE_BYTES).apply {
+            putInt(2)
+            putInt(1); putInt(0); putInt(2)
+            putInt(1); putInt(1); putInt(2)
+            flip()
+        }
+        val context = ErasedDeclaredTypeContext.read(input, raw)
+        assertTrue(context.equivalent(0, 0, method = true))
+        kotlin.test.assertFalse(context.equivalent(0, 1, method = true))
+        assertTrue(context.equivalent(1, 1, method = true))
+    }
+
+    @Test
     fun `v5 shares erased signatures and preserves bridge return identity without descriptor strings`() = directory { dir ->
         save(dir, table)
         assertEquals(0x47545905, bytes(dir).getInt(0))

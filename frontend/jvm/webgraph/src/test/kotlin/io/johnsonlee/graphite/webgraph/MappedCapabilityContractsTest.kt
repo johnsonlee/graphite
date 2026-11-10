@@ -51,6 +51,42 @@ class MappedCapabilityContractsTest : GraphStoreTestFixture() {
     }
 
     @Test
+    fun `competing captured index publication retains the first complete index and releases the loser`() {
+        val method = MethodDescriptor(TypeDescriptor("sample.Owner"), "run", emptyList(), TypeDescriptor("void"))
+        val dir = Files.createTempDirectory("captured-index-publication")
+        try {
+            GraphStore.save(DefaultGraph.Builder().addNode(CallSiteNode(NodeId(0), method, method, null, null, emptyList())).build(), dir)
+            Files.deleteIfExists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { graph ->
+                val context = graph.context
+                val captured = ParallelCallSiteScanResult(0, intArrayOf(), intArrayOf(0),
+                    Array(CALL_SITE_STRING_PROPERTY_COUNT) { property ->
+                        intArrayOf(context.rawCallSiteStringPropertyId(0, property)) }, 1, 1)
+                fun publish(count: Long) {
+                    val scratch = kotlin.test.assertNotNull(estimatedMappedCallSiteStringIndexCountBytes(context.stringTable.size()))
+                    val reservation = kotlin.test.assertNotNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(scratch))
+                    context.buildAndPublishCallSiteStringIndex(listOf(captured), count, reservation, null)
+                }
+                publish(1)
+                val first = kotlin.test.assertNotNull(context.callSiteStringIndex)
+                val identity = context.callSiteStringIndexContentIdentity(null)
+                kotlin.test.assertContentEquals(identity, first.contentIdentity())
+                first.contentIdentity()[0] = (identity[0].toInt() xor 1).toByte()
+                kotlin.test.assertContentEquals(identity, first.contentIdentity())
+                val retained = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                publish(1)
+                assertSame(first, context.callSiteStringIndex)
+                assertEquals(retained, MappedCallSiteStringIndexMemoryBudget.retainedBytes(),
+                    "a losing publication releases its reservation")
+                publish(-1)
+                assertSame(first, context.callSiteStringIndex)
+                assertEquals(retained, MappedCallSiteStringIndexMemoryBudget.retainedBytes(),
+                    "invalid captured counts release scratch storage")
+            }
+        } finally { dir.toFile().deleteRecursively() }
+    }
+
+    @Test
     fun `denied retained index growth releases scratch reservation and remains retryable`() {
         val method = MethodDescriptor(TypeDescriptor("sample.Owner"), "run", emptyList(), TypeDescriptor("void"))
         val dir = Files.createTempDirectory("index-growth-contract")
@@ -97,6 +133,15 @@ class MappedCapabilityContractsTest : GraphStoreTestFixture() {
                     context.rawCallSiteStringPropertyId(0, -1)
                 }.message)
                 assertEquals(0, context.lookupForwardLabel(0, 1))
+                val abortedBefore = context.callSiteScanAbortedWorkers.get()
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<java.util.concurrent.CancellationException> {
+                        context.checkWorkerInterrupted(java.util.concurrent.atomic.AtomicBoolean(false), countScanAbort = true)
+                    }
+                } finally { Thread.interrupted() }
+                assertEquals(abortedBefore, context.callSiteScanAbortedWorkers.get(),
+                    "caller interruption without a shared abort must not count a cooperatively aborted worker")
             }
         } finally { dir.toFile().deleteRecursively() }
     }

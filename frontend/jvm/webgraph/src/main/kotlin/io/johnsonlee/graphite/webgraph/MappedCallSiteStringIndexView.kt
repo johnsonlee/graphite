@@ -609,7 +609,7 @@ private data class IndexedPostingRange(val row: Int, val positions: IntRange)
  * budget as the complete CallSite index. If the reservation is unavailable, callers validate
  * every selected range without retaining query-dependent state.
  */
-private class BoundedPostingRangeValidationCache private constructor(
+internal class BoundedPostingRangeValidationCache private constructor(
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
     private val keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)

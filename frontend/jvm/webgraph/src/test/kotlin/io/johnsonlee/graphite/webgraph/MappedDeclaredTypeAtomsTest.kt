@@ -42,6 +42,10 @@ class MappedDeclaredTypeAtomsTest {
         for (fragments in listOf(listOf("Outer"), listOf("Outer", "String"), listOf("Missing"))) {
             assertEquals(resultAndWork(types, fragments), resultAndWork(basic, fragments))
         }
+        val tableWithoutSummary = DeclaredTypeTable(basic, emptyMap(), emptyMap(), emptyMap())
+        assertTrue(declaredTextMayMatch(tableWithoutSummary, listOf("Missing")),
+            "a custom atom provider without a trusted summary must retain candidates for exact evaluation")
+        assertFalse(scan(basic, listOf("Missing")))
     }
 
     @Test

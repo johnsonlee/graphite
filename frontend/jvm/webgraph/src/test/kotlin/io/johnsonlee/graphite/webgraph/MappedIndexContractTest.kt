@@ -18,6 +18,65 @@ import kotlin.test.assertNull
 @Suppress("MagicNumber")
 class MappedIndexContractTest : GraphStoreTestFixture() {
     @Test
+    fun `persistent index rejects a negative callsite count before retaining memory`() {
+        val dir = java.nio.file.Files.createTempDirectory("negative-index-count")
+        try {
+            val strings = StringTable.build(listOf("value"), dir)
+            val identity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+            val context = CallSiteIndexReadContext(strings.size(), -1, identity,
+                { error("invalid counts must not inspect node order") }, 0,
+                { _, _ -> error("invalid counts must not read properties") }, strings)
+            val bytes = java.io.ByteArrayOutputStream()
+            java.io.DataOutputStream(bytes).use { output ->
+                output.writeInt(CALL_SITE_STRING_INDEX_MAGIC)
+                output.writeInt(CALL_SITE_STRING_INDEX_VERSION)
+                output.writeInt(strings.size())
+                output.writeInt(-1)
+                output.write(identity)
+                repeat(CALL_SITE_STRING_PROPERTY_COUNT) { output.writeInt(0) }
+                output.writeInt(1)
+                output.writeLong(0)
+            }
+            val before = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+            java.io.DataInputStream(bytes.toByteArray().inputStream()).use { input ->
+                assertNull(MappedCallSiteStringIndex.readPersistent(input, context))
+            }
+            assertEquals(before, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally { dir.toFile().deleteRecursively() }
+    }
+
+    @Test
+    fun `posting validation cache keeps the first verdict and releases ownership on close`() {
+        val before = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val cache = kotlin.test.assertNotNull(BoundedPostingRangeValidationCache.create())
+        assertTrue(cache.retainedBytes > 0)
+        assertNull(cache[7L])
+        kotlin.test.assertFalse(cache.putIfAbsent(7L, false))
+        kotlin.test.assertFalse(cache.putIfAbsent(7L, true), "a later validator cannot overwrite an existing rejection")
+        assertEquals(false, cache[7L])
+        assertEquals(1, cache.size())
+        cache.close()
+        cache.close()
+        assertEquals(before, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        assertEquals(0L, cache.retainedBytes)
+        assertEquals(0, cache.size())
+        assertNull(cache[7L])
+        assertTrue(cache.putIfAbsent(7L, true), "closed caches do not retain a new caller's verdict")
+    }
+
+    @Test
+    fun `oversized type index is rejected before creating any mapped file`() {
+        val dir = java.nio.file.Files.createTempDirectory("type-index-overflow")
+        val file = dir.resolve("node-types")
+        try {
+            val counts = IntArray(256).apply { this[NodeSerializer.TAG_INT_CONSTANT] = Int.MAX_VALUE }
+            val failed = assertFailsWith<IllegalArgumentException> { TypeIndexWriter(file, counts) }
+            assertTrue(failed.message.orEmpty().startsWith("Mapped node type index is too large to map as a single buffer:"))
+            kotlin.test.assertFalse(java.nio.file.Files.exists(file), "size validation must precede storage allocation")
+        } finally { dir.toFile().deleteRecursively() }
+    }
+
+    @Test
     fun `serializer compatibility facade preserves node tags and rejects a mismatched branch digest`() {
         val node = io.johnsonlee.graphite.core.StringConstant(NodeId(0), "value")
         assertEquals(NodeSerializer.TAG_STRING_CONSTANT, NodeSerializer.tagOf(node))
@@ -29,6 +88,33 @@ class MappedIndexContractTest : GraphStoreTestFixture() {
         val preamble = NodeSerializer.decodeBranchDefinitionPreamble(byteArrayOf(), 0, null)
         kotlin.test.assertNull(preamble.payloadDigest)
         assertTrue(preamble.rejection != null)
+    }
+
+    @Test
+    fun `serializer branch facade validates actual node tags and preserves packed definitions`() {
+        val method = MethodDescriptor(TypeDescriptor("sample.Owner"), "run", emptyList(), TypeDescriptor("void"))
+        val local = io.johnsonlee.graphite.core.LocalVariable(NodeId(0), "value", TypeDescriptor("int"), method)
+        val constant = io.johnsonlee.graphite.core.IntConstant(NodeId(1), 7)
+        val packed = intArrayOf(2, local.id.value, constant.id.value)
+        val scope = BranchScopeData(local.id.value, method,
+            io.johnsonlee.graphite.core.BranchComparison(io.johnsonlee.graphite.core.ComparisonOp.EQ, constant.id),
+            intArrayOf(local.id.value), intArrayOf(), packed, intArrayOf())
+        val encoded = encodeBranchDefinitions(listOf(scope), mapOf(local.id.value to packed))
+        val payload = encoded.bytes.copyOfRange(NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES, encoded.bytes.size)
+        val inspected = mutableSetOf<Int>()
+        val nodes = listOf(local, constant)
+        val decoded = NodeSerializer.decodeBranchDefinitionPayload(payload, 1, encoded.payloadDigest, nodes.size,
+            NodeSerializer.NodeTagLookup { id -> inspected.add(id); NodeSerializer.tagOf(nodes[id]) })
+        assertNull(decoded.rejection)
+        val definitions = kotlin.test.assertNotNull(decoded.definitions)
+        assertEquals(setOf(0, 1), inspected, "the facade must pass both local and constant tag lookups to the validator")
+        kotlin.test.assertContentEquals(packed, definitions.locals.getValue(local.id.value))
+        kotlin.test.assertContentEquals(packed, definitions.scopes.single().first)
+        kotlin.test.assertContentEquals(intArrayOf(), definitions.scopes.single().second)
+        val wrongTags = NodeSerializer.decodeBranchDefinitionPayload(payload, 1, encoded.payloadDigest, nodes.size,
+            NodeSerializer.NodeTagLookup { NodeSerializer.TAG_LOCAL_VARIABLE })
+        assertNull(wrongTags.definitions, "a valid digest must not bypass the referenced constant's node type")
+        assertTrue(wrongTags.rejection.orEmpty().contains("invalid definition"))
     }
 
     @Test
