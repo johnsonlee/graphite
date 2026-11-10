@@ -1015,7 +1015,9 @@ Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
 ## Kotlin Dependencies
 
 The JVM modules are published to Maven Central under `io.johnsonlee.graphite` with
-prefix-free artifact ids (`core`, `ir`, `sootup`, `cypher`, `webgraph`), unchanged since 2.x.
+prefix-free artifact ids. The existing libraries retain the names `core`, `sootup`,
+`cypher`, and `webgraph`. The IR importer uses `ir` in releases that include that module;
+do not assume it is available in every older release.
 
 ```kotlin
 repositories {

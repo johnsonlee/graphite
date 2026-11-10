@@ -654,7 +654,9 @@ class MyExtension : GraphiteExtension {
 
 ## Kotlin 依赖
 
-JVM 模块以 `io.johnsonlee.graphite` 为 group 发布到 Maven Central，artifact id 不带前缀（`core`、`ir`、`sootup`、`cypher`、`webgraph`），自 2.x 以来保持不变。
+JVM 模块以 `io.johnsonlee.graphite` 为 group 发布到 Maven Central，artifact id 不带前缀。
+原有库沿用 `core`、`sootup`、`cypher` 和 `webgraph`；包含 IR 导入器的版本使用 `ir`，
+不要假定所有旧版本都提供这一模块。
 
 ```kotlin
 repositories {

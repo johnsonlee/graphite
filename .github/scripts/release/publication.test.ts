@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 type Step = { name?: string; id?: string; if?: string; run?: string; env?: Record<string, string>; 'continue-on-error'?: boolean };
-type Job = { needs: string | string[]; permissions?: Record<string, string>; steps: Step[]; 'continue-on-error'?: boolean };
+type Job = { needs: string | string[]; if?: string; permissions?: Record<string, string>; steps: Step[]; 'continue-on-error'?: boolean };
 type Workflow = { env: Record<string, string>; jobs: Record<string, Job> };
 const runtime = globalThis as unknown as { Bun: { YAML: { parse(text: string): unknown } } };
 const workflow = runtime.Bun.YAML.parse(readFileSync(new URL('../../workflows/publish.yml', import.meta.url), 'utf8')) as Workflow;
@@ -29,6 +29,24 @@ test('GitHub Packages is independent and only real publication receives its toke
   }
   assert.match(remote.run!, /^\.\/gradlew publishMavenJavaPublicationToGitHubPackagesRepository /);
   assert.doesNotMatch(remote.run!, /githubPackagesLocalRepository/);
+});
+
+test('release assets require GitHub Packages success without waiting for Sonatype', () => {
+  const release = workflow.jobs.release;
+  assert.deepEqual(new Set([release.needs].flat()), new Set([
+    'validate', 'github-packages', 'binaries', 'js-frontends', 'apple-frontend',
+  ]));
+  assert.equal(release.if, "github.repository_owner == 'johnsonlee'");
+  assert.equal(release['continue-on-error'], undefined);
+  // No always()/failure() override: Actions' default success() guard requires every dependency.
+  assert.equal(github['continue-on-error'], undefined);
+  assert.equal(workflow.jobs.maven.needs, 'validate');
+  assert.ok(![release.needs].flat().includes('maven'));
+  for (const name of ['apple-release-smoke', 'tap', 'formula', 'docker']) {
+    assert.ok([workflow.jobs[name].needs].flat().includes('release'), `${name} must wait for the release`);
+    assert.equal(workflow.jobs[name]['continue-on-error'], undefined);
+    assert.doesNotMatch(workflow.jobs[name].if ?? '', /always\s*\(|failure\s*\(/);
+  }
 });
 
 test('only the real Sonatype publication can fail softly; dry-run builds stay mandatory', () => {

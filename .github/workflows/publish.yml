@@ -400,7 +400,7 @@ jobs:
   # ever being asked to modify an immutable release. (v3.0.0-alpha2 was left without
   # assets by creating the release published first and uploading afterwards.)
   release:
-    needs: [validate, binaries, js-frontends, apple-frontend]
+    needs: [validate, github-packages, binaries, js-frontends, apple-frontend]
     permissions:
       contents: write
     runs-on: ubuntu-latest

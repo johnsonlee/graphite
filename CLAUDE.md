@@ -61,7 +61,7 @@ Graphite is a graph-based static analysis framework for JVM bytecode. It provide
 
 ## Test Coverage Requirements
 
-**Unit test line coverage for the entire project MUST be >= 98%.** When adding or modifying code, ensure sufficient tests are written to maintain this threshold.
+**Each of the seven JVM modules (`core`, `ir`, `sootup`, `cypher`, `webgraph`, `query`, and `explore`) MUST have exactly 100% line coverage.** The gate uses each report-wide Kover `LINE` counter and exact integer comparison: any missed line fails, even when a rounded percentage displays `100.00%`. Add meaningful tests when changing code; do not add exclusions to meet the gate.
 
 ## Build Commands
 
@@ -160,7 +160,7 @@ Dependencies are managed via version catalog (`gradle/libs.versions.toml`).
 
 ## Publishing
 
-This project publishes artifacts to GitHub Packages. Both manual and automated publishing are supported.
+GitHub Packages is a required release channel for the five JVM libraries: `core`, `ir`, `sootup`, `cypher`, and `webgraph`. All use the group `io.johnsonlee.graphite` and prefix-free artifact IDs. Both manual and automated publishing are supported; Sonatype publication runs independently and does not block release assets.
 
 ### Prerequisites
 
@@ -171,19 +171,24 @@ gpr.user=your-github-username
 gpr.key=your-github-token
 ```
 
-Token requires `write:packages` permission.
+Publishing requires a token with `write:packages`. Gradle properties take precedence; when absent, `GITHUB_ACTOR` and `GITHUB_TOKEN` provide the username and token for CI or local use. Keep credentials outside the repository.
 
 ### Manual Publishing
 
-Specify the version via command line property:
+Set `VERSION` to the intended unpublished version (for example, `x.y.z-alpha.n` or `x.y.z`), then publish the five `mavenJava` publications:
 
 ```bash
-# Publish alpha version
-./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.1.1-alpha.1
-
-# Publish release version
-./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.2.0
+./gradlew publishMavenJavaPublicationToGitHubPackagesRepository -Pversion="$VERSION"
 ```
+
+To verify all five publications without credentials or uploads:
+
+```bash
+./gradlew verifyGitHubPackagesLocalPublication -Pversion=0.0.0-local \
+  -PgithubPackagesLocalRepository=/tmp/graphite-maven-rehearsal
+```
+
+The verification task invokes the same named publication tasks against the local file repository and checks POM coordinates plus the main, sources, and Javadoc JARs.
 
 ### Automated Publishing (GitHub Actions)
 
@@ -191,13 +196,13 @@ Publishing is triggered by creating a git tag. GitHub Actions automatically deri
 
 ```bash
 # Create and push a tag to trigger release
-git tag v1.2.0
-git push origin v1.2.0
+git tag "v${VERSION}"
+git push origin "v${VERSION}"
 ```
 
 ### Using Published Artifacts
 
-Add GitHub Packages repository to your project:
+Add GitHub Packages to your project using a token with `read:packages`. Set `graphiteVersion` in your project's Gradle properties to a version available in that channel; older releases are not backfilled:
 
 ```kotlin
 repositories {
@@ -210,9 +215,11 @@ repositories {
     }
 }
 
+val graphiteVersion: String by project
+
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:1.2.0")
-    implementation("io.johnsonlee.graphite:graphite-sootup:1.2.0")
+    implementation("io.johnsonlee.graphite:core:$graphiteVersion")
+    implementation("io.johnsonlee.graphite:sootup:$graphiteVersion")
 }
 ```
 
