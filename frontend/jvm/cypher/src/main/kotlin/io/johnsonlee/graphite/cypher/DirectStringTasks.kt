@@ -12,6 +12,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorCompletionService
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
@@ -168,9 +169,13 @@ internal val isDirectStringWorker: Boolean
     get() = directStringWorkerActive.get()
 
 @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-internal fun <T> runDirectStringTasks(tasks: List<() -> T>, parallelism: Int): List<T> {
+internal fun <T> runDirectStringTasks(
+    tasks: List<() -> T>,
+    parallelism: Int,
+    executor: ExecutorService? = null
+): List<T> {
     if (tasks.size == 1) return listOf(tasks.single().invoke())
-    val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
+    val completionService = ExecutorCompletionService<IndexedValue<T>>(executor ?: directStringExecutor)
     val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
     val completions = arrayOfNulls<CountDownLatch>(tasks.size)
     val started = arrayOfNulls<AtomicBoolean>(tasks.size)
@@ -209,10 +214,15 @@ internal fun <T> runDirectStringTasks(tasks: List<() -> T>, parallelism: Int): L
  * ahead of the next result to merge. Returning true from [stopAfter] cancels and joins that bounded speculative suffix.
  */
 @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-internal fun <T> runDirectStringTasksInOrderUntil(tasks: List<() -> T>, parallelism: Int, stopAfter: (T) -> Boolean) {
+internal fun <T> runDirectStringTasksInOrderUntil(
+    tasks: List<() -> T>,
+    parallelism: Int,
+    stopAfter: (T) -> Boolean,
+    executor: ExecutorService? = null
+) {
     if (tasks.isEmpty()) return
 
-    val completionService = ExecutorCompletionService<TaskOutcome<T>>(directStringExecutor)
+    val completionService = ExecutorCompletionService<TaskOutcome<T>>(executor ?: directStringExecutor)
     val futures = arrayOfNulls<Future<TaskOutcome<T>>>(tasks.size)
     val completions = arrayOfNulls<CountDownLatch>(tasks.size)
     val started = arrayOfNulls<AtomicBoolean>(tasks.size)
