@@ -18,6 +18,19 @@ plugins {
 }
 
 kover {
+    currentProject {
+        instrumentation {
+            // Instrument project code, including our classes in SootUp's namespace. Transforming
+            // external APK dependencies can overflow the coverage agent's stack and leave the
+            // upstream identifier cache locked, blocking later concurrent loads.
+            includedClasses.addAll(
+                "io.johnsonlee.graphite.*",
+                "sootup.java.bytecode.frontend.conversion.Graphite*",
+                "sootup.java.bytecode.frontend.conversion.ParsedDeclarationSource*",
+                "sootup.java.core.Graphite*"
+            )
+        }
+    }
     reports {
         filters {
             excludes {

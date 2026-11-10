@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.FoldPlan
 import io.johnsonlee.graphite.input.FoldReport
 import io.johnsonlee.graphite.input.LoaderConfig
+import java.lang.management.ManagementFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
@@ -44,7 +45,13 @@ class AndroidPlatformFoldingContractTest : DependencyScopeFixture() {
             folding = FoldPlan(listOf(rule), reports::add)
         )
         assertEquals(androidJar, androidPlatformJar(apk, config))
+        val threadInfo = ManagementFactory.getThreadMXBean()
+        val caller = longArrayOf(Thread.currentThread().id)
+        fun callerLocks() = threadInfo.getThreadInfo(caller, true, true).single().lockedSynchronizers
+            .map { it.className to it.identityHashCode }.toSet()
+        val locksBefore = callerLocks()
         val graph = load(apk, config)
+        assertEquals(locksBefore, callerLocks(), "Loading an APK must not leave a cache lock held by the caller")
         val outcome = reports.single().outcomes.single()
         assertEquals(1, outcome.matched)
         assertTrue(outcome.unsupported.isEmpty())
