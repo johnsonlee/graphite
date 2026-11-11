@@ -150,6 +150,19 @@ class C4InferenceTest {
     }
 
     @Test
+    fun `external callers contribute inbound evidence without becoming owned components`() {
+        val fixture = checkoutFixture()
+        val calls = fixture.callSites + call(method(TypeDescriptor("external.Scheduler"), "tick"), fixture.methods[1])
+        val layout = ContainerClusterer.inferLayout(fixture.graph, fixture.methods, calls, fixture.apiEndpoints, fixture.systemBoundary, 8)
+        val view = ComponentSelector.buildView(fixture.graph, fixture.methods, calls, fixture.apiEndpoints, fixture.systemBoundary, 8,
+            ComponentInference(fixture.subject, layout))
+        assertTrue(view.elements.isNotEmpty())
+        assertTrue(view.elements.all { it.type == C4ElementType.COMPONENT })
+        assertFalse(C4WireCodec.encode(view).toString().contains("external.Scheduler"))
+        assertTrue(view.elements.any { (it.properties["packageUnits"] as? List<*>)?.contains("com.acme.checkout.api") == true })
+    }
+
+    @Test
     fun `C4 typed wire helpers cover enum and map compatibility boundaries`() {
         C4RelationshipType.entries.forEach { type -> assertNotNull(C4RelationshipKind.fromType(type)) }
         C4ElementKind.entries.forEach { kind -> assertNotNull(kind.toArchitectureType()) }

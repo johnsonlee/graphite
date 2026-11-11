@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.bytecode.BytecodeSignatureReader
 
-import io.johnsonlee.graphite.core.ComparisonOp
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
@@ -68,7 +67,7 @@ class SootUpAdapterCoverageRegressionTest {
                 )
             )
         )
-        assertNull(invokePrivate<ComparisonOp?>(adapter, "comparisonOp", arrayOf(Any::class.java), Any()))
+        assertNull(comparisonOp(local), "a local alone does not encode a comparison operator")
         assertNull(
             invokePrivate<Any?>(
                 adapter,

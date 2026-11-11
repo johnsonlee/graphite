@@ -19,16 +19,14 @@ import sootup.callgraph.RapidTypeAnalysisAlgorithm
 /** Selects streaming method sources and releases transient frontend-conversion state. */
 internal class MethodSources(private val context: SootUpAdapter) {
     private val interprocedural = context.interprocedural
-    private var methodCacheOwner
+    private val methodCacheOwner
         get() = context.methodCacheOwner
-        set(value) { context.methodCacheOwner = value }
     private val streamingSourcesCache = context.streamingSourcesCache
     private val conversionScratchFieldsByClass = context.conversionScratchFieldsByClass
     private val view = context.view
     private val config = context.config
     private val bytecodeMethods get() = context.bytecodeMethods
     private val completeness get() = context.completeness
-    private val construction get() = context.construction
     private val declarations get() = context.declarations
     private val descriptors get() = context.descriptors
 

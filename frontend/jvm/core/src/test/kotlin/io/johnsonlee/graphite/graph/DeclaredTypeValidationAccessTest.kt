@@ -9,6 +9,26 @@ class DeclaredTypeValidationAccessTest {
     private val leaf = DeclaredType("class", "Leaf")
 
     @Test
+    fun `ordinary access and byte budget preserve every text field`() {
+        val type = DeclaredType("class", "界", "scope", variance = "extends")
+        assertEquals(1, OrdinaryDeclaredTypeValidationAccess(listOf(type)).size)
+        assertEquals(20, DeclaredTypeExpansionBudget.textBytes(type))
+        val method = io.johnsonlee.graphite.core.MethodDescriptor(
+            io.johnsonlee.graphite.core.TypeDescriptor("Owner"), "m", emptyList(),
+            io.johnsonlee.graphite.core.TypeDescriptor("void"))
+        val copy = method.copy()
+        val owner = Any()
+        method.declaredShape = DeclaredTypeBinding.HAS_BOUNDS
+        method.declaredShapeOwner = owner
+        assertEquals(DeclaredTypeBinding.HAS_BOUNDS, method.declaredShape)
+        kotlin.test.assertSame(owner, method.declaredShapeOwner)
+        assertEquals(copy, method, "cached declaration state must not change method identity")
+        assertEquals(copy.hashCode(), method.hashCode())
+        assertEquals(0, copy.declaredShape)
+        kotlin.test.assertNull(copy.declaredShapeOwner)
+    }
+
+    @Test
     fun `shared shape rules accept incidental fields and reject every forbidden field`() {
         val valid = listOf(
             leaf.copy(scope = "allowed", owner = 0, arguments = listOf(0)),

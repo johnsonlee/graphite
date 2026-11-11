@@ -95,7 +95,8 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
             Chunk.ChunkCase.EDGES -> chunk.edges.edgesList.forEach { readEdge(it) }
             Chunk.ChunkCase.TRAILER -> Unit
             Chunk.ChunkCase.CHUNK_NOT_SET -> throw IrFormatException("IR chunk carries nothing")
-            else -> readMetadataChunk(chunk)
+            Chunk.ChunkCase.METHODS, Chunk.ChunkCase.TYPE_RELATIONS, Chunk.ChunkCase.CLASS_ORIGINS,
+            Chunk.ChunkCase.ENUM_VALUES, Chunk.ChunkCase.ARTIFACT_DEPENDENCIES -> readMetadataChunk(chunk)
         }
         return if (chunk.hasTrailer()) chunk.trailer else null
     }
@@ -110,11 +111,11 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
             Chunk.ChunkCase.CLASS_ORIGINS -> chunk.classOrigins.originsList.forEach { builder.addClassOrigin(it.className, it.source) }
             Chunk.ChunkCase.ENUM_VALUES ->
                 chunk.enumValues.entriesList.forEach { builder.addEnumValues(it.enumClass, it.enumName, it.valuesList.map(::value)) }
-            Chunk.ChunkCase.ARTIFACT_DEPENDENCIES ->
+            // readChunk has excluded every other case.
+            else ->
                 chunk.artifactDependencies.dependenciesList.forEach {
                     builder.addArtifactDependency(it.fromArtifact, it.toArtifact, it.weight)
                 }
-            else -> error("Not a metadata chunk: ${chunk.chunkCase}")
         }
     }
 
@@ -166,7 +167,16 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
                 io.johnsonlee.graphite.ir.v1.Node.KindCase.BOOLEAN_CONSTANT -> BooleanConstant(id, n.booleanConstant.value)
                 io.johnsonlee.graphite.ir.v1.Node.KindCase.STRING_CONSTANT -> StringConstant(id, string(n.stringConstant.value))
                 io.johnsonlee.graphite.ir.v1.Node.KindCase.NULL_CONSTANT -> NullConstant(id)
-                else -> readStructuredNode(n, id)
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.ENUM_CONSTANT,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.LOCAL_VARIABLE,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.FIELD,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.PARAMETER,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.RETURN,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.RESOURCE_FILE,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.RESOURCE_VALUE,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.CALL_SITE,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.ANNOTATION,
+                io.johnsonlee.graphite.ir.v1.Node.KindCase.KIND_NOT_SET -> readStructuredNode(n, id)
             }
         builder.addNode(node)
     }
@@ -218,8 +228,8 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
                 builder.addMemberAnnotation(a.className, a.memberName, a.name, values)
                 AnnotationNode(id, a.name, a.className, a.memberName, values)
             }
-            io.johnsonlee.graphite.ir.v1.Node.KindCase.KIND_NOT_SET -> throw IrFormatException("IR node ${n.id} has no kind")
-            else -> error("Not a structured node: ${n.kindCase}")
+            // The exhaustive readNode dispatcher leaves only KIND_NOT_SET here.
+            else -> throw IrFormatException("IR node ${n.id} has no kind")
         }
 
     private fun readEdge(e: io.johnsonlee.graphite.ir.v1.Edge) {

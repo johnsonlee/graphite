@@ -9,10 +9,8 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.util.concurrent.CancellationException
 
 internal fun MappedGraphContext.mappedCallSiteStringIndexView(workConsumer: GraphWorkConsumer?): MappedCallSiteStringIndexView? {
@@ -151,14 +149,6 @@ internal fun MappedGraphContext.persistPreparedCallSiteStringIndex(): Boolean =
             temporary?.let { path -> runCatching { Files.deleteIfExists(path) } }
         }
     }
-
-internal fun MappedGraphContext.replaceAtomically(source: Path, target: Path) {
-    try {
-        Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-    } catch (_: AtomicMoveNotSupportedException) {
-        Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
-    }
-}
 
 internal fun MappedGraphContext.callSiteStringIndex(
     type: Class<out Node>,

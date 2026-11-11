@@ -34,21 +34,16 @@ internal class CallSiteEmitter(private val context: SootUpAdapter) {
     private val interprocedural = context.interprocedural
     private val dynamicTargets = context.dynamicTargets
     private val slotAdapters = context.slotAdapters
-    private var propagation
-        get() = context.propagation
-        set(value) { context.propagation = value }
     private val localeSpecsByLocal = context.localeSpecsByLocal
     private val resourceHandlePathsByLocal = context.resourceHandlePathsByLocal
     private val resourceBundlePaths = context.resourceBundlePaths
     private val bundleControlSpecsByLocal = context.bundleControlSpecsByLocal
-    private var bodyResolvedCallees
+    private val bodyResolvedCallees
         get() = context.bodyResolvedCallees
-        set(value) { context.bodyResolvedCallees = value }
     private val untrackedDispatches = context.untrackedDispatches
     private val openLocals = context.openLocals
-    private var bodyCallOrdinals
+    private val bodyCallOrdinals
         get() = context.bodyCallOrdinals
-        set(value) { context.bodyCallOrdinals = value }
     private val graphBuilder = context.graphBuilder
     private val bodies get() = context.bodies
     private val bundleControl get() = context.bundleControl

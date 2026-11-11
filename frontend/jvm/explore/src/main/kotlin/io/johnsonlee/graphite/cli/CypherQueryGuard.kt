@@ -140,9 +140,9 @@ internal class CypherQueryGuard(
             runner.set(Thread.currentThread())
             val outcome = runCatching {
                 if (cancellationSignal.isCancelled) throw cancellationException()
-                block(CypherExecutionContext(executionBudget, cancellationSignal)).also {
-                    if (cancellationSignal.isCancelled) throw cancellationException()
-                }
+                // finish checks cancellation under lifecycleLock before calling
+                // the continuation and again before publishing its result.
+                block(CypherExecutionContext(executionBudget, cancellationSignal))
             }.fold(
                 onSuccess = { Result.success(it) },
                 onFailure = { error ->

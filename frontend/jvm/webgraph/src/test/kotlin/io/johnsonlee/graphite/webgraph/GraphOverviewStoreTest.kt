@@ -17,6 +17,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import java.io.Closeable
 import java.nio.file.Files
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -139,6 +140,21 @@ class GraphOverviewStoreTest : GraphStoreTestFixture() {
             val firstClass = assertNotNull(ClassOverviewStore.load(dir, stringTable, 1))
             assertEquals(listOf("com.example.A"), firstClass.classCounts.keys.toList())
             assertTrue(firstClass.classEdges.isEmpty())
+
+            val competing = PersistedClassOverviewProvider(dir, stringTable)
+            val task = java.util.concurrent.FutureTask { competing.load(1) }
+            val reader = Thread(task, "overview-concurrent-reader")
+            synchronized(competing) {
+                reader.start()
+                val deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5)
+                while (reader.state != Thread.State.BLOCKED && System.nanoTime() < deadline) Thread.yield()
+                assertEquals(Thread.State.BLOCKED, reader.state, "reader must reach the cache publication monitor")
+                assertEquals(3, assertNotNull(competing.load(3)).classCounts.size)
+            }
+            assertEquals(listOf("com.example.A"),
+                assertNotNull(task.get(5, java.util.concurrent.TimeUnit.SECONDS)).classCounts.keys.toList())
+            reader.join(5_000)
+            assertFalse(reader.isAlive)
 
             val provider = PersistedClassOverviewProvider(dir, stringTable)
             val full = assertNotNull(provider.load(Int.MAX_VALUE))

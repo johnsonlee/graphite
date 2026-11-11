@@ -22,18 +22,14 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
     private val classOriginSourceCounts = context.classOriginSourceCounts
     private val classEvidence = context.classEvidence
     private val reachableExpansion = context.reachableExpansion
-    private var reachableRead
+    private val reachableRead
         get() = context.reachableRead
-        set(value) { context.reachableRead = value }
     private val seededClasses = context.seededClasses
     private val applicationClasses = context.applicationClasses
     private var activeClassResolutionFailed
         get() = context.activeClassResolutionFailed
         set(value) { context.activeClassResolutionFailed = value }
     private val artifactDependenciesByArtifact = context.artifactDependenciesByArtifact
-    private var classesByNameCache
-        get() = context.classesByNameCache
-        set(value) { context.classesByNameCache = value }
     private val syntheticIdentities = context.syntheticIdentities
     private val view = context.view
     private val config = context.config
@@ -42,7 +38,6 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
     private val declarationWarning = context.declarationWarning
     private val singleArtifactSource = context.singleArtifactSource
     private val graphBuilder = context.graphBuilder
-    private val calls get() = context.calls
     private val completeness get() = context.completeness
     private val declarations get() = context.declarations
     private val descriptors get() = context.descriptors
@@ -80,7 +75,7 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
      */
     fun buildGraph(): Graph {
         val classes = view.classes.toList()
-        classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
+        context.classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
         indexInputs(classes)
         emitDeclarations(classes)
         val extensionContext = emitBodies(classes)

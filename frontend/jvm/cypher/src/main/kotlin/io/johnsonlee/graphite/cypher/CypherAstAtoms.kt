@@ -20,8 +20,8 @@ internal fun visitAtomExpr(ctx: CypherParser.AtomExpressionContext): CypherExpr 
         is CypherParser.FunctionAtomContext -> visitFunctionInvocationExpr(ctx.functionInvocation())
         is CypherParser.ParenAtomContext -> visitExpr(ctx.expression())
         is CypherParser.DistinctAtomContext -> CypherExpr.Distinct(visitUnaryExpr(ctx.unaryExpression()))
-        is CypherParser.VariableAtomContext -> CypherExpr.Variable(getSymbolicName(ctx.variable()))
-        else -> throw CypherParseException("Unknown atom expression type")
+        // The throwing parser admits only the labelled alternatives in atomExpression.
+        else -> CypherExpr.Variable(getSymbolicName((ctx as CypherParser.VariableAtomContext).variable()))
     }
 }
 
@@ -39,11 +39,10 @@ internal fun visitLiteral(ctx: CypherParser.LiteralContext): CypherExpr {
             val elements = ctx.listLiteral().expressionList()?.expression()?.map { visitExpr(it) } ?: emptyList()
             CypherExpr.ListLiteral(elements)
         }
-        is CypherParser.MapLitContext -> {
-            val entries = visitMapLiteralAsExprMap(ctx.mapLiteral())
+        else -> {
+            val entries = visitMapLiteralAsExprMap((ctx as CypherParser.MapLitContext).mapLiteral())
             CypherExpr.MapLiteral(entries)
         }
-        else -> throw CypherParseException("Unknown literal type")
     }
 }
 
@@ -64,8 +63,7 @@ internal fun visitPredicateFunctionExpr(ctx: CypherParser.PredicateFunctionConte
             ctx.ANY() != null -> "any"
             ctx.ALL() != null -> "all"
             ctx.NONE() != null -> "none"
-            ctx.SINGLE() != null -> "single"
-            else -> throw CypherParseException("Unknown predicate function")
+            else -> "single" // predicateFunction admits exactly ANY, ALL, NONE and SINGLE.
         }
     val expressions = ctx.expression()
     val listExpr = visitExpr(expressions[0])

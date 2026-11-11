@@ -15,16 +15,7 @@ object GraphRoutingCorrectness {
             coverageFamily = args[1]
             timeoutMillis = args[2].toLong()
         }
-        val counters = LargeBroadQueryPressureCounters()
-        try {
-            suite.setupTrial()
-            suite.setupInvocation()
-            suite.replayBroadQueries(counters)
-            writeMetrics(Path.of(args[OUTPUT_INDEX]), suite.indexState, suite.coverageFamily, counters)
-        } finally {
-            suite.tearDownTrial()
-        }
-        println("CORRECTNESS_PASS\tgraph-routing\t${args[0]}\t${args[1]}")
+        runGraphRoutingCorrectness(args, suite::setupTrial, suite::setupInvocation, suite::replayBroadQueries, suite::tearDownTrial)
     }
 
     fun writeMetrics(
@@ -45,7 +36,6 @@ object GraphRoutingCorrectness {
 
     private const val ARGUMENT_COUNT = 4
     private const val GRAPH_COUNT = 64
-    private const val OUTPUT_INDEX = 3
 
     private val STRUCTURAL_FIELDS = listOf(
         "graphCount",
@@ -90,3 +80,28 @@ object GraphRoutingCorrectness {
         "segmentScanPeakActiveWorkers"
     )
 }
+
+/**
+ * Publish a correctness artifact only after replay, and release the suite on every exit.
+ * Like writeMetrics, this is shared with the separate test compilation, never the application JAR.
+ */
+fun runGraphRoutingCorrectness(
+    args: Array<String>,
+    setup: () -> Unit,
+    prepare: () -> Unit,
+    replay: (LargeBroadQueryPressureCounters) -> Long,
+    cleanup: () -> Unit
+) {
+    val counters = LargeBroadQueryPressureCounters()
+    try {
+        setup()
+        prepare()
+        replay(counters)
+        GraphRoutingCorrectness.writeMetrics(Path.of(args[ROUTING_OUTPUT_INDEX]), args[0], args[1], counters)
+    } finally {
+        cleanup()
+    }
+    println("CORRECTNESS_PASS\tgraph-routing\t${args[0]}\t${args[1]}")
+}
+
+private const val ROUTING_OUTPUT_INDEX = 3

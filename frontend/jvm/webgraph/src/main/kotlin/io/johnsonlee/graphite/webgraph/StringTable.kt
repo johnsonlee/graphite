@@ -27,7 +27,7 @@ internal class StringTable private constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>?,
     contentIdentity: ByteArray?,
-    serializedDigest: Lazy<ByteArray>? = null
+    serializedDigest: Lazy<ByteArray>?
 ) {
 
     /** SHA-256 of the serialized file, available when the table was built or loaded for a shared-string type table. */

@@ -150,6 +150,7 @@ class FoldConfigTest {
         val unscoped = failure("unscoped.yml", "version: 1\nfolds: [{match: {Call: {name: isEnabled}}, value: false}]")
         assertTrue(unscoped.contains("'match' names 'Call' (did you mean 'CallSite'?)"), "must parse here: $unscoped")
         assertTrue(failure("broken.json", "{").contains("not valid JSON"))
+        assertTrue(failure("empty.json", "").contains("not valid JSON"))
         assertTrue(failure("broken.yml", "version: [").contains("not valid YAML"))
         assertTrue(failure("trailing.json", "{\"version\":1,\"folds\":[]} x").contains("not valid JSON"))
         // The same key spelled twice: a tree parser keeps the last one silently; both readers refuse it.

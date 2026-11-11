@@ -96,6 +96,40 @@ internal class MethodSourceRecoveryTest : AdapterTestFixtures() {
         }
     }
 
+    @Test
+    fun `truncated streaming annotations preserve failure evidence and allow the next declaration`() {
+        val logs = mutableListOf<String>()
+        val view = JavaView(emptyList())
+        val adapter = adapter(view, logs)
+        val owner = FakeSootClass(identifierFactory.getClassType("sample.fake.Annotations"))
+        val node = sootup.java.bytecode.frontend.conversion.GraphiteClassNode(view, owner.classSource.analysisInputLocation)
+        val broken = node.visitMethod(org.objectweb.asm.Opcodes.ACC_PUBLIC, "broken", "()V", null, null)
+            as sootup.java.bytecode.frontend.conversion.AsmMethodSource
+        broken.visibleAnnotations = mutableListOf(org.objectweb.asm.tree.AnnotationNode("Lsample/Tag;").apply {
+            values = mutableListOf<Any>("value") // Missing the paired value in a foreign ASM provider's metadata.
+        })
+        val good = node.visitMethod(org.objectweb.asm.Opcodes.ACC_PUBLIC, "survivor", "()V", null, null)
+            as sootup.java.bytecode.frontend.conversion.AsmMethodSource
+        val methods = adapter.methodSources.streamMethods(owner, listOf(broken, good)).toList()
+        assertEquals(listOf("survivor"), methods.map { it.name })
+        val evidence = adapter.completeness.analysisCompleteness().methods.getValue("sample.fake.Annotations.broken()V")
+        assertEquals(AnalysisStatus.RESOLUTION_FAILED, evidence.status)
+        assertTrue(logs.single().contains("broken()V"))
+    }
+
+    @Test
+    fun `immutable foreign conversion metadata is left intact without aborting cleanup`() {
+        val adapter = adapter(JavaView(emptyList()), mutableListOf())
+        val source = ImmutableScratchBodySource
+        val before = ImmutableScratchBodySource.insnIndexCache
+        adapter.methodSources.releaseConversionState(source)
+        assertSame(before, ImmutableScratchBodySource.insnIndexCache)
+    }
+
+    private object ImmutableScratchBodySource {
+        @JvmField val insnIndexCache: Any = Any()
+    }
+
     private fun adapter(view: JavaView, logs: MutableList<String>): SootUpAdapter =
         SootUpAdapter(
             view,

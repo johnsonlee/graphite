@@ -104,32 +104,11 @@ class CypherExecutor internal constructor(
         }
 
         // Execute via pipeline
-        val boundedClauses = maxRows?.let { applyMaxRows(clauses, it) } ?: clauses
+        val boundedClauses = maxRows?.let { applyMaxRowsToSegment(clauses, it) } ?: clauses
         val raw = pipeline.execute(boundedClauses, parameters, workTracker)
 
         // Post-process: convert Node values to property maps
         return materializeResult(raw, workTracker)
-    }
-
-    private fun applyMaxRows(clauses: List<CypherClause>, maxRows: Int): List<CypherClause> {
-        val bounded = mutableListOf<CypherClause>()
-        val segment = mutableListOf<CypherClause>()
-
-        fun flushSegment() {
-            bounded.addAll(applyMaxRowsToSegment(segment, maxRows))
-            segment.clear()
-        }
-
-        clauses.forEach { clause ->
-            if (clause is CypherClause.Union) {
-                flushSegment()
-                bounded.add(clause)
-            } else {
-                segment.add(clause)
-            }
-        }
-        flushSegment()
-        return bounded
     }
 
     private fun applyMaxRowsToSegment(segment: List<CypherClause>, maxRows: Int): List<CypherClause> {

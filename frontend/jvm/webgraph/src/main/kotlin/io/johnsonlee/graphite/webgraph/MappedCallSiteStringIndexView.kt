@@ -8,7 +8,6 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.lang.MutableString
 import java.io.Closeable
 import java.io.IOException
-import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.IntBuffer
@@ -378,8 +377,6 @@ internal class MappedCallSiteStringIndexView private constructor(
                 null
             } catch (_: ArithmeticException) {
                 null
-            } catch (_: BufferUnderflowException) {
-                null
             } catch (expectedMalformedIndex: IndexOutOfBoundsException) {
                 null
             }
@@ -512,7 +509,7 @@ private class PersistentIndexViewValidator(
         consumeGraphWork(workConsumer, values.size.toLong())
     }
 
-    fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
+    fun updateInts(values: IntBuffer, validate: (Int) -> Unit) {
         var index = 0
         while (index < values.limit()) {
             checkViewInterrupted()
@@ -527,10 +524,6 @@ private class PersistentIndexViewValidator(
             checksum.update(scratch.array(), 0, scratch.position())
             consumeGraphWork(workConsumer, (end - start).toLong())
         }
-    }
-
-    fun updateInts(offset: Long, count: Int) {
-        updateInts(mappedSlice(offset, count, Int.SIZE_BYTES).asIntBuffer())
     }
 
     fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {
@@ -616,7 +609,7 @@ private data class IndexedPostingRange(val row: Int, val positions: IntRange)
  * budget as the complete CallSite index. If the reservation is unavailable, callers validate
  * every selected range without retaining query-dependent state.
  */
-private class BoundedPostingRangeValidationCache private constructor(
+internal class BoundedPostingRangeValidationCache private constructor(
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
     private val keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)

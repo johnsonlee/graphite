@@ -360,6 +360,21 @@ class BytecodeSignatureReaderTest {
     // ========== loadFromStream error handling ==========
 
     @Test
+    fun `truncated constant pool records a malformed class and still accepts the next class`() {
+        val reader = BytecodeSignatureReader()
+        // A Java 8 UTF-8 constant declares 65,535 bytes but the file ends before its text.
+        val truncated = byteArrayOf(
+            0xca.toByte(), 0xfe.toByte(), 0xba.toByte(), 0xbe.toByte(), 0, 0, 0, 52, 0, 2, 1, 0xff.toByte(), 0xff.toByte()
+        )
+        reader.loadFromStream(truncated.inputStream())
+        assertIs<IndexOutOfBoundsException>(reader.failures.single())
+        assertNull(reader.getClassSignature("sample.generics.GenericFieldService"))
+        Files.newInputStream(findTestClassesDir().resolve("sample/generics/GenericFieldService.class")).use(reader::loadFromStream)
+        assertEquals("java.util.List", reader.getFieldType("sample.generics.GenericFieldService", "users")?.className)
+        assertEquals(1, reader.failures.size)
+    }
+
+    @Test
     fun `should handle invalid class file in stream gracefully`() {
         val reader = BytecodeSignatureReader()
 

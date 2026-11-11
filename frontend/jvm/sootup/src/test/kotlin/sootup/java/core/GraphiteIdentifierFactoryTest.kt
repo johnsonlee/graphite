@@ -19,6 +19,23 @@ class GraphiteIdentifierFactoryTest {
     private val singleton = JavaIdentifierFactory.getInstance()
 
     @Test
+    fun `method names with colliding string hashes retain distinct cached signatures`() {
+        val factory = GraphiteIdentifierFactory()
+        assertEquals("Aa".hashCode(), "BB".hashCode())
+        val first = factory.getMethodSignature(
+            factory.getClassType(OWNER), "Aa", factory.getType(STRING), listOf(factory.getType("int")))
+        val second = factory.getMethodSignature(
+            factory.getClassType(OWNER), "BB", factory.getType(STRING), listOf(factory.getType("int")))
+        assertEquals("Aa", first.name)
+        assertEquals("BB", second.name)
+        assertNotSame(first, second)
+        assertSame(first.subSignature, factory.getMethodSignature(
+            factory.getClassType(OWNER), "Aa", factory.getType(STRING), listOf(factory.getType("int"))).subSignature)
+        assertSame(second.subSignature, factory.getMethodSignature(
+            factory.getClassType(OWNER), "BB", factory.getType(STRING), listOf(factory.getType("int"))).subSignature)
+    }
+
+    @Test
     fun `class owners packages and nested names remain singleton canonical objects`() {
         val factory = GraphiteIdentifierFactory()
         val owner = singleton.getClassType(OWNER)

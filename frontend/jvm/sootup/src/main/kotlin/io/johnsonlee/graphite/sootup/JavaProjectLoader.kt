@@ -104,7 +104,7 @@ private fun createApkInputLocations(
     interceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor>,
     onFallback: (String) -> Unit,
     log: (String) -> Unit,
-    tracking: BodyInterceptionTracking? = null
+    tracking: BodyInterceptionTracking?
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
     // Dex registers hold unrelated values over time: split them before functional dispatch.
@@ -163,12 +163,19 @@ private fun createApkInputLocations(
 private fun bytecodeInterceptors(folding: ConstantFolding): List<BodyInterceptor> =
     folding.bodyInterceptors(BytecodeBodyInterceptors.Default.bodyInterceptors)
 
-private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
-    val configured = config.androidSdk ?: findAndroidSdkRootFromEnvironment()
+private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path =
+    resolveAndroidPlatformsPath(config, System.getenv())
+
+internal fun resolveAndroidPlatformsPath(
+    config: LoaderConfig,
+    environment: Map<String, String>,
+    defaultRoots: List<Path>? = null
+): Path {
+    val configured = config.androidSdk ?: findAndroidSdkRootFromEnvironment(environment)
     if (configured != null) {
         return validateAndroidSdkRoot(configured)
     }
-    return discoverAndroidPlatformsPath()
+    return discoverAndroidPlatformsPath(defaultRoots ?: defaultAndroidSdkRoots(), environment[PATH_ENV])
         ?: throw IllegalArgumentException(
             "APK input requires an Android SDK. Pass --android-sdk <sdk-root>, set " +
                 "$ANDROID_HOME_ENV or $ANDROID_SDK_ROOT_ENV, " +
@@ -189,7 +196,7 @@ private fun validateAndroidSdkRoot(path: Path): Path {
     return platforms
 }
 
-private fun findAndroidSdkRootFromEnvironment(environment: Map<String, String> = System.getenv()): Path? =
+private fun findAndroidSdkRootFromEnvironment(environment: Map<String, String>): Path? =
     environmentPath(environment, ANDROID_HOME_ENV)
         ?: environmentPath(environment, ANDROID_SDK_ROOT_ENV)
 
@@ -197,13 +204,13 @@ private fun environmentPath(environment: Map<String, String>, name: String): Pat
     environment[name]?.takeIf { it.isNotBlank() }?.let { Path.of(it) }
 
 private fun discoverAndroidPlatformsPath(
-    defaultRoots: List<Path> = defaultAndroidSdkRoots(),
-    pathValue: String? = System.getenv(PATH_ENV)
+    defaultRoots: List<Path>,
+    pathValue: String?
 ): Path? =
     findValidAndroidPlatformsPath(defaultRoots)
         ?: findValidAndroidPlatformsPath(androidSdkRootsFromTools(pathValue))
 
-private fun defaultAndroidSdkRoots(
+internal fun defaultAndroidSdkRoots(
     osName: String = System.getProperty("os.name").orEmpty(),
     userHome: Path? = System.getProperty("user.home")?.takeIf { it.isNotBlank() }?.let { Path.of(it) }
 ): List<Path> {

@@ -9,6 +9,17 @@ import kotlin.test.assertFailsWith
 @Suppress("MagicNumber", "StringLiteralDuplication")
 class GraphRoutingCorrectnessTest {
     @Test
+    fun `mapped admission command completes its exact work budget correctness check`() {
+        val output = java.io.ByteArrayOutputStream()
+        val previous = System.out
+        try {
+            System.setOut(java.io.PrintStream(output))
+            MappedAdmissionCorrectness.main(emptyArray())
+        } finally { System.setOut(previous) }
+        assertEquals("CORRECTNESS_PASS\tmapped-admission", output.toString().trim())
+    }
+
+    @Test
     fun `correctness artifact preserves structural counters without performance observations`() {
         // This independent schema is the correctness artifact contract, including zero-valued fields.
         val expected = linkedMapOf(

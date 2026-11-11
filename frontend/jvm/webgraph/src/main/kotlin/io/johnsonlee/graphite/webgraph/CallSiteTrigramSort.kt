@@ -16,15 +16,14 @@ internal fun sortCallSiteTrigramPostings(
         checkCallSiteIndexInterrupted()
         true
     } else {
-        callSiteTrigramSortTemporaryBytes(postings.size)?.let { temporaryBytes ->
-            sortWithCallSiteTrigramTemporary(postings, temporaryBytes, reservation, onParallelWorkerStarted)
-        } ?: false
+        sortWithCallSiteTrigramTemporary(
+            postings, callSiteTrigramSortTemporaryBytes(postings.size), reservation, onParallelWorkerStarted)
     }
 }
 
-private fun callSiteTrigramSortTemporaryBytes(count: Int): Long? =
-    runCatching { Math.addExact(PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES, Math.multiplyExact(count.toLong(), Long.SIZE_BYTES.toLong())) }
-        .getOrNull()
+// An array length is at most Int.MAX_VALUE: its byte size plus the fixed header cannot overflow Long.
+private fun callSiteTrigramSortTemporaryBytes(count: Int): Long =
+    PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES + count.toLong() * Long.SIZE_BYTES
 
 private fun sortWithCallSiteTrigramTemporary(
     postings: LongArray,

@@ -247,10 +247,8 @@ internal class GraphRegistry(
                 if (retired.get()) return null
                 val current = leases.get()
                 if (leases.compareAndSet(current, current + 1)) {
-                    if (retired.get()) {
-                        release()
-                        return null
-                    }
+                    // Registry acquisition and retirement hold mutationLock, so
+                    // retirement cannot race this increment. Release remains concurrent.
                     return ServedGraphLease(this, id, graph)
                 }
             }

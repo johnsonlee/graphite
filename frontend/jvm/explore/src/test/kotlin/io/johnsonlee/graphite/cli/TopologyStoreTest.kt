@@ -11,6 +11,7 @@ import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -70,6 +71,11 @@ class TopologyStoreTest {
             assertEquals(1, json["relationCount"].asInt)
             assertEquals(longEvidence, json[API_FIELD_EDGES].asJsonArray[0].asJsonObject[TOPOLOGY_EVIDENCE].asJsonArray[0].asString)
             assertFalse(json["stale"].asBoolean)
+            mapped.openApiStream {}.input.use { input ->
+                assertEquals('{'.code, input.read())
+                input.readBytes()
+                assertEquals(-1, input.read())
+            }
         } finally {
             mapped.close()
         }
@@ -77,6 +83,41 @@ class TopologyStoreTest {
         assertFalse(buildDir.exists())
         assertTrue(tempRoot.resolve("graphite").exists())
         tempRoot.toFile().deleteRecursively()
+    }
+
+    @Test
+    fun `unsupported manifest and data versions fail before consuming topology`() {
+        for (file in listOf("manifest", "topology.nodes")) {
+            val root = Files.createTempDirectory("topology-version")
+            val mapped = TopologyStore.writeAndOpen(root, TopologyGraph.nodesOnly(emptyMap()))
+            try {
+                java.nio.channels.FileChannel.open(mapped.buildDir.resolve(file), java.nio.file.StandardOpenOption.WRITE).use { channel ->
+                    channel.write(java.nio.ByteBuffer.allocate(4).putInt(999).flip(), 4)
+                }
+                assertEquals("Unsupported topology format version 999",
+                    assertFailsWith<IllegalArgumentException> { MappedTopologySnapshot.open(mapped.buildDir) }.message)
+            } finally {
+                mapped.close()
+                root.toFile().deleteRecursively()
+            }
+        }
+    }
+
+    @Test
+    fun `unsupported mapped storage removes the partially written topology`() {
+        val root = Files.createTempDirectory("topology-unsupported-store")
+        try {
+            val uri = java.net.URI.create("jar:" + root.resolve("store.zip").toUri())
+            java.nio.file.FileSystems.newFileSystem(uri, mapOf("create" to "true")).use { archive ->
+                val directory = archive.getPath("/")
+                assertFailsWith<UnsupportedOperationException> {
+                    TopologyStore.writeAndOpen(directory, TopologyGraph.nodesOnly(emptyMap()))
+                }
+                assertEquals(0L, Files.list(directory.resolve("graphite")).use { it.count() })
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
     }
 
     @Test

@@ -283,14 +283,14 @@ private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
 private const val DISCONNECT_BACKPRESSURE_PROBE_MILLIS = 250L
 private const val MAX_MONITORED_PIPELINE_BYTES = 1_024 * 1_024
 
-private object SocketErrorProbe {
-    private data class SocketOptionCodes(val level: Int, val error: Int)
+internal data class SocketOptionCodes(val level: Int, val error: Int)
 
-    private val optionCodes = when {
-        System.getProperty("os.name").startsWith("Linux", ignoreCase = true) ->
-            SocketOptionCodes(LINUX_SOL_SOCKET, LINUX_SO_ERROR)
-        else -> SocketOptionCodes(BSD_SOL_SOCKET, BSD_SO_ERROR)
-    }
+internal fun socketErrorOptionCodes(osName: String): SocketOptionCodes =
+    if (osName.startsWith("Linux", ignoreCase = true)) SocketOptionCodes(LINUX_SOL_SOCKET, LINUX_SO_ERROR)
+    else SocketOptionCodes(BSD_SOL_SOCKET, BSD_SO_ERROR)
+
+private object SocketErrorProbe {
+    private val optionCodes = socketErrorOptionCodes(System.getProperty("os.name"))
     private val handles: Pair<MethodHandle, MethodHandle>? = runCatching {
         val unsafeField = Unsafe::class.java.getDeclaredField("theUnsafe").apply { isAccessible = true }
         val unsafe = unsafeField.get(null) as Unsafe

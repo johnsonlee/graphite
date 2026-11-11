@@ -12,7 +12,7 @@ on:
   # binaries, frontend packages and the rendered formula are checked and kept as the
   # `release-<tag>` artifact, the formula is installed from those assets on a
   # macOS runner, and both image architectures are built but not pushed. Not covered:
-  # the Sonatype upload itself, the GitHub Release, the tap push and the registry
+  # Sonatype/GitHub Packages authentication and upload, the GitHub Release, the tap and registry
   # push; those run for real on a pre-release tag (v2.5.0-rc.1), which leaves the
   # default channels alone. `workflow_dispatch` is available once this file is on the
   # default branch (it already is). --ref selects the candidate workflow and checkout;
@@ -54,7 +54,7 @@ jobs:
     - name: Parse the release tag as SemVer
       id: semver
       run: |
-        bun test ./.github/scripts/release/version.test.ts
+        bun test ./.github/scripts/release/version.test.ts ./.github/scripts/release/publication.test.ts
         bun .github/scripts/release/version.ts "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
     - name: Test release smoke validation and real-source preparation
       run: |
@@ -95,7 +95,7 @@ jobs:
         # The published coordinates are io.johnsonlee.graphite:<module> (settings.gradle.kts
         # keeps the project names prefix-free), so the local repository holds
         # io/johnsonlee/graphite/<module>/<version>/<module>-<version>.*, as on Maven Central.
-        for MODULE in core cypher sootup webgraph; do
+        for MODULE in core ir cypher sootup webgraph; do
           DIR="${HOME}/.m2/repository/io/johnsonlee/graphite/${MODULE}/${RELEASE_VERSION}"
           ls -la "${DIR}"
           POM="${DIR}/${MODULE}-${RELEASE_VERSION}.pom"
@@ -118,7 +118,9 @@ jobs:
         GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     - name: Publish to Sonatype Central
+      id: sonatype
       if: env.DRY_RUN != 'true'
+      continue-on-error: true
       run: |
         echo "Publishing version ${RELEASE_VERSION} ..."
         echo "Create GPG private key"
@@ -140,6 +142,52 @@ jobs:
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PACKAGE_GROUP: ${{ secrets.OSSRH_PACKAGE_GROUP }}
+
+    - name: Report Sonatype publication failure
+      if: always() && steps.sonatype.outcome == 'failure'
+      run: |
+        echo "::warning title=Sonatype publication failed::Maven Central publication failed. See the original publish step logs; GitHub Packages and release assets are independent."
+        {
+          echo '### Sonatype Maven publication failed'
+          echo 'The real Sonatype upload/release step failed. Its original error logs remain in this job.'
+          echo 'GitHub Packages and release assets run independently; Maven Central availability is not confirmed.'
+        } >> "${GITHUB_STEP_SUMMARY}"
+
+  # ---- GitHub Packages: independent Maven publication of the same coordinates ----
+  github-packages:
+    needs: validate
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'johnsonlee'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+      JAVA_OPTS: -Xmx2g -Dfile.encoding=UTF-8
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+    - name: Rehearse GitHub Packages in a local file repository
+      if: env.DRY_RUN == 'true'
+      run: |
+        ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository verifyGitHubPackagesLocalPublication \
+          --no-daemon --stacktrace -Pversion="${RELEASE_VERSION}" \
+          -PgithubPackagesLocalRepository="${RUNNER_TEMP}/github-packages-repository"
+        cat "${RUNNER_TEMP}/github-packages-repository/verified-publications.txt" >> "${GITHUB_STEP_SUMMARY}"
+    - name: Publish Maven artifacts to GitHub Packages
+      if: env.DRY_RUN != 'true'
+      run: ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository --no-daemon --stacktrace -Pversion="${RELEASE_VERSION}"
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---- The graphite CLI: one tarball per platform ----
   binaries:
@@ -165,7 +213,9 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             cc: CC_x86_64_unknown_linux_musl
-          - os: ubuntu-latest
+          # Ubuntu 26.04 removed qemu-user-static; keep the cross runner on the
+          # supported image that provides the emulator used by Package below.
+          - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
             cross: true
             exec: qemu-aarch64-static
@@ -350,7 +400,7 @@ jobs:
   # ever being asked to modify an immutable release. (v3.0.0-alpha2 was left without
   # assets by creating the release published first and uploading afterwards.)
   release:
-    needs: [validate, binaries, js-frontends, apple-frontend]
+    needs: [validate, github-packages, binaries, js-frontends, apple-frontend]
     permissions:
       contents: write
     runs-on: ubuntu-latest

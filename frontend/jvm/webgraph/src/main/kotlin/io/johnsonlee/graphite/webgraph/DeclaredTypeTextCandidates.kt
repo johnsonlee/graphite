@@ -129,7 +129,7 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private companion object {
-        val FIELD_KEYS = listOf("kind", "name", "scope", "variance")
+        private val FIELD_KEYS = listOf("kind", "name", "scope", "variance")
         const val ASCII_MAX = 127
         const val COMPLETE = 4
         const val CANCELLATION_MASK = 255

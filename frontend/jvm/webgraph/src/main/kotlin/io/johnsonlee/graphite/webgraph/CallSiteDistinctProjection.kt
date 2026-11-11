@@ -6,9 +6,8 @@ import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import java.util.Arrays
 
 internal class CallSiteDistinctProjection(private val context: MappedCallSiteStringIndex) {
-    private var exactProjectionTupleIndex
+    private val exactProjectionTupleIndex
         get() = context.exactProjectionTupleIndex
-        set(value) { context.exactProjectionTupleIndex = value }
     private val trigramSignatures get() = context.trigramSignatures
     private val properties get() = context.properties
     private val stringTable get() = context.stringTable

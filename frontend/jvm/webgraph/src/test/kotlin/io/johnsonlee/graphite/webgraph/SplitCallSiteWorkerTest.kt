@@ -21,6 +21,37 @@ import kotlin.test.assertTrue
 class SplitCallSiteWorkerTest : GraphStoreTestFixture() {
 
     @Test
+    fun `background task failure preserves its cause after all workers exit`() {
+        val original = IllegalArgumentException("damaged posting")
+        val failed = assertFailsWith<IllegalArgumentException> {
+            executeSplitCallSiteCandidateTasks(
+                listOf(Callable { intArrayOf(1) }, Callable<IntArray> { throw original }), 1)
+        }
+        assertTrue(failed === original)
+        assertEquals(0, splitCallSiteActiveWorkers.get())
+    }
+
+    @Test
+    fun `interruption during failure cleanup wins without leaving a worker running`() {
+        for (wrapped in listOf(false, true)) {
+            val original = IllegalStateException("foreground failed")
+            try {
+                val failed = assertFailsWith<CancellationException> {
+                    executeSplitCallSiteCandidateTasks(listOf(
+                        Callable<IntArray> {
+                            Thread.currentThread().interrupt()
+                            if (wrapped) throw ExecutionException(original) else throw original
+                        },
+                        Callable { intArrayOf(2) }), 1)
+                }
+                assertTrue(failed.cause is InterruptedException)
+                assertTrue(Thread.currentThread().isInterrupted)
+                assertEquals(0, splitCallSiteActiveWorkers.get())
+            } finally { Thread.interrupted() }
+        }
+    }
+
+    @Test
     fun `split worker metrics can reset immediately after every completed execution`() {
         repeat(100) {
             resetSplitCallSiteWorkerMetrics()

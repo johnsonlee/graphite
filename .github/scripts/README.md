@@ -4,7 +4,7 @@ English · [简体中文](README.zh.md)
 
 CI helpers are primarily TypeScript, executed directly with Bun. The coverage gate
 uses Python's standard-library XML parser (`check-coverage.py`) to validate all seven
-JVM modules' Kover reports and enforce the exact 98% line threshold; console logs
+JVM modules' Kover reports and enforce the exact 100% line threshold; console logs
 and a native Kover verification task without configured rules are not coverage evidence.
 Missing, malformed, duplicate, unknown or zero-total module reports fail the gate.
 The Bun runtime version is pinned in the `packageManager` field of `package.json`;

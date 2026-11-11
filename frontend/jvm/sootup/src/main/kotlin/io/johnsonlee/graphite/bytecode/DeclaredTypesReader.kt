@@ -439,8 +439,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         id: Int,
         erasedId: Int,
         bounds: Map<Pair<String, String>, List<Int>>,
-        localBounds: Map<Pair<String, String>, List<Int>> = emptyMap(),
-        allowUnknown: Boolean = false
+        localBounds: Map<Pair<String, String>, List<Int>>,
+        allowUnknown: Boolean
     ): Boolean {
         val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap(), emptyMap()))
         return erasesTo(id, expected, bounds, localBounds, allowUnknown)
@@ -457,7 +457,10 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             CLASS_TYPE_KIND -> classDescriptor(type.name)
             PRIMITIVE_TYPE_KIND -> primitiveDescriptors[type.name]
             "array" -> erasureDescriptor(requireNotNull(type.component), bounds, localBounds, visiting)?.let { "[$it" }
-            "variable" -> {
+            // Erasure starts at a parsed type or formal bound, never a type argument.
+            // parseType admits only class, primitive, array and variable here;
+            // wildcard nodes live exclusively in class arguments and are not traversed.
+            else -> {
                 val key = type.scope to type.name
                 val variableBounds = when {
                     key in visiting -> null
@@ -470,7 +473,6 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                     else -> erasureDescriptor(variableBounds.first(), bounds, localBounds, visiting + key)
                 }
             }
-            else -> null
         }
     }
 

@@ -4,7 +4,6 @@ import io.johnsonlee.graphite.analysis.DispatchSlot
 
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
-import io.johnsonlee.graphite.core.ComparisonOp
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -19,12 +18,6 @@ import sootup.core.jimple.common.Local
 import sootup.core.jimple.common.stmt.JIfStmt
 import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.Stmt
-import sootup.core.jimple.common.expr.JEqExpr
-import sootup.core.jimple.common.expr.JNeExpr
-import sootup.core.jimple.common.expr.JLtExpr
-import sootup.core.jimple.common.expr.JGeExpr
-import sootup.core.jimple.common.expr.JGtExpr
-import sootup.core.jimple.common.expr.JLeExpr
 import io.johnsonlee.graphite.sootup.SootUpAdapter.PendingBranchScope
 
 /** Builds branch scopes and local-definition tables from SootUp control flow. */
@@ -32,18 +25,14 @@ internal class ControlFlowEmitter(private val context: SootUpAdapter) {
     private val localNodes = context.localNodes
     private val methodReturnNodes = context.methodReturnNodes
     private val allocationNodes = context.allocationNodes
-    private var stmtNodeIds
+    private val stmtNodeIds
         get() = context.stmtNodeIds
-        set(value) { context.stmtNodeIds = value }
-    private var stmtLocalWrites
+    private val stmtLocalWrites
         get() = context.stmtLocalWrites
-        set(value) { context.stmtLocalWrites = value }
-    private var stmtIdentityWrites
+    private val stmtIdentityWrites
         get() = context.stmtIdentityWrites
-        set(value) { context.stmtIdentityWrites = value }
-    private var activeMethod
+    private val activeMethod
         get() = context.activeMethod
-        set(value) { context.activeMethod = value }
     private val graphBuilder = context.graphBuilder
     private val dispatchFlows get() = context.dispatchFlows
     private val metadata get() = context.metadata
@@ -257,16 +246,6 @@ internal class ControlFlowEmitter(private val context: SootUpAdapter) {
             graphBuilder.addLocalDefinitions(NodeId(localId), packed)
             start = end
         }
-    }
-
-    fun comparisonOp(condition: Any): ComparisonOp? = when (condition) {
-        is JEqExpr -> ComparisonOp.EQ
-        is JNeExpr -> ComparisonOp.NE
-        is JLtExpr -> ComparisonOp.LT
-        is JGeExpr -> ComparisonOp.GE
-        is JGtExpr -> ComparisonOp.GT
-        is JLeExpr -> ComparisonOp.LE
-        else -> null
     }
 
     /**

@@ -19,6 +19,7 @@ internal const val TOPOLOGY_EVIDENCE = "evidence"
 private const val DEFAULT_TOPOLOGY_PROTOCOL = "call"
 private const val MAX_TOPOLOGY_ROWS = 100_000
 private const val MAX_EDGE_DETAILS = 100
+private const val RETIRED_TOPOLOGY = Int.MIN_VALUE
 
 internal data class TopologyQuery(
     val name: String,
@@ -301,37 +302,30 @@ internal class TopologyService(
         val snapshot: MappedTopologySnapshot,
         private val catalogVersion: Map<String, Long>
     ) {
+        // The sign bit retires the snapshot; the remaining bits count leases.
+        // Admission and retirement share one CAS state, so a snapshot cannot be
+        // closed between an admission check and its reference increment.
         private val leases = AtomicInteger()
-        private val retired = AtomicBoolean()
-        private val closed = AtomicBoolean()
 
         fun summary(): TopologySummary = snapshot.summary()
 
         @Suppress("ReturnCount")
         fun acquire(): TopologyLease? {
             while (true) {
-                if (retired.get()) return null
                 val count = leases.get()
-                if (leases.compareAndSet(count, count + 1)) {
-                    if (retired.get()) {
-                        release()
-                        return null
-                    }
+                if (count < 0) return null
+                if (leases.compareAndSet(count, Math.incrementExact(count))) {
                     return TopologyLease(this, snapshot, catalogVersion)
                 }
             }
         }
 
         fun retire() {
-            if (retired.compareAndSet(false, true)) closeIfIdle()
+            if (leases.getAndUpdate { it or RETIRED_TOPOLOGY } == 0) snapshot.close()
         }
 
         fun release() {
-            if (leases.decrementAndGet() == 0 && retired.get()) closeIfIdle()
-        }
-
-        private fun closeIfIdle() {
-            if (leases.get() == 0 && closed.compareAndSet(false, true)) snapshot.close()
+            if (leases.decrementAndGet() == RETIRED_TOPOLOGY) snapshot.close()
         }
     }
 

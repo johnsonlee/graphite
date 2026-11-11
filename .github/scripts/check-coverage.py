@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce the seven JVM modules' 98% line coverage from Kover XML, never console logs."""
+"""Enforce the seven JVM modules' 100% line coverage from Kover XML, never console logs."""
 
 import argparse
 import json
@@ -9,7 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 MODULES = ("core", "cypher", "explore", "ir", "query", "sootup", "webgraph")
-THRESHOLD = 98
+THRESHOLD = 100
 REPORT_PREFIX = "Kover Gradle Plugin XML report for :"
 
 

@@ -43,6 +43,42 @@ class FoldedBodySnapshotTest {
     private val position = StmtPositionInfo.getNoStmtPositionInfo()
 
     @Test
+    fun `legacy ret copies its address and successor without sharing a statement`() {
+        val ret = sootup.core.jimple.javabytecode.stmt.JRetStmt(IntConstant.getInstance(7), position)
+        val exit = JReturnVoidStmt(position)
+        val graph = MutableBlockControlFlowGraph().apply {
+            addBlock(listOf(ret, exit))
+            setStartingStmt(ret)
+        }
+        val source = body(graph)
+        val snapshot = FoldedBodySnapshot.capture(source)
+        val copied = assertIs<sootup.core.jimple.javabytecode.stmt.JRetStmt>(snapshot.body.stmts.first())
+        assertNotSame(ret, copied)
+        assertEquals(7, assertIs<IntConstant>(copied.stmtAddress).value)
+        assertEquals(facts(source), facts(snapshot.body))
+        assertEquals(snapshot.semanticFingerprint(), FoldedBodySnapshot.capture(source).semanticFingerprint())
+    }
+
+    @Test
+    fun `unknown statement and annotation representations fail at the capture boundary`() {
+        val unknown = object : sootup.core.jimple.common.stmt.FallsThroughStmt by sootup.core.jimple.common.stmt.JNopStmt(position) {}
+        val graph = MutableBlockControlFlowGraph().apply {
+            addBlock(listOf(unknown, JReturnVoidStmt(position)))
+            setStartingStmt(unknown)
+        }
+        val statementFailure = assertFailsWith<IllegalStateException> { FoldedBodySnapshot.capture(body(graph)) }
+        assertEquals("Unsupported folded-body statement: ${unknown.javaClass.name}", statementFailure.message)
+
+        val invalid = Any()
+        val local = JavaLocal("annotated", factory.getType("int"), listOf(
+            AnnotationUsage(factory.getClassType("sample.Marker"), mapOf("value" to invalid))))
+        val exit = JReturnVoidStmt(position)
+        val validGraph = MutableBlockControlFlowGraph().apply { addNode(exit); setStartingStmt(exit) }
+        val annotationFailure = assertFailsWith<IllegalStateException> { FoldedBodySnapshot.capture(body(validGraph, setOf(local))) }
+        assertEquals("Unsupported folded-body annotation value: ${invalid.javaClass.name}", annotationFailure.message)
+    }
+
+    @Test
     fun `snapshot preserves typed branches exceptions and dynamic invocations after source release`() {
         val root = Files.createTempDirectory("folded-body-snapshot")
         val snapshot: FoldedBodySnapshot

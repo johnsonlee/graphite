@@ -12,6 +12,17 @@ import kotlin.test.assertTrue
 
 class JavaProjectLoaderEnvironmentTest {
     @Test
+    fun `Android platform lookup skips non APK inputs and disabled libraries`() {
+        val absentSdk = Path.of("missing-sdk-for-disabled-lookup")
+        assertNull(androidPlatformJar(Path.of("app.jar"), LoaderConfig(androidSdk = absentSdk, includeLibraries = true)))
+        assertNull(androidPlatformJar(Path.of("app.apk"), LoaderConfig(androidSdk = absentSdk, includeLibraries = false)))
+        val error = assertFailsWith<IllegalArgumentException> {
+            androidPlatformJar(Path.of("app.apk"), LoaderConfig(androidSdk = absentSdk, includeLibraries = true))
+        }
+        assertTrue(error.message.orEmpty().contains("Android SDK"))
+    }
+
+    @Test
     fun `android SDK resolution accepts sdk root only`() {
         val sdkRoot = Files.createTempDirectory("graphite-android-sdk-root")
         val platformsFromRoot = Files.createDirectories(sdkRoot.resolve("platforms"))

@@ -112,12 +112,12 @@ internal fun visitSetItem(ctx: CypherParser.SetItemContext): SetItem {
             val expr = visitExpr(ctx.expression())
             SetItem.AllPropertiesSet(variable, expr)
         }
-        is CypherParser.SetLabelsContext -> {
-            val variable = getSymbolicName(ctx.variable())
-            val labels = ctx.nodeLabels().labelName().map { getSymbolicName(it) }
+        else -> {
+            val labelsContext = ctx as CypherParser.SetLabelsContext
+            val variable = getSymbolicName(labelsContext.variable())
+            val labels = labelsContext.nodeLabels().labelName().map { getSymbolicName(it) }
             SetItem.LabelSet(variable, labels)
         }
-        else -> throw CypherParseException("Unknown SET item type")
     }
 }
 
@@ -133,12 +133,12 @@ internal fun visitRemoveItem(ctx: CypherParser.RemoveItemContext): RemoveItem {
             val property = getSymbolicName(ctx.propertyKeyName())
             RemoveItem.PropertyRemove(variable, property)
         }
-        is CypherParser.RemoveLabelsContext -> {
-            val variable = getSymbolicName(ctx.variable())
-            val labels = ctx.nodeLabels().labelName().map { getSymbolicName(it) }
+        else -> {
+            val labelsContext = ctx as CypherParser.RemoveLabelsContext
+            val variable = getSymbolicName(labelsContext.variable())
+            val labels = labelsContext.nodeLabels().labelName().map { getSymbolicName(it) }
             RemoveItem.LabelRemove(variable, labels)
         }
-        else -> throw CypherParseException("Unknown REMOVE item type")
     }
 }
 

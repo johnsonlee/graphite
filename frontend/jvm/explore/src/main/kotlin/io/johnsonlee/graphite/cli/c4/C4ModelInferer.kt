@@ -37,64 +37,50 @@ internal class C4ModelInferer(private val endpointExtractor: EndpointExtractor =
         val systemBoundary = deriveSystemBoundary(methods, callSites)
         fun subject() = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary)
 
-        return if (level == C4Level.ALL) {
-            val subject = subject()
-            val capabilityLayout = inferContainerLayout(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
-            val containerView = buildContainerView(graph, callSites, subject, capabilityLayout)
-            val componentView =
-                ComponentSelector.buildView(
-                    graph = graph,
-                    methods = methods,
-                    callSites = callSites,
-                    apiEndpoints = apiEndpoints,
-                    systemBoundary = systemBoundary,
-                    limit = limit,
-                    inference = ComponentInference(subject, capabilityLayout))
-            val contextView =
+        val view = when (level) {
+            C4Level.ALL -> {
+                val subject = subject()
+                val capabilityLayout = inferContainerLayout(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
+                val containerView = buildContainerView(graph, callSites, subject, capabilityLayout)
+                val componentView =
+                    ComponentSelector.buildView(
+                        graph = graph,
+                        methods = methods,
+                        callSites = callSites,
+                        apiEndpoints = apiEndpoints,
+                        systemBoundary = systemBoundary,
+                        limit = limit,
+                        inference = ComponentInference(subject, capabilityLayout))
+                val contextView =
+                    buildContextView(
+                        graph = graph,
+                        stats = ContextViewStats(classes.size, methods.size, apiEndpoints.size, containerView.elementCount),
+                        callSites = callSites,
+                        systemBoundary = systemBoundary,
+                        subject = subject,
+                        limit = limit)
+                return C4ViewModel(
+                    level = C4Level.ALL,
+                    availableLevels = C4Level.modelLevels,
+                    context = contextView,
+                    container = containerView,
+                    component = componentView)
+            }
+            C4Level.CONTAINER -> buildContainerView(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
+            C4Level.COMPONENT -> ComponentSelector.buildView(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
+            C4Level.CONTEXT -> {
+                val subject = subject()
+                val containerCount = if (subject.role == WIRE_APPLICATION) 1 else 0
                 buildContextView(
                     graph = graph,
-                    stats = ContextViewStats(classes.size, methods.size, apiEndpoints.size, containerView.elementCount),
+                    stats = ContextViewStats(classes.size, methods.size, apiEndpoints.size, containerCount),
                     callSites = callSites,
                     systemBoundary = systemBoundary,
                     subject = subject,
                     limit = limit)
-            C4ViewModel(
-                level = C4Level.ALL,
-                availableLevels = C4Level.modelLevels,
-                context = contextView,
-                container = containerView,
-                component = componentView)
-        } else {
-            val view =
-                when (level) {
-                    C4Level.CONTEXT -> {
-                        val subject = subject()
-                        val containerCount = if (subject.role == WIRE_APPLICATION) 1 else 0
-                        buildContextView(
-                            graph = graph,
-                            stats = ContextViewStats(classes.size, methods.size, apiEndpoints.size, containerCount),
-                            callSites = callSites,
-                            systemBoundary = systemBoundary,
-                            subject = subject,
-                            limit = limit)
-                    }
-                    C4Level.CONTAINER -> buildContainerView(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
-                    C4Level.COMPONENT -> ComponentSelector.buildView(graph, methods, callSites, apiEndpoints, systemBoundary, limit)
-                    C4Level.ALL -> error("C4 all level is handled before single-view selection")
-                    else -> {
-                        val subject = subject()
-                        val containerCount = if (subject.role == WIRE_APPLICATION) 1 else 0
-                        buildContextView(
-                            graph = graph,
-                            stats = ContextViewStats(classes.size, methods.size, apiEndpoints.size, containerCount),
-                            callSites = callSites,
-                            systemBoundary = systemBoundary,
-                            subject = subject,
-                            limit = limit)
-                    }
-                }
-            C4ViewModel(level = level, availableLevels = C4Level.modelLevels, view = view)
+            }
         }
+        return C4ViewModel(level = level, availableLevels = C4Level.modelLevels, view = view)
     }
 
     private fun buildContextView(

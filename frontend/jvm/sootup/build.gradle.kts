@@ -18,6 +18,19 @@ plugins {
 }
 
 kover {
+    currentProject {
+        instrumentation {
+            // Instrument project code, including our classes in SootUp's namespace. Transforming
+            // external APK dependencies can overflow the coverage agent's stack and leave the
+            // upstream identifier cache locked, blocking later concurrent loads.
+            includedClasses.addAll(
+                "io.johnsonlee.graphite.*",
+                "sootup.java.bytecode.frontend.conversion.Graphite*",
+                "sootup.java.bytecode.frontend.conversion.ParsedDeclarationSource*",
+                "sootup.java.core.Graphite*"
+            )
+        }
+    }
     reports {
         filters {
             excludes {
@@ -245,3 +258,18 @@ tasks.test {
         listOf("-Dkotlin.lambda.desugared.fixtures=${desugaredDir.get().absolutePath}")
     }
 }
+
+// ResourceBundle's optional parent inspection is supported only when the caller opens java.util.
+// Keep that JVM configuration isolated: the normal suite still verifies the closed-module fallback.
+val resourceBundleOpenModulesTest by tasks.registering(Test::class) {
+    description = "Verifies ResourceBundle parent traversal with the supported java.util module opening"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/ResourceBundleOpenModulesTest.class")
+    maxHeapSize = "4g"
+    jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
+    shouldRunAfter(tasks.test)
+}
+tasks.test { exclude("**/ResourceBundleOpenModulesTest.class") }
+tasks.check { dependsOn(resourceBundleOpenModulesTest) }

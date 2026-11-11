@@ -258,13 +258,7 @@ internal object DexClassDeclarations {
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
     // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.
     internal val dexStringIndexField: Field? by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        try {
-            DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
-        } catch (_: ReflectiveOperationException) {
-            null
-        } catch (_: SecurityException) {
-            null
-        }
+        resolveDexStringIndexField(DexBackedStringEncodedValue::class.java)
     }
 
     private fun dexStringUtf16Length(string: DexBackedStringEncodedValue, stringIndexField: Field): Int? = try {
@@ -288,6 +282,15 @@ internal object DexClassDeclarations {
         }
     }
 
+}
+
+/** Optional backend metadata: a changed representation must retain the post-decode budget fallback. */
+internal fun resolveDexStringIndexField(valueType: Class<*>): Field? = try {
+    valueType.getDeclaredField("stringIndex").apply { isAccessible = true }
+} catch (_: ReflectiveOperationException) {
+    null
+} catch (_: SecurityException) {
+    null
 }
 
 private inline fun <T> dexTolerant(block: () -> T?): T? = try {

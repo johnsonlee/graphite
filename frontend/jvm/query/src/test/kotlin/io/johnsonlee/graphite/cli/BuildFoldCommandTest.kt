@@ -487,4 +487,20 @@ class BuildFoldCommandTest {
         assertTrue(out.toString().contains("--fold"), out.toString())
         assertTrue(out.toString().contains("graph.folds.json"), out.toString())
     }
+
+    @Test
+    fun `build binds Android and folding options without changing their values`() {
+        val command = BuildCommand()
+        CommandLine(command).parseArgs(
+            "app.apk", "-o", "graph", "--android-sdk", "/sdk", "--fold", "rules.yml",
+            "--fold-strict", "--interprocedural"
+        )
+        assertEquals(Path.of("/sdk"), command.androidSdk)
+        assertEquals(Path.of("rules.yml"), command.foldFile)
+        assertTrue(command.foldStrict)
+        assertTrue(command.interprocedural)
+        val plan = FoldPlanCommand()
+        CommandLine(plan).parseArgs("rules.yml", "--dependency-reachable", "10", "--dependency-roots", "app.api,app.jobs")
+        assertEquals(listOf("app.api", "app.jobs"), plan.dependencyRoots)
+    }
 }

@@ -1015,7 +1015,9 @@ Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
 ## Kotlin Dependencies
 
 The JVM modules are published to Maven Central under `io.johnsonlee.graphite` with
-prefix-free artifact ids (`core`, `sootup`, `cypher`, `webgraph`), unchanged since 2.x.
+prefix-free artifact ids. The existing libraries retain the names `core`, `sootup`,
+`cypher`, and `webgraph`. The IR importer uses `ir` in releases that include that module;
+do not assume it is available in every older release.
 
 ```kotlin
 repositories {
@@ -1029,6 +1031,31 @@ dependencies {
     implementation("io.johnsonlee.graphite:cypher:2.8.0")
     // Optional: disk persistence (WebGraph format)
     implementation("io.johnsonlee.graphite:webgraph:2.8.0")
+}
+```
+
+GitHub Packages is an independent Maven distribution channel for releases published
+with this workflow. It uses the same `io.johnsonlee.graphite` group, artifact names
+and versions; older versions are not automatically backfilled. To consume a version
+available there, add the repository below and keep the dependency coordinates above
+(with your chosen version). Maven Central remains useful for transitive dependencies.
+
+Even public GitHub Maven packages require authentication. Use a personal access token
+(classic) with `read:packages`, or a GitHub Actions `GITHUB_TOKEN` with read access to
+these packages. Set `GITHUB_ACTOR` to your GitHub username and `GITHUB_TOKEN` to that
+token; do not commit credentials. See [GitHub's Gradle registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/johnsonlee/graphite")
+        credentials {
+            username = providers.environmentVariable("GITHUB_ACTOR").orNull
+            password = providers.environmentVariable("GITHUB_TOKEN").orNull
+        }
+        content { includeGroup("io.johnsonlee.graphite") }
+    }
 }
 ```
 

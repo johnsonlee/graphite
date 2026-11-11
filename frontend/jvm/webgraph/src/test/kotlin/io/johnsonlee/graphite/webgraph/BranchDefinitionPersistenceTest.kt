@@ -450,7 +450,7 @@ class BranchDefinitionPersistenceTest {
         preambleBytes.putInt(1 shl 20)
         preambleBytes.put(ByteArray(NodeSerializer.DIGEST_BYTES))
         val rejected =
-            decodePersistedBranchDefinitionPreamble(
+            NodeSerializer.decodeBranchDefinitionPreamble(
                 preambleBytes.array(), (1 shl 20).toLong(), ByteArray(NodeSerializer.DIGEST_BYTES), maxPayloadBytes = 1 shl 16)
         assertNull(rejected.payloadDigest)
         assertTrue(rejected.rejection!!.contains("exceeds the 65536-byte budget"), rejected.rejection)

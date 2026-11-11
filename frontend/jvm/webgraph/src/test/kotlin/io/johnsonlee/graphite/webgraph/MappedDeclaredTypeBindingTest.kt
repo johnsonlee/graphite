@@ -32,10 +32,48 @@ import kotlin.test.assertTrue
 /** The ID-keyed binding of a mapped GTY05 graph agrees with the member-key lookup for every node and method. */
 class MappedDeclaredTypeBindingTest {
     @Test
+    fun `corrupt parameter counts cannot overflow bounds or allocate an unbounded vector`() = fixture { dir, graph ->
+        val mapped = graph as MappedWebGraphBackedGraph
+        val returned = graph.nodes(ReturnNode::class.java).first()
+        val binding = assertNotNull(graph.declaredTypeBinding())
+        val expected = binding.memberTypeId(returned)
+        val countAt = mapped.context.nodeOffsets.offset(returned.id.value) + Int.SIZE_BYTES + 1 + 2 * Int.SIZE_BYTES
+        java.nio.channels.FileChannel.open(dir.resolve(GraphStore.NODE_DATA_FILE), java.nio.file.StandardOpenOption.WRITE).use { channel ->
+            val original = mapped.context.mappedNodeData.getInt(countAt.toInt())
+            try {
+                for (count in listOf(-1, 100_000, Int.MAX_VALUE)) {
+                    channel.write(java.nio.ByteBuffer.allocate(4).putInt(count).flip(), countAt)
+                    assertEquals(DeclaredTypeBinding.UNANSWERED, binding.memberTypeId(returned), "count=$count")
+                }
+            } finally {
+                channel.write(java.nio.ByteBuffer.allocate(4).putInt(original).flip(), countAt)
+            }
+        }
+        assertEquals(expected, binding.memberTypeId(returned), "A rejected record must not corrupt later binding")
+    }
+
+    @Test
+    fun `out of range declaration handle defers to the ordinary member lookup`() = fixture { _, graph ->
+        val method = graph.methods(MethodPattern()).first().copy().apply { declarationHandle = Int.MAX_VALUE }
+        val binding = assertNotNull(graph.declaredTypeBinding())
+        assertSame(DeclaredTypeBinding.UNANSWERED_METHOD, binding.methodTypes(method))
+    }
+
+    @Test
     fun `mapped graph binds members by IDs and agrees with the key lookup`() = fixture { dir, graph ->
         val binding = assertNotNull(graph.declaredTypeBinding(), "a GTY05 mapped graph binds by IDs")
         val table = graph.declaredTypes()
         assertTrue(table.fields.isNotEmpty() && table.methods.isNotEmpty())
+        // Zero-row and persisted rows obey the same positional bounds contract.
+        @Suppress("UNCHECKED_CAST")
+        val rawFields = table.fields as MappedMemberRows<Int>
+        assertEquals(table.fields.size, rawFields.rowCount)
+        assertEquals(table.fields.values.first(), rawFields.valueAt(0))
+        assertEquals(table.fields.values.last(), rawFields.valueAt(rawFields.rowCount - 1))
+        for (row in listOf(-1, rawFields.rowCount)) {
+            assertFailsWith<IndexOutOfBoundsException> { rawFields.ownerAt(row) }
+            assertFailsWith<IndexOutOfBoundsException> { rawFields.valueAt(row) }
+        }
         var fields = 0
         for (node in graph.nodes(FieldNode::class.java)) {
             val descriptor = node.descriptor
@@ -176,6 +214,9 @@ class MappedDeclaredTypeBindingTest {
     fun `a presence sidecar of another table reads as absent and a corrupted one refuses`() = fixture { dir, graph ->
         val file = dir.resolve(DeclaredPresence.FILE_NAME)
         val original = Files.readAllBytes(file)
+        Files.write(file, byteArrayOf(0, 1, 2))
+        assertNull(presence(dir, graph), "a truncated header cannot carry a declaration presence answer")
+        Files.write(file, original)
         val someField = graph.nodes(FieldNode::class.java).first()
         val expected = assertNotNull(graph.declaredTypeBinding()).nodePresence(someField)
         assertTrue(expected == DeclaredTypeBinding.PRESENT || expected == DeclaredTypeBinding.ABSENT)

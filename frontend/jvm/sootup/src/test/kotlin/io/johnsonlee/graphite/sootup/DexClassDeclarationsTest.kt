@@ -30,8 +30,10 @@ import org.jf.dexlib2.immutable.ImmutableClassDef
 import org.jf.dexlib2.immutable.ImmutableDexFile
 import org.jf.dexlib2.immutable.ImmutableField
 import org.jf.dexlib2.immutable.ImmutableMethod
+import org.jf.dexlib2.immutable.reference.ImmutableMethodReference
 import org.jf.dexlib2.immutable.value.ImmutableArrayEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableIntEncodedValue
+import org.jf.dexlib2.immutable.value.ImmutableMethodEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableStringEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableTypeEncodedValue
 import org.jf.dexlib2.writer.io.MemoryDataStore
@@ -44,6 +46,52 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DexClassDeclarationsTest {
+    @Test
+    fun `archive fallback remains readable when the provider source path disappears`() {
+        val apk = Files.createTempFile("disappearing-dex-source", ".apk")
+        ZipOutputStream(Files.newOutputStream(apk)).use { output ->
+            output.putNextEntry(ZipEntry("assets/declarations.bin"))
+            output.write(dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;")))
+            output.closeEntry()
+        }
+        val warnings = mutableListOf<String>()
+        try {
+            ArchiveResourceAccessor.create(apk, dexApi = 21).use { resources ->
+                Files.delete(apk)
+                val declarations = DexClassDeclarations.read(resources, setOf("fixture.Duplicate"), warnings::add)
+                assertEquals("Ljava/util/List<Ljava/lang/String;>;", declarations.getValue("fixture.Duplicate").signature)
+                assertTrue(warnings.single().startsWith("Failed to read DEX declarations with SootUp; scanning archive entries instead:"))
+            }
+        } finally { Files.deleteIfExists(apk) }
+    }
+
+    @Test
+    fun `local class retains its enclosing method descriptor and owner`() {
+        val definition = testDefinition(annotations = listOf(annotation(
+            ImmutableAnnotationElement("value", ImmutableMethodEncodedValue(
+                ImmutableMethodReference("Lfixture/Outer;", "factory", listOf("I", "[Ljava/lang/String;"), "Ljava/lang/Object;")
+            )), type = "Ldalvik/annotation/EnclosingMethod;"
+        )))
+        val declaration = read(definition)
+        assertEquals(io.johnsonlee.graphite.graph.MemberTypeKey(
+            "fixture.Outer", "factory", "(I[Ljava/lang/String;)Ljava/lang/Object;"
+        ), declaration.enclosingMethod)
+    }
+
+    @Test
+    fun `backend without raw string index retains bounded signature decoding`() {
+        // Immutable encoded values expose decoded text, without the dex-backed raw index.
+        val unavailable = resolveDexStringIndexField(ImmutableStringEncodedValue::class.java)
+        assertNull(unavailable)
+        val warnings = mutableListOf<String>()
+        val declarations = DexClassDeclarations.read(
+            sequenceOf(classDefinition("Ljava/util/List<Ljava/lang/String;>;")),
+            setOf("fixture.Duplicate"), warnings::add, unavailable
+        )
+        assertEquals("Ljava/util/List<Ljava/lang/String;>;", declarations.getValue("fixture.Duplicate").signature)
+        assertEquals(listOf("DEX raw string allocation guard is unavailable; using the post-decode signature budget"), warnings)
+    }
+
     @Test
     fun `reads generic declarations from double digit multidex entries`() {
         val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
@@ -595,6 +643,42 @@ class DexClassDeclarationsTest {
         val store = MemoryDataStore()
         DexPool.writeTo(store, ImmutableDexFile(Opcodes.getDefault(), listOf(definition)))
         return store.data
+    }
+
+    @Test
+    @Suppress("IteratorNotThrowingNoSuchElementException") // Models a damaged third-party DEX iterator, not a valid collection.
+    fun `damaged dex enumeration retains preceding classes and reports the failed operation`() {
+        val first = testDefinition()
+        for (failureAt in listOf("iterator", "hasNext", "next")) {
+            val warnings = mutableListOf<String>()
+            val classes = object : AbstractSet<ClassDef>() {
+                override val size = 2
+                override fun iterator(): Iterator<ClassDef> {
+                    require(failureAt != "iterator") { "broken iterator" }
+                    return object : Iterator<ClassDef> {
+                        var delivered = false
+                        override fun hasNext(): Boolean {
+                            require(!delivered || failureAt != "hasNext") { "broken hasNext" }
+                            return true
+                        }
+                        override fun next(): ClassDef {
+                            require(!delivered) { "broken next" }
+                            delivered = true
+                            return first
+                        }
+                    }
+                }
+            }
+            val file = object : org.jf.dexlib2.iface.DexFile {
+                override fun getOpcodes() = Opcodes.getDefault()
+                override fun getClasses(): Set<ClassDef> = classes
+            }
+            val observed = safeDexClasses(file, "damaged.dex", warnings::add).toList()
+            assertEquals(if (failureAt == "iterator") emptyList() else listOf(first), observed)
+            assertEquals(1, warnings.size)
+            assertTrue(warnings.single().contains("damaged.dex"))
+            assertTrue(warnings.single().endsWith("broken $failureAt"))
+        }
     }
 
     private fun dexResources(vararg entries: Pair<String, ByteArray>): ResourceAccessor {

@@ -4,7 +4,8 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.ForkJoinTask
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -14,13 +15,16 @@ internal val METHOD_GRAPH_SCAN_PARALLELISM: Int =
 private val methodGraphScanPool = ForkJoinPool(METHOD_GRAPH_SCAN_PARALLELISM)
 
 @Suppress("ThrowsCount", "TooGenericExceptionCaught")
-internal fun <T> runMethodGraphTasks(tasks: List<(() -> Unit) -> T>): List<T> {
+internal fun <T> runMethodGraphTasks(
+    tasks: List<(() -> Unit) -> T>,
+    executor: ExecutorService = methodGraphScanPool
+): List<T> {
     if (tasks.size == 1) return listOf(tasks.single().invoke({}))
     val cancellation = MethodTaskCancellation()
     val remaining = CountDownLatch(tasks.size)
     val handles = tasks.map { task ->
         val state = AtomicInteger(METHOD_TASK_PENDING)
-        val future = methodGraphScanPool.submit(Callable {
+        val future = executor.submit(Callable {
             if (!state.compareAndSet(METHOD_TASK_PENDING, METHOD_TASK_RUNNING)) {
                 throw ParallelMethodTaskCancelledException()
             }
@@ -96,7 +100,7 @@ private class MethodTaskCancellation {
 
 private data class MethodTaskHandle<T>(
     val state: AtomicInteger,
-    val future: ForkJoinTask<T>
+    val future: Future<T>
 )
 
 private class ParallelMethodTaskCancelledException : RuntimeException()

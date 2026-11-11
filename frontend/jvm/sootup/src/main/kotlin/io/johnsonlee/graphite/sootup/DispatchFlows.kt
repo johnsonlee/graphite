@@ -23,9 +23,8 @@ internal class DispatchFlows(private val context: SootUpAdapter) {
     private val flowTo = context.flowTo
     private val lostSeeds = context.lostSeeds
     private val mayHoldFunctionByType = context.mayHoldFunctionByType
-    private var propagation
+    private val propagation
         get() = context.propagation
-        set(value) { context.propagation = value }
     private val openLocals = context.openLocals
     private val view = context.view
     private val descriptors get() = context.descriptors

@@ -57,7 +57,7 @@ class LegacyGraphFormatTest : GraphStoreTestFixture() {
                 dos.writeInt(strings.indexOf("hello"))
                 dos.writeInt(0)
             }
-            val metadata = readGraphMetadata(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings)
+            val metadata = NodeSerializer.loadMetadata(DataInputStream(ByteArrayInputStream(baos.toByteArray())), strings)
             assertEquals("hello", metadata.memberAnnotations["com.example.Foo#bar"]!!["javax.annotation.Nullable"]!!["value"])
         } finally {
             dir.toFile().deleteRecursively()

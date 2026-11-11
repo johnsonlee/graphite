@@ -27,24 +27,18 @@ internal class NodeMetadata(private val context: SootUpAdapter) {
     private val propertiesPathsByLocal = context.propertiesPathsByLocal
     private val resourceBundlePaths = context.resourceBundlePaths
     private val bundleControlSpecsByLocal = context.bundleControlSpecsByLocal
-    private var stmtNodeIds
+    private val stmtNodeIds
         get() = context.stmtNodeIds
-        set(value) { context.stmtNodeIds = value }
-    private var stmtLocalWrites
+    private val stmtLocalWrites
         get() = context.stmtLocalWrites
-        set(value) { context.stmtLocalWrites = value }
-    private var stmtIdentityWrites
+    private val stmtIdentityWrites
         get() = context.stmtIdentityWrites
-        set(value) { context.stmtIdentityWrites = value }
     private var activeMethod
         get() = context.activeMethod
         set(value) { context.activeMethod = value }
     private var activeMethodLocals
         get() = context.activeMethodLocals
         set(value) { context.activeMethodLocals = value }
-    private var bodyCallOrdinals
-        get() = context.bodyCallOrdinals
-        set(value) { context.bodyCallOrdinals = value }
     private var activeLocalKeysByName
         get() = context.activeLocalKeysByName
         set(value) { context.activeLocalKeysByName = value }
@@ -185,7 +179,7 @@ internal class NodeMetadata(private val context: SootUpAdapter) {
         stmtIdentityWrites.clear()
         activeMethod = null
         activeMethodLocals = mutableListOf()
-        bodyCallOrdinals = emptyMap()
+        context.bodyCallOrdinals = emptyMap()
         activeLocalKeysByName = mutableMapOf()
         activeMethodParameters = mutableListOf()
         activeParameterBindingsByIndex = mutableMapOf()

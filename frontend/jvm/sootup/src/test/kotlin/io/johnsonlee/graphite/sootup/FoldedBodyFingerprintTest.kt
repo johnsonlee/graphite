@@ -2,6 +2,8 @@ package io.johnsonlee.graphite.sootup
 
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -31,6 +33,9 @@ import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.jimple.common.stmt.JGotoStmt
 import sootup.core.jimple.common.stmt.JIdentityStmt
 import sootup.core.jimple.common.stmt.JInvokeStmt
+import sootup.core.jimple.common.stmt.JNopStmt
+import sootup.core.jimple.common.stmt.JReturnVoidStmt
+import sootup.core.jimple.javabytecode.stmt.JBreakpointStmt
 import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.Stmt
 import sootup.core.model.Body
@@ -46,6 +51,54 @@ class FoldedBodyFingerprintTest {
     private val position = StmtPositionInfo.getNoStmtPositionInfo()
     private val owner = factory.getClassType("sample.Fingerprint")
     private val intType = factory.getType("int")
+
+    @Test
+    fun `payload free statements keep their instruction identity and control flow`() {
+        fun snapshot(prefix: Stmt?): FoldedBodySnapshot {
+            val exit = JReturnVoidStmt(position)
+            val graph = MutableBlockControlFlowGraph()
+            if (prefix == null) {
+                graph.addBlock(listOf(exit))
+            } else if (prefix is JGotoStmt) {
+                graph.addBlock(listOf(prefix))
+                graph.addBlock(listOf(exit))
+                graph.putEdge(prefix, 0, exit)
+            } else {
+                graph.addBlock(listOf(prefix, exit))
+            }
+            graph.setStartingStmt(prefix ?: exit)
+            graph.validateStmtConnectionsInGraph()
+            return capture(graph, returns = "void")
+        }
+        val prefixes = listOf(null, JGotoStmt(position), JNopStmt(position), JBreakpointStmt(position))
+        val snapshots = prefixes.map(::snapshot)
+        snapshots.zip(prefixes).forEach { (retained, prefix) ->
+            val graph = retained.body.controlFlowGraph
+            val exit = graph.nodes.filterIsInstance<JReturnVoidStmt>().single()
+            assertEquals(prefix?.javaClass ?: JReturnVoidStmt::class.java, graph.startingStmt.javaClass)
+            assertEquals(if (prefix == null) emptyList() else listOf(exit), graph.successors(graph.startingStmt))
+        }
+        assertEquals(snapshots.size, snapshots.map { it.semanticFingerprint() }.toSet().size)
+        assertEquals(snapshots.map { it.semanticFingerprint() }, prefixes.map { snapshot(it).semanticFingerprint() })
+    }
+
+    @Test
+    fun `scalar annotation fingerprints preserve both runtime type and value`() {
+        val pairs = listOf(
+            "1" to "2", true to false, 1.toByte() to 2.toByte(), 1.toShort() to 2.toShort(),
+            1 to 2, 1L to 2L, '1' to '2'
+        )
+        val snapshots = pairs.map { (first, second) ->
+            val retained = metadata(operands(3), listOf(first))
+            val local = assertIs<JavaLocal>(retained.body.locals.single())
+            val values = assertIs<List<*>>(local.annotations.single().values["entries"])
+            assertEquals(first, values.single())
+            assertDifferent(retained, metadata(operands(3), listOf(second)))
+            retained
+        }
+        assertEquals(snapshots.size, snapshots.map { it.semanticFingerprint() }.toSet().size,
+            "equal textual representations in different scalar types must remain distinct")
+    }
 
     @Test
     fun `constant fingerprints preserve wide integers and floating point NaN payloads`() {
@@ -159,6 +212,47 @@ class FoldedBodyFingerprintTest {
         val unknownPosition = object : SimpleStmtPositionInfo(7) {}
         val returned = JReturnStmt(IntConstant.getInstance(7), unknownPosition)
         assertCaptureRejected("Unsupported folded-body position information") { capture(listOf(returned)) }
+    }
+
+    @org.junit.Test(timeout = 10_000)
+    fun `disconnected blocks remain fingerprinted independently of insertion order`() {
+        fun snapshot(value: Int, deadFirst: Boolean): FoldedBodySnapshot {
+            val graph = MutableBlockControlFlowGraph()
+            val entry = JReturnStmt(IntConstant.getInstance(7), position)
+            val local = Local("unreachable", intType)
+            val assign = JAssignStmt(local, IntConstant.getInstance(value), position)
+            val back = JGotoStmt(position)
+            if (!deadFirst) graph.addBlock(listOf(entry))
+            graph.addBlock(listOf(assign, back))
+            graph.putEdge(back, 0, assign)
+            if (deadFirst) graph.addBlock(listOf(entry))
+            graph.setStartingStmt(entry)
+            // Only the goto jumps backwards: a self-fallthrough if is not a linearizable Jimple body.
+            graph.validateStmtConnectionsInGraph()
+            assertTrue(assign.fallsThrough())
+            assertFalse(back.fallsThrough())
+            assertEquals(listOf(back), graph.successors(assign))
+            assertEquals(listOf(assign), graph.successors(back))
+            val sourceOrder = graph.stmts.map { it.javaClass }
+            return capture(graph, setOf(local)).also { snapshot ->
+                snapshot.body.controlFlowGraph.validateStmtConnectionsInGraph()
+                assertEquals(sourceOrder, snapshot.body.stmts.map { it.javaClass },
+                    "capture must preserve the source instruction order, including the unreachable block")
+            }
+        }
+        val original = snapshot(11, false)
+        val reordered = snapshot(11, true)
+        val graph = original.body.controlFlowGraph
+        val assign = graph.nodes.filterIsInstance<JAssignStmt>().single()
+        val back = graph.nodes.filterIsInstance<JGotoStmt>().single()
+        assertEquals(7, assertIs<IntConstant>(graph.nodes.filterIsInstance<JReturnStmt>().single().op).value)
+        assertEquals(11, assertIs<IntConstant>(assign.rightOp).value, "the unreachable assignment remains in the immutable body")
+        assertEquals("unreachable", assertIs<Local>(assign.leftOp).name)
+        assertEquals(listOf(back), graph.successors(assign))
+        assertEquals(listOf(assign), graph.successors(back))
+        assertEquals(original.semanticFingerprint(), reordered.semanticFingerprint(),
+            "backend block insertion order must not alter the identity of a disconnected loop")
+        assertDifferent(original, snapshot(12, false))
     }
 
     @Test

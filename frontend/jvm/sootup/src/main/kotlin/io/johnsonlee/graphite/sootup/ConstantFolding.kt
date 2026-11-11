@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.core.ComparisonOp
+
 import io.johnsonlee.graphite.input.MethodFoldObservation
 
 import io.johnsonlee.graphite.core.jvmMethodDescriptor
@@ -41,10 +43,6 @@ import sootup.core.jimple.common.ref.JThisRef
 import sootup.core.jimple.common.expr.JNewExpr
 import sootup.core.jimple.common.expr.JSpecialInvokeExpr
 import sootup.core.jimple.common.expr.JEqExpr
-import sootup.core.jimple.common.expr.JGeExpr
-import sootup.core.jimple.common.expr.JGtExpr
-import sootup.core.jimple.common.expr.JLeExpr
-import sootup.core.jimple.common.expr.JLtExpr
 import sootup.core.jimple.common.expr.JNeExpr
 import sootup.core.jimple.common.stmt.BranchingStmt
 import sootup.core.jimple.common.stmt.FallsThroughStmt
@@ -573,7 +571,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             val others = collidingOverloads.getOrPut(signature) {
                 val rendered = render(signature) to descriptorOf(signature)
                 view.getClass(signature.declClassType).map { sootClass ->
-                    sootClass.methods.map { it.signature }.filter { it != signature && (render(it) to descriptorOf(it)) == rendered }
+                    declaredMethodSignatures(sootClass, view.identifierFactory)
+                        .filter { it != signature && (render(it) to descriptorOf(it)) == rendered }
                 }.orElse(emptyList()).map { it.toString() }.sorted()
             }
             if (others.isEmpty()) return null
@@ -922,15 +921,18 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             else -> null
         }
 
-        private fun compareIntegrals(condition: AbstractConditionExpr, a: Long, b: Long): Boolean? = when (condition) {
-            is JEqExpr -> a == b
-            is JNeExpr -> a != b
-            is JLtExpr -> a < b
-            is JLeExpr -> a <= b
-            is JGtExpr -> a > b
-            is JGeExpr -> a >= b
-            else -> null
-        }
+        private fun compareIntegrals(condition: AbstractConditionExpr, a: Long, b: Long): Boolean? =
+            comparisonOp(condition)?.let { operator ->
+                when (operator) {
+                    ComparisonOp.EQ -> a == b
+                    ComparisonOp.NE -> a != b
+                    ComparisonOp.LT -> a < b
+                    ComparisonOp.LE -> a <= b
+                    ComparisonOp.GT -> a > b
+                    ComparisonOp.GE -> a >= b
+                }
+            }
+
     }
 
     /** Runs [delegate] only on a body the fold pass marked. */
@@ -997,7 +999,11 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         }
 
     private fun declares(view: View, type: ClassType, subSignature: MethodSubSignature): Boolean =
-        runCatching { view.getClass(type).map { it.getMethod(subSignature).isPresent }.orElse(false) }.getOrDefault(false)
+        runCatching {
+            view.getClass(type).map { sootClass ->
+                declaredMethodSignatures(sootClass, view.identifierFactory).any { it.subSignature == subSignature }
+            }.orElse(false)
+        }.getOrDefault(false)
 
     /**
      * The constant reaching argument [index] of [invoke] as the graph would label it, or `null`

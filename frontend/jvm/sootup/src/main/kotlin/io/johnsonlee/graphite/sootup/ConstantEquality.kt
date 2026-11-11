@@ -82,7 +82,7 @@ internal class ConstantEquality(
 
     private companion object {
         const val OBJECT = "java.lang.Object"
-        val NULL = Known("null", Unit)
-        val HELPERS = setOf("java.util.Objects" to "equals", "kotlin.jvm.internal.Intrinsics" to "areEqual")
+        private val NULL = Known("null", Unit)
+        private val HELPERS = setOf("java.util.Objects" to "equals", "kotlin.jvm.internal.Intrinsics" to "areEqual")
     }
 }

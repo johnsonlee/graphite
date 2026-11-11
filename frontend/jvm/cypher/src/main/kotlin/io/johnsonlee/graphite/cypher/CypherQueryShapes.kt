@@ -44,9 +44,11 @@ internal data class FilteredNodeQuery(
 /** Recognizes the MATCH/WHERE/RETURN prefix; callers decide which suffixes and semantics are supported. */
 internal fun filteredNodeQuery(clauses: List<CypherClause>): FilteredNodeQuery? {
     if (clauses.size < FILTERED_QUERY_PREFIX_SIZE) return null
-    val match = clauses[0] as? CypherClause.Match
+    val match = (clauses[0] as? CypherClause.Match)?.takeIf { it.where == null }
     val where = clauses[1] as? CypherClause.Where
     val returned = clauses[2] as? CypherClause.Return
+    // Inline MATCH predicates run before the explicit WHERE, including its errors and cancellation.
+    // These plans consume a single WHERE; retain sequential filtering in the general pipeline.
     return if (match != null && where != null && returned != null) {
         singleNodePattern(match)?.let { FilteredNodeQuery(match, it, where, returned) }
     } else null
@@ -60,10 +62,12 @@ internal data class FilteredPatternQuery(
 
 internal fun filteredPatternQuery(clauses: List<CypherClause>): FilteredPatternQuery? {
     if (clauses.size < FILTERED_QUERY_PREFIX_SIZE) return null
-    val match = clauses[0] as? CypherClause.Match
+    val match = (clauses[0] as? CypherClause.Match)?.takeIf { it.where == null }
     val where = clauses[1] as? CypherClause.Where
     val returned = clauses[2] as? CypherClause.Return
-    return if (match != null && where != null && returned != null) FilteredPatternQuery(match, where, returned) else null
+    return if (match != null && where != null && returned != null) {
+        FilteredPatternQuery(match, where, returned)
+    } else null
 }
 
 private const val LIMITED_PATTERN_CLAUSE_COUNT = 3

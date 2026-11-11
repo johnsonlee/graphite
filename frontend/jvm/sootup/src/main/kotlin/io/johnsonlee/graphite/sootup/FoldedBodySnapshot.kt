@@ -157,8 +157,8 @@ private fun copyStatement(original: Stmt, local: (Local) -> Local): Stmt {
         is JBreakpointStmt -> stmt.withPositionInfo(position)
         is JEnterMonitorStmt -> stmt.withPositionInfo(position)
         is JExitMonitorStmt -> stmt.withPositionInfo(position)
-        is JRetStmt -> stmt.withStmtAddress(copyValue(stmt.stmtAddress)).withPositionInfo(position)
-        else -> error("Unsupported folded-body statement: ${stmt.javaClass.name}")
+        // The exact-class admission above leaves only the legacy return-address statement.
+        else -> (stmt as JRetStmt).withStmtAddress(copyValue(stmt.stmtAddress)).withPositionInfo(position)
     }
 }
 
@@ -174,8 +174,8 @@ private fun copyInvoke(invoke: AbstractInvokeExpr): AbstractInvokeExpr = when (i
         invoke.methodSignature, invoke.handleTag, ArrayList(invoke.args)
     )
     is JStaticInvokeExpr -> invoke.withArgs(ArrayList(invoke.args))
-    is AbstractInstanceInvokeExpr -> invoke.withArgs(ArrayList(invoke.args))
-    else -> error("Unsupported folded-body invocation: ${invoke.javaClass.name}")
+    // checkValue admitted only dynamic, static, virtual, special and interface invocations.
+    else -> (invoke as AbstractInstanceInvokeExpr).withArgs(ArrayList(invoke.args))
 }
 
 /** Exact built-in classes only: a new backend value needs an ownership audit before admission. */
@@ -344,8 +344,10 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is JRetStmt -> writeValue(stmt.stmtAddress)
             is JEnterMonitorStmt -> writeValue(stmt.op)
             is JExitMonitorStmt -> writeValue(stmt.op)
-            is JGotoStmt, is JReturnVoidStmt, is JNopStmt, is JBreakpointStmt -> Unit
-            else -> error("Unsupported folded-body fingerprint statement: ${stmt.javaClass.name}")
+            // These exact classes have no payload beyond class, position and graph edges.
+            // A future admission must not silently bypass this codec's payload dispatch.
+            else -> check(stmt.javaClass === JGotoStmt::class.java || stmt.javaClass === JReturnVoidStmt::class.java ||
+                stmt.javaClass === JNopStmt::class.java || stmt.javaClass === JBreakpointStmt::class.java)
         }
     }
 
@@ -379,8 +381,9 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             }
             is JArrayRef -> { writeValue(value.base); writeValue(value.index) }
             is JParameterRef -> out.writeInt(value.index)
-            is JThisRef, is JCaughtExceptionRef, is JNewExpr -> Unit // Their complete payload is their type.
-            else -> error("Unsupported folded-body fingerprint value: ${value.javaClass.name}")
+            // Only these exact values are completely described by the type already written.
+            else -> check(value.javaClass === JThisRef::class.java || value.javaClass === JCaughtExceptionRef::class.java ||
+                value.javaClass === JNewExpr::class.java)
         }
     }
 
@@ -413,8 +416,8 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
                 constant.parameterTypes.forEach(::writeType)
                 writeType(constant.returnType)
             }
-            is NullConstant -> Unit
-            else -> error("Unsupported folded-body fingerprint constant: ${constant.javaClass.name}")
+            // Null alone has no payload; admitting another constant must also extend this codec.
+            else -> check(constant.javaClass === NullConstant::class.java)
         }
     }
 
@@ -479,8 +482,12 @@ private class BodyFingerprintWriter(private val out: DataOutputStream) {
             is Constant -> writeValue(value)
             is Float -> out.writeInt(value.toRawBits())
             is Double -> out.writeLong(value.toRawBits())
-            is String, is Boolean, is Byte, is Short, is Int, is Long, is Char -> writeString(value.toString())
-            else -> error("Unsupported folded-body fingerprint annotation value: ${value.javaClass.name}")
+            else -> {
+                // Extending capture's annotation vocabulary must not admit arbitrary textual encodings.
+                check(value is String || value is Boolean || value is Byte || value is Short ||
+                    value is Int || value is Long || value is Char)
+                writeString(value.toString())
+            }
         }
     }
 

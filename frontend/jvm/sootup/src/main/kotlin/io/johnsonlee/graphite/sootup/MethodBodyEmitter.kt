@@ -64,9 +64,8 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
         get() = context.activeControlFlowTruncated
         set(value) { context.activeControlFlowTruncated = value }
     private val syntheticIdentities = context.syntheticIdentities
-    private var activeSyntheticClass
+    private val activeSyntheticClass
         get() = context.activeSyntheticClass
-        set(value) { context.activeSyntheticClass = value }
     private var stmtNodeIds
         get() = context.stmtNodeIds
         set(value) { context.stmtNodeIds = value }
@@ -76,24 +75,6 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
     private var stmtIdentityWrites
         get() = context.stmtIdentityWrites
         set(value) { context.stmtIdentityWrites = value }
-    private var activeMethod
-        get() = context.activeMethod
-        set(value) { context.activeMethod = value }
-    private var activeMethodLocals
-        get() = context.activeMethodLocals
-        set(value) { context.activeMethodLocals = value }
-    private var bodyCallOrdinals
-        get() = context.bodyCallOrdinals
-        set(value) { context.bodyCallOrdinals = value }
-    private var activeLocalKeysByName
-        get() = context.activeLocalKeysByName
-        set(value) { context.activeLocalKeysByName = value }
-    private var activeMethodParameters
-        get() = context.activeMethodParameters
-        set(value) { context.activeMethodParameters = value }
-    private var activeParameterBindingsByIndex
-        get() = context.activeParameterBindingsByIndex
-        set(value) { context.activeParameterBindingsByIndex = value }
     private val graphBuilder = context.graphBuilder
     private val preFoldOrdinals = context.preFoldOrdinals
     private val bundleControl get() = context.bundleControl
@@ -123,12 +104,12 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
         graphBuilder.addNode(returnNode)
         interprocedural?.method(methodDescriptor, returnNode.id)
 
-        activeMethod = methodDescriptor
-        activeMethodLocals = mutableListOf()
-        bodyCallOrdinals = emptyMap()
-        activeLocalKeysByName = mutableMapOf()
-        activeMethodParameters = mutableListOf()
-        activeParameterBindingsByIndex = mutableMapOf()
+        context.activeMethod = methodDescriptor
+        context.activeMethodLocals = mutableListOf()
+        context.bodyCallOrdinals = emptyMap()
+        context.activeLocalKeysByName = mutableMapOf()
+        context.activeMethodParameters = mutableListOf()
+        context.activeParameterBindingsByIndex = mutableMapOf()
         activeControlFlowTruncated = false
         var status = AnalysisStatus.ANALYZED
         var failure: String? = null
@@ -187,7 +168,7 @@ internal class MethodBodyEmitter(private val context: SootUpAdapter) {
         // A body a rule folded in keeps the numbering it had before the fold, so a surviving call's
         // ordinal is the one the unfolded graph gave it; every other body is numbered as it stands.
         bodyResolvedCallees = IdentityHashMap(statements.size)
-        bodyCallOrdinals = preFoldOrdinals(method.signature) ?: callOrdinals(statements) { signature ->
+        context.bodyCallOrdinals = preFoldOrdinals(method.signature) ?: callOrdinals(statements) { signature ->
             val resolved = descriptors.resolveMethodDefiningClass(signature)
             bodyResolvedCallees[signature] = resolved
             renderedDefiningClass.getOrPut(resolved) { renderSignature(resolved) }

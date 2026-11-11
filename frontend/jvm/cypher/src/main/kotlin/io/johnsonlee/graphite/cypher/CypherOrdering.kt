@@ -139,8 +139,8 @@ private fun isPathOrderValue(value: Any): Boolean = value is PathFinder.Path || 
 private fun pathElements(value: Any): List<Any> =
     when (value) {
         is PathFinder.Path -> interleavePath(value.nodes, value.edges)
-        is QualifiedPath -> interleavePath(value.nodes, value.edges)
-        else -> emptyList()
+        // The caller has checked isPathOrderValue for both operands.
+        else -> (value as QualifiedPath).let { interleavePath(it.nodes, it.edges) }
     }
 
 private fun interleavePath(nodes: List<*>, edges: List<*>): List<Any> = buildList {

@@ -43,6 +43,11 @@ class EnumInitializationSafetyTest {
                     A, B;
                     ConstructorCallsOut() { External.check(); }
                 }
+                public enum ConstructorCallsOwn {
+                    A, B;
+                    ConstructorCallsOwn() { callback(); }
+                    void callback() { }
+                }
                 public enum InitializerCallsOut {
                     A, B;
                     static { External.touch(); }
@@ -97,7 +102,7 @@ class EnumInitializationSafetyTest {
         val prefix = "sample.enuminit.Shapes\$"
         assertTrue(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Plain")))
         val unsafe = listOf(
-            "ConstructorCallsOut", "InitializerCallsOut", "EntriesProviderOverload", "FieldTriggersInitialization",
+            "ConstructorCallsOut", "ConstructorCallsOwn", "InitializerCallsOut", "EntriesProviderOverload", "FieldTriggersInitialization",
             "ImplementsDefault", "ConstantSubclass"
         )
         for (name in unsafe) {

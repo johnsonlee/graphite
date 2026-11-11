@@ -128,7 +128,7 @@ class SyntheticIdentityPersistenceTest {
                 dos.writeInt(-1)
             }
             val read =
-                readGraphMetadataOptionalSections(DataInputStream(ByteArrayInputStream(out.toByteArray())), strings, base)
+                NodeSerializer.readMetadataOptionalSections(DataInputStream(ByteArrayInputStream(out.toByteArray())), strings, base)
             assertEquals(emptyMap(), read.syntheticIdentities)
             assertNull(read.branchDefinitionDigest)
         } finally {

@@ -491,7 +491,7 @@ internal object SyntheticIdentity {
 
         private companion object {
             const val QUEUE_CAPACITY = 1024
-            val STOP = Runnable { }
+            private val STOP = Runnable { }
             /** Stands in for a reference inside the literal text; never printed by Jimple. */
             const val REFERENCE_MARK = '\u0000'
         }

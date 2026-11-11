@@ -291,8 +291,10 @@ object FoldConfig {
         JsonToken.NULL -> null.also { reader.nextNull() }
         JsonToken.BOOLEAN -> reader.nextBoolean()
         JsonToken.STRING -> reader.nextString()
-        JsonToken.NUMBER -> Numeral(reader.nextString())
-        else -> throw FoldConfigException(path, "not valid JSON: unexpected ${reader.peek()} at ${reader.path}")
+        // Object names and closing delimiters are consumed by their enclosing
+        // reader loop. The only remaining value token is a number; malformed
+        // input is rejected by JsonReader and normalized by parseJson.
+        else -> Numeral(reader.nextString())
     }
 
     /** A JSON number as the file spells it, read by [number] once the rule holding it is known to be this frontend's. */

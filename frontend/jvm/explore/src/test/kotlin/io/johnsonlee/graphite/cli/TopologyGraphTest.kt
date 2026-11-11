@@ -163,11 +163,29 @@ class TopologyGraphTest {
 
             assertEquals(0, service.toApiMap()["graphCount"])
             assertEquals(false, service.toApiMap()["stale"])
+            assertEquals(emptyList(), service.snapshot().nodes)
+            assertEquals(emptyList(), service.snapshot().edges)
         } finally {
             service.close()
             registry.close()
             root.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `topology rejects results exceeding its combined row budget`() {
+        val query = "UNWIND range(1, 100001) AS i RETURN 'consumer' AS source, 'provider' AS target"
+        assertEquals("Topology queries exceeded the combined 100000 row limit at 'too-many.cypher'",
+            assertFailsWith<IllegalArgumentException> {
+                TopologyGraphBuilder.build(graphs, stats, listOf(TopologyQuery("too-many.cypher", query)))
+            }.message)
+    }
+
+    @Test
+    fun `non regular topology input is rejected as containing no queries`() {
+        val device = java.nio.file.Path.of("/dev/null")
+        if (Files.exists(device)) assertEquals("No .cypher topology queries found at: /dev/null",
+            assertFailsWith<IllegalArgumentException> { TopologyQuerySource.load(device) }.message)
     }
 
     @Test

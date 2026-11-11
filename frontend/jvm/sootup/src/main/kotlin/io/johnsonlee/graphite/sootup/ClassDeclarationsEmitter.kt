@@ -29,9 +29,6 @@ internal class ClassDeclarationsEmitter(private val context: SootUpAdapter) {
     private var activeSyntheticClass
         get() = context.activeSyntheticClass
         set(value) { context.activeSyntheticClass = value }
-    private var methodCacheOwner
-        get() = context.methodCacheOwner
-        set(value) { context.methodCacheOwner = value }
     private val streamingSourcesCache = context.streamingSourcesCache
     private val bytecodeMethodsCache = context.bytecodeMethodsCache
     private val config = context.config
@@ -50,7 +47,7 @@ internal class ClassDeclarationsEmitter(private val context: SootUpAdapter) {
      * dependency body scope covers gets its bodies and nothing that would make it an entry point.
      */
     fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
-        methodCacheOwner = sootClass as? JavaSootClass
+        context.methodCacheOwner = sootClass as? JavaSootClass
         try {
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
                 val className = sootClass.type.fullyQualifiedName
@@ -76,7 +73,7 @@ internal class ClassDeclarationsEmitter(private val context: SootUpAdapter) {
         } finally {
             bytecodeMethodsCache.clear()
             streamingSourcesCache.clear()
-            methodCacheOwner = null
+            context.methodCacheOwner = null
         }
     }
 

@@ -103,6 +103,7 @@ class ParsedClassLocationTest {
     fun `the generic signatures of a parsed class's fields are kept from its one parse`() {
         val classes = classes()
         val location = ParsedClassLocation(classes, SourceType.Application, emptyList())
+        assertEquals("ParsedClassLocation($classes, Application)", location.toString())
         JavaView(listOf(location)).classes.count()
         assertEquals(mapOf("names" to "Ljava/util/List<Ljava/lang/String;>;"), location.fieldSignatures("p.q.A"), "only the generic field")
         assertEquals(emptyMap(), location.fieldSignatures("p.q.B"), "parsed, no generic field")

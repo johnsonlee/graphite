@@ -165,7 +165,7 @@ internal fun MappedGraphContext.prepareCallSiteStringIndexInParallel(workConsume
         } ?: false
 }
 
-private fun MappedGraphContext.captureAndBuildCallSiteStringIndex(
+internal fun MappedGraphContext.captureAndBuildCallSiteStringIndex(
     nodeCount: Long,
     reservation: MappedCallSiteStringIndexMemoryBudget.Reservation,
     workConsumer: GraphWorkConsumer

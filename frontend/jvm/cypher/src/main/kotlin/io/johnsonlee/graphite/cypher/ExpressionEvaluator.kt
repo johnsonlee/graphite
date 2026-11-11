@@ -83,6 +83,7 @@ private constructor(
             is CypherExpr.CountStar -> throw CypherAggregationException("count")
         }
 
+    // evaluate exhaustively routes only operator variants to this helper.
     private fun evaluateOperator(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
         when (expr) {
             is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
@@ -90,8 +91,7 @@ private constructor(
             is CypherExpr.Comparison -> evaluateComparison(expr, bindings)
             is CypherExpr.StringOp -> evaluateStringOp(expr, bindings)
             is CypherExpr.ListOp -> evaluateListOp(expr, bindings)
-            is CypherExpr.RegexMatch -> evaluateRegex(expr, bindings)
-            else -> error("Expression does not belong to evaluateOperator")
+            else -> evaluateRegex(expr as CypherExpr.RegexMatch, bindings)
         }
 
     private fun evaluateCollection(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
@@ -100,8 +100,7 @@ private constructor(
             is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
             is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
             is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
-            is CypherExpr.Slice -> evaluateSlice(expr, bindings)
-            else -> error("Expression does not belong to evaluateCollection")
+            else -> evaluateSlice(expr as CypherExpr.Slice, bindings)
         }
 
     private fun evaluateBoolean(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
@@ -120,12 +119,12 @@ private constructor(
                 val right = evaluate(expr.right, bindings)
                 threeValuedOr(left as? Boolean, right as? Boolean)
             }
-            is CypherExpr.Xor -> {
+            else -> {
+                expr as CypherExpr.Xor
                 val left = evaluate(expr.left, bindings) as? Boolean
                 val right = evaluate(expr.right, bindings) as? Boolean
                 if (left == null || right == null) null else left xor right
             }
-            else -> error("Expression does not belong to evaluateBoolean")
         }
 
     private fun evaluateNullCheck(expr: CypherExpr, bindings: Map<String, Any?>): Any? =
@@ -632,7 +631,7 @@ private fun String.indexOfJavaRegexLineTerminator(startIndex: Int): Int {
 private fun Char.isJavaRegexLineTerminator(): Boolean =
     this == '\n' || this == '\r' || this == '\u0085' || this == '\u2028' || this == '\u2029'
 
-private class CancellationAwareCharSequence(private val value: String, private val checkCancelled: () -> Unit) : CharSequence {
+internal class CancellationAwareCharSequence(private val value: String, private val checkCancelled: () -> Unit) : CharSequence {
     private var accesses = 0
 
     override val length: Int
@@ -813,6 +812,7 @@ fun CypherExpr.toCypherString(): String =
         is CypherExpr.CountStar -> "count(*)"
     }
 
+// toCypherString exhaustively routes the sealed expression variants to these helpers.
 private fun CypherExpr.renderOperatorExpression(): String =
     when (this) {
         is CypherExpr.BinaryOp -> renderInfix(left, op, right)
@@ -827,8 +827,7 @@ private fun CypherExpr.renderOperatorExpression(): String =
         is CypherExpr.And -> "${left.toCypherString()} AND ${right.toCypherString()}"
         is CypherExpr.Or -> "${left.toCypherString()} OR ${right.toCypherString()}"
         is CypherExpr.Xor -> "${left.toCypherString()} XOR ${right.toCypherString()}"
-        is CypherExpr.Distinct -> "DISTINCT ${expression.toCypherString()}"
-        else -> error("Expression does not belong to renderOperatorExpression")
+        else -> "DISTINCT ${(this as CypherExpr.Distinct).expression.toCypherString()}"
     }
 
 private fun CypherExpr.renderCollectionExpression(): String =
@@ -850,15 +849,16 @@ private fun CypherExpr.renderCollectionExpression(): String =
                 append(")")
             }
         is CypherExpr.Subscript -> "${expression.toCypherString()}[${index.toCypherString()}]"
-        is CypherExpr.Slice ->
+        else -> {
+            val slice = this as CypherExpr.Slice
             buildString {
-                append("${expression.toCypherString()}[")
-                append(from?.toCypherString() ?: "")
+                append("${slice.expression.toCypherString()}[")
+                append(slice.from?.toCypherString() ?: "")
                 append("..")
-                append(to?.toCypherString() ?: "")
+                append(slice.to?.toCypherString() ?: "")
                 append("]")
             }
-        else -> error("Expression does not belong to renderCollectionExpression")
+        }
     }
 
 private fun CypherExpr.CaseExpr.renderCaseExpression(): String = buildString {

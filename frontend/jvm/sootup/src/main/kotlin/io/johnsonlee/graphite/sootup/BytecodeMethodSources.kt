@@ -11,12 +11,8 @@ import sootup.java.core.JavaSootMethod
 
 /** Caches and detaches bytecode method declarations for bounded body lifetimes. */
 internal class BytecodeMethodSources(private val context: SootUpAdapter) {
-    private var activeClassResolutionFailed
-        get() = context.activeClassResolutionFailed
-        set(value) { context.activeClassResolutionFailed = value }
-    private var methodCacheOwner
+    private val methodCacheOwner
         get() = context.methodCacheOwner
-        set(value) { context.methodCacheOwner = value }
     private val bytecodeMethodsCache = context.bytecodeMethodsCache
     private val view = context.view
     private val resourceAccessor = context.resourceAccessor
@@ -97,7 +93,7 @@ internal class BytecodeMethodSources(private val context: SootUpAdapter) {
     }
 
     private fun recordClassFailure(sootClass: SootClass, failure: Throwable) {
-        if (sootClass === methodCacheOwner) activeClassResolutionFailed = true
+        if (sootClass === methodCacheOwner) context.activeClassResolutionFailed = true
         declarations.log { "Skipping methods for ${sootClass.type}: ${failure.message ?: failure.javaClass.name}" }
     }
 }

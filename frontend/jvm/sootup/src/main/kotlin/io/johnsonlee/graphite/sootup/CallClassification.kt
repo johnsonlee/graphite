@@ -84,7 +84,7 @@ internal class CallClassification(private val context: SootUpAdapter) {
     }
 
     private companion object {
-        val RESOURCE_METHODS_BY_CLASS = mapOf(
+        private val RESOURCE_METHODS_BY_CLASS = mapOf(
             PROPERTIES_CLASS to RESOURCE_LOOKUP_METHODS + PROPERTIES_LOAD_METHODS,
             PROPERTY_RESOURCE_BUNDLE_CLASS to RESOURCE_LOOKUP_METHODS + setOf(INIT_METHOD, GET_KEYS_METHOD),
             RESOURCE_BUNDLE_CLASS to RESOURCE_BUNDLE_READ_METHODS + GET_BUNDLE_METHOD,

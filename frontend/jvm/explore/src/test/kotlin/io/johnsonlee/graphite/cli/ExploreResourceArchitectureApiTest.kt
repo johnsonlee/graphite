@@ -14,6 +14,19 @@ import kotlin.test.assertTrue
 @Suppress("DEPRECATION")
 internal class ExploreResourceArchitectureApiTest : ExploreCommandTestSupport() {
     @Test
+    fun `resource whitespace path is missing and overloaded endpoints sort by signature`() {
+        assertEquals(404, get("/api/graphs/standalone/resources/%20").first)
+        val type = TypeDescriptor("example.Controller")
+        val methods = listOf("java.lang.String", "int").map {
+            MethodDescriptor(type, "handle", listOf(TypeDescriptor(it)), TypeDescriptor("void"))
+        }
+        val builder = DefaultGraph.Builder()
+        methods.forEach(builder::addMethod)
+        builder.addMemberAnnotation(
+            type.className, "handle", "org.springframework.web.bind.annotation.GetMapping", mapOf("path" to "/same"))
+        assertEquals(methods.map { it.signature }.sorted(), EndpointExtractor().extract(builder.build()).map { it["signature"] })
+    }
+    @Test
     fun `GET swagger json aliases the OpenAPI document`() {
         val (openapiCode, openapiBody) = get("/openapi.json")
         val (swaggerCode, swaggerBody) = get("/swagger.json")
