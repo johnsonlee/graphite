@@ -1,8 +1,9 @@
 //! The Model Context Protocol server: the Explorer API as MCP tools.
 //!
-//! Thirteen tools, each a thin mapping onto one HTTP route of the API in `routes.rs`
-//! (the same routes the web UI and `curl` use). A tool call is turned into an HTTP
-//! request and dispatched to the router in-process, so it goes through the same
+//! Thirteen analysis tools map to HTTP routes in `routes.rs`; `help` provides local
+//! investigation guidance on demand. Each analysis call becomes an HTTP request
+//! dispatched to the router in-process (the routes the web UI and `curl` use),
+//! so it goes through the same
 //! handlers, the same Cypher guard and the same error text as a network request, with
 //! no socket in between. Two transports carry the JSON-RPC messages:
 //!
@@ -17,9 +18,10 @@
 //!   passes the [`OriginPolicy`] first (DNS-rebinding protection), and a request that
 //!   names an unsupported revision in `MCP-Protocol-Version` is refused with 400.
 //!
-//! The tools, their names, descriptions, argument schemas and defaults are those of
-//! the former `graphite-mcp` npm package, so an existing client configuration only
-//! changes its `command`.
+//! The retained analysis tools preserve their argument schemas and defaults from
+//! the former `graphite-mcp` npm package. OpenAPI discovery is HTTP-only.
+//! Descriptions teach graph discovery and investigation
+//! through concise `tools/list` metadata and on-demand `help`, without a separate skill.
 
 use crate::metrics::McpMetrics;
 use crate::serve::{
@@ -81,93 +83,175 @@ fn graph_id_property(description: &str) -> Value {
     json!({"type": "string", "description": description})
 }
 
-/// The tools, in the order the npm package registered them.
+// Detailed guidance is returned only on demand, never in tools/list.
+const WORKFLOW_HELP: &str = r#"Start with graphs to choose scope, then schema to discover the actual labels/properties/edge patterns. Use cypher for callers, API usage, dataflow, configuration/feature flags and change impact; resolve exact signatures from Method declarations rather than guessing language conventions. Query bounded paths with selective anchors, DISTINCT/aggregation and LIMIT, and retain graph provenance.
+
+Use endpoints for Spring Web handlers; annotations for emitted metadata; resources then resource for saved configuration; overview/c4 for inferred architecture; node/incoming/outgoing/subgraph to inspect concrete local evidence. Call help with any analysis tool name for its detailed guidance; help(topic="cypher") includes executable query shapes and Java/Kotlin/Android, JS/TS/ES and Swift/Apple caveats.
+
+Graphs describe analyzed artifacts/build indexes, not live working-tree contents. Confirm coverage and rebuild externally when needed. Separate returned facts from inference, cite caller/callee signatures and values, and interpret empty results as not found in the analyzed inputs rather than proof of absence."#;
+const TOOL_HELP: &[(&str, &str)] = &[
+    (
+        "graphs",
+        r#"Discover saved program graphs from the available language frontends (Java/Kotlin/Android, JS/TS/ES and Swift/Apple). Call this first to obtain graph IDs and aggregate statistics, then schema before writing Cypher. Omit graph_id to list all loaded graphs and totals; set it to inspect one. Use cypher for callers, callees, dataflow, configuration/feature-flag usage and change impact; endpoints for Spring HTTP entry points; overview or c4 for architecture; resources/resource for packaged configuration. Graphs describe their analyzed artifacts/build indexes, not live working-tree contents: rebuild externally when newer code must be analyzed. Missing results only mean not found in the analyzed artifact/packages; reflection, dependency injection, dynamic loading and runtime configuration may be absent. Cite exact signatures/values and distinguish graph facts from inference."#,
+    ),
+    (
+        "cypher",
+        r#"Investigate code with read-only Cypher over Graphite's shared program graph: find entry points/API usage, trace callers and values, inspect configuration/feature flags, or assess change impact. The same tools query Java/Kotlin/Android, JavaScript/TypeScript/ECMAScript artifacts and Swift/Apple graphs. Call schema first and use the loaded graph's actual labels, properties and patterns; available evidence depends on the frontend and analyzed inputs.
+
+Discover function/method identities with MATCH (m:Method) RETURN m.class, m.name, m.signature LIMIT 20, then narrow by an observed class/name. Method is virtual declaration metadata, including uncalled declarations; functions may be owned by a module rather than a class. Copy returned signatures exactly instead of guessing language-specific spelling. Find direct callers with MATCH (cs:CallSiteNode) WHERE cs.callee_signature = '<observed-signature>' RETURN DISTINCT cs.caller_signature, cs.callee_signature, cs.line LIMIT 50. Filter caller_signature instead for callees. For change impact, repeat the caller query on each frontier, tracking visited signatures and a depth budget. For chains, join one site's callee_signature to the next site's caller_signature. Do not assume CALL edges connect methods: inspect schema patterns; some frontends emit call-site self-loops and others omit CALL edges. To locate boundaries, group a scoped set of call sites by callee_class/callee_name, then inspect calls to the relevant platform APIs. Resolve entry points from declarations, registration calls or emitted annotations; endpoints is a Spring-specific shortcut.
+
+DATAFLOW points from values toward uses. Trace a configuration/flag literal with MATCH (key:StringConstant {value: 'checkout.enabled'})-[:DATAFLOW*1..6]->(cs:CallSiteNode) RETURN DISTINCT key.value, cs.caller_signature, cs.callee_signature LIMIT 50. Replace the value with one observed in the graph or source. For origins of a selected call, match (value:Constant)-[:DATAFLOW*1..6]->(cs:CallSiteNode) and anchor cs.callee_signature; also inspect FieldNode paths when keys come from fields rather than literals. Follow outgoing paths from a call to trace its result. Inspect relationship kind (for example PARAMETER_PASS, RETURN_VALUE, FIELD_STORE or FIELD_LOAD) before interpreting a path. Interprocedural coverage varies: follow emitted edges first; where boundary links are absent, join ParameterNode.method or ReturnNode.method to the call's callee_signature, without claiming that the join proves a specific argument/parameter pairing. Receiver flows and missing argument-position edge metadata can make a path ambiguous. Confirm branch meaning and uncertain resource lookups in source; do not infer an enabled branch or a particular configuration file from reachability alone.
+
+Frontend details: Java/Kotlin/Android graphs use JVM-style signatures, nested-class $, <init>/<clinit>, declared dispatch targets and CALL self-loops; inlined constants lose their field names, booleans may be 0/1, and call-boundary dataflow needs signature joins. JS/TS/ES graphs analyze emitted .js/.mjs/.cjs artifacts, not original TypeScript source; module/file owners and <module> top-level functions are normal. They emit CALL self-loops and direct argument-to-parameter/return-to-call dataflow for resolved calls; BooleanConstant values are booleans. Swift/Apple graphs preserve module/type names and argument labels in method names; indexed calls have call sites without requiring CALL edges, with limited syntax-derived argument/parameter/return flows. Missing edges are not proof that code is unreachable; do not assume JVM conventions apply to other frontends.
+
+With no selector, execute one union query over all loaded graphs; graph_id selects one, graphs selects a named set, all_graphs=true explicitly selects all. cross-graph permits global joins/aggregation; fanout runs independently per graph. In cross-graph results return graphId(n) with id(n); add graphId(a) = graphId(b) to signature joins that must stay within one graph. In single-graph/fanout execution graphId(n) is null: retain the requested graph_id or fanout response provenance instead. Start paths at labeled, selective anchors using equality, IN or STARTS WITH; bound path depth and returned rows with DISTINCT/aggregation and LIMIT. Avoid unlabeled variable-length starts, ubiquitous constants and broad CONTAINS/regex scans. The graphite dialect uses Rust regex syntax (no look-around/backreferences). On timeout/work-budget errors narrow anchors, graph scope or depth before retrying. Results contain columns, rows and total; total.relation='gte' is a lower bound. Cite exact caller/callee signatures, values and graph provenance; line numbers may be absent or refer to emitted artifacts. Separate graph facts from source-confirmed interpretation."#,
+    ),
+    (
+        "node",
+        r#"Inspect a concrete stored node's display-oriented properties after discovering its ID with cypher or subgraph. Supply the graph-local numeric id and its graph_id together; identical IDs in different graphs are unrelated. Returns type/id/label and node-specific fields; use cypher RETURN n for raw query properties. Virtual Method results are not stored numeric nodes. Continue with incoming/outgoing for adjacent edges, or subgraph for a bounded neighborhood."#,
+    ),
+    (
+        "outgoing",
+        r#"Inspect edges leaving one stored node, using its numeric id and graph_id from cypher/subgraph. DATAFLOW edges point toward uses, so follow these to trace a value forward; edge kind distinguishes assignment, parameter passing, field stores/loads and returns. Returns at most 200 edges, not a complete transitive slice; use bounded cypher for filtering or counting high-degree nodes. For function/method callees, query CallSiteNode.caller_signature with cypher; CALL edges may be self-loops or absent depending on the frontend."#,
+    ),
+    (
+        "incoming",
+        r#"Inspect edges entering one stored node, using its numeric id and graph_id from cypher/subgraph. Follow incoming DATAFLOW to investigate value origins or call arguments; receiver flows may also reach calls, and edges do not identify argument positions. Interprocedural coverage depends on the frontend: inspect emitted paths rather than assuming every call boundary is linked. Returns at most 200 edges, not a complete backward slice; use bounded cypher for filtering or counting high-degree nodes. To find callers of a method, query CallSiteNode.callee_signature with cypher instead of following CALL edges."#,
+    ),
+    (
+        "annotations",
+        r#"Inspect annotations emitted by the frontend on a known class/type member, for example framework routing, injection or configuration metadata. Check schema for Annotation availability first; not every language/frontend emits annotation metadata. Supply an exact fully qualified class_name and member_name; use member_name='<class>' for class-level annotations. Omit graph_id for results grouped by graph, or select one graph. Discover unknown annotated classes/members with schema then cypher over Annotation nodes; use endpoints for Spring HTTP route extraction. Annotation metadata alone does not prove runtime wiring."#,
+    ),
+    (
+        "endpoints",
+        r#"Find Spring Web HTTP entry points from persisted mapping annotations, including class-level and method-level mappings. Returns framework, count and endpoints with class, member, signature, path and httpMethod; class_name is an exact controller filter. Omit graph_id to query all graphs grouped by graph, or select one. Use each returned signature with cypher on CallSiteNode.caller_signature to trace the handler's calls. This is Spring Web extraction, not an inventory of every framework, listener or main method; an empty result does not establish that the application has no entry points."#,
+    ),
+    (
+        "resources",
+        r#"Discover persisted resource paths and their sources, such as configuration files, manifests, bundles or service descriptors, when the frontend saved a resource store. Filter with a glob (for example **/*.properties), then call resource with an exact returned path to read content. Omit graph_id for results grouped by graph; preserve the returned graph ID when reading one artifact. Lists saved resources, not files from the working tree. A frontend or older graph may lack a persisted resource store; rebuilding helps only if the frontend supports it; missing resources do not prove missing runtime configuration. Use schema/cypher to trace Resource/ResourceValue or RESOURCE_LOOKUP only when those labels/edges exist."#,
+    ),
+    (
+        "resource",
+        r#"Read the saved content of an exact packaged resource path discovered with resources, for example a configuration file or manifest. Returns path, source, size and content decoded as UTF-8 (invalid bytes are replaced); this is not a binary download or arbitrary filesystem reader. Supply graph_id for one artifact; omit it to read every matching path grouped by graph. The response has a 1 MiB resource-content budget. Contents reflect the analyzed inputs, not runtime overrides. Confirm RESOURCE_LOOKUP fan-out before claiming a file/key is actually read."#,
+    ),
+    (
+        "subgraph",
+        r#"Inspect a bounded neighborhood around a concrete stored node, traversing both incoming and outgoing edges. Use cypher to find a center ID and normally supply its graph_id. If graph_id is omitted, the same numeric center is looked up independently in every graph; those nodes need not represent the same entity. Returns nodes and edges, capped at 2,000 nodes and 5,000 edges, so this is a local exploration view rather than exhaustive reachability. Use bounded cypher for precise paths and CallSiteNode signature joins for inter-method call chains."#,
+    ),
+    (
+        "overview",
+        r#"Explore dependencies grouped by the graph's class/type/module owners to identify central code and subsystem boundaries before drilling into code. Returns class-owner nodes and call-derived dependency edges; limit bounds the class view, so it is not a complete dependency audit. Omit graph_id for separate views grouped by graph, or select one graph. Follow up with cypher on CallSiteNode caller/callee classes and signatures to substantiate a dependency or assess change impact. Use c4 for higher-level architecture diagrams."#,
+    ),
+    (
+        "c4",
+        r#"Build inferred C4 architecture views from the saved program graph: context for the subject and external systems, container for deployable/runtime groupings, component for internal structure, or all. Use JSON for inspection and Mermaid/PlantUML/Structurizr DSL for diagrams. Omit graph_id for all graphs (JSON is grouped by graph), or select one graph. These are inferred code-based views, not verified deployment topology: confirm important relationships with overview, endpoints, resources and exact cypher call sites before reporting them as architectural facts."#,
+    ),
+    (
+        "schema",
+        r#"Discover the actual graph vocabulary before writing cypher: node label sets with counts and property keys, virtual_nodes including declared Method metadata, relationship types with counts, and the most frequent (from-labels)-[type]->(to-labels) patterns. Prefer this to broad MATCH/keys/labels exploration. Omit graph_id for separate schemas grouped by graphId, or select one. limit caps only the pattern list, not node/relationship inventories; a missing pattern may simply fall below that cap. Labels and available edges depend on the frontend, builder version and included packages; do not assume all examples exist in every graph.
+
+Relationship properties are not enumerated here. DATAFLOW.kind may include ASSIGN, PARAMETER_PASS, RETURN_VALUE, FIELD_STORE, FIELD_LOAD, ARRAY_STORE, ARRAY_LOAD, CAST or PHI; the subset and interprocedural links depend on the frontend. CONTROL_FLOW.kind and branch coverage are frontend-specific. CALL exposes virtual and dynamic where emitted; its absence does not mean there are no call sites. Inspect sampled edges with cypher rather than transferring one language's graph conventions to another. Generic type metadata on Method/FieldNode/ParameterNode/ReturnNode can be null in older graphs. Use help(topic="cypher") for examples and semantic caveats to trace callers, values and configuration after checking this schema."#,
+    ),
+];
+
+fn help_text(arguments: &Map<String, Value>) -> Result<&'static str, String> {
+    let topic = ToolArgs(arguments)
+        .string("topic")?
+        .unwrap_or_else(|| "workflow".into());
+    if topic == "workflow" {
+        return Ok(WORKFLOW_HELP);
+    }
+    TOOL_HELP
+        .iter()
+        .find(|(name, _)| *name == topic)
+        .map(|(_, text)| *text)
+        .ok_or_else(|| {
+            format!("Unknown help topic '{topic}'; use workflow or an analysis tool name")
+        })
+}
+
+/// Analysis tools in stable discovery order; HTTP API discovery stays outside MCP.
 pub fn tools() -> Vec<ToolDef> {
     vec![
         ToolDef {
             name: "graphs",
-            description: "List all graphs with aggregate statistics, or get one graph by id",
+            description: r#"Discover loaded program graphs and statistics; omit graph_id to list all. Start here, then schema; use help for investigation workflows and frontend caveats."#,
             input_schema: schema(
                 json!({"graph_id": graph_id_property("Explicit graph id; omit to list all graphs and totals")}),
                 &[],
             ),
         },
         ToolDef {
-            name: "openapi",
-            description: "Fetch the machine-readable OpenAPI document for the explore server",
-            input_schema: schema(json!({}), &[]),
-        },
-        ToolDef {
             name: "cypher",
-            description: "Execute a true cross-graph Cypher query across all graphs by default, one explicit graph with graph_id, or an explicit graph set with graphs/all_graphs. Call schema first to learn the labels, property keys, relationship types and patterns a graph holds, rather than discovering them with exploratory queries",
+            description: r#"Query code, callers, values and change impact across selected graphs. Call schema first; use selective labeled anchors, bounded paths and LIMIT. See help(topic="cypher") for recipes, graph provenance and frontend-specific semantics."#,
             input_schema: schema(
                 json!({
-                    "query": {"type": "string", "description": "Cypher query string"},
-                    "dialect": {"type": "string", "enum": ["graphite", "opencypher-m23"], "default": "graphite", "description": "Query compatibility mode"},
+                    "query": {"type": "string", "description": "Read-only Cypher with explicit RETURN columns and LIMIT; help(topic=cypher) provides recipes."},
+                    "dialect": {"type": "string", "enum": ["graphite", "opencypher-m23"], "default": "graphite", "description": "Graphite extensions or supported openCypher M23 compatibility; not arbitrary Neo4j/APOC."},
                     "graph_id": graph_id_property("Explicit single graph id; mutually exclusive with graphs and all_graphs"),
-                    "all_graphs": {"type": "boolean", "default": false, "description": "Explicitly select all loaded graphs for /api/cypher/graphs"},
-                    "graphs": {"type": "array", "items": {"type": "string"}, "description": "Explicit graph ids for /api/cypher/graphs"},
-                    "mode": {"type": "string", "enum": ["cross-graph", "fanout"], "default": "cross-graph", "description": "One union query across graphs, or independent per-graph fan-out"},
-                    "limit": {"type": "number", "description": "Maximum total result rows for the request"},
-                    "timeout_ms": {"type": "integer", "exclusiveMinimum": 0, "description": "Client timeout in milliseconds, capped by the server maximum (60 seconds by default)"},
-                    "per_graph_limit": {"type": "number", "description": "Optional maximum result rows per graph for multi-graph queries"},
-                    "include_graph_rows": {"type": "boolean", "default": false, "description": "Include duplicate per-graph row arrays in multi-graph responses"}
+                    "all_graphs": {"type": "boolean", "default": false, "description": "Select all graphs explicitly; exclusive with graph_id or non-empty graphs. Required for fanout without graphs."},
+                    "graphs": {"type": "array", "items": {"type": "string"}, "description": "Unique loaded graph IDs; non-empty and exclusive with graph_id or all_graphs=true."},
+                    "mode": {"type": "string", "enum": ["cross-graph", "fanout"], "default": "cross-graph", "description": "cross-graph: global joins/aggregation; fanout: independent queries. Set mode with graphs or all_graphs=true."},
+                    "limit": {"type": "number", "description": "Total row cap: default 1000, maximum 5000; total.relation=gte indicates a lower bound."},
+                    "timeout_ms": {"type": "integer", "exclusiveMinimum": 0, "description": "Positive timeout in milliseconds, capped by server maximum (default 60000); narrow queries before retrying."},
+                    "per_graph_limit": {"type": "number", "description": "Per-graph row cap; fanout only, with graphs or all_graphs=true."},
+                    "include_graph_rows": {"type": "boolean", "default": false, "description": "Include per-graph row arrays; true requires fanout with graphs or all_graphs=true."}
                 }),
                 &["query"],
             ),
         },
         ToolDef {
             name: "node",
-            description: "Get a node by its graph-local ID in one graph",
+            description: r#"Inspect one stored node by its graph-local numeric ID and graph_id. Use cypher for raw properties or virtual Method declarations, and incoming/outgoing for edges."#,
             input_schema: schema(
                 json!({
-                    "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
+                    "id": {"type": "number", "description": "Graph-local numeric stored-node ID; not a virtual Method or qualified ID."},
+                    "graph_id": graph_id_property("Graph owning this local node ID")
                 }),
                 &["id", "graph_id"],
             ),
         },
         ToolDef {
             name: "outgoing",
-            description: "Get outgoing edges for a graph-local node ID in one graph",
+            description: r#"Inspect edges leaving a stored node (up to 200); DATAFLOW points toward uses. For function callees, query CallSiteNode.caller_signature with cypher."#,
             input_schema: schema(
                 json!({
-                    "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
+                    "id": {"type": "number", "description": "Graph-local numeric stored-node ID; not a virtual Method or qualified ID."},
+                    "graph_id": graph_id_property("Graph owning this local node ID")
                 }),
                 &["id", "graph_id"],
             ),
         },
         ToolDef {
             name: "incoming",
-            description: "Get incoming edges for a graph-local node ID in one graph",
+            description: r#"Inspect edges entering a stored node (up to 200); incoming DATAFLOW traces value origins. For function callers, query CallSiteNode.callee_signature with cypher."#,
             input_schema: schema(
                 json!({
-                    "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
+                    "id": {"type": "number", "description": "Graph-local numeric stored-node ID; not a virtual Method or qualified ID."},
+                    "graph_id": graph_id_property("Graph owning this local node ID")
                 }),
                 &["id", "graph_id"],
             ),
         },
         ToolDef {
             name: "annotations",
-            description: "Get annotations for a class member across all graphs, grouped by graph, or in one explicit graph",
+            description: r#"Inspect emitted annotations for an exact class/type member; use member_name="<class>" for type annotations. Omit graph_id for results grouped by graph; availability depends on the frontend."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query all graphs"),
-                    "class_name": {"type": "string", "description": "Fully qualified class name"},
-                    "member_name": {"type": "string", "description": "Method or field name"}
+                    "class_name": {"type": "string", "description": "Exact class/type owner discovered in the graph"},
+                    "member_name": {"type": "string", "description": "Exact method/field name or <class>; not a full signature."}
                 }),
                 &["class_name", "member_name"],
             ),
         },
         ToolDef {
             name: "endpoints",
-            description: "Extract framework API endpoints across all graphs, grouped by graph, or from one explicit graph",
+            description: r#"Find Spring Web HTTP endpoints with handler signatures from mapping annotations. Omit graph_id for results grouped by graph; use cypher for other frameworks and entry points."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query all graphs"),
-                    "class_name": {"type": "string", "description": "Optional controller class filter"},
+                    "class_name": {"type": "string", "description": "Exact Spring controller class, not a prefix/glob"},
                     "limit": {"type": "number", "default": 200, "description": "Max endpoints to return"}
                 }),
                 &[],
@@ -175,11 +259,11 @@ pub fn tools() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "resources",
-            description: "List persisted resources across all graphs, grouped by graph, or in one explicit graph",
+            description: r#"List persisted resource paths, optionally filtered by glob, then read an exact path with resource. Omit graph_id for results grouped by graph; requires a frontend-provided resource store."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query all graphs"),
-                    "pattern": {"type": "string", "description": "Glob pattern filter, defaults to **"},
+                    "pattern": {"type": "string", "description": "Path glob (default **), e.g. **/*.properties; not regex."},
                     "limit": {"type": "number", "default": 100, "description": "Max results"}
                 }),
                 &[],
@@ -187,30 +271,30 @@ pub fn tools() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "resource",
-            description: "Read every matching resource path grouped by graph, or read it from one explicit graph",
+            description: r#"Read an exact persisted resource path as UTF-8 text, within a 1 MiB content budget. Omit graph_id to read matches grouped by graph; content reflects analyzed inputs, not runtime overrides."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query every graph"),
-                    "path": {"type": "string", "description": "Resource path inside the saved graph"}
+                    "path": {"type": "string", "description": "Exact path returned by resources; not a host path or URL."}
                 }),
                 &["path"],
             ),
         },
         ToolDef {
             name: "subgraph",
-            description: "Get subgraphs for a graph-local center ID across all graphs, or from one explicit graph",
+            description: r#"Inspect a bounded bidirectional neighborhood (at most 2,000 nodes/5,000 edges). Supply graph_id with the graph-local center: omitting it looks up the same numeric ID independently in every graph."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query every graph"),
-                    "center": {"type": "number", "description": "Center node ID"},
-                    "depth": {"type": "number", "default": 2, "description": "Traversal depth"}
+                    "center": {"type": "number", "description": "Graph-local numeric center ID; normally supply graph_id."},
+                    "depth": {"type": "number", "default": 2, "description": "Bidirectional hop depth: default 2, maximum 4"}
                 }),
                 &["center"],
             ),
         },
         ToolDef {
             name: "overview",
-            description: "Get class-level dependency overviews across all graphs, grouped by graph, or for one explicit graph",
+            description: r#"Explore dependencies grouped by class/type/module owners, limited to the requested class view. Omit graph_id for views grouped by graph; substantiate dependencies with cypher call sites."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query all graphs"),
@@ -221,25 +305,33 @@ pub fn tools() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "c4",
-            description: "Get C4 views for all graphs, grouped by graph for JSON, or for one explicit graph",
+            description: r#"Generate inferred C4 architecture views as JSON or diagram text. Omit graph_id for all graphs; confirm deployment interpretations against call sites and configuration."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to query all graphs"),
-                    "level": {"type": "string", "enum": ["context", "container", "component", "all"], "default": "all", "description": "C4 view level"},
-                    "format": {"type": "string", "enum": ["json", "dsl", "mermaid", "plantuml"], "default": "json", "description": "Output format"},
-                    "limit": {"type": "number", "default": 200, "description": "Max containers or components"}
+                    "level": {"type": "string", "enum": ["context", "container", "component", "all"], "default": "all", "description": "context: subject/external systems; container: runtime groupings; component: internal structure; all: all three views."},
+                    "format": {"type": "string", "enum": ["json", "dsl", "mermaid", "plantuml"], "default": "json", "description": "json for structured inspection; dsl for Structurizr; mermaid or plantuml for diagram text."},
+                    "limit": {"type": "number", "default": 200, "description": "Compatibility option; currently ignored by C4 renderer."}
                 }),
                 &[],
             ),
         },
         ToolDef {
             name: "schema",
-            description: "Describe what a graph holds before writing Cypher against it: every label set with its node count and property keys, every relationship type with its count, and the most frequent (labels)-[type]->(labels) patterns, for one graph with graph_id or for every loaded graph, grouped by graphId. Answered per type in milliseconds; prefer it to MATCH (n) RETURN labels(n), keys(n) ... exploration",
+            description: r#"Discover labels, properties, virtual Method metadata, relationship types and frequent edge patterns before writing Cypher. Omit graph_id for schemas grouped by graphId; limit caps only patterns. See help(topic="schema") for property and frontend caveats."#,
             input_schema: schema(
                 json!({
                     "graph_id": graph_id_property("Explicit graph id; omit to describe all graphs"),
                     "limit": {"type": "integer", "minimum": 0, "maximum": 1000, "default": 50, "description": "Maximum number of (labels)-[type]->(labels) patterns per graph, most frequent first"}
                 }),
+                &[],
+            ),
+        },
+        ToolDef {
+            name: "help",
+            description: "Get on-demand investigation workflows, query recipes and frontend caveats. Omit topic for the workflow, or pass an analysis tool name.",
+            input_schema: schema(
+                json!({"topic": {"type": "string", "default": "workflow", "enum": std::iter::once("workflow").chain(TOOL_HELP.iter().map(|(name, _)| *name)).collect::<Vec<_>>(), "description": "workflow or the analysis tool to learn about"}}),
                 &[],
             ),
         },
@@ -498,7 +590,6 @@ pub fn plan(tool: &str, args: &Map<String, Value>) -> Result<ApiCall, String> {
             Some(id) => format!("/api/graphs/{}", encode_uri_component(&id)),
             None => "/api/graphs".to_string(),
         })),
-        "openapi" => Ok(ApiCall::get("/openapi.json".to_string())),
         "cypher" => plan_cypher(&a),
         "node" | "outgoing" | "incoming" => {
             let id = number_text(&a.required_number("id")?);
@@ -892,9 +983,16 @@ impl McpServer {
             }
         };
         let started = Instant::now();
-        let outcome = match plan(tool, arguments) {
-            Ok(call) => self.dispatch(&call).await,
-            Err(message) => ToolOutcome::Err(message),
+        let outcome = if tool == "help" {
+            match help_text(arguments) {
+                Ok(text) => ToolOutcome::Ok(text.to_string()),
+                Err(message) => ToolOutcome::Err(message),
+            }
+        } else {
+            match plan(tool, arguments) {
+                Ok(call) => self.dispatch(&call).await,
+                Err(message) => ToolOutcome::Err(message),
+            }
         };
         if let Some(metrics) = &self.metrics {
             let ok = matches!(outcome, ToolOutcome::Ok(_));
@@ -1252,13 +1350,12 @@ mod tests {
     }
 
     #[test]
-    fn the_thirteen_npm_tools_come_first_in_order_then_schema() {
+    fn analysis_tools_and_help_have_stable_order_and_schemas() {
         let names: Vec<&str> = tools().iter().map(|t| t.name).collect();
         assert_eq!(
             names,
             [
                 "graphs",
-                "openapi",
                 "cypher",
                 "node",
                 "outgoing",
@@ -1270,20 +1367,21 @@ mod tests {
                 "subgraph",
                 "overview",
                 "c4",
-                "schema"
+                "schema",
+                "help"
             ]
         );
         for tool in tools() {
             assert_eq!(tool.input_schema["type"], "object", "{}", tool.name);
             assert_eq!(tool.input_schema["additionalProperties"], false);
         }
-        assert_eq!(tools()[2].input_schema["required"], json!(["query"]));
+        assert_eq!(tools()[1].input_schema["required"], json!(["query"]));
         assert_eq!(
-            tools()[12].input_schema["properties"]["level"]["default"],
+            tools()[11].input_schema["properties"]["level"]["default"],
             "all"
         );
-        assert!(tools()[13].input_schema.get("required").is_none());
-        assert!(tools()[2].description.contains("Call schema first"));
+        assert!(tools()[12].input_schema.get("required").is_none());
+        assert!(tools()[1].description.contains("Call schema first"));
     }
 
     #[test]
@@ -1320,7 +1418,7 @@ mod tests {
             );
         }
         assert_eq!(
-            tools()[13].input_schema["properties"]["limit"]["type"],
+            tools()[12].input_schema["properties"]["limit"]["type"],
             "integer"
         );
     }
@@ -1353,7 +1451,10 @@ mod tests {
                 .uri(),
             "/api/graphs/a%2Fb"
         );
-        assert_eq!(plan("openapi", &args(&[])).unwrap().uri(), "/openapi.json");
+        assert_eq!(
+            plan("openapi", &args(&[])).unwrap_err(),
+            "Tool openapi not found"
+        );
         assert_eq!(
             plan(
                 "node",
@@ -1606,6 +1707,154 @@ mod tests {
         (McpServer::new(router(state)), root)
     }
 
+    #[tokio::test]
+    async fn discovery_stays_lean_while_every_help_topic_is_available_without_graphs() {
+        // No REST routes: guidance must not depend on an HTTP endpoint or a loaded graph.
+        let server = McpServer::new(Router::new());
+        let list = server
+            .handle(&json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}))
+            .await
+            .unwrap();
+        let bytes = serde_json::to_vec(&list).unwrap().len();
+        assert!(
+            bytes <= 11_000,
+            "Discovery metadata grew to {bytes} bytes; keep recipes in help"
+        );
+        eprintln!("tools/list serialized response: {bytes} bytes");
+        let topics = list["result"]["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|tool| tool["name"] == "help")
+            .unwrap()["inputSchema"]["properties"]["topic"]["enum"]
+            .as_array()
+            .unwrap();
+        assert_eq!(topics.len(), tools().len()); // workflow plus every analysis tool
+        for topic in topics {
+            let response = server
+                .handle(&json!({"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                "params": {"name": "help", "arguments": {"topic": topic}}}))
+                .await
+                .unwrap();
+            assert!(response["error"].is_null(), "{response}");
+            assert!(response["result"]["isError"].is_null(), "{response}");
+            let text = response["result"]["content"][0]["text"].as_str().unwrap();
+            if topic == "workflow" {
+                assert_eq!(text, WORKFLOW_HELP);
+            } else {
+                let tool = tools()
+                    .into_iter()
+                    .find(|tool| tool.name == topic.as_str().unwrap())
+                    .unwrap();
+                assert!(
+                    text.len() > tool.description.len(),
+                    "Missing detailed guidance for {}",
+                    tool.name
+                );
+            }
+        }
+        let recipes = help_text(&args(&[("topic", json!("cypher"))])).unwrap();
+        assert!(recipes.contains("MATCH (m:Method) RETURN m.class, m.name, m.signature LIMIT 20"));
+        assert!(recipes.contains("DATAFLOW*1..6"));
+        for frontend in ["Java/Kotlin/Android", "JS/TS/ES", "Swift/Apple"] {
+            assert!(recipes.contains(frontend));
+        }
+    }
+
+    #[tokio::test]
+    async fn local_help_preserves_tool_errors_and_metric_accounting() {
+        let metrics = Arc::new(McpMetrics::default());
+        let server = McpServer::with_metrics(Router::new(), metrics.clone());
+        let call = |arguments| {
+            json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+            "params": {"name": "help", "arguments": arguments}})
+        };
+        let default = server.handle(&call(json!({}))).await.unwrap();
+        assert_eq!(default["result"]["content"][0]["text"], WORKFLOW_HELP);
+        for arguments in [json!({"topic": "unknown"}), json!({"topic": 7})] {
+            let invalid = server.handle(&call(arguments)).await.unwrap();
+            assert!(invalid["error"].is_null());
+            assert_eq!(invalid["result"]["isError"], true);
+            assert!(!invalid["result"]["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .is_empty());
+        }
+        let invalid_shape = server.handle(&call(json!([]))).await.unwrap();
+        assert_eq!(invalid_shape["error"]["code"], INVALID_PARAMS);
+        let series = metrics.tools();
+        assert_eq!(series.len(), 2);
+        for (key, stats) in series {
+            assert_eq!(key.tool, "help");
+            assert_eq!(stats.count, if key.ok { 1 } else { 2 });
+        }
+    }
+
+    #[tokio::test]
+    async fn help_has_identical_http_and_stdio_responses() {
+        let server = McpServer::new(Router::new());
+        let app = with_mcp_route(server.api.clone(), OriginPolicy::default(), None, None);
+        for arguments in [
+            json!({}),
+            json!({"topic": "cypher"}),
+            json!({"topic": "unknown"}),
+        ] {
+            let request = json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                "params": {"name": "help", "arguments": arguments}})
+            .to_string();
+            let stdio: Value =
+                serde_json::from_str(&server.handle_text(&request).await.unwrap()).unwrap();
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(Method::POST)
+                        .uri("/mcp")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from(request))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK);
+            let http: Value =
+                serde_json::from_slice(&to_bytes(response.into_body(), usize::MAX).await.unwrap())
+                    .unwrap();
+            assert_eq!(http, stdio);
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn openapi_is_http_only() {
+        let (server, root) = empty_server();
+        let rejected = server
+            .handle(&json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                "params": {"name": "openapi", "arguments": {}}}))
+            .await
+            .unwrap();
+        assert_eq!(rejected["error"]["code"], INVALID_PARAMS);
+        assert_eq!(rejected["error"]["message"], "Tool openapi not found");
+
+        let response = server
+            .api
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/openapi.json")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let document: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), usize::MAX).await.unwrap())
+                .unwrap();
+        assert!(document["openapi"].as_str().unwrap().starts_with("3."));
+        assert!(document["paths"]["/api/graphs"]["get"].is_object());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn json_rpc_lifecycle_over_an_empty_registry() {
         let (server, root) = empty_server();
@@ -1650,7 +1899,7 @@ mod tests {
             .unwrap();
         assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 14);
         assert_eq!(list["result"]["tools"][0]["name"], "graphs");
-        assert!(list["result"]["tools"][2]["inputSchema"]["properties"]["query"].is_object());
+        assert!(list["result"]["tools"][1]["inputSchema"]["properties"]["query"].is_object());
 
         let graphs = server
             .handle(&json!({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "graphs"}}))

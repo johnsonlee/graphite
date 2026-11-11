@@ -1,5 +1,9 @@
 # More recipes
 
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
 ## Blast radius of a change
 
 Before changing a method, list everything that depends on it:

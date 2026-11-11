@@ -4,7 +4,16 @@
 
 [English](README.md) · 简体中文
 
-**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码和 JavaScript/TypeScript 项目编译后的 JavaScript 产物转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM/Android 字节码、编译后的 JavaScript 产物及 Swift/Objective-C 编译器索引转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+
+| 语言 / 平台 | 输入 | 前端 |
+|---|---|---|
+| Java / Kotlin | JVM 字节码：JAR、WAR 或 class 目录 | `jvm` |
+| Android | APK | `jvm` |
+| JavaScript / TypeScript / ECMAScript | 编译后的 `.js`、`.mjs`、`.cjs` 文件或产物目录；TypeScript 须先编译 | `js` |
+| Swift / Objective-C（Apple 项目） | Swift 包、Xcode 项目/工作区，或已有编译器索引及源码 | `apple` |
+
+所有前端共用 Cypher、MCP 和 Explorer 接口。图覆盖范围及调用、数据流语义取决于前端；JavaScript 分析不接受原始 TS/TSX/JSX，Apple 分析结合编译器索引与源码分析。
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
@@ -141,7 +150,7 @@ graphite query /tmp/project.graphite \
 
 分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 和 `graphite frontend install es` 安装同一个可执行文件，其中包含 Bun 运行时、TypeScript 解析器及其标准库声明。
 
-**开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
+**Apple 前端**支持 Swift 包、Xcode 项目/工作区及已有编译器索引与源码，包括索引中的 Objective-C 关系，并通过 Graph IR 接入共享程序图。构建要求与分析边界见 [Swift 前端说明](README.md#other-languages-the-swift-frontend)。
 
 ## 快速开始
 
@@ -699,7 +708,7 @@ repositories {
 
 ## MCP 集成
 
-`graphite` 可执行文件也是一个 [Model Context Protocol](https://modelcontextprotocol.io) 服务端。它提供原先由 `graphite-mcp` npm 包暴露的十三个工具（`graphs`、`cypher`、`node`、`outgoing`、`incoming`、`annotations`、`endpoints`、`resources`、`resource`、`subgraph`、`overview`、`c4`、`openapi`），以及新增的 `schema`，均在进程内通过与 REST API 相同的代码提供服务。
+`graphite` 可执行文件也是一个 [Model Context Protocol](https://modelcontextprotocol.io) 服务端。它提供十三个分析工具（`graphs`、`cypher`、`node`、`outgoing`、`incoming`、`annotations`、`endpoints`、`resources`、`resource`、`subgraph`、`overview`、`c4`、`schema`），均在进程内通过与 REST API 相同的代码提供服务；另有 `help` 按需提供使用指引。
 `schema`（`GET /api/schema`、`GET /api/graphs/{id}/schema`）可在毫秒级描述图中的内容：各标签组合的节点数量和属性键、各关系类型的数量，以及最常见的 `(labels)-[type]->(labels)` 模式。智能体可以先读取这些信息再编写 Cypher，无需通过 `MATCH (n) RETURN labels(n), keys(n), count(*)` 之类的探测查询了解图结构。这些探测查询同样会按类型处理（参见 `backend/cypher/src/engine/partition.rs` 中的分区求值），但一次调用比多轮交互成本更低。
 有两种连接方式：
 
@@ -773,7 +782,7 @@ curl -X POST http://localhost:8080/api/cypher/graphs \
 
 MCP 工具遵循相同规则：省略 `graph_id` 时查询所有图；提供 `graph_id` 时仅选择一个图。例外是 `node`、`outgoing` 和 `incoming`：它们的节点 ID 仅在单个图内有效，因此必须提供 `graph_id`。`cypher` 工具还可以通过 `graphs: ["orders", "billing"]` 指定子集，或使用 `all_graphs: true`，并搭配 `mode: "cross-graph"` 或 `mode: "fanout"`。
 
-LLM 可以使用 openapi、graphs、cypher、resources、resource、endpoints、c4 和 annotations 等工具。节点、调用点和方法的发现通过 `cypher` 工具完成。
+LLM 可以使用 graphs、schema、cypher、resources、resource、endpoints、c4 和 annotations 等工具。节点、调用点和方法的发现通过 `cypher` 工具完成。
 
 explore 服务端还提供统一的 C4 架构端点：
 
@@ -786,21 +795,26 @@ GET /api/architecture/c4?level=context|container|component|all&format=plantuml
 
 智能体可通过该端点获取从代码图推导出的 C4 架构视图，无需猜测多个端点。默认响应为 Structurizr workspace JSON 文档。若需文本格式，请使用 `format=dsl`、`format=mermaid` 或 `format=plantuml`。
 
-### Agent Skill
+### 智能体使用流程
 
-[`skills/graphite`](skills/graphite/SKILL.md) 是一个 [Agent Skill](https://code.claude.com/docs/en/skills)，教智能体用上述工具回答代码问题：识别入口与边界，追踪控制流、数据流和配置，查找已有的 A/B 实验与 feature flag 接入点，以及评估改动影响面。它记录了图的实际形状（调用图是按签名连接调用点、数据流止于调用点、分支极性以 JVM 比较为准），让查询返回证据而不是空结果。用 [`skills` CLI](https://github.com/vercel-labs/skills) 直接从本仓库安装：
+MCP 的 `tools/list` 提供精简的工具用途和参数约定。需要使用流程时调用 `help`，需要查询配方和前端语义时调用 `help(topic="cypher")`，无需额外安装 Graphite skill。同一组工具支持 Java/Kotlin/Android、JavaScript/TypeScript/ECMAScript 和 Swift/Apple 图；图结构及调用、数据流语义取决于前端。先用 `graphs` 确认已加载的产物，再用 `schema` 查看目标图范围的结构，然后编写 Cypher。针对具体任务，可用 `endpoints`、`resources`/`resource`、`annotations`、`overview` 或 `c4` 探索；调用链、数据流和影响面分析则使用 `cypher`。继续调用 `node`、`incoming`、`outgoing` 或 `subgraph` 时保留图 ID，因为节点 ID 仅在所属图内有效。
+
+可选的 [Graphite skill](skills/graphite/SKILL.md) 提供 JVM 图的扩展查询配方，包括入口、控制流、配置和 feature flag。需要这些额外指引时可安装：
 
 ```bash
-npx skills add johnsonlee/graphite --skill graphite -a claude-code      # 当前项目
-npx skills add johnsonlee/graphite --skill graphite -a claude-code -g   # 所有项目
+npx skills add johnsonlee/graphite --skill graphite -a claude-code
 ```
 
-省略 `-a` 可在其他受支持的智能体中选择。没有 Node.js 时，也可以在 Graphite 仓库目录下复制安装，装到所有项目或单个项目（替换 `/path/to/project`）：
+添加 `-g` 可安装到所有项目，省略 `-a` 可选择其他智能体。没有 Node.js 或网络访问时，也可从本地 Graphite 仓库复制到用户级或项目级 skill 目录：
 
 ```bash
+# 用户级
 mkdir -p ~/.claude/skills && cp -r skills/graphite ~/.claude/skills/
+# 单个项目（替换 /path/to/project）
 mkdir -p /path/to/project/.claude/skills && cp -r skills/graphite /path/to/project/.claude/skills/
 ```
+
+图反映的是已编译产物，而非未提交的源码；报告时应区分查询证据与推断，必要时回到源码确认运行时行为。
 
 ## 许可证
 

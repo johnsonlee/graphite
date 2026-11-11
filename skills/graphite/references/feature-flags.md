@@ -1,5 +1,9 @@
 # A/B test and feature flag touch points
 
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
 A touch point is a call to a flag/experiment API: which flag (the key), where
 (the calling method), and what it controls (the branch or value it feeds).
 

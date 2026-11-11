@@ -4,10 +4,11 @@
     python3 mcp-smoke.py <graphite-binary> <http-base-url> --graph id:path [--graph id:path ...]
 
 Starts `graphite mcp` (stdio) with the given graphs, walks the JSON-RPC lifecycle
-(initialize, initialized, tools/list, tools/call) and checks each tool's text against
-the same request made to the REST API of the running server at <http-base-url>, which
-must serve the same graphs. Then sends the same tools/list and one tools/call to
-`POST <http-base-url>/mcp` and checks the answers match the stdio ones. Exits non-zero on
+(initialize, initialized, tools/list, tools/call) and compares analysis tools against
+the same REST requests on the running server at <http-base-url>, which must serve
+the same graphs. Checks MCP-local help separately on both transports, including
+invalid topics. Then compares tools/list and graph results between stdio and
+`POST <http-base-url>/mcp`. Exits non-zero on
 the first mismatch. No production data: the graphs come from the CI fixtures.
 """
 
@@ -104,8 +105,8 @@ def main():
     stdio.notify("notifications/initialized")
     listed = stdio.request("tools/list")["result"]["tools"]
     names = [t["name"] for t in listed]
-    expected = ["graphs", "openapi", "cypher", "node", "outgoing", "incoming", "annotations",
-                "endpoints", "resources", "resource", "subgraph", "overview", "c4", "schema"]
+    expected = ["graphs", "cypher", "node", "outgoing", "incoming", "annotations",
+                "endpoints", "resources", "resource", "subgraph", "overview", "c4", "schema", "help"]
     if names != expected:
         fail(f"tools/list: {names}")
 
@@ -132,7 +133,6 @@ def main():
     first = graph_ids[0]
     check("graphs", {}, "GET", "/api/graphs")
     check("graphs", {"graph_id": first}, "GET", f"/api/graphs/{urllib.parse.quote(first, safe='')}")
-    check("openapi", {}, "GET", "/openapi.json")
     check("cypher", {"query": "MATCH (n) RETURN count(*) AS c", "graph_id": first},
           "POST", f"/api/graphs/{first}/cypher", {"query": "MATCH (n) RETURN count(*) AS c"})
     check("cypher", {"query": "MATCH (n:CallSite) RETURN count(*) AS c"},
@@ -179,6 +179,20 @@ def main():
     status, body = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
     if status != 200 or [t["name"] for t in json.loads(body)["result"]["tools"]] != expected:
         fail(f"POST /mcp tools/list -> {status}: {body[:200]}")
+    # Help is MCP-local (no REST route), but must behave identically on both transports.
+    for arguments in ({}, {"topic": "cypher"}, {"topic": "unknown"}):
+        params = {"name": "help", "arguments": arguments}
+        stdio_help = tool_text(stdio.request("tools/call", params))
+        status, body = http(base, "POST", "/mcp",
+                            {"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": params})
+        if status != 200 or json.loads(body).get("result") != stdio_help:
+            fail(f"help differs between transports: {arguments}: {status}: {body[:200]}")
+        if arguments.get("topic") == "unknown":
+            if not stdio_help.get("isError"):
+                fail(f"unknown help topic must be a tool error: {stdio_help}")
+        elif stdio_help.get("isError") or not stdio_help["content"][0]["text"]:
+            fail(f"help guidance missing: {arguments}: {stdio_help}")
+        checks += 1
     stdio_graphs = tool_text(stdio.request("tools/call", {"name": "graphs", "arguments": {}}))
     status, body = http(base, "POST", "/mcp",
                         {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "graphs", "arguments": {}}})

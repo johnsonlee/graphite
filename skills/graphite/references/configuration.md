@@ -1,5 +1,9 @@
 # Configuration
 
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
 Recipes marked **[verified: ...]** were run on real graphs built from the named
 artifacts. Unmarked recipes are syntax-checked only; confirm their rows in
 source before relying on them.

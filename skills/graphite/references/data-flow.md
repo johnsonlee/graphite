@@ -1,5 +1,9 @@
 # Data flow
 
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
 `DATAFLOW` edges point from where a value comes from to where it is used:
 
 | kind | from → to |
