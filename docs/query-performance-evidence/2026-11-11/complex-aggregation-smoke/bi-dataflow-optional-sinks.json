@@ -1,0 +1,1 @@
+{"columns":["graph","sources","edges","sinks"],"rows":[{"graph":"fixture-tika-00","sources":55718,"edges":34604.0,"sinks":21114.0,"$metadata":{"graphIds":["fixture-tika-00"]}},{"graph":"fixture-tika-01","sources":67086,"edges":41123.0,"sinks":25963.0,"$metadata":{"graphIds":["fixture-tika-01"]}}],"rowCount":2,"graphCount":2,"total":{"value":2,"relation":"eq"}}

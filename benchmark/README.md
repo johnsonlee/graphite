@@ -259,3 +259,12 @@ The existing JVM contracts remain covered by the required `build.yml` unit-test 
 
 The deleted `cypher-capacity` JMH job was advisory. These behavioral tests stay required;
 there is no JVM query timing substitute for the Rust multi-graph report.
+
+## Complex aggregation candidates
+
+The [complex aggregation candidate workload](complex-aggregation-workload.md) contains six
+code-graph query shapes inspired by analytical graph benchmarks, with deterministic semantic
+tests. It targets slow-query P95 on real multi-graph inputs. This separate candidate catalog is
+not yet included in the trusted 73-case protocol; its two-graph execution smoke is correctness
+only and supplies no performance evidence. The workload document defines the remaining oracle,
+resource, production-representativeness and trusted-harness admission checks.

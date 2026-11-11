@@ -1,0 +1,1 @@
+{"columns":["graph","paths","starts","destinations"],"rows":[{"graph":"fixture-tika-01","paths":51611,"starts":31035,"destinations":30549,"$metadata":{"graphIds":["fixture-tika-01"]}},{"graph":"fixture-tika-00","paths":45965,"starts":26127,"destinations":25888,"$metadata":{"graphIds":["fixture-tika-00"]}}],"rowCount":2,"graphCount":2,"total":{"value":2,"relation":"eq"}}

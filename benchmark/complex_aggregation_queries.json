@@ -1,0 +1,38 @@
+[
+  {
+    "id": "bi-caller-dependency-rollup",
+    "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, n.callee_class AS target, count(*) AS calls RETURN graph, caller, sum(calls) AS calls, count(*) AS targets ORDER BY calls DESC, graph, caller LIMIT 100",
+    "shape": "multi-stage aggregation",
+    "purpose": "Roll up per-target counts to caller totals without truncating input."
+  },
+  {
+    "id": "bi-global-target-support",
+    "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, n.callee_class AS target, count(*) AS calls RETURN target, count(DISTINCT graph) AS graphs, count(*) AS caller_graph_pairs, sum(calls) AS calls ORDER BY calls DESC, target LIMIT 100",
+    "shape": "global aggregation and DISTINCT",
+    "purpose": "Merge shared target names across graphs while deduplicating graph support."
+  },
+  {
+    "id": "bi-two-hop-dataflow",
+    "query": "MATCH (a:CallSite)-[:DATAFLOW]->(b)-[:DATAFLOW]->(c) RETURN a.graphId AS graph, count(*) AS paths, count(DISTINCT a) AS starts, count(DISTINCT c) AS destinations ORDER BY paths DESC, graph LIMIT 100",
+    "shape": "two-hop join and DISTINCT",
+    "purpose": "Enumerate physical DATAFLOW paths before aggregating and deduplicating endpoints."
+  },
+  {
+    "id": "bi-dataflow-degree-histogram",
+    "query": "MATCH (a:CallSite)-[:DATAFLOW]->(b) WITH a.graphId AS graph, a AS source, count(*) AS degree RETURN graph, degree, count(*) AS sources ORDER BY graph, degree LIMIT 100",
+    "shape": "join then multi-stage aggregation",
+    "purpose": "Compute per-source outdegree before building its histogram."
+  },
+  {
+    "id": "bi-dataflow-optional-sinks",
+    "query": "MATCH (a:CallSite) OPTIONAL MATCH (a)-[:DATAFLOW]->(b) WITH a.graphId AS graph, a AS source, count(b) AS degree RETURN graph, count(*) AS sources, sum(degree) AS edges, sum(CASE WHEN degree = 0 THEN 1 ELSE 0 END) AS sinks ORDER BY graph LIMIT 100",
+    "shape": "optional join then aggregation",
+    "purpose": "Keep zero-outdegree sources and count DATAFLOW sinks."
+  },
+  {
+    "id": "bi-dependency-co-use",
+    "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, collect(DISTINCT n.callee_class) AS targets UNWIND targets AS left_target UNWIND targets AS right_target WITH graph, caller, left_target, right_target WHERE left_target < right_target RETURN left_target, right_target, count(*) AS caller_graph_pairs, count(DISTINCT graph) AS graphs ORDER BY caller_graph_pairs DESC, left_target, right_target LIMIT 100",
+    "shape": "collect DISTINCT and double UNWIND",
+    "purpose": "Expand caller dependency sets into ordered co-use pairs before global counts."
+  }
+]

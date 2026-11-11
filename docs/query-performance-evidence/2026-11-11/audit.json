@@ -1,0 +1,1404 @@
+{
+  "measuredHead": "2275a50661a26cbcc397d8881e50a976571bee36",
+  "sourceTree": "90b0c0f7fbedbce64850457eaad221d28b2436d0",
+  "performanceAcceptance": false,
+  "arms": {
+    "base": {
+      "requests": 4399,
+      "stages": {
+        "first-use-oracle": 73,
+        "warmup": 146,
+        "pressure": 1460,
+        "isolated": 2720
+      },
+      "failures": 0,
+      "declaredGraphsPerRequest": 64
+    },
+    "head": {
+      "requests": 4399,
+      "stages": {
+        "first-use-oracle": 73,
+        "warmup": 146,
+        "pressure": 1460,
+        "isolated": 2720
+      },
+      "failures": 0,
+      "declaredGraphsPerRequest": 64
+    }
+  },
+  "cases": [
+    {
+      "case": "schema-relationship-histogram",
+      "base": {
+        "minMs": 127.047574,
+        "p50Ms": 157.418874,
+        "p95Ms": 290.189198,
+        "maxMs": 294.635223
+      },
+      "head": {
+        "minMs": 129.878603,
+        "p50Ms": 143.605606,
+        "p95Ms": 310.031844,
+        "maxMs": 315.913392
+      }
+    },
+    {
+      "case": "shape-group-count",
+      "base": {
+        "minMs": 128.962889,
+        "p50Ms": 190.033893,
+        "p95Ms": 248.669493,
+        "maxMs": 283.039744
+      },
+      "head": {
+        "minMs": 147.376766,
+        "p50Ms": 182.22576800000002,
+        "p95Ms": 250.17948699999997,
+        "maxMs": 282.825658
+      }
+    },
+    {
+      "case": "shape-with-aggregate",
+      "base": {
+        "minMs": 127.15372599999999,
+        "p50Ms": 184.04119899999998,
+        "p95Ms": 239.027056,
+        "maxMs": 246.521508
+      },
+      "head": {
+        "minMs": 136.680865,
+        "p50Ms": 191.033424,
+        "p95Ms": 208.44290600000002,
+        "maxMs": 233.874716
+      }
+    },
+    {
+      "case": "shape-count-traversal",
+      "base": {
+        "minMs": 135.54290699999999,
+        "p50Ms": 152.165212,
+        "p95Ms": 173.33421299999998,
+        "maxMs": 173.735172
+      },
+      "head": {
+        "minMs": 133.265527,
+        "p50Ms": 153.119266,
+        "p95Ms": 167.93733,
+        "maxMs": 170.479773
+      }
+    },
+    {
+      "case": "shape-equality",
+      "base": {
+        "minMs": 73.55804400000001,
+        "p50Ms": 108.840687,
+        "p95Ms": 129.80818299999999,
+        "maxMs": 133.634474
+      },
+      "head": {
+        "minMs": 84.730707,
+        "p50Ms": 108.999286,
+        "p95Ms": 122.532668,
+        "maxMs": 125.328152
+      }
+    },
+    {
+      "case": "targeted/global-wide-four-properties",
+      "base": {
+        "minMs": 1.775977,
+        "p50Ms": 57.945136,
+        "p95Ms": 90.197879,
+        "maxMs": 103.994565
+      },
+      "head": {
+        "minMs": 1.293929,
+        "p50Ms": 60.485184999999994,
+        "p95Ms": 103.81512599999999,
+        "maxMs": 109.122844
+      },
+      "headIsolated": {
+        "p50Ms": 0.627007,
+        "p95Ms": 0.653417
+      }
+    },
+    {
+      "case": "shape-traverse-filtered",
+      "base": {
+        "minMs": 1.463846,
+        "p50Ms": 64.03913999999999,
+        "p95Ms": 97.745241,
+        "maxMs": 102.255497
+      },
+      "head": {
+        "minMs": 50.277834,
+        "p50Ms": 69.051702,
+        "p95Ms": 89.611892,
+        "maxMs": 91.110445
+      },
+      "headIsolated": {
+        "p50Ms": 0.932416,
+        "p95Ms": 0.9888880000000001
+      }
+    },
+    {
+      "case": "targeted/global-wide-class-pair",
+      "base": {
+        "minMs": 0.8865700000000001,
+        "p50Ms": 2.796246,
+        "p95Ms": 53.230489,
+        "maxMs": 56.204806000000005
+      },
+      "head": {
+        "minMs": 0.7497159999999999,
+        "p50Ms": 5.953654,
+        "p95Ms": 61.413452,
+        "maxMs": 81.694143
+      },
+      "headIsolated": {
+        "p50Ms": 0.632084,
+        "p95Ms": 0.669015
+      }
+    },
+    {
+      "case": "shape-distinct",
+      "base": {
+        "minMs": 12.680036000000001,
+        "p50Ms": 20.972604,
+        "p95Ms": 38.521494000000004,
+        "maxMs": 55.039405
+      },
+      "head": {
+        "minMs": 14.097033,
+        "p50Ms": 18.114362,
+        "p95Ms": 38.349548999999996,
+        "maxMs": 43.468281
+      },
+      "headIsolated": {
+        "p50Ms": 6.943255,
+        "p95Ms": 8.683025
+      }
+    },
+    {
+      "case": "dense/global-wide-wrapped-case-insensitive-distinct",
+      "base": {
+        "minMs": 7.527907000000001,
+        "p50Ms": 11.632066,
+        "p95Ms": 18.177390000000003,
+        "maxMs": 18.632748
+      },
+      "head": {
+        "minMs": 8.113493,
+        "p50Ms": 10.225033999999999,
+        "p95Ms": 19.335375,
+        "maxMs": 190.368336
+      },
+      "headIsolated": {
+        "p50Ms": 4.790527999999999,
+        "p95Ms": 5.229576
+      }
+    },
+    {
+      "case": "shape-label-scan-field",
+      "base": {
+        "minMs": 1.057008,
+        "p50Ms": 2.9924410000000004,
+        "p95Ms": 6.460197,
+        "maxMs": 8.844315
+      },
+      "head": {
+        "minMs": 1.036018,
+        "p50Ms": 3.495177,
+        "p95Ms": 18.9953,
+        "maxMs": 19.348899
+      },
+      "headIsolated": {
+        "p50Ms": 0.641866,
+        "p95Ms": 0.812874
+      }
+    },
+    {
+      "case": "dense/global-wide-four-properties",
+      "base": {
+        "minMs": 2.148097,
+        "p50Ms": 4.262015,
+        "p95Ms": 8.417899,
+        "maxMs": 9.669601
+      },
+      "head": {
+        "minMs": 2.697542,
+        "p50Ms": 5.132394000000001,
+        "p95Ms": 13.583226999999999,
+        "maxMs": 14.562889
+      },
+      "headIsolated": {
+        "p50Ms": 1.386441,
+        "p95Ms": 1.448557
+      }
+    },
+    {
+      "case": "shape-all-nodes",
+      "base": {
+        "minMs": 2.4177109999999997,
+        "p50Ms": 4.688605,
+        "p95Ms": 8.080603,
+        "maxMs": 10.099081
+      },
+      "head": {
+        "minMs": 2.17032,
+        "p50Ms": 5.16241,
+        "p95Ms": 12.195152,
+        "maxMs": 19.712956000000002
+      },
+      "headIsolated": {
+        "p50Ms": 1.297906,
+        "p95Ms": 1.329375
+      }
+    },
+    {
+      "case": "schema-key-histogram",
+      "base": {
+        "minMs": 1.739869,
+        "p50Ms": 3.205117,
+        "p95Ms": 9.638513,
+        "maxMs": 11.883283
+      },
+      "head": {
+        "minMs": 1.6057000000000001,
+        "p50Ms": 5.603642,
+        "p95Ms": 11.321466000000001,
+        "maxMs": 12.245695
+      },
+      "headIsolated": {
+        "p50Ms": 1.3975520000000001,
+        "p95Ms": 1.447104
+      }
+    },
+    {
+      "case": "shape-function-calls",
+      "base": {
+        "minMs": 3.175872,
+        "p50Ms": 5.840523,
+        "p95Ms": 10.898239,
+        "maxMs": 14.738398
+      },
+      "head": {
+        "minMs": 2.723991,
+        "p50Ms": 5.786671999999999,
+        "p95Ms": 11.268377,
+        "maxMs": 14.454328
+      },
+      "headIsolated": {
+        "p50Ms": 1.503178,
+        "p95Ms": 1.5215020000000001
+      }
+    },
+    {
+      "case": "shape-order-by",
+      "base": {
+        "minMs": 1.1328690000000001,
+        "p50Ms": 3.2928699999999997,
+        "p95Ms": 8.451083,
+        "maxMs": 13.678485
+      },
+      "head": {
+        "minMs": 1.229319,
+        "p50Ms": 3.451035,
+        "p95Ms": 11.261482999999998,
+        "maxMs": 11.801519
+      },
+      "headIsolated": {
+        "p50Ms": 0.69343,
+        "p95Ms": 0.714399
+      }
+    },
+    {
+      "case": "shape-label-scan-method",
+      "base": {
+        "minMs": 1.050797,
+        "p50Ms": 4.054748,
+        "p95Ms": 12.827210000000001,
+        "maxMs": 14.021874
+      },
+      "head": {
+        "minMs": 1.1450010000000002,
+        "p50Ms": 4.4244769999999995,
+        "p95Ms": 11.163200999999999,
+        "maxMs": 14.026561
+      },
+      "headIsolated": {
+        "p50Ms": 0.686498,
+        "p95Ms": 0.8065709999999999
+      }
+    },
+    {
+      "case": "shape-labels-fn",
+      "base": {
+        "minMs": 1.995886,
+        "p50Ms": 4.2438199999999995,
+        "p95Ms": 10.574246,
+        "maxMs": 10.941118
+      },
+      "head": {
+        "minMs": 1.8581590000000001,
+        "p50Ms": 4.644195,
+        "p95Ms": 9.806715,
+        "maxMs": 10.116211999999999
+      },
+      "headIsolated": {
+        "p50Ms": 1.063984,
+        "p95Ms": 1.087943
+      }
+    },
+    {
+      "case": "dense/global-wide-wrapped-case-insensitive",
+      "base": {
+        "minMs": 2.336874,
+        "p50Ms": 4.236537,
+        "p95Ms": 8.000995,
+        "maxMs": 9.541113000000001
+      },
+      "head": {
+        "minMs": 2.794122,
+        "p50Ms": 4.474319,
+        "p95Ms": 9.480488000000001,
+        "maxMs": 10.349568
+      },
+      "headIsolated": {
+        "p50Ms": 1.565318,
+        "p95Ms": 1.633901
+      }
+    },
+    {
+      "case": "shape-label-scan-callsite",
+      "base": {
+        "minMs": 1.155271,
+        "p50Ms": 6.157282,
+        "p95Ms": 11.348878,
+        "maxMs": 23.475994
+      },
+      "head": {
+        "minMs": 1.164338,
+        "p50Ms": 4.870526,
+        "p95Ms": 9.478284,
+        "maxMs": 19.49454
+      },
+      "headIsolated": {
+        "p50Ms": 0.734608,
+        "p95Ms": 0.769793
+      }
+    },
+    {
+      "case": "shape-wide-contains",
+      "base": {
+        "minMs": 0.962729,
+        "p50Ms": 3.9116660000000003,
+        "p95Ms": 17.592723,
+        "maxMs": 24.169315
+      },
+      "head": {
+        "minMs": 0.876231,
+        "p50Ms": 4.494726999999999,
+        "p95Ms": 9.118625,
+        "maxMs": 9.340938
+      },
+      "headIsolated": {
+        "p50Ms": 0.573287,
+        "p95Ms": 0.60109
+      }
+    },
+    {
+      "case": "dense/global-wide-parameterized-as-literal",
+      "base": {
+        "minMs": 2.0880970000000003,
+        "p50Ms": 3.9891859999999997,
+        "p95Ms": 6.62472,
+        "maxMs": 7.3400929999999995
+      },
+      "head": {
+        "minMs": 2.262812,
+        "p50Ms": 4.926599,
+        "p95Ms": 8.893095,
+        "maxMs": 9.400429
+      },
+      "headIsolated": {
+        "p50Ms": 1.3823130000000001,
+        "p95Ms": 1.722897
+      }
+    },
+    {
+      "case": "dense/global-wide-aliased",
+      "base": {
+        "minMs": 2.183553,
+        "p50Ms": 4.020631,
+        "p95Ms": 6.219929,
+        "maxMs": 6.729108
+      },
+      "head": {
+        "minMs": 1.9544279999999998,
+        "p50Ms": 4.58292,
+        "p95Ms": 8.801165,
+        "maxMs": 8.822313
+      },
+      "headIsolated": {
+        "p50Ms": 1.5222440000000002,
+        "p95Ms": 1.872776
+      }
+    },
+    {
+      "case": "dense/global-wide-provenance",
+      "base": {
+        "minMs": 2.727097,
+        "p50Ms": 4.319611999999999,
+        "p95Ms": 6.355051,
+        "maxMs": 7.803209
+      },
+      "head": {
+        "minMs": 2.333023,
+        "p50Ms": 4.0728930000000005,
+        "p95Ms": 8.750018,
+        "maxMs": 10.264779
+      },
+      "headIsolated": {
+        "p50Ms": 1.391288,
+        "p95Ms": 1.452513
+      }
+    },
+    {
+      "case": "shape-inequality",
+      "base": {
+        "minMs": 1.1284100000000001,
+        "p50Ms": 3.211312,
+        "p95Ms": 7.657055000000001,
+        "maxMs": 10.051392
+      },
+      "head": {
+        "minMs": 1.029998,
+        "p50Ms": 2.3041989999999997,
+        "p95Ms": 8.710074,
+        "maxMs": 10.729282999999999
+      },
+      "headIsolated": {
+        "p50Ms": 0.664667,
+        "p95Ms": 0.702878
+      }
+    },
+    {
+      "case": "shape-coalesce",
+      "base": {
+        "minMs": 1.904436,
+        "p50Ms": 4.512441,
+        "p95Ms": 7.992348999999999,
+        "maxMs": 8.581415
+      },
+      "head": {
+        "minMs": 1.840417,
+        "p50Ms": 4.093189,
+        "p95Ms": 8.581622000000001,
+        "maxMs": 18.559448999999997
+      },
+      "headIsolated": {
+        "p50Ms": 1.05829,
+        "p95Ms": 1.079169
+      }
+    },
+    {
+      "case": "dense/global-wide-class-pair",
+      "base": {
+        "minMs": 2.57788,
+        "p50Ms": 4.444304,
+        "p95Ms": 6.354229999999999,
+        "maxMs": 7.746481999999999
+      },
+      "head": {
+        "minMs": 2.523999,
+        "p50Ms": 4.6258610000000004,
+        "p95Ms": 8.403604,
+        "maxMs": 16.475421
+      },
+      "headIsolated": {
+        "p50Ms": 1.336748,
+        "p95Ms": 1.417459
+      }
+    },
+    {
+      "case": "dense/global-wide-caller-class",
+      "base": {
+        "minMs": 2.516765,
+        "p50Ms": 3.865977,
+        "p95Ms": 5.323674,
+        "maxMs": 7.868599000000001
+      },
+      "head": {
+        "minMs": 2.0027489999999997,
+        "p50Ms": 3.806956,
+        "p95Ms": 8.266419,
+        "maxMs": 10.461124
+      },
+      "headIsolated": {
+        "p50Ms": 1.234071,
+        "p95Ms": 1.281506
+      }
+    },
+    {
+      "case": "shape-cartesian",
+      "base": {
+        "minMs": 0.622459,
+        "p50Ms": 1.7968549999999999,
+        "p95Ms": 6.230179,
+        "maxMs": 9.010645
+      },
+      "head": {
+        "minMs": 0.712387,
+        "p50Ms": 3.034419,
+        "p95Ms": 8.233878,
+        "maxMs": 12.163522
+      },
+      "headIsolated": {
+        "p50Ms": 0.44507800000000003,
+        "p95Ms": 0.474563
+      }
+    },
+    {
+      "case": "shape-label-scan-constant",
+      "base": {
+        "minMs": 1.4124590000000001,
+        "p50Ms": 3.7049269999999996,
+        "p95Ms": 7.867577000000001,
+        "maxMs": 8.02542
+      },
+      "head": {
+        "minMs": 0.996345,
+        "p50Ms": 3.9357869999999995,
+        "p95Ms": 8.169167999999999,
+        "maxMs": 9.890842000000001
+      },
+      "headIsolated": {
+        "p50Ms": 0.7276239999999999,
+        "p95Ms": 0.780573
+      }
+    },
+    {
+      "case": "shape-skip",
+      "base": {
+        "minMs": 2.158238,
+        "p50Ms": 4.959914,
+        "p95Ms": 9.591526,
+        "maxMs": 12.885218
+      },
+      "head": {
+        "minMs": 2.193544,
+        "p50Ms": 4.835922,
+        "p95Ms": 7.783278999999999,
+        "maxMs": 10.959109999999999
+      },
+      "headIsolated": {
+        "p50Ms": 1.389526,
+        "p95Ms": 1.4795539999999998
+      }
+    },
+    {
+      "case": "shape-order-by-desc",
+      "base": {
+        "minMs": 1.075221,
+        "p50Ms": 2.2871979999999996,
+        "p95Ms": 5.986536,
+        "maxMs": 7.7973870000000005
+      },
+      "head": {
+        "minMs": 0.9563809999999999,
+        "p50Ms": 3.313188,
+        "p95Ms": 7.199973,
+        "maxMs": 10.156267
+      },
+      "headIsolated": {
+        "p50Ms": 0.5965210000000001,
+        "p95Ms": 0.6479670000000001
+      }
+    },
+    {
+      "case": "shape-with-filter",
+      "base": {
+        "minMs": 0.9874180000000001,
+        "p50Ms": 2.201829,
+        "p95Ms": 6.319094,
+        "maxMs": 6.968743
+      },
+      "head": {
+        "minMs": 1.1369660000000001,
+        "p50Ms": 2.608656,
+        "p95Ms": 7.009889,
+        "maxMs": 11.494857000000001
+      },
+      "headIsolated": {
+        "p50Ms": 0.688492,
+        "p95Ms": 0.709611
+      }
+    },
+    {
+      "case": "dense/global-wide-callee-class",
+      "base": {
+        "minMs": 1.9422860000000002,
+        "p50Ms": 3.714185,
+        "p95Ms": 6.677752,
+        "maxMs": 10.878091
+      },
+      "head": {
+        "minMs": 2.090071,
+        "p50Ms": 3.890111,
+        "p95Ms": 6.948145,
+        "maxMs": 8.855355000000001
+      },
+      "headIsolated": {
+        "p50Ms": 1.234488,
+        "p95Ms": 1.344233
+      }
+    },
+    {
+      "case": "shape-case-expr",
+      "base": {
+        "minMs": 1.032452,
+        "p50Ms": 2.534498,
+        "p95Ms": 6.254614,
+        "maxMs": 9.945024
+      },
+      "head": {
+        "minMs": 0.94547,
+        "p50Ms": 1.819166,
+        "p95Ms": 6.905244,
+        "maxMs": 7.916556999999999
+      },
+      "headIsolated": {
+        "p50Ms": 0.622796,
+        "p95Ms": 0.664857
+      }
+    },
+    {
+      "case": "localized-middle/global-wide-four-properties",
+      "base": {
+        "minMs": 1.347248,
+        "p50Ms": 2.886272,
+        "p95Ms": 4.590506,
+        "maxMs": 4.613086
+      },
+      "head": {
+        "minMs": 1.172855,
+        "p50Ms": 2.937799,
+        "p95Ms": 6.873805,
+        "maxMs": 7.782197
+      },
+      "headIsolated": {
+        "p50Ms": 0.829403,
+        "p95Ms": 0.93299
+      }
+    },
+    {
+      "case": "shape-in-list",
+      "base": {
+        "minMs": 0.8806499999999999,
+        "p50Ms": 2.325078,
+        "p95Ms": 6.880059,
+        "maxMs": 9.667577999999999
+      },
+      "head": {
+        "minMs": 0.875881,
+        "p50Ms": 2.109426,
+        "p95Ms": 6.579827,
+        "maxMs": 7.217315
+      },
+      "headIsolated": {
+        "p50Ms": 0.522403,
+        "p95Ms": 0.561012
+      }
+    },
+    {
+      "case": "broad-all-64/global-wide-four-properties",
+      "base": {
+        "minMs": 1.9854260000000001,
+        "p50Ms": 3.78088,
+        "p95Ms": 8.005754,
+        "maxMs": 130.313815
+      },
+      "head": {
+        "minMs": 2.299891,
+        "p50Ms": 3.978175,
+        "p95Ms": 6.351634,
+        "maxMs": 6.4155999999999995
+      },
+      "headIsolated": {
+        "p50Ms": 1.365833,
+        "p95Ms": 1.436555
+      }
+    },
+    {
+      "case": "shape-regex",
+      "base": {
+        "minMs": 1.103024,
+        "p50Ms": 2.645966,
+        "p95Ms": 4.958201,
+        "maxMs": 7.01526
+      },
+      "head": {
+        "minMs": 1.162013,
+        "p50Ms": 2.658579,
+        "p95Ms": 6.05416,
+        "maxMs": 6.337208
+      },
+      "headIsolated": {
+        "p50Ms": 0.653768,
+        "p95Ms": 1.093696
+      }
+    },
+    {
+      "case": "shape-union",
+      "base": {
+        "minMs": 0.87014,
+        "p50Ms": 2.375963,
+        "p95Ms": 7.875060999999999,
+        "maxMs": 8.856658
+      },
+      "head": {
+        "minMs": 0.868926,
+        "p50Ms": 1.625746,
+        "p95Ms": 6.015267000000001,
+        "maxMs": 6.07035
+      },
+      "headIsolated": {
+        "p50Ms": 0.618475,
+        "p95Ms": 0.641444
+      }
+    },
+    {
+      "case": "shape-collect",
+      "base": {
+        "minMs": 0.498528,
+        "p50Ms": 1.9249939999999999,
+        "p95Ms": 5.653885,
+        "maxMs": 6.136474000000001
+      },
+      "head": {
+        "minMs": 0.5469809999999999,
+        "p50Ms": 1.615396,
+        "p95Ms": 5.991053,
+        "maxMs": 7.018174999999999
+      },
+      "headIsolated": {
+        "p50Ms": 0.406166,
+        "p95Ms": 0.450178
+      }
+    },
+    {
+      "case": "shape-one-hop",
+      "base": {
+        "minMs": 1.369178,
+        "p50Ms": 3.168799,
+        "p95Ms": 5.007982999999999,
+        "maxMs": 6.7683
+      },
+      "head": {
+        "minMs": 1.225181,
+        "p50Ms": 2.9399729999999997,
+        "p95Ms": 5.921443,
+        "maxMs": 6.020528
+      },
+      "headIsolated": {
+        "p50Ms": 1.355083,
+        "p95Ms": 1.827974
+      }
+    },
+    {
+      "case": "shape-path",
+      "base": {
+        "minMs": 1.4827009999999998,
+        "p50Ms": 2.876865,
+        "p95Ms": 7.879809,
+        "maxMs": 8.393937000000001
+      },
+      "head": {
+        "minMs": 1.458675,
+        "p50Ms": 2.7671010000000003,
+        "p95Ms": 5.848868,
+        "maxMs": 5.892729999999999
+      },
+      "headIsolated": {
+        "p50Ms": 0.904454,
+        "p95Ms": 0.953906
+      }
+    },
+    {
+      "case": "shape-null-check",
+      "base": {
+        "minMs": 0.969685,
+        "p50Ms": 3.35211,
+        "p95Ms": 6.384856,
+        "maxMs": 7.611861
+      },
+      "head": {
+        "minMs": 1.074581,
+        "p50Ms": 2.4354329999999997,
+        "p95Ms": 5.82304,
+        "maxMs": 5.8754480000000004
+      },
+      "headIsolated": {
+        "p50Ms": 0.683981,
+        "p95Ms": 0.707248
+      }
+    },
+    {
+      "case": "zero/global-wide-class-pair",
+      "base": {
+        "minMs": 0.546968,
+        "p50Ms": 1.7223970000000002,
+        "p95Ms": 2.780446,
+        "maxMs": 4.456496
+      },
+      "head": {
+        "minMs": 0.511332,
+        "p50Ms": 1.528145,
+        "p95Ms": 5.799175999999999,
+        "maxMs": 6.787916
+      },
+      "headIsolated": {
+        "p50Ms": 0.422075,
+        "p95Ms": 0.453024
+      }
+    },
+    {
+      "case": "zero/global-wide-aliased",
+      "base": {
+        "minMs": 0.5634089999999999,
+        "p50Ms": 1.1376579999999998,
+        "p95Ms": 4.763949,
+        "maxMs": 4.9864239999999995
+      },
+      "head": {
+        "minMs": 0.509879,
+        "p50Ms": 0.81194,
+        "p95Ms": 5.790319,
+        "maxMs": 6.209369000000001
+      },
+      "headIsolated": {
+        "p50Ms": 0.40136700000000003,
+        "p95Ms": 0.43113199999999996
+      }
+    },
+    {
+      "case": "shape-two-hop",
+      "base": {
+        "minMs": 1.120946,
+        "p50Ms": 2.626791,
+        "p95Ms": 5.770743,
+        "maxMs": 5.868385
+      },
+      "head": {
+        "minMs": 1.1946839999999999,
+        "p50Ms": 2.1052589999999998,
+        "p95Ms": 5.661629,
+        "maxMs": 5.676826999999999
+      },
+      "headIsolated": {
+        "p50Ms": 0.7735799999999999,
+        "p95Ms": 0.972581
+      }
+    },
+    {
+      "case": "dense/global-wide-name-pair",
+      "base": {
+        "minMs": 1.775846,
+        "p50Ms": 3.571629,
+        "p95Ms": 5.3662,
+        "maxMs": 5.732933
+      },
+      "head": {
+        "minMs": 1.8793499999999999,
+        "p50Ms": 3.436497,
+        "p95Ms": 5.3978280000000005,
+        "maxMs": 6.028783000000001
+      },
+      "headIsolated": {
+        "p50Ms": 1.272004,
+        "p95Ms": 1.318735
+      }
+    },
+    {
+      "case": "shape-var-length",
+      "base": {
+        "minMs": 1.2671189999999999,
+        "p50Ms": 2.177644,
+        "p95Ms": 5.089214,
+        "maxMs": 6.05375
+      },
+      "head": {
+        "minMs": 1.0054619999999999,
+        "p50Ms": 2.021413,
+        "p95Ms": 5.313942,
+        "maxMs": 5.979221
+      },
+      "headIsolated": {
+        "p50Ms": 0.685897,
+        "p95Ms": 0.710522
+      }
+    },
+    {
+      "case": "zero/global-wide-provenance",
+      "base": {
+        "minMs": 0.5083369999999999,
+        "p50Ms": 1.710594,
+        "p95Ms": 4.1668579999999995,
+        "maxMs": 4.8050749999999995
+      },
+      "head": {
+        "minMs": 0.533123,
+        "p50Ms": 1.167324,
+        "p95Ms": 5.292953000000001,
+        "maxMs": 6.242901000000001
+      },
+      "headIsolated": {
+        "p50Ms": 0.40481300000000003,
+        "p95Ms": 0.432856
+      }
+    },
+    {
+      "case": "localized-late/global-wide-four-properties",
+      "base": {
+        "minMs": 1.480666,
+        "p50Ms": 2.9368879999999997,
+        "p95Ms": 5.1452290000000005,
+        "maxMs": 8.533387
+      },
+      "head": {
+        "minMs": 1.6676639999999998,
+        "p50Ms": 3.165342,
+        "p95Ms": 5.155927999999999,
+        "maxMs": 5.406906
+      },
+      "headIsolated": {
+        "p50Ms": 0.861614,
+        "p95Ms": 0.91239
+      }
+    },
+    {
+      "case": "zero/global-wide-wrapped-case-insensitive-distinct",
+      "base": {
+        "minMs": 0.652325,
+        "p50Ms": 1.328644,
+        "p95Ms": 2.620869,
+        "maxMs": 3.4874929999999997
+      },
+      "head": {
+        "minMs": 0.683122,
+        "p50Ms": 1.4900740000000001,
+        "p95Ms": 5.060781,
+        "maxMs": 6.618121
+      },
+      "headIsolated": {
+        "p50Ms": 0.44107100000000005,
+        "p95Ms": 0.468472
+      }
+    },
+    {
+      "case": "shape-one-hop-typed",
+      "base": {
+        "minMs": 1.276086,
+        "p50Ms": 3.096204,
+        "p95Ms": 5.31257,
+        "maxMs": 14.818097
+      },
+      "head": {
+        "minMs": 1.255637,
+        "p50Ms": 2.767502,
+        "p95Ms": 4.999206,
+        "maxMs": 5.11937
+      },
+      "headIsolated": {
+        "p50Ms": 1.250829,
+        "p95Ms": 1.556317
+      }
+    },
+    {
+      "case": "shape-id-lookup",
+      "base": {
+        "minMs": 1.325117,
+        "p50Ms": 3.233961,
+        "p95Ms": 7.101681,
+        "maxMs": 7.825458
+      },
+      "head": {
+        "minMs": 1.3726859999999999,
+        "p50Ms": 2.445272,
+        "p95Ms": 4.994277,
+        "maxMs": 5.067113
+      },
+      "headIsolated": {
+        "p50Ms": 0.514438,
+        "p95Ms": 0.542941
+      }
+    },
+    {
+      "case": "targeted/global-wide-provenance",
+      "base": {
+        "minMs": 0.8812989999999999,
+        "p50Ms": 1.4127040000000002,
+        "p95Ms": 3.192043,
+        "maxMs": 3.2973999999999997
+      },
+      "head": {
+        "minMs": 0.8851380000000001,
+        "p50Ms": 1.35372,
+        "p95Ms": 4.887188,
+        "maxMs": 5.50623
+      },
+      "headIsolated": {
+        "p50Ms": 0.6376269999999999,
+        "p95Ms": 0.660159
+      }
+    },
+    {
+      "case": "shape-incoming",
+      "base": {
+        "minMs": 1.21454,
+        "p50Ms": 2.756792,
+        "p95Ms": 4.928846,
+        "maxMs": 5.969663
+      },
+      "head": {
+        "minMs": 1.1783130000000002,
+        "p50Ms": 2.6674160000000002,
+        "p95Ms": 4.862301,
+        "maxMs": 5.496071
+      },
+      "headIsolated": {
+        "p50Ms": 0.802835,
+        "p95Ms": 1.764765
+      }
+    },
+    {
+      "case": "zero/global-wide-caller-class",
+      "base": {
+        "minMs": 0.533413,
+        "p50Ms": 1.4185210000000001,
+        "p95Ms": 4.765191000000001,
+        "maxMs": 6.677360999999999
+      },
+      "head": {
+        "minMs": 0.5186649999999999,
+        "p50Ms": 1.2365519999999999,
+        "p95Ms": 4.570317,
+        "maxMs": 7.760266
+      },
+      "headIsolated": {
+        "p50Ms": 0.421775,
+        "p95Ms": 0.446612
+      }
+    },
+    {
+      "case": "localized-early/global-wide-four-properties",
+      "base": {
+        "minMs": 1.09569,
+        "p50Ms": 2.005533,
+        "p95Ms": 3.390699,
+        "maxMs": 3.448931
+      },
+      "head": {
+        "minMs": 1.125305,
+        "p50Ms": 1.790622,
+        "p95Ms": 4.54995,
+        "maxMs": 5.464492
+      },
+      "headIsolated": {
+        "p50Ms": 0.645522,
+        "p95Ms": 0.66076
+      }
+    },
+    {
+      "case": "schema-label-histogram",
+      "base": {
+        "minMs": 1.30025,
+        "p50Ms": 1.9563190000000001,
+        "p95Ms": 4.145688,
+        "maxMs": 4.476713999999999
+      },
+      "head": {
+        "minMs": 1.4896239999999998,
+        "p50Ms": 2.4186419999999997,
+        "p95Ms": 4.5287820000000005,
+        "maxMs": 7.9122580000000005
+      },
+      "headIsolated": {
+        "p50Ms": 0.8544400000000001,
+        "p95Ms": 0.919944
+      }
+    },
+    {
+      "case": "targeted/global-wide-name-pair",
+      "base": {
+        "minMs": 0.697218,
+        "p50Ms": 1.8649840000000002,
+        "p95Ms": 5.595477,
+        "maxMs": 6.584467999999999
+      },
+      "head": {
+        "minMs": 0.766907,
+        "p50Ms": 2.107694,
+        "p95Ms": 4.520384,
+        "maxMs": 6.239967
+      },
+      "headIsolated": {
+        "p50Ms": 0.619975,
+        "p95Ms": 0.656262
+      }
+    },
+    {
+      "case": "targeted/global-wide-parameterized-as-literal",
+      "base": {
+        "minMs": 1.117652,
+        "p50Ms": 1.658497,
+        "p95Ms": 3.746925,
+        "maxMs": 4.743762
+      },
+      "head": {
+        "minMs": 0.754876,
+        "p50Ms": 1.373517,
+        "p95Ms": 3.9689979999999996,
+        "maxMs": 4.243179
+      },
+      "headIsolated": {
+        "p50Ms": 0.627768,
+        "p95Ms": 0.649389
+      }
+    },
+    {
+      "case": "zero/global-wide-parameterized-as-literal",
+      "base": {
+        "minMs": 0.516071,
+        "p50Ms": 1.629824,
+        "p95Ms": 3.902204,
+        "maxMs": 4.947891
+      },
+      "head": {
+        "minMs": 0.53698,
+        "p50Ms": 0.9879789999999999,
+        "p95Ms": 3.826823,
+        "maxMs": 5.585077
+      },
+      "headIsolated": {
+        "p50Ms": 0.40592599999999995,
+        "p95Ms": 0.430491
+      }
+    },
+    {
+      "case": "targeted/global-wide-caller-class",
+      "base": {
+        "minMs": 0.89688,
+        "p50Ms": 1.892153,
+        "p95Ms": 3.570237,
+        "maxMs": 4.251535
+      },
+      "head": {
+        "minMs": 0.7290270000000001,
+        "p50Ms": 1.6127019999999999,
+        "p95Ms": 3.708405,
+        "maxMs": 5.740256
+      },
+      "headIsolated": {
+        "p50Ms": 0.61915,
+        "p95Ms": 0.644571
+      }
+    },
+    {
+      "case": "targeted/global-wide-callee-class",
+      "base": {
+        "minMs": 0.716864,
+        "p50Ms": 1.499171,
+        "p95Ms": 3.327946,
+        "maxMs": 3.471353
+      },
+      "head": {
+        "minMs": 0.728626,
+        "p50Ms": 1.18363,
+        "p95Ms": 3.5082910000000003,
+        "maxMs": 3.681905
+      },
+      "headIsolated": {
+        "p50Ms": 0.6174499999999999,
+        "p95Ms": 0.631416
+      }
+    },
+    {
+      "case": "zero/global-wide-four-properties",
+      "base": {
+        "minMs": 0.604155,
+        "p50Ms": 1.5977750000000002,
+        "p95Ms": 7.405687,
+        "maxMs": 11.49512
+      },
+      "head": {
+        "minMs": 0.665027,
+        "p50Ms": 1.306462,
+        "p95Ms": 3.506137,
+        "maxMs": 5.336284
+      },
+      "headIsolated": {
+        "p50Ms": 0.452342,
+        "p95Ms": 0.545796
+      }
+    },
+    {
+      "case": "targeted/global-wide-aliased",
+      "base": {
+        "minMs": 1.1536359999999999,
+        "p50Ms": 1.522517,
+        "p95Ms": 3.096502,
+        "maxMs": 4.4528
+      },
+      "head": {
+        "minMs": 0.734837,
+        "p50Ms": 1.461481,
+        "p95Ms": 3.4354250000000004,
+        "maxMs": 4.255873
+      },
+      "headIsolated": {
+        "p50Ms": 0.629061,
+        "p95Ms": 0.656091
+      }
+    },
+    {
+      "case": "shape-count-label",
+      "base": {
+        "minMs": 0.5188159999999999,
+        "p50Ms": 1.74583,
+        "p95Ms": 2.846339,
+        "maxMs": 3.6673069999999997
+      },
+      "head": {
+        "minMs": 0.576373,
+        "p50Ms": 1.746972,
+        "p95Ms": 3.4207769999999997,
+        "maxMs": 3.770439
+      },
+      "headIsolated": {
+        "p50Ms": 0.37954699999999997,
+        "p95Ms": 0.411758
+      }
+    },
+    {
+      "case": "shape-count-all",
+      "base": {
+        "minMs": 0.619223,
+        "p50Ms": 2.108956,
+        "p95Ms": 5.698098000000001,
+        "maxMs": 7.23509
+      },
+      "head": {
+        "minMs": 0.624092,
+        "p50Ms": 1.386241,
+        "p95Ms": 3.418304,
+        "maxMs": 3.9846070000000005
+      },
+      "headIsolated": {
+        "p50Ms": 0.384406,
+        "p95Ms": 0.420232
+      }
+    },
+    {
+      "case": "zero/global-wide-callee-class",
+      "base": {
+        "minMs": 0.528344,
+        "p50Ms": 1.270104,
+        "p95Ms": 5.816818,
+        "maxMs": 8.836881
+      },
+      "head": {
+        "minMs": 0.44361500000000004,
+        "p50Ms": 1.193632,
+        "p95Ms": 3.4060610000000002,
+        "maxMs": 4.052925
+      },
+      "headIsolated": {
+        "p50Ms": 0.416134,
+        "p95Ms": 0.447383
+      }
+    },
+    {
+      "case": "targeted/global-wide-wrapped-case-insensitive-distinct",
+      "base": {
+        "minMs": 0.9496479999999999,
+        "p50Ms": 1.636347,
+        "p95Ms": 3.733221,
+        "maxMs": 5.148905
+      },
+      "head": {
+        "minMs": 0.928879,
+        "p50Ms": 1.685959,
+        "p95Ms": 3.2455320000000003,
+        "maxMs": 4.025393
+      },
+      "headIsolated": {
+        "p50Ms": 0.71429,
+        "p95Ms": 0.7447760000000001
+      }
+    },
+    {
+      "case": "zero/global-wide-name-pair",
+      "base": {
+        "minMs": 0.505542,
+        "p50Ms": 0.828222,
+        "p95Ms": 2.826943,
+        "maxMs": 3.771651
+      },
+      "head": {
+        "minMs": 0.513696,
+        "p50Ms": 1.066926,
+        "p95Ms": 2.9848660000000002,
+        "maxMs": 3.785908
+      },
+      "headIsolated": {
+        "p50Ms": 0.422286,
+        "p95Ms": 0.453835
+      }
+    },
+    {
+      "case": "targeted/global-wide-wrapped-case-insensitive",
+      "base": {
+        "minMs": 1.082724,
+        "p50Ms": 1.4500959999999998,
+        "p95Ms": 2.5424029999999997,
+        "maxMs": 5.380968
+      },
+      "head": {
+        "minMs": 0.9632729999999999,
+        "p50Ms": 1.839737,
+        "p95Ms": 2.382845,
+        "maxMs": 2.670932
+      },
+      "headIsolated": {
+        "p50Ms": 0.6421760000000001,
+        "p95Ms": 0.668434
+      }
+    },
+    {
+      "case": "zero/global-wide-wrapped-case-insensitive",
+      "base": {
+        "minMs": 0.511182,
+        "p50Ms": 1.38032,
+        "p95Ms": 2.806245,
+        "maxMs": 3.177456
+      },
+      "head": {
+        "minMs": 0.533994,
+        "p50Ms": 0.844642,
+        "p95Ms": 1.916509,
+        "maxMs": 2.753676
+      },
+      "headIsolated": {
+        "p50Ms": 0.396458,
+        "p95Ms": 0.422948
+      }
+    }
+  ],
+  "sha256": {
+    "ci-report.json": "d8041c375d803c5944a727f4519d6926c60de83a859f0b19ee39e158d2d2c060",
+    "base-requests.json.gz": "fd74afd0a34bf6e0f14033160cb9b5e8da9ea31bddb7b43751880b7367260a4d",
+    "head-requests.json.gz": "4ee5716f153937ddfaa647a40a5a03adf142499b3a38ee49a7faa13f92e18b0f"
+  },
+  "identicalNativeBinary": true
+}

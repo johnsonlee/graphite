@@ -227,3 +227,7 @@ CLI 检查通过 `Launcher-Agent-Class` 附加到一个临时前端 JAR，
 
 已删除的 `cypher-capacity` JMH job 原本仅供参考。这些行为测试仍为必需检查；
 JVM 查询耗时不能替代 Rust 多图报告。
+
+## 复杂聚合候选负载
+
+[复杂聚合候选负载](complex-aggregation-workload.md)提供六类面向代码图的分析查询及确定性语义测试，目标是真实多图慢查询的 P95。该独立候选目录尚未加入受信任的 73 类查询协议；两图执行 smoke 仅用于正确性接入检查，不提供性能证据。文档列明了结果 oracle、资源测量、生产代表性和受信任 harness 接入的剩余要求。
