@@ -1,0 +1,24 @@
+{
+  "schema": "darwin-cpu-timebase-proof-v1",
+  "measuredAtUnix": 1794371398.7069461,
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "timebaseNumer": 125,
+  "timebaseDenom": 3,
+  "getrusageBefore": {
+    "userSeconds": 0.022112,
+    "systemSeconds": 0.009871
+  },
+  "rawUserTicks": 530822,
+  "rawSystemTicks": 236978,
+  "converted": {
+    "userSeconds": 0.022117583333333333,
+    "systemSeconds": 0.009874083333333334
+  },
+  "getrusageAfter": {
+    "userSeconds": 0.022118,
+    "systemSeconds": 0.009877
+  },
+  "bracketPassed": true,
+  "scope": "Accounting correctness only; no workload performance measurement. Retained run same-host provenance supplied by parent."
+}

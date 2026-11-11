@@ -69,6 +69,10 @@ pub struct ManagedProcess {
     timeout: Duration,
     outcome: Option<ProcessOutcome>,
     signal_slot: usize,
+    #[cfg(unix)]
+    resource_usage: Option<libc::rusage>,
+    #[cfg(test)]
+    kill_attempts: std::sync::Arc<std::sync::atomic::AtomicUsize>,
 }
 
 #[cfg(unix)]
@@ -156,6 +160,10 @@ impl ManagedProcess {
             timeout: spec.timeout,
             outcome: None,
             signal_slot,
+            #[cfg(unix)]
+            resource_usage: None,
+            #[cfg(test)]
+            kill_attempts: Default::default(),
         };
         // Close the race between the pre-spawn cancellation check and registration.
         if is_cancelled() {
@@ -169,6 +177,8 @@ impl ManagedProcess {
     }
 
     fn kill_group(&mut self) {
+        #[cfg(test)]
+        self.kill_attempts.fetch_add(1, Ordering::SeqCst);
         #[cfg(unix)]
         unsafe {
             libc::kill(-(self.child.id() as i32), libc::SIGKILL);
@@ -176,10 +186,16 @@ impl ManagedProcess {
         let _ = self.child.kill();
     }
 
-    fn finish(&mut self, status: ExitStatus, reason: &str) -> ProcessOutcome {
-        // A parent can exit while its fork remains alive; retire the complete group.
+    fn retire_group(&mut self) {
         self.kill_group();
+        // Termination paths unregister before reaping, so the signal handler
+        // no longer retains the PID when wait/wait4 releases it for reuse.
         PROCESS_GROUPS[self.signal_slot].store(0, Ordering::SeqCst);
+    }
+
+    /// Record a reaped child without sending signals. In particular, wait4 does
+    /// not update std::process::Child's internal reaped state.
+    fn record_outcome(&mut self, status: ExitStatus, reason: &str) -> ProcessOutcome {
         let result = ProcessOutcome {
             success: reason == "exited" && status.success(),
             exit_code: status.code(),
@@ -194,13 +210,45 @@ impl ManagedProcess {
         if let Some(outcome) = &self.outcome {
             return Ok(outcome.clone());
         }
-        self.kill_group();
+        self.retire_group();
         let status = self.child.wait()?;
-        Ok(self.finish(status, reason))
+        Ok(self.record_outcome(status, reason))
     }
 
     pub fn terminate(&mut self) -> Result<ProcessOutcome> {
         self.stop("terminated")
+    }
+
+    /// Reap this exact child with kernel lifetime resource accounting.
+    /// Call before try_wait reaps an exited process; missing usage is an error.
+    #[cfg(unix)]
+    pub fn terminate_with_rusage(&mut self) -> Result<(ProcessOutcome, libc::rusage)> {
+        use std::os::unix::process::ExitStatusExt;
+        anyhow::ensure!(
+            self.outcome.is_none(),
+            "process already reaped; resource evidence unavailable"
+        );
+        self.retire_group();
+        let mut status = 0;
+        let mut usage: libc::rusage = unsafe { std::mem::zeroed() };
+        loop {
+            let result = unsafe { libc::wait4(self.child.id() as i32, &mut status, 0, &mut usage) };
+            if result >= 0 {
+                break;
+            }
+            let error = std::io::Error::last_os_error();
+            if error.kind() != std::io::ErrorKind::Interrupted {
+                return Err(error.into());
+            }
+        }
+        let outcome = self.record_outcome(ExitStatus::from_raw(status), "controlled-resource-stop");
+        self.resource_usage = Some(usage);
+        Ok((outcome, usage))
+    }
+
+    #[cfg(unix)]
+    pub fn captured_rusage(&self) -> Option<&libc::rusage> {
+        self.resource_usage.as_ref()
     }
 
     pub fn try_wait(&mut self) -> Result<Option<ProcessOutcome>> {
@@ -214,7 +262,10 @@ impl ManagedProcess {
             return self.stop("timeout").map(Some);
         }
         if let Some(status) = self.child.try_wait()? {
-            return Ok(Some(self.finish(status, "exited")));
+            // Child::try_wait has marked the direct child reaped, so Child::kill
+            // is inert. Preserve cleanup of descendants in the original group.
+            self.retire_group();
+            return Ok(Some(self.record_outcome(status, "exited")));
         }
         Ok(None)
     }
@@ -232,9 +283,8 @@ impl ManagedProcess {
 impl Drop for ManagedProcess {
     fn drop(&mut self) {
         if self.outcome.is_none() {
-            self.kill_group();
+            self.retire_group();
             let _ = self.child.wait();
-            PROCESS_GROUPS[self.signal_slot].store(0, Ordering::SeqCst);
         }
     }
 }
@@ -248,6 +298,29 @@ mod tests {
     use super::*;
     use std::sync::atomic::AtomicU64;
     static NEXT: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn exact_child_resource_reap_cannot_be_reused() {
+        let mut child =
+            ManagedProcess::spawn(&spec("while :; do :; done", Duration::from_secs(10))).unwrap();
+        std::thread::sleep(Duration::from_millis(30));
+        let kill_attempts = child.kill_attempts.clone();
+        let (outcome, usage) = child.terminate_with_rusage().unwrap();
+        assert_eq!(outcome.reason, "controlled-resource-stop");
+        assert!(usage.ru_maxrss > 0);
+        assert!(usage.ru_utime.tv_sec > 0 || usage.ru_utime.tv_usec > 0);
+        // One signal phase, before wait4. A second kill_group after raw reaping
+        // could target a recycled PID because Child does not know wait4 ran.
+        assert_eq!(kill_attempts.load(Ordering::SeqCst), 1);
+        assert!(child.terminate_with_rusage().is_err());
+        assert!(child.try_wait().unwrap().is_some());
+        assert_eq!(
+            child.terminate().unwrap().reason,
+            "controlled-resource-stop"
+        );
+        drop(child);
+        assert_eq!(kill_attempts.load(Ordering::SeqCst), 1);
+    }
 
     fn spec(script: &str, timeout: Duration) -> ProcessSpec {
         let directory = std::env::temp_dir().join(format!(

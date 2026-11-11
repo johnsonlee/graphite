@@ -1,0 +1,180 @@
+{
+  "schema": "graphite-local-evidence-provenance-v1",
+  "assembledAtDate": "2026-11-11",
+  "purpose": "Post-run explicit source mapping; does not rewrite original reports or independently attest binary compilation from these commits",
+  "originalMain": {
+    "commit": "58215b986f8c1be68b0480bc209e00311bc80dc1",
+    "tree": "90b0c0f7fbedbce64850457eaad221d28b2436d0",
+    "sourceUrl": "https://github.com/johnsonlee/graphite/tree/58215b986f8c1be68b0480bc209e00311bc80dc1",
+    "pathObjects": {
+      "Cargo.toml": "eaf7e102a570084163c7d26292f8fff7a0b6c282",
+      "Cargo.lock": "3e533420bad93695f3728f0835553c54e1ced669",
+      "backend": "de24a66188b38d19a7e14bba8b4418d0e992ca8c",
+      "backend/cypher/src": "a7452615ab0c290fbbf6c354e34a84fe34449b57",
+      "backend/cypher/Cargo.toml": "0fd6113841fcebd9f9a0322fb1563f6d907776d9",
+      "backend/storage": "12cf43c25ebd7b54478d2646e77b19b5292ad2e0",
+      "backend/explore": "f88672c87c3a0cfebc15e5c3a5b1eca2e7421138",
+      "cli": "049edb41c86b4cbc44c19fcdaa5f84a7aaf9345c",
+      "benchmark": "b50c1f513bd23f351ce5214a21f61aa0acf92d4e"
+    }
+  },
+  "baselineCheckoutChangesFromMain": [
+    "backend/cypher/tests/complex_aggregation_workload.rs",
+    "benchmark/README.md",
+    "benchmark/README.zh.md",
+    "benchmark/complex-aggregation-workload.md",
+    "benchmark/complex_aggregation_queries.json",
+    "docs/query-performance-assessment-2026-11-11.md",
+    "docs/query-performance-evidence/2026-11-11/audit.json",
+    "docs/query-performance-evidence/2026-11-11/base-requests.json.gz",
+    "docs/query-performance-evidence/2026-11-11/body-audit.json",
+    "docs/query-performance-evidence/2026-11-11/ci-report.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-caller-dependency-rollup.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-dataflow-degree-histogram.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-dataflow-optional-sinks.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-dependency-co-use.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-global-target-support.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/bi-two-hop-dataflow.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/summary.json",
+    "docs/query-performance-evidence/2026-11-11/complex-aggregation-smoke/validation.json",
+    "docs/query-performance-evidence/2026-11-11/head-requests.json.gz",
+    "docs/query-performance-evidence/2026-11-11/verify.py"
+  ],
+  "baselineEquivalence": "Baseline checkout adds workload/test/docs/evidence only; CLI and native production source path objects match original main. Full backend tree differs because tests were added.",
+  "products": [
+    {
+      "role": "original-main-native",
+      "commit": "a911529a8fe2fc66185dca7715179ec13bf7b7c3",
+      "tree": "6b9d3e27a221fec3e91f5b4072ddf5199e8f660a",
+      "sourceUrl": "https://github.com/johnsonlee/graphite/tree/a911529a8fe2fc66185dca7715179ec13bf7b7c3",
+      "pathObjects": {
+        "Cargo.toml": "eaf7e102a570084163c7d26292f8fff7a0b6c282",
+        "Cargo.lock": "3e533420bad93695f3728f0835553c54e1ced669",
+        "backend": "7ec80c2e4da4693b538f652c0135215dfa5b1c00",
+        "backend/cypher/src": "a7452615ab0c290fbbf6c354e34a84fe34449b57",
+        "backend/cypher/Cargo.toml": "0fd6113841fcebd9f9a0322fb1563f6d907776d9",
+        "backend/storage": "12cf43c25ebd7b54478d2646e77b19b5292ad2e0",
+        "backend/explore": "f88672c87c3a0cfebc15e5c3a5b1eca2e7421138",
+        "cli": "049edb41c86b4cbc44c19fcdaa5f84a7aaf9345c",
+        "benchmark": "aeac98b0a22fd23a11e91d5e958092253061d748"
+      },
+      "binary": {
+        "path": "/tmp/graphite-complex-p95/base/target/aarch64-apple-darwin/release/graphite",
+        "sha256": "8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c",
+        "bytes": 11963424,
+        "localFileHashVerified": true,
+        "matchedRunReportHash": true
+      },
+      "sourceBindingEvidence": "Retained base-build-identity.json and source comparison"
+    },
+    {
+      "role": "attempt315",
+      "commit": "94c7d3b9ed19f54324ed2a8379ff2597c1af3163",
+      "tree": "d4764e11a7bc601ca888f68603e637ed5af8e1b2",
+      "sourceUrl": "https://github.com/johnsonlee/graphite/tree/94c7d3b9ed19f54324ed2a8379ff2597c1af3163",
+      "pathObjects": {
+        "Cargo.toml": "eaf7e102a570084163c7d26292f8fff7a0b6c282",
+        "Cargo.lock": "3e533420bad93695f3728f0835553c54e1ced669",
+        "backend": "58c88593d4f195eb88482084f00df51b99cacae1",
+        "backend/cypher/src": "0226a50bbdbef38dbfea8edaed44043e10447157",
+        "backend/cypher/Cargo.toml": "0fd6113841fcebd9f9a0322fb1563f6d907776d9",
+        "backend/storage": "12cf43c25ebd7b54478d2646e77b19b5292ad2e0",
+        "backend/explore": "f88672c87c3a0cfebc15e5c3a5b1eca2e7421138",
+        "cli": "049edb41c86b4cbc44c19fcdaa5f84a7aaf9345c",
+        "benchmark": "5eecb5b089209dba2d582e61226b2821f61ca90f"
+      },
+      "binary": {
+        "path": "/private/tmp/graphite-attempt315-candidate-p3g77cc0/graphite",
+        "sha256": "3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8",
+        "bytes": 11983520,
+        "localFileHashVerified": true,
+        "matchedRunReportHash": true,
+        "fileModifiedUtcObservedAtReview": "2026-11-11T04:17:59.448115+00:00"
+      },
+      "sourceBindingEvidence": "Session build/freeze record followed by source commit; built before commit, no independent product build manifest or embedded source identity established",
+      "sessionAttestation": {
+        "releaseBuildSessionId": 39683,
+        "sequence": "Successful release build, copy2 to frozen path, SHA256 recorded, then history documentation and source commit; query agent reports no intervening production source changes",
+        "evidenceKind": "Session transcript attestation; compiler output was not separately archived"
+      }
+    },
+    {
+      "role": "attempt316",
+      "commit": "3498c8ead089e2d881719104ac6f368ec24d8c94",
+      "tree": "0aa7d0a71b1f31a68e3d2ecb8f643fa1f714f5d1",
+      "sourceUrl": "https://github.com/johnsonlee/graphite/tree/3498c8ead089e2d881719104ac6f368ec24d8c94",
+      "pathObjects": {
+        "Cargo.toml": "eaf7e102a570084163c7d26292f8fff7a0b6c282",
+        "Cargo.lock": "3e533420bad93695f3728f0835553c54e1ced669",
+        "backend": "46500b88b3972dce1e74e8c3a22d95ac545e1508",
+        "backend/cypher/src": "513e31e00165778a7cea731e92404be1f8daf53e",
+        "backend/cypher/Cargo.toml": "0fd6113841fcebd9f9a0322fb1563f6d907776d9",
+        "backend/storage": "12cf43c25ebd7b54478d2646e77b19b5292ad2e0",
+        "backend/explore": "f88672c87c3a0cfebc15e5c3a5b1eca2e7421138",
+        "cli": "049edb41c86b4cbc44c19fcdaa5f84a7aaf9345c",
+        "benchmark": "2e345f292c1d5889b30472a1f8df4df1eb8ad8c4"
+      },
+      "binary": {
+        "path": "/private/tmp/graphite-attempt316-candidate-c98he5_x/graphite",
+        "sha256": "c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374",
+        "bytes": 12043104,
+        "localFileHashVerified": true,
+        "matchedRunReportHash": true,
+        "fileModifiedUtcObservedAtReview": "2026-11-11T04:29:33.038861+00:00"
+      },
+      "sourceBindingEvidence": "Session build/freeze record followed by source commit; built before commit, no independent product build manifest or embedded source identity established",
+      "sessionAttestation": {
+        "releaseBuildSessionId": 13634,
+        "sequence": "Successful release build, copy2 to frozen path, SHA256 recorded, then history documentation and source commit; query agent reports no intervening production source changes",
+        "evidenceKind": "Session transcript attestation; compiler output was not separately archived"
+      }
+    }
+  ],
+  "fixedController": {
+    "commit": "3d1d19c16d4a3439297a09aad84bc6a666206c50",
+    "tree": "7880f23fc575d4ccd1ad9aaa8fa61d1a109dd594",
+    "sourceUrl": "https://github.com/johnsonlee/graphite/tree/3d1d19c16d4a3439297a09aad84bc6a666206c50",
+    "pathObjects": {
+      "Cargo.toml": "eaf7e102a570084163c7d26292f8fff7a0b6c282",
+      "Cargo.lock": "3e533420bad93695f3728f0835553c54e1ced669",
+      "backend": "58c88593d4f195eb88482084f00df51b99cacae1",
+      "backend/cypher/src": "0226a50bbdbef38dbfea8edaed44043e10447157",
+      "backend/cypher/Cargo.toml": "0fd6113841fcebd9f9a0322fb1563f6d907776d9",
+      "backend/storage": "12cf43c25ebd7b54478d2646e77b19b5292ad2e0",
+      "backend/explore": "f88672c87c3a0cfebc15e5c3a5b1eca2e7421138",
+      "cli": "049edb41c86b4cbc44c19fcdaa5f84a7aaf9345c",
+      "benchmark": "2e345f292c1d5889b30472a1f8df4df1eb8ad8c4"
+    },
+    "binaryObservedAtReview": {
+      "path": "/Users/johnsonlee/.codex/worktrees/1e26/graphite/target/aarch64-apple-darwin/release/graphite-benchmark",
+      "sha256": "d26e591832bdb8e1df50e264335e7934c94eab1da7cc27af70dbb0c048cac2d8",
+      "bytes": 3877280,
+      "localFileHashVerified": true,
+      "matchedRunReportHash": false
+    },
+    "sourceBindingEvidence": "Session records identify fixed controller used by paired runs; original paired report does not record controller binary hash. Current executable hash is observed after runs, not historical binary attestation."
+  },
+  "toolchainObservedAtReview": {
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+    "limitation": "Current toolchain versions; retained original baseline build identity separately records rustc. Product315/316 session records report Rust1.93.0, but no independent per-product compiler manifest is claimed."
+  },
+  "baselineBuildIdentity": {
+    "sourceCommit": "a911529a8fe2fc66185dca7715179ec13bf7b7c3",
+    "sourceTree": "6b9d3e27a221fec3e91f5b4072ddf5199e8f660a",
+    "binary": "/tmp/graphite-complex-p95/base/target/aarch64-apple-darwin/release/graphite",
+    "sha256": "8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c",
+    "compiler": "rustc 1.93.0 (254b59607 2026-01-19)"
+  },
+  "limitations": [
+    "Product reports bind executable hashes and fixtures, not source commits, compiler versions, or trees.",
+    "315/316 were built and frozen before committing; mapping to commits is supported by session build records and source review, not an independent signed build manifest.",
+    "This file is derived after the runs. Git object identities and present binary hashes are independently rechecked; they do not alone prove how each binary was built."
+  ],
+  "supportingCorrectnessLog": {
+    "file": "attempt316-cypher-tests.log",
+    "sha256": "e27ad0a2435fda68bf076c5e0e7139fd396d0dbe5b390fa35fbaf994f058ed3b",
+    "bytes": 46081,
+    "limitation": "Test output only; not a product binary build/source attestation"
+  }
+}

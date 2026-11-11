@@ -93,6 +93,82 @@ JMH 构建结果包含完整的可用图保存及回读边界。
 基准值为零时，百分比变化没有定义。缺失或不可比较的值标为 `UNAVAILABLE`，绝不记为零。
 托管 runner 的耗时是受环境噪声影响的观测值，不能证明性能回归验收通过或性能已经恢复。
 
+## 本地已保存图查询诊断
+
+`local-query` 是使用现有可信 real64 manifest 的独立开发命令，不重新构建前端图，
+也不改变 `run`、必需的 73 用例 gate 或其策略。先运行 `--mode smoke`：
+四个 worker 为每个用例执行一次完整的首次使用请求，随后停止，不执行预热或压测。
+失败会停止该阶段，保留每个已发出的请求及部分响应体，未发出的任务明确标为未完成；
+失败不会变成通过的计时样本。
+
+```sh
+graphite-benchmark local-query --base /work/base/graphite \
+  --manifest /work/graphs/graphs.tsv --output /work/discovery --mode smoke
+graphite-benchmark local-query --base /work/base/graphite \
+  --candidate /work/candidate/graphite --manifest /work/graphs/graphs.tsv \
+  --output /work/paired-pilot --mode pilot --order ab
+```
+
+默认的 `--workload complex` 使用 `complex_aggregation_queries.json` 中的六个固定用例。
+`pilot` 为每个用例预热两次并执行二十次压测请求；`measure` 预热两次并执行一百次压测请求。
+两种模式都先执行首次使用阶段。`--order ba` 颠倒两个全新进程的执行顺序；
+每次重复使用新的输出目录，保留独立的配对结果。不支持任意查询或样本数覆盖。
+`--workload regression` 复用未修改的 73 用例目录，在 pilot 和 measure 模式下均执行
+每用例二十次压测采样；压测 p50 低于 100 ms 时，额外以并发一执行四十次隔离采样。
+本地回归命令不等于完整可信 CI 流程：前端、容量/恢复及专门的图作用域探测仍由 `run`
+及常规测试覆盖。本地命令固定服务端超时为 60 秒、客户端超时为 70 秒，与现有 CI 超时独立。
+每个请求都针对全部 64 个注册图，并完整消费响应。worker 校验并写出产物后才领取下一项任务，
+因此这不是饱和负载测试。
+
+`--workload complex-wide-distinct`（`Workload::ComplexWideDistinct`）是独立的固定六用例负载。
+其中五个用例不变；co-use 改名为 `bi-dependency-co-use-wide-distinct`，仅将
+`count(DISTINCT graph) AS graphs` 替换为 `count(DISTINCT caller) AS callers`。
+它在同一批 real64 输入上覆盖更宽的 DISTINCT 值字典，**不代表 65 或 130 个实体图的性能测量**。
+应保留完整响应中 `callers > 64`（provenance 至多64时，证明稀疏存储需要 `> 576`）的证据，
+或独立执行不作延迟宣称的字典基数检查，证明覆盖了修改路径；负载名称本身不能证明字典宽度。
+模式、采样次数、四个 worker 及固定 60/70 秒超时与 `complex` 一致。
+两个负载的样本不能混合，也不能跨负载比较延迟。失败的基线必须保留，其百分位及配对资源比较不可用；
+候选单独运行完成不能补出一个基线。
+
+`--workload complex-dense-distinct` 保留相同六用例及 real64 图作用域。
+仅 co-use 在收集 targets 后添加
+`WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets`，
+按 caller 长度为每个实体图派生四个桶，不创建图，也不改变 pair 的重复次数。
+DISTINCT 字典最多256个值，provenance 仍最多64个图 ID。首次使用必须完整返回并通过校验，
+且至少一个 `graphs` 计数处于65至256；否则该版本在压测前失败。
+`denseTierEvidence` 保留返回行数及最大 DISTINCT 计数。结合查询的上界，
+这证明高位 word stride 为1至3，审阅中的候选会选择 Dense，而非 inline64 或 Sparse。
+基线不必实现相同存储表示。
+
+Dense 后续验证预先约定为：候选单独 smoke 验证查询及存储层级，再运行
+**一次 AB pilot 配对，每用例20个请求**，使用冻结316基线及318候选。
+复用已有 manifest 和冻结二进制，测量期间不编译。保留全部六用例、四个 worker、完整 HTTP 响应、
+首次使用与预热分离、全部失败、逐用例 nearest-rank P50/P95（P95为第19个排序样本）、
+压测 CPU 及查询进程整个生命周期的峰值 RSS。这是存储层级诊断证据，不是正式性能验收；
+除非失败证明有必要，不增加重复轮次或百样本确认。只比较相同 Dense 负载。
+固定64图的 provenance 范围不能验证另外的高 provenance 修复，也不能证明超过64个实体图的部署性能。
+
+输入 manifest 及来源校验与 `run` 共享。执行前对所有已保存文件计算一次哈希，
+每个版本结束后检查路径、大小及修改时间，并保留二进制和查询目录哈希。
+两个二进制使用同一组已保存输入；改变存储格式的候选版本需要另行审查测量协议。
+哈希过程会预热文件系统缓存：首次使用指全新服务的首次查询序列，
+**不表示磁盘冷输入，也不表示每个请求独立冷启动**。测量时使用 release 构建的控制器，避免同时编译。
+
+macOS 使用 `proc_pid_rusage` 获取服务进程的用户态/内核态 CPU 及瞬时 RSS，Linux 使用 `/proc`。
+Darwin CPU 原始 Mach tick 按 `mach_timebase_info` 换算为秒，并保留原始 tick 和换算比例。
+`wait4` 获取子进程整个生命周期的 CPU 和内核记录的峰值 RSS（Darwin 单位为字节，
+Linux 的 KiB 换算为字节）。pilot/measure 额外运行只加载图的服务进程，取得加载阶段的内核峰值。
+查询进程的峰值包括自身加载、首次使用、预热、压测及回归的隔离采样，
+**不是可重置的压测时间窗口峰值**，不能减去加载峰值。
+压测 CPU 是完整混合查询阶段前后服务进程 CPU 快照的差，不包含客户端或控制器 CPU。
+资源数据覆盖固定的混合负载，不代表各个查询。快照前失败时数据不可用，不能记为零。
+
+`report.json` 始终设置 `performanceAcceptance: false`。重复的完整带类型响应及版本间匹配的
+oracle 只能建立可比性，不能独立证明语义正确性或生产负载代表性。
+命令记录每个用例的 nearest-rank p50/p95 和全部失败，不能独自批准 CPU/RSS 的 5% 限制、
+正确性/稳定性或生产 P95 恢复。smoke 的一次首次使用观察不是百分位分布。
+不支持合成图或单图性能测量。
+
 ## GitHub 集成
 
 `benchmark.yml` 从 PR 目标分支已记录的 base tip 构建并测试控制器，
@@ -227,3 +303,7 @@ CLI 检查通过 `Launcher-Agent-Class` 附加到一个临时前端 JAR，
 
 已删除的 `cypher-capacity` JMH job 原本仅供参考。这些行为测试仍为必需检查；
 JVM 查询耗时不能替代 Rust 多图报告。
+
+## 复杂聚合候选负载
+
+[复杂聚合候选负载](complex-aggregation-workload.md)提供六类面向代码图的分析查询及确定性语义测试，目标是真实多图慢查询的 P95。该独立候选目录尚未加入受信任的 73 类查询协议；两图执行 smoke 仅用于正确性接入检查，不提供性能证据。文档列明了结果 oracle、资源测量、生产代表性和受信任 harness 接入的剩余要求。

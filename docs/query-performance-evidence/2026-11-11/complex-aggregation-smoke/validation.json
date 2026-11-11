@@ -1,0 +1,12 @@
+{
+  "moduleTestCommand": "cargo test --locked -p graphite-cypher",
+  "moduleTestsPassed": 427,
+  "failed": 0,
+  "formatCheck": "cargo fmt --all --check: PASS",
+  "lintCheck": "cargo clippy --locked -p graphite-cypher --all-targets --all-features -- -D warnings: PASS",
+  "candidateSemanticExecutions": 24,
+  "nativeExecutionSmokeCases": 6,
+  "official73CaseGateChanged": false,
+  "performanceMeasurementPerformed": false,
+  "candidateTestSha256": "45505a1f5cc6cee3d28edd1b087512802a5b75de561e1c04d6a753718c400b7f"
+}

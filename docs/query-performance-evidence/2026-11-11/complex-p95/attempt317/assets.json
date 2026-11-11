@@ -1,0 +1,30 @@
+{
+  "repository": "johnsonlee/graphite",
+  "releaseTag": "benchmark-evidence-pr212-attempt317-2026-11-11",
+  "assets": [
+    {
+      "name": "normal-measure.tar.gz",
+      "bytes": 6667544,
+      "sha256": "3e4ffbccd40db2d3e1ca4590fb2aecfd445df9c5d700e9eeb1f9c3a2ea8aae4a",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-attempt317-2026-11-11/normal-measure.tar.gz"
+    },
+    {
+      "name": "normal-pilot.tar.gz",
+      "bytes": 1713506,
+      "sha256": "aa22954f24cbc93107869240291229599ae75c1deded3f0bdae85a3a8166b287",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-attempt317-2026-11-11/normal-pilot.tar.gz"
+    },
+    {
+      "name": "source-controller-identity.tar.gz",
+      "bytes": 27705,
+      "sha256": "cfc29a80f6120bb46ee93564491cc4380ca79b09832e3aa1bfa9cb771c73170b",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-attempt317-2026-11-11/source-controller-identity.tar.gz"
+    },
+    {
+      "name": "wide-pilot.tar.gz",
+      "bytes": 1739482,
+      "sha256": "ffec894ba5a5c3c2eb269454e6d21b0231de7bb723079918071a378cd0418265",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-attempt317-2026-11-11/wide-pilot.tar.gz"
+    }
+  ]
+}

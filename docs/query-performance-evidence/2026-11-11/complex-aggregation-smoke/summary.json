@@ -1,0 +1,321 @@
+{
+  "purpose": "correctness-only execution smoke; no latency/throughput measurement",
+  "binarySha256": "e23c14da88ef1a1a5f43a70820e7184ea507814af9c4ed47d179ff0724af5afe",
+  "nativeSourceReference": "67d8440f; backend/Cargo.toml/Cargo.lock unchanged against HEAD58215b98",
+  "graphIds": [
+    "fixture-tika-00",
+    "fixture-tika-01"
+  ],
+  "cases": [
+    {
+      "id": "bi-caller-dependency-rollup",
+      "httpStatus": 200,
+      "bodySha256": "530c61688cb66f9db32c2174ab6c192c5904e29ddde06aa76fca1a5af2087132",
+      "rowCount": 100,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, n.callee_class AS target, count(*) AS calls RETURN graph, caller, sum(calls) AS calls, count(*) AS targets ORDER BY calls DESC, graph, caller LIMIT 100"
+    },
+    {
+      "id": "bi-global-target-support",
+      "httpStatus": 200,
+      "bodySha256": "7cecbba99120a7f4e55a147aca1c4c380679e21373b531075f41a7daa13c19fd",
+      "rowCount": 100,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, n.callee_class AS target, count(*) AS calls RETURN target, count(DISTINCT graph) AS graphs, count(*) AS caller_graph_pairs, sum(calls) AS calls ORDER BY calls DESC, target LIMIT 100"
+    },
+    {
+      "id": "bi-two-hop-dataflow",
+      "httpStatus": 200,
+      "bodySha256": "6113311a818fd7461409329a02c7ec7fb964bc4ce56635aeee018c6566738500",
+      "rowCount": 2,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (a:CallSite)-[:DATAFLOW]->(b)-[:DATAFLOW]->(c) RETURN a.graphId AS graph, count(*) AS paths, count(DISTINCT a) AS starts, count(DISTINCT c) AS destinations ORDER BY paths DESC, graph LIMIT 100"
+    },
+    {
+      "id": "bi-dataflow-degree-histogram",
+      "httpStatus": 200,
+      "bodySha256": "c17d17637e0b9c1e8ef6981f569d7b577352c0d781807e127b4bcd1dec561f1c",
+      "rowCount": 2,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (a:CallSite)-[:DATAFLOW]->(b) WITH a.graphId AS graph, a AS source, count(*) AS degree RETURN graph, degree, count(*) AS sources ORDER BY graph, degree LIMIT 100"
+    },
+    {
+      "id": "bi-dataflow-optional-sinks",
+      "httpStatus": 200,
+      "bodySha256": "f1e6bd9b5ed4fd299b6e8a4d32a63fa9ce200076efe95d7483aade962c43de84",
+      "rowCount": 2,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (a:CallSite) OPTIONAL MATCH (a)-[:DATAFLOW]->(b) WITH a.graphId AS graph, a AS source, count(b) AS degree RETURN graph, count(*) AS sources, sum(degree) AS edges, sum(CASE WHEN degree = 0 THEN 1 ELSE 0 END) AS sinks ORDER BY graph LIMIT 100"
+    },
+    {
+      "id": "bi-dependency-co-use",
+      "httpStatus": 200,
+      "bodySha256": "77e663c59dd63fe2e60023dc5bc7c01534fd659f978a7045f517658e80697a5c",
+      "rowCount": 100,
+      "graphCount": 2,
+      "error": null,
+      "passed": true,
+      "query": "MATCH (n:CallSite) WITH n.graphId AS graph, n.caller_class AS caller, collect(DISTINCT n.callee_class) AS targets UNWIND targets AS left_target UNWIND targets AS right_target WITH graph, caller, left_target, right_target WHERE left_target < right_target RETURN left_target, right_target, count(*) AS caller_graph_pairs, count(DISTINCT graph) AS graphs ORDER BY caller_graph_pairs DESC, left_target, right_target LIMIT 100"
+    }
+  ],
+  "passed": true,
+  "catalogSha256": "548c72104ebd426ae2ac5812f8f78aad6f055126f6b997b1d30ddfa71c486f44",
+  "reviewedHead": "58215b986f8c1be68b0480bc209e00311bc80dc1",
+  "fixtures": [
+    {
+      "graphId": "fixture-tika-00",
+      "files": [
+        {
+          "path": "forward.graph",
+          "bytes": 1022403,
+          "sha256": "e3adfaa2261f1a0aa26061bf8604e614a46aa72b33862fead0929036abcd1fdc"
+        },
+        {
+          "path": "forward.offsets",
+          "bytes": 2435061,
+          "sha256": "5df2f8ddfcf7f48545a39069efe3ad1f17dc81df7ed6129112bd63473e3e75ee"
+        },
+        {
+          "path": "forward.properties",
+          "bytes": 1149,
+          "sha256": "c9299172ecb5a521f7e92ef5703e0fb9d16b8d865495a3ba8e6c26f22ecdcf7b"
+        },
+        {
+          "path": "graph.branchdefs",
+          "bytes": 359868,
+          "sha256": "cac768194c0a09686e5f5935e916e0e3a5703adffcd4de6baa014716f24b2c94"
+        },
+        {
+          "path": "graph.callsite-ordinals",
+          "bytes": 453900,
+          "sha256": "b6907231b05d820f61117cd866a64d95ace2f74e8554b885f5e7f4a93c956b81"
+        },
+        {
+          "path": "graph.callsite-string-content.identity",
+          "bytes": 32,
+          "sha256": "fb1e422e853ea21415542ff8d0bca5f92a7a5128e688be53862a29dffe70c3f7"
+        },
+        {
+          "path": "graph.callsite-string-index",
+          "bytes": 4196324,
+          "sha256": "b6dc5e14a8219cbe637bbc6b7c7dd20c167d17d96756ba3defb60f528ca09717"
+        },
+        {
+          "path": "graph.classoverview",
+          "bytes": 56796,
+          "sha256": "1295f3cfdc069ae55c2306f0fa27460cdd43652a6733032a71d01bfc546cc6ea"
+        },
+        {
+          "path": "graph.comparisons",
+          "bytes": 321640,
+          "sha256": "4e2c489f30644c8bff2db9276d263be5226ff74df7c0bb115921e4233997fdf3"
+        },
+        {
+          "path": "graph.completeness",
+          "bytes": 142862,
+          "sha256": "006ba592af9cdb8576f5e5b0fe4a627252ad38c5ea13c21c1607b2247565fa8b"
+        },
+        {
+          "path": "graph.declared-keys",
+          "bytes": 191,
+          "sha256": "a139590b9dd54527e813832dd59205bc2699ced4b10db9932977e3d5f3dbed90"
+        },
+        {
+          "path": "graph.declared-presence",
+          "bytes": 801124,
+          "sha256": "84b954c6da4e3a02cfbaf9d3f63c986c7f91a36bc9daad1148492c5b1e964bdd"
+        },
+        {
+          "path": "graph.labelprefix",
+          "bytes": 25059260,
+          "sha256": "602da0b3c9d8d4f1e1f0b9f5183b5e044f2f27fe56b8539309f6426ffdabbe31"
+        },
+        {
+          "path": "graph.labels",
+          "bytes": 240502,
+          "sha256": "dfeb616822afa548c1cc963f5d177d236c79f6f6f67a9710fac4db6ccfba5292"
+        },
+        {
+          "path": "graph.metadata",
+          "bytes": 1619856,
+          "sha256": "2bf2f5a60f4ef22a33727c16f41f21f708ea223277dac18dbff809d46ef3a9b0"
+        },
+        {
+          "path": "graph.nodedata",
+          "bytes": 8782294,
+          "sha256": "5b9867d0798b240437d3275e9070494e44f37c0a2c518fd8bc0c54a32519adb9"
+        },
+        {
+          "path": "graph.nodeindex",
+          "bytes": 2893808,
+          "sha256": "ba13a5f8377d27bc9a1eef23a81f0304915e3495bd603514a2c98a42ed043f73"
+        },
+        {
+          "path": "graph.nodeoffsets",
+          "bytes": 50118520,
+          "sha256": "fa4a00d2a8bdd46a13d238d516d133518a09f316c4e7e383689acd91c26d1700"
+        },
+        {
+          "path": "graph.resources",
+          "bytes": 456043,
+          "sha256": "d8a3a96d7418b32e298b2047630cc5ed90130083469eaf1be4613d91827f2b4f"
+        },
+        {
+          "path": "graph.strings",
+          "bytes": 998283,
+          "sha256": "748114e409edc880a6b10e48f2627fe316296edb74268ee59f0cd6fdcfa45ae2"
+        },
+        {
+          "path": "graph.strings.identity",
+          "bytes": 32,
+          "sha256": "225b6da684df4ee6553eea56f01743b5ef76d2ccd95f691f1687a6ff85ba3178"
+        },
+        {
+          "path": "graph.typeindex",
+          "bytes": 890616,
+          "sha256": "2706b7e633430e1c2dd732eb3f6c0e280fa3f7333e39734275de40f06fc17ee3"
+        },
+        {
+          "path": "graph.types",
+          "bytes": 873612,
+          "sha256": "662f0dceeced5d480ee5daf9d64a50a9269474c3db6af5c90999b993c12c5354"
+        }
+      ]
+    },
+    {
+      "graphId": "fixture-tika-01",
+      "files": [
+        {
+          "path": "forward.graph",
+          "bytes": 1099308,
+          "sha256": "5ff2053897d374ea62a1fc6c0a7f0425c018ae7a99b06d7de544416a3d88c8f4"
+        },
+        {
+          "path": "forward.offsets",
+          "bytes": 2549351,
+          "sha256": "32b7fe895b15c6755413a9e38df7e778eb41eabed66f6d0cc1520a1980cd741e"
+        },
+        {
+          "path": "forward.properties",
+          "bytes": 1157,
+          "sha256": "8f73265417f2b8b58920c0cecc07271d83a81f31510465776e0ca05e6877bf4f"
+        },
+        {
+          "path": "graph.branchdefs",
+          "bytes": 384580,
+          "sha256": "4101874431538405694e44e85e1f04b92b93bccf0e4120572ce5cb691f72d938"
+        },
+        {
+          "path": "graph.callsite-ordinals",
+          "bytes": 546296,
+          "sha256": "b3a06162d72e4f8c07ab4e208e7b6815371829c77a022cd17f7b3650ec1249f0"
+        },
+        {
+          "path": "graph.callsite-string-content.identity",
+          "bytes": 32,
+          "sha256": "379ef40fbfadaa785efffd07629b120aace2c446b7d0c577e5f324fea3ed88cf"
+        },
+        {
+          "path": "graph.callsite-string-index",
+          "bytes": 4585764,
+          "sha256": "2e0e2618da8caf13d01b77f3152f38998609462cf938e9ba52b8c8fa3b828ad1"
+        },
+        {
+          "path": "graph.classoverview",
+          "bytes": 60732,
+          "sha256": "2cd75964e63e231ff282ab745e9df000154f48184a324fd3097b5ddc98a907e7"
+        },
+        {
+          "path": "graph.comparisons",
+          "bytes": 366648,
+          "sha256": "f144c7ced42869ac95dc3730e78dd6a93228d6acd3faa69c3f9d7464e062d1ef"
+        },
+        {
+          "path": "graph.completeness",
+          "bytes": 142938,
+          "sha256": "ee57f399c31181e9d464f8f2da722ff3b2bdf1ae321c60b1943ce6b25b3bdf49"
+        },
+        {
+          "path": "graph.declared-keys",
+          "bytes": 191,
+          "sha256": "376848c1a1db378a458f764428aa63028661af41b424afcde74a747fe8c1562c"
+        },
+        {
+          "path": "graph.declared-presence",
+          "bytes": 835540,
+          "sha256": "f3797ac72efdc6bdfaf53569d068fff635f9965efd8a38664b71f036481ccfcd"
+        },
+        {
+          "path": "graph.labelprefix",
+          "bytes": 26109192,
+          "sha256": "d0343548fae1a783b7400f2c5941518e966580d8fd93a65d47a36f5b49b9337b"
+        },
+        {
+          "path": "graph.labels",
+          "bytes": 285887,
+          "sha256": "3acc9da760e520ca6301c1d7dbe643d92bd70d9bf251906e0a915fc4e20e178d"
+        },
+        {
+          "path": "graph.metadata",
+          "bytes": 1875229,
+          "sha256": "0a7ef07927fa6fce9576f7bdfb2505680603dfd5fd381176b231673fea55ca58"
+        },
+        {
+          "path": "graph.nodedata",
+          "bytes": 10339609,
+          "sha256": "0c361a401e554f8be55cd73b92eea86087aab9dd7db46ef9715c3ef2e4311c30"
+        },
+        {
+          "path": "graph.nodeindex",
+          "bytes": 3412287,
+          "sha256": "7f4a89c81a5b09ca87644f4fbad0ce3471e8f24073be9b468e98083e062e0fdd"
+        },
+        {
+          "path": "graph.nodeoffsets",
+          "bytes": 52218384,
+          "sha256": "15e106a272d2feaf48de9b16dbf81add55356466fadb3186d8a616c641bbcf82"
+        },
+        {
+          "path": "graph.resources",
+          "bytes": 248918,
+          "sha256": "ecf088a7e77bdb8a532f5a1c995a105489e6da4ded7f33ede849271e119c679b"
+        },
+        {
+          "path": "graph.strings",
+          "bytes": 1027597,
+          "sha256": "95eafd33de7ab8ccb7dc706967ae4ef3d6434a14176fd389399d9cd91fc967fd"
+        },
+        {
+          "path": "graph.strings.identity",
+          "bytes": 32,
+          "sha256": "86b1439715453e62b7d49357109525486fe03434069b2e48b6fb542b964e0ed1"
+        },
+        {
+          "path": "graph.typeindex",
+          "bytes": 1050148,
+          "sha256": "a2e789dfadd552d75a07f76d766e7dc5bbbefd87c8e9497e54e228946923fab5"
+        },
+        {
+          "path": "graph.types",
+          "bytes": 970184,
+          "sha256": "6a7f250e350fe07cafa8fd236f1af48bbe773d1ebbdc900719d267118220354d"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Two real graphs only; no performance measurement",
+    "HTTP/scope/nonempty-output checks; no independent complete real-data oracle",
+    "Synthetic property-graph semantic tests do not prove native source provenance"
+  ]
+}

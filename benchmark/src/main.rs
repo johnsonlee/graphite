@@ -17,6 +17,9 @@ struct Cli {
 enum Commands {
     /// Build both revisions, run the fixed workload, and render its report.
     Run(pipeline::RunArgs),
+    /// Diagnose the fixed six-case real64 workload using existing graphs (never CI acceptance).
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    LocalQuery(graphite_benchmark::native::local_query::LocalQueryArgs),
     /// Re-render retained evidence, including after an interrupted run.
     Report {
         #[arg(long)]
@@ -28,6 +31,8 @@ fn execute() -> Result<()> {
     process::install_signal_handlers()?;
     let passed = match Cli::parse().command {
         Commands::Run(args) => pipeline::run(&args)?,
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        Commands::LocalQuery(args) => graphite_benchmark::native::local_query::run(&args)?,
         Commands::Report { run } => pipeline::render(&run)?,
     };
     report::require_success(passed)

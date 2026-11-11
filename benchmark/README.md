@@ -104,6 +104,102 @@ sample count. A zero baseline has no defined percentage change. Missing or incom
 are `UNAVAILABLE`, never zero. Hosted-runner timings are observations affected by environment
 noise; they do not establish performance regression acceptance or recovery.
 
+## Local saved-graph query diagnostics
+
+`local-query` is a separate development command for an existing trusted real64
+manifest. It does not rebuild frontend graphs or change `run`, the required
+73-case gate, or its policy. Start with `--mode smoke`: it executes one complete
+first-use request per case at four workers and stops, with no warmup or pressure.
+Failures stop the stage, retain every issued request/partial body, and leave
+unissued work explicitly incomplete; they never become passing timing samples.
+
+```sh
+graphite-benchmark local-query --base /work/base/graphite \
+  --manifest /work/graphs/graphs.tsv --output /work/discovery --mode smoke
+graphite-benchmark local-query --base /work/base/graphite \
+  --candidate /work/candidate/graphite --manifest /work/graphs/graphs.tsv \
+  --output /work/paired-pilot --mode pilot --order ab
+```
+
+The default `--workload complex` uses the six fixed entries in
+`complex_aggregation_queries.json`. Pilot has two warmups and twenty pressure
+requests per case; measure has two warmups and one hundred pressure requests.
+Both include the first-use pass. `--order ba` reverses the two fresh processes;
+repeat into a new output directory to retain independent pairs. There is no
+arbitrary query/sample-count override. `--workload regression` reuses the unchanged
+73-case catalog, with twenty pressure samples in both pilot and measure modes
+and forty isolated samples at concurrency one when pressure p50 is below 100 ms.
+This local regression command is not the complete trusted CI pipeline: frontend,
+capacity/recovery and dedicated scope probes remain in `run` and ordinary tests.
+The local command fixes server timeout at 60 seconds and client timeout at
+70 seconds, independently of the existing CI timeout. Every request targets all
+64 registered graphs and consumes the complete response. Workers validate and
+write artifacts before taking the next task; this is not a saturation test.
+
+`--workload complex-wide-distinct` (`Workload::ComplexWideDistinct`) is a separate
+fixed six-case workload. Five cases are unchanged; co-use becomes
+`bi-dependency-co-use-wide-distinct`, replacing only
+`count(DISTINCT graph) AS graphs` with `count(DISTINCT caller) AS callers`.
+This exercises a wider distinct-value dictionary on the same real64 inputs;
+it does **not** measure 65 or 130 physical graphs. Retain a complete response with
+`callers > 64` (and, to prove sparse storage with at most64 provenance values, `> 576`), or an independent untimed dictionary
+cardinality check, as evidence that the changed path was exercised. A workload
+name alone does not prove dictionary width. Modes, sample counts, four workers,
+and fixed 60/70-second timeouts are the same as `complex`. Do not combine samples
+or compare latencies across the two workloads. Preserve a failed baseline and
+mark its percentiles/resources unavailable for paired comparison; a completed
+candidate-only run does not create a baseline.
+
+`--workload complex-dense-distinct` keeps the same six cases and real64 scope.
+Only co-use adds `WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets`
+after collecting targets. This derives four caller-length buckets per physical graph;
+it does not create graphs or change pair multiplicity. The distinct dictionary has
+at most 256 values, while provenance still has at most 64 graph IDs. First-use
+must return a complete validated response with a `graphs` count in 65..=256;
+otherwise the arm fails before pressure. `denseTierEvidence` retains the returned
+row count and maximum distinct count. Together with the query's upper bound this
+proves a 1..=3 high-word stride, selecting Dense rather than inline64 or Sparse
+in the reviewed candidate. The baseline need not implement that representation.
+
+The predeclared Dense follow-up is a candidate-only smoke for query/tier correctness,
+then **one AB pilot pair, twenty requests per case**, frozen316 baseline versus
+318 candidate. Reuse the existing manifest and frozen binaries; do not compile
+alongside measurement. Keep all six cases, four workers, complete HTTP bodies,
+first-use/warmup separation, failures, per-case nearest-rank P50/P95 (P95 rank19),
+pressure CPU and query-process lifetime peak RSS. This is diagnostic tier evidence,
+not formal performance acceptance; no repeats or hundred-sample confirmation are
+planned unless a failure justifies new work. Compare only matching Dense workloads.
+The fixed64 provenance domain does not validate the separate high-provenance fix,
+and this run does not demonstrate deployments with more than64 physical graphs.
+
+Input manifest/source provenance checks are shared with `run`. All saved files
+are hashed once before execution, paths/sizes/modification times are checked
+after each arm, and binary/catalog hashes are retained. The same saved inputs
+serve both binaries; a storage-format-changing candidate requires a different
+reviewed protocol. Hashing warms filesystem caches: first-use means a fresh
+server's first query sequence, **not disk-cold inputs or independent cold requests**.
+Use a release-built controller for measurements and avoid concurrent compilation.
+
+On macOS, `proc_pid_rusage` supplies server user/system CPU and instantaneous RSS;
+Linux uses `/proc`. Darwin CPU raw Mach ticks are converted to seconds with
+`mach_timebase_info`; raw ticks and the conversion ratio are retained. `wait4` supplies exact child lifetime CPU and kernel peak RSS
+(Darwin bytes, Linux KiB converted to bytes). Pilot/measure run a separate
+load-only server to obtain a loading-only kernel peak. The query process's peak
+includes its own loading, first use, warmup and pressure (and regression isolated
+samples); it is **not** a resettable pressure-window peak. Never subtract the
+loading peak from this lifetime peak. Pressure CPU is the difference of server
+CPU snapshots around the complete mixed stage; client/controller CPU is excluded.
+Resources cover the fixed mix, not individual queries. Failure before a snapshot
+leaves it unavailable, not zero.
+
+`report.json` always has `performanceAcceptance: false`. Complete repeated typed
+responses and matched arm oracles establish comparability, not an independent
+semantic oracle or production representativeness. The command records per-case
+nearest-rank p50/p95 and every failure; it cannot approve the CPU/RSS 5% bounds,
+correctness/stability or production P95 recovery by itself. Smoke's one first-use
+observation is not a percentile distribution. No synthetic or single-graph
+performance execution is supported.
+
 ## GitHub integration
 
 `benchmark.yml` builds/tests the controller from the PR target branch's recorded base tip,
@@ -259,3 +355,12 @@ The existing JVM contracts remain covered by the required `build.yml` unit-test 
 
 The deleted `cypher-capacity` JMH job was advisory. These behavioral tests stay required;
 there is no JVM query timing substitute for the Rust multi-graph report.
+
+## Complex aggregation candidates
+
+The [complex aggregation candidate workload](complex-aggregation-workload.md) contains six
+code-graph query shapes inspired by analytical graph benchmarks, with deterministic semantic
+tests. It targets slow-query P95 on real multi-graph inputs. This separate candidate catalog is
+not yet included in the trusted 73-case protocol; its two-graph execution smoke is correctness
+only and supplies no performance evidence. The workload document defines the remaining oracle,
+resource, production-representativeness and trusted-harness admission checks.

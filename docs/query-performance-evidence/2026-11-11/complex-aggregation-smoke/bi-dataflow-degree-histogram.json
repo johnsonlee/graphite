@@ -1,0 +1,1 @@
+{"columns":["graph","degree","sources"],"rows":[{"graph":"fixture-tika-00","degree":1,"sources":34604,"$metadata":{"graphIds":["fixture-tika-00"]}},{"graph":"fixture-tika-01","degree":1,"sources":41123,"$metadata":{"graphIds":["fixture-tika-01"]}}],"rowCount":2,"graphCount":2,"total":{"value":2,"relation":"eq"}}

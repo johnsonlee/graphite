@@ -1,0 +1,501 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling graphite-cypher v2.5.0 (/Users/johnsonlee/.codex/worktrees/1e26/graphite/backend/cypher)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running unittests src/lib.rs (target/aarch64-apple-darwin/debug/deps/graphite_cypher-cfb44c3580c83303)
+
+running 388 tests
+test engine::call_site_scalar_tests::call_site_scalar_executor_matches_full_decode_and_complete_projections ... ok
+test engine::call_site_scalar_tests::call_site_scalar_preserves_scan_work_late_errors_probe_and_cancellation ... ok
+test engine::call_site_scalar_tests::call_site_scalar_qualified_sources_and_executor_epochs_do_not_alias ... ok
+test engine::declared_access_tests::an_unreadable_table_fails_the_queries_that_consult_it ... ok
+test engine::declared_access_tests::queries_outside_declarations_leave_the_table_unread ... ok
+test engine::fastpath::bounded_distinct::tests::all_fields_bounds_order_and_complete_provenance_match_raw_and_true_generic ... ok
+test engine::fastpath::bounded_distinct::tests::all_label_constraints_match_true_generic_and_valid_aliases_admit ... ok
+test engine::fastpath::bounded_distinct::tests::cached_proof_checks_cancellation_and_timeout_before_zero_limit_or_materialization ... ok
+test engine::fastpath::bounded_distinct::tests::later_graph_values_fill_remaining_slots_and_update_full_winner_provenance ... ok
+test engine::fastpath::bounded_distinct::tests::malformed_later_records_and_indexes_decline_before_zero_or_full_prefix ... ok
+test engine::fastpath::bounded_groups::tests::additional_labels_match_the_real_generic_pipeline_not_an_index_only_counter ... ok
+test engine::fastpath::bounded_groups::tests::cached_certificate_cancellation_and_timeout_precede_zero_limit ... ok
+test engine::fastpath::bounded_groups::tests::bounded_rows_match_raw_global_counts_order_ties_and_complete_provenance ... ok
+test engine::fastpath::bounded_groups::tests::empty_domains_have_no_fictional_groups_and_unproved_sources_fall_back_even_at_zero ... ok
+test context::tests::default_presence_hooks_preserve_dynamic_values_and_read_once ... ok
+test engine::fastpath::bounded_groups::tests::later_sources_change_winners_threshold_and_complete_tie_provenance ... ok
+test engine::fastpath::bounded_groups::tests::with_filter_uses_complete_global_counts_before_selection_and_provenance ... ok
+test engine::fastpath::bounded_groups::tests::unsupported_bounds_aliases_and_predicates_decline_without_rows ... ok
+test engine::fastpath::distinct_csr_tests::csr_distinct_limits_never_drop_later_sources_and_executor_probe_matches_raw_oracle ... ok
+test engine::fastpath::distinct_csr_tests::malformed_empty_unsorted_duplicate_and_stale_index_sources_keep_raw_distinct_semantics ... ok
+test engine::fastpath::distinct_csr_tests::malformed_sid_and_truncated_late_records_preserve_raw_results_or_original_panic ... ok
+test engine::fastpath::distinct_csr_tests::multigraph_csr_distinct_preserves_first_seen_rows_order_all_provenance_and_alias_sort ... ok
+test engine::fastpath::distinct_csr_tests::only_multigraph_callsite_properties_use_csr_other_fields_and_single_sources_keep_raw_work ... ok
+test engine::fastpath::distinct_csr_tests::real64_distinct_all_properties_preserve_raw_order_provenance_limits_and_probes ... ok
+test engine::fastpath::grouped_count_tests::grouped_csr_counts_match_complete_raw_rows_first_encounters_and_stable_count_ties ... ok
+test engine::fastpath::grouped_count_tests::grouped_csr_executor_limit_probe_and_cancellation_keep_existing_contracts ... ok
+test engine::fastpath::grouped_count_tests::grouped_csr_reads_group_headers_without_enumerating_warm_posting_runs ... ok
+test engine::fastpath::bounded_distinct::tests::unsupported_shapes_and_internal_aliases_decline ... ok
+test engine::fastpath::grouped_count_tests::invalid_raw_string_ids_keep_selected_field_panic_and_unselected_field_results ... ok
+test engine::fastpath::grouped_count_tests::malformed_domains_and_index_keep_the_original_raw_counts_and_source_order ... ok
+test engine::fastpath::grouped_count_tests::real64_grouped_counts_preserve_raw_counts_sources_first_ties_and_probes ... ok
+test engine::id_candidate::tests::id_candidates_fallback_errors_parameters_and_deadline_remain_observable ... ok
+test engine::id_candidate::tests::id_candidates_expand_the_node_the_explorer_names ... ok
+test engine::id_candidate::tests::id_candidates_filter_before_row_construction_and_keep_polling_and_stop ... ok
+test engine::hop::tests::declines_what_it_cannot_anchor ... ok
+test engine::id_candidate::tests::id_candidates_preserve_unsorted_duplicates_phantoms_and_omissions ... ok
+test engine::id_candidate::tests::id_candidates_real_multigraph_rows_provenance_and_probe_match_generic ... ok
+test engine::id_candidate::tests::id_candidates_search_sorted_lists_and_walk_unsorted_ones ... ok
+test engine::hop::tests::anchors_on_the_end_the_predicate_names ... ok
+test engine::int_constant_tests::int_scalar_distinct_payloads_do_not_alias_sources_or_executor_epochs ... ok
+test engine::int_constant_tests::int_scalar_executor_matches_full_decode_properties_and_non_int_fallback ... ok
+test engine::int_constant_tests::int_scalar_range_rows_probe_errors_and_cancellation_keep_existing_boundaries ... ok
+test engine::maintenance_budget_tests::child_maintenance_checks_share_work_and_preserve_parent_error_precedence ... ok
+test engine::maintenance_budget_tests::maintenance_work_counter_never_wraps_and_zero_budget_accepts_no_work ... ok
+test engine::matching::matching_tests::final_pattern_preserves_bound_method_order_provenance_and_early_stop ... ok
+test engine::id_candidate::tests::id_candidates_read_the_property_map_and_the_pinned_graph ... ok
+test engine::matching::matching_tests::empty_patterns_preserve_ordered_seed_and_allow_consumer_mutation ... ok
+test engine::matching::matching_tests::final_pattern_propagates_consumer_error_without_more_candidates ... ok
+test engine::maintenance_budget_tests::concurrent_maintenance_checks_accept_exactly_the_shared_work_limit ... ok
+test engine::matching::matching_tests::shared_start_paths_use_distinct_edges_and_restore_state_after_stop ... ok
+test engine::matching::matching_tests::terminal_emission_preserves_where_errors_and_cancellation ... ok
+test engine::matching::walk_tests::a_merged_walk_takes_the_smallest_head_and_keeps_each_lists_own_order ... ok
+test engine::method_source_guard::tests::conservative_or_keeps_class_matches_and_rechecks_target_prefixes ... ok
+test engine::method_source_guard::tests::disabled_fastpaths_child_output_contract ... ok
+test engine::method_source_guard::tests::element_ids_carry_the_complete_method_identity ... ok
+test engine::method_source_guard::tests::full_properties_aliases_errors_and_limits_match_disabled_fastpaths ... ok
+test engine::method_source_guard::tests::invalid_class_ids_fall_through_only_when_where_reads_class ... ok
+test engine::method_source_guard::tests::source_guard_keeps_64_source_indices_duplicate_methods_and_every_tick ... ok
+test engine::method_source_guard::tests::stopping_errors_and_cancelled_rejected_candidates_keep_original_polling ... ok
+test engine::id_candidate::tests::id_candidates_accept_only_exact_literal_function_equality ... ok
+test engine::ordered_property::tests::late_invalid_extra_projection_id_preserves_the_generic_panic ... ok
+test engine::ordered_property::tests::malformed_later_source_falls_back_without_changing_rows_or_provenance ... ok
+test engine::ordered_property::tests::heap_keeps_utf16_and_source_encounter_ties_in_both_directions ... ok
+test engine::ordered_property::tests::real64_ordered_sources_match_global_generic_sort ... ok
+test engine::ordered_property::tests::real_multigraph_ordered_rows_ties_provenance_and_probe_match_full_scan ... ok
+test engine::method_source_guard::tests::standalone_where_is_bounded_and_requires_the_entire_safe_shape ... ok
+test engine::partition::method_tests::method_presence_keeps_content_alias_shadow_and_error_paths_conservative ... ok
+test engine::partition::method_tests::method_presence_partitions_preserve_full_partial_absent_sources_and_aggregates ... ok
+test engine::partition::method_tests::method_presence_recomputes_after_metadata_and_declaration_mutation_without_type_reads ... ok
+test engine::partition::method_tests::method_presence_scan_charges_once_per_method_even_without_declarations_and_cancels ... ok
+test engine::partition::method_tests::method_presence_supports_single_graph_mode_and_empty_sources ... ok
+test engine::partition::tests::a_column_level_segment_is_one_row_per_distinct_tuple ... ok
+test engine::partition::tests::a_dependence_joins_to_the_finer_level_and_unions_columns ... ok
+test engine::partition::tests::a_graph_written_out_of_id_order_meets_the_groups_where_the_matcher_does ... ok
+test engine::partition::method_tests::method_dependencies_allow_only_unshadowed_generic_presence ... ok
+test engine::partition::tests::a_type_walked_whole_meets_the_walk_where_its_first_node_does ... ok
+test engine::partition::tests::a_whole_type_row_weighs_its_population ... ok
+test engine::partition::tests::a_with_predicate_the_partition_cannot_determine_declines_the_segment ... ok
+test engine::partition::tests::annotations_partition_by_their_key_set ... ok
+test engine::partition::tests::annotation_keys_and_hop_ends_are_not_decided_by_the_type_alone ... ok
+test engine::partition::tests::grouped_with_counts_match_decoded_calls_in_first_seen_order ... ok
+test engine::partition::tests::expressions_that_read_nothing_of_the_node_are_constant ... ok
+test engine::partition::tests::local_variable_columns_are_name_and_type ... ok
+test engine::ordered_property::tests::admission_resolves_aliases_directions_and_literal_bounds ... ok
+test engine::partition::tests::decoded_properties_and_opaque_functions_read_the_record ... ok
+test engine::partition::tests::nothing_is_partitioned_without_a_source ... ok
+test engine::partition::tests::partitioned_segments_answer_as_the_row_per_node_pipeline_does ... ok
+test engine::partition::tests::optional_declarations_partition_keys_only_when_available_in_the_source ... ok
+test engine::maintenance_budget_tests::ordinary_queries_have_no_new_default_work_limit ... ok
+test engine::partition::tests::declaration_null_dependency_keeps_shadowed_nodes_and_other_kinds_conservative ... ok
+test engine::partition::tests::partitions_alike_in_every_graph_are_one_row_across_graphs ... ok
+test engine::method_source_guard::tests::unknown_error_and_over_budget_predicates_fall_back_before_enumeration ... ok
+test engine::partition::tests::scalar_column_sweep_preserves_cancellation_and_deadline_checks ... ok
+test engine::partition::tests::raw_string_columns_are_read_by_bit ... ok
+test engine::partition::tests::target_tags_skip_only_the_proven_empty_prefix ... ok
+test engine::partition::tests::only_integer_valued_sums_and_averages_are_weighed ... ok
+test engine::partition::tests::weights_default_to_one_and_are_read_from_the_hidden_key ... ok
+test engine::partition::tests::the_graph_decides_graph_ids_only_across_graphs ... ok
+test engine::pipeline::aggregate_state::tests::bounded_collect_keeps_only_requested_non_null_prefix ... ok
+test engine::partition::tests::target_tags_keep_the_capacity_bound_for_indices_and_edges ... ok
+test engine::pipeline::aggregate_state::tests::real_multigraph_collect_prefix_preserves_all_provenance_and_late_errors ... ok
+test engine::partition::tests::the_type_decides_labels_keys_relationship_types_and_absent_properties ... ok
+test engine::pipeline::aggregate_state::tests::weighted_sum_does_not_add_an_unused_overflowing_count ... ok
+test engine::pipeline::aggregate_state::tests::weighted_results_and_deferred_errors_match_existing_finalization ... ok
+test engine::pipeline::aggregate_state::tests::prefix_proof_requires_exclusive_bounded_consumers ... ok
+test engine::pipeline::bounded_order_tests::borrowed_order_keys_preserve_stash_precedence_alias_and_missing_null ... ok
+test engine::pipeline::aggregate_state::tests::incremental_results_match_original_aggregate_including_numeric_encounter_order ... ok
+test engine::pipeline::aggregate_state::tests::overflow_keeps_the_original_finalization_boundary ... ok
+test engine::pipeline::bounded_order_tests::full_heap_borrowed_admission_discards_losers_and_later_ties_but_keeps_better_rows ... ok
+test engine::pipeline::bounded_order_tests::real_alias_order_matches_full_sort_with_multilabels_and_probe ... ok
+test engine::pipeline::bounded_order_tests::real_executor_never_swallows_cancelled_or_timed_out_ordered_requests ... ok
+test engine::pipeline::bounded_order_tests::real_fixture_matches_full_sort_rows_provenance_skip_and_http_probe ... ok
+test engine::pipeline::bounded_order_tests::real_executor_preserves_late_losing_expression_errors_even_with_limit_zero ... ok
+test engine::pipeline::bounded_order_tests::admission_proves_integer_sort_keys_and_literal_bounded_counts ... ok
+test engine::pipeline::collect_prefix::tests::any_late_bad_scalar_or_frame_falls_back_before_omitting_rows_or_errors ... ok
+test engine::pipeline::bounded_order_tests::projected_property_keeps_nulls_and_ties_in_encounter_order ... ok
+test engine::pipeline::bounded_order_tests::nontransitive_value_domains_are_rejected_before_any_scan ... ok
+test engine::pipeline::bounded_order_tests::admission_proves_callsite_string_keys_without_admitting_unknown_domains ... ok
+test engine::pipeline::collect_prefix::tests::different_sources_keep_prefix_boundary_and_all_contributors ... ok
+test engine::pipeline::collect_prefix::tests::direct_empty_and_cached_zero_prefix_keep_rows_and_check_cancellation ... ok
+test engine::pipeline::collect_prefix::tests::empty_domains_and_unsorted_or_duplicate_ids_keep_generic_results ... ok
+test engine::pipeline::bounded_order_tests::heap_matches_complete_stable_sort_with_stashes_nulls_ties_and_provenance ... ok
+test engine::pipeline::collect_prefix::tests::cancellation_and_timeout_precede_even_zero_prefix_and_empty_graphs ... ok
+test engine::pipeline::collect_prefix::tests::interrupted_cold_scalar_proof_is_not_cached_and_can_be_retried ... ok
+test engine::pipeline::bounded_order_tests::losing_and_zero_limit_rows_still_evaluate_every_projection_expression ... ok
+test engine::pipeline::collect_prefix::tests::prefix_keeps_encounter_order_duplicates_aliases_and_later_graph_provenance ... ok
+test engine::pipeline::collect_prefix::tests::warm_certified_prefix_does_not_visit_the_discarded_suffix ... ok
+test engine::pipeline::grouped_with::tests::any_unproved_source_declines_entire_plan_preserving_original_malformed_and_limit_zero_errors ... ok
+test engine::pipeline::grouped_with::tests::csr_with_all_fields_match_original_partition_and_generic_order_columns_and_provenance ... ok
+test engine::pipeline::bounded_order_tests::bounded_order_reuses_only_unambiguous_projected_property_keys ... ok
+test engine::pipeline::grouped_with::tests::empty_domains_ignore_stale_csr_and_cancellation_and_unsupported_errors_stay_visible ... ok
+test engine::pipeline::grouped_with::tests::global_counts_are_merged_before_with_predicate_and_limit_or_probe ... ok
+test engine::pipeline::grouped_with::tests::real64_csr_with_matches_original_complete_typed_rows_then_predicate_limits_and_probes ... ok
+test engine::pipeline::identity_projection_tests::identity_projection_checks_actual_columns_for_quoted_unicode_and_empty_rows ... ok
+test engine::pipeline::identity_projection_tests::real_identity_projection_matches_generic_rows_provenance_probe_and_scan_work ... ok
+test engine::pipeline::identity_projection_tests::real_identity_projection_preserves_cancellation_and_timeout_errors ... ok
+test engine::pipeline::identity_projection_tests::identity_projection_falls_back_for_missing_extra_reordered_and_renamed_keys ... ok
+test engine::pipeline::identity_projection_tests::real_identity_projection_preserves_late_with_errors_before_small_limits ... ok
+test engine::pipeline::identity_projection_tests::identity_projection_keeps_distinct_order_stashes_and_expression_errors ... ok
+test engine::pipeline::probe_tests::probed_execution_returns_the_same_rows_and_knows_when_more_exist ... ok
+test engine::pipeline::probe_tests::the_injected_cap_and_the_probe_compose ... ok
+test engine::pipeline::owned_projection_tests::owned_projection_keeps_late_expression_and_order_errors_and_drops_all_values ... ok
+test engine::pipeline::identity_projection_tests::identity_projection_transfers_owned_rows_and_all_typed_values_in_order ... ok
+test engine::pipeline::owned_projection_tests::owned_projection_preserves_preprojection_order_keys_and_distinct_metadata ... ok
+test engine::pipeline::probe_tests::the_probe_leaves_other_segments_alone ... ok
+test engine::pipeline::probe_tests::the_probe_raises_a_trailing_literal_limit_by_one_and_remembers_it ... ok
+test engine::pipeline::probe_tests::trimming_keeps_n_rows_and_reports_the_extra_one ... ok
+test engine::pipeline::bounded_order_tests::string_heap_matches_utf16_stable_sort_with_nulls_ties_and_mixed_directions ... ok
+test engine::pipeline::projected_filter_tests::late_bad_callsite_sids_decline_filtered_early_stop_and_keep_eager_first_error ... ok
+test engine::pipeline::grouped_with::tests::only_exact_total_shape_is_admitted_and_single_source_stays_original ... ok
+test engine::pipeline::projected_filter_tests::persisted_jvm_scalar_filters_match_generic_rows_and_probe ... ok
+test engine::pipeline::bounded_order_tests::admission_resolves_callsite_aliases_and_rejects_wider_domains ... ok
+test engine::pipeline::unwind_groups::compact::tests::bounded_parent_tokens_decline_before_compact_preparation ... ok
+test engine::pipeline::collect_prefix::tests::admits_only_exclusively_bounded_direct_scalar_collects ... ok
+test engine::pipeline::projected_filter_tests::only_total_scalar_projection_filter_and_plain_limit_are_admitted ... ok
+test engine::pipeline::unwind_groups::compact::tests::losing_and_zero_limit_groups_still_finish_shared_overflow_state ... ok
+test engine::partition::tests::shifted_target_tags_preserve_hop_representatives_counts_and_provenance ... ok
+test engine::partition::tests::fixed_string_column_groups_keep_order_and_reject_missing_offsets ... ok
+test engine::pipeline::unwind_groups::compact::tests::compact_unicode_ranks_aliases_and_provenance_use_their_original_orders ... ok
+test engine::pipeline::unwind_groups::compact::tests::exact_order_and_literal_bound_admission_preserve_the_streaming_parent ... ok
+test engine::pipeline::unwind_groups::compact::tests::probe_keeps_one_extra_winner_and_reports_more_without_materializing_other_groups ... ok
+test engine::pipeline::unwind_groups::tests::bounded_tokens_keep_original_charges_and_cancelled_tokens_never_succeed ... ok
+test engine::pipeline::unwind_groups::tests::native_multi_source_pairs_match_retained_pipeline_and_http_probe ... ok
+test engine::pipeline::unwind_groups::tests::pair_comparison_uses_utf16_order_not_list_position_or_utf8 ... ok
+test engine::pipeline::with_prefix_tests::a_fused_with_prefix_answers_as_the_generic_pipeline_does ... ok
+test engine::pipeline::unwind_groups::compact::tests::missing_provenance_is_supported_and_empty_or_noncanonical_provenance_is_preserved_by_fallback ... ok
+test engine::pipeline::with_prefix_tests::anything_but_a_with_after_the_match_is_not_the_prefix_shape ... ok
+test engine::pipeline::unwind_groups::tests::admission_declines_non_total_shapes_before_consuming_rows ... ok
+test engine::pipeline::with_prefix_tests::collect_keeps_non_null_values_in_input_order_with_count_and_distinct ... ok
+test engine::pipeline::unwind_groups::tests::late_expression_errors_are_not_hidden_by_filtered_pairs_or_limit_zero ... ok
+test engine::pipeline::with_prefix_tests::collect_on_empty_input_emits_only_an_ungrouped_row ... ok
+test engine::pipeline::with_prefix_tests::weighted_rows_keep_distinct_collect_and_reject_plain_collect ... ok
+test engine::pipeline::with_prefix_tests::the_with_prefix_spans_match_where_and_with_and_keeps_the_with_order_by ... ok
+test engine::property_graph_tests::all_mutations_remain_rejected_by_default_program_graph_execution ... ok
+test engine::pipeline::projected_filter_tests::accepted_rows_keep_order_duplicates_and_cross_graph_provenance ... ok
+test engine::property_graph_tests::creates_arbitrary_labels_properties_and_reads_through_the_normal_pipeline ... ok
+test engine::property_graph_tests::correlated_predicate_nulls_are_unknown_and_case_sensitive_labels_stay_distinct ... ok
+test engine::property_graph_tests::deleted_relationship_type_metadata_survives_without_resurrecting_properties ... ok
+test engine::property_graph_tests::deleted_entity_property_reads_fail_and_rollback_instead_of_exposing_tombstones ... ok
+test engine::property_graph_tests::deleted_node_and_relationship_reads_have_native_diagnostics_with_no_side_effects ... ok
+test engine::property_graph_tests::failed_queries_rollback_and_program_graph_executors_stay_immutable ... ok
+test engine::property_graph_tests::invalid_recursive_or_mixed_properties_are_rejected_transactionally ... ok
+test engine::property_graph_tests::merge_undirected_pattern_creates_outgoing_and_then_matches_either_direction ... ok
+test engine::pipeline::unwind_groups::compact::tests::compact_pairs_materialize_only_winners_after_complete_counts ... ok
+test engine::pipeline::projected_filter_tests::both_sides_of_a_conjunction_keep_late_errors_visible ... ok
+test engine::property_graph_tests::native_merge_matches_whole_patterns_and_chooses_actions_per_row ... ok
+test engine::property_graph_tests::native_label_and_pattern_predicates_use_the_same_store_matcher ... ok
+test engine::pipeline::projected_filter_tests::schema_scalar_filters_keep_values_order_and_provenance_across_tags ... ok
+test engine::property_graph_tests::property_relationship_identity_does_not_enlarge_program_runtime_values ... ok
+test engine::property_graph_tests::native_delete_validates_whole_clause_and_detach_deletes_incident_edges ... ok
+test engine::property_graph_tests::self_loop_path_orientation_is_recorded_even_when_endpoints_are_equal ... ok
+test engine::property_graph_tests::native_set_remove_and_map_replacement_preserve_snapshot_values ... ok
+test engine::property_graph_tests::property_updates_accept_parenthesized_entities_and_copy_entity_properties ... ok
+test engine::property_graph_tests::relationship_direction_is_rendering_metadata_not_path_identity ... ok
+test engine::props::method_map_tests::full_method_maps_preserve_all_properties_order_absence_and_empty_lists ... ok
+test engine::props::method_map_tests::full_method_return_and_properties_match_scalar_oracle_across_graphs ... ok
+test engine::props::tests::call_site_display_keeps_values_order_and_direct_method_details ... ok
+test engine::property_graph_tests::parallel_relationships_and_paths_keep_distinct_stable_identities ... ok
+test engine::property_graph_tests::variable_paths_are_relationship_isomorphic_and_can_repeat_nodes ... ok
+test engine::props::tests::declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance ... ok
+test engine::props::tests::declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows ... ok
+test engine::props::tests::declaration_keys_use_exact_binding_without_projecting_type_values ... ok
+test engine::props::tests::declared_types_java_fixture_query_roundtrip_and_graph_local_identity ... ok
+test engine::props::tests::discarded_method_details_preserve_invalid_string_id_panics_and_first_failure_order ... ok
+test engine::property_graph_tests::property_failures_emit_native_runtime_diagnostics_and_rollback ... ok
+test engine::props::tests::display_and_result_filter_oracle_covers_every_node_kind ... ok
+test engine::props::tests::declared_type_info_is_sparse_internally_and_in_nested_json ... ok
+test engine::props::tests::generic_null_checks_preserve_binding_and_do_not_read_type_values ... ok
+test engine::props::tests::generic_null_checks_preserve_parameter_bounds_and_annotation_fallback ... ok
+test engine::props::tests::java_all_five_wire_formats_preserve_full_properties_and_shared_string_queries ... ok
+test engine::props::tests::java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries ... ok
+test engine::property_graph_tests::existential_subqueries_share_native_matching_aggregation_and_correlated_scope ... ok
+test engine::props::tests::null_predicates_preserve_maps_null_bases_and_subscript_semantics ... ok
+test engine::props::tests::real_nodes_and_cross_graph_results_match_complete_filtered_properties ... ok
+test engine::props::tests::scalar_properties_preserve_declared_and_non_declared_node_contracts ... ok
+test engine::property_graph_tests::pattern_comprehensions_capture_outer_bindings_and_keep_local_scopes ... ok
+test engine::pipeline::unwind_groups::tests::pair_stream_keeps_multiplicity_distinct_graphs_provenance_and_final_order ... ok
+test engine::pipeline::unwind_groups::compact::tests::dictionary_bounds_are_independent_and_fall_back_before_pair_consumption ... ok
+test engine::scan::annotation::tests::only_dictionary_contained_atoms_can_be_proved_absent ... ok
+test engine::scan::annotation::tests::coalesce_fallback_must_survive_annotation_key_absence_pruning ... ok
+test engine::scan::annotation::tests::callsite_bitmap_must_not_discard_annotation_only_property_matches ... ok
+test engine::scan::descriptor_tests::descriptor_formatting_keeps_return_types_primitives_arrays_and_nested_classes ... ok
+test engine::scan::descriptor_tests::real_callsite_return_descriptor_only_match_is_not_omitted ... ok
+test engine::scan::signature::tests::actual_type_is_a_complete_dictionary_string_only_on_return_nodes ... ok
+test engine::pipeline::projected_filter_tests::ineligible_shapes_preserve_complete_aggregation_order_and_late_errors ... ok
+test engine::pipeline::projected_filter_tests::the_row_limit_stops_candidate_access_after_enough_filtered_rows ... ok
+test engine::scan::signature::tests::descriptor_proof_keeps_wrappers_primitive_sequences_and_transformed_components ... ok
+test engine::scan::annotation::tests::annotation_absence_respects_boolean_structure_synthetic_identity_and_cancel ... ok
+test engine::scan::signature::tests::dictionary_memo_propagates_failures_without_caching_partial_proofs ... ok
+test engine::scan::signature::tests::dictionary_memo_shares_positive_and_negative_proofs_across_tags ... ok
+test engine::scan::signature::tests::only_untransformed_nonempty_contains_or_prefix_without_signature_separators_is_eligible ... ok
+test engine::scan::signature::tests::pruning_drops_false_or_branches_but_invalidates_their_whole_and_branch ... ok
+test engine::scan::annotation::tests::absent_annotations_restore_callsite_batch_route_without_filtering_possible_matches ... ok
+test engine::scan::annotation::tests::absent_dynamic_keys_are_proved_before_consuming_dictionary_memo ... ok
+test engine::scan::descriptor_tests::keys_expansion_includes_both_descriptors_and_keeps_callsite_raw ... ok
+test engine::scan::annotation::tests::mixed_annotation_callsite_results_preserve_node_order_before_limit ... ok
+test engine::scan::signature::tests::real_multi_graph_callsite_and_return_scans_match_independent_generic_execution ... ok
+test engine::scan::synthetic_id_sweep_tests::column_and_raw_trees_use_compiled_digits_without_record_or_text_reads ... ok
+test engine::scan::signature::tests::real_multi_graph_keys_search_matches_generic_rows_order_and_materialized_properties ... ok
+test engine::scan::signature::tests::pruning_preserves_normal_dynamic_and_synthetic_properties_with_the_same_test ... ok
+test engine::scan::synthetic_id_sweep_tests::complete_multigraph_identity_rows_limit_and_cancellation_are_preserved ... ok
+test engine::scan::synthetic_id_sweep_tests::mixed_and_other_leaves_still_read_the_record ... ok
+test engine::scan::signature::tests::terms_are_shared_by_test_across_properties_tags_and_nested_trees ... ok
+test engine::scan::synthetic_id_sweep_tests::synthetic_leaf_matches_original_record_sweep_values_and_order ... ok
+test engine::scan::synthetic_id_sweep_tests::synthetic_leaf_reads_no_record_bytes_and_skips_missing_offsets ... ok
+test engine::scan::tests::a_local_variable_exposes_its_method_to_the_keys_search ... ok
+test engine::scan::tests::a_relaxed_plan_still_applies_the_dropped_conjunct ... ok
+test engine::scan::tests::a_plan_without_a_dropped_conjunct_still_trusts_its_streams ... ok
+test engine::scan::annotation::tests::non_cross_graph_annotation_identity_names_are_dynamic_not_synthetic ... ok
+test engine::scan::tests::batches_start_small_and_stay_bounded ... ok
+test engine::scan::tests::declared_negative_summary_preserves_uncertain_leaves_and_complete_query_rows ... ok
+test engine::scan::tests::an_unpushable_conjunct_relaxes_the_plan_instead_of_dropping_it ... ok
+test engine::scan::tests::declared_summary_never_rejects_actual_rendered_and_structured_fixture_text ... ok
+test engine::pipeline::projected_filter_tests::uncertified_field_string_getters_keep_late_bad_sids_on_eager_path ... ok
+test engine::scan::tests::exposure_follows_the_record_layouts ... ok
+test engine::scan::tests::a_disjunction_inside_the_keys_quantifier_plans_as_one_disjunction ... ok
+test engine::scan::tests::keys_expansion_rejects_tostring_arity_and_shadowed_node_variables ... ok
+test engine::scan::tests::keys_expansion_preserves_argument_errors_and_shadowed_variable_results ... ok
+test engine::scan::tests::node_ids_print_as_decimal ... ok
+test engine::scan::tests::membership_plans_only_list_types ... ok
+test engine::scan::tests::call_site_signatures_and_lines_are_swept_raw ... ok
+test engine::pipeline::projected_filter_tests::filtered_limits_and_http_probe_count_only_accepted_rows ... ok
+test engine::scan::tests::nothing_pushable_or_an_unpushable_disjunct_means_no_plan ... ok
+test engine::scan::synthetic_id_sweep_tests::other_synthetic_predicates_keep_the_original_text_path ... ok
+test engine::scan::tests::an_in_list_plans_as_a_disjunction_of_equalities ... ok
+test engine::scan::tests::numeric_equality_plans_only_numeric_types ... ok
+test engine::scan::tests::pruning_keeps_only_what_a_type_answers ... ok
+test engine::scan::tests::property_maps_plan_as_equalities ... ok
+test engine::scan::tests::regex_required_literal_reads_simple_patterns ... ok
+test engine::scan::tests::synthetic_keys_fold_per_graph ... ok
+test engine::scan::tests::tag_plans_route_each_type ... ok
+test engine::scan::tests::synthetic_keys_plan_the_whole_type_or_none_of_it ... ok
+test engine::scan::tests::word_searches_skip_numbers_and_absent_descriptor_words ... ok
+test engine::scan::tests::type_name_folds_per_type ... ok
+test engine::scan::tests::unknown_properties_reach_only_annotations ... ok
+test engine::string_seed::tests::cancelled_and_timed_out_seed_scans_keep_their_errors ... ok
+test engine::scan::tests::keys_search_expands_per_type ... ok
+test engine::scan::annotation::tests::later_annotation_match_prevents_batching_after_an_absent_first_source ... ok
+test engine::scan::tests::words_never_match_decimal_text ... ok
+test engine::string_seed::tests::real_fixed_and_variable_walks_equal_the_generic_matcher ... ok
+test engine::with_stream::tests::cancellation_and_timeouts_precede_zero_limit_and_source_access ... ok
+test engine::string_seed::tests::inline_literal_seed_defers_predicates_that_need_later_bindings ... ok
+test engine::with_stream::tests::late_invalid_scalar_sids_keep_eager_panic_payloads_even_before_zero_limit ... ok
+test engine::string_seed::tests::seeds_fixed_and_variable_walks_from_string_value_predicates ... ok
+test engine::with_stream::tests::projects_before_filtering_and_keeps_shadowing_nulls_duplicates_and_provenance ... ok
+test engine::with_stream::tests::real_declared_access_and_aliased_getters_keep_later_source_failures ... ok
+test engine::string_seed::tests::declines_shapes_without_a_safe_first_node_filter ... ok
+test gson::tests::escapes_the_html_characters_gson_escapes ... ok
+test engine::with_stream::tests::real_late_projection_and_match_errors_are_not_hidden_by_limits ... ok
+test engine::with_stream::tests::real_multisource_streaming_matches_eager_rows_columns_provenance_and_probe ... ok
+test engine::with_stream::tests::admits_total_projection_filter_chains_and_literal_paging ... ok
+test error::diagnostic_tests::grammar_rejection_has_compile_diagnostic_but_message_text_does_not_classify_runtime ... ok
+test error::standard_diagnostic_tests::native_failure_origin_preserves_type_phase_detail_and_display ... ok
+test gson::tests::indents_two_spaces_and_collapses_empties ... ok
+test gson::tests::omits_null_members_but_keeps_null_elements ... ok
+test lexer::tests::arrows_split_into_operator_tokens ... ok
+test lexer::native_literal_diagnostics::malformed_numeric_tokens_and_unicode_escapes_are_rejected_at_their_origin ... ok
+test lexer::tests::columns_count_characters_not_bytes ... ok
+test lexer::tests::form_feed_is_whitespace ... ok
+test lexer::tests::every_keyword_round_trips ... ok
+test lexer::tests::backtick_identifiers ... ok
+test lexer::tests::columns_reset_per_line ... ok
+test lexer::tests::eof_token_position ... ok
+test lexer::tests::comments_are_skipped ... ok
+test lexer::tests::keywords_are_case_insensitive_and_keep_spelling ... ok
+test lexer::tests::identifiers_are_ascii_only ... ok
+test lexer::tests::number_followed_by_range_or_dot ... ok
+test lexer::tests::leading_zero_integers_are_invalid_but_float_forms_remain_valid ... ok
+test lexer::tests::numbers ... ok
+test lexer::tests::operators ... ok
+test engine::scan::tests::regex_predicates_push_when_the_pattern_is_simple ... ok
+test lexer::tests::symbolic_name_predicate ... ok
+test lexer::tests::strings_with_escapes_and_doubled_quotes ... ok
+test lexer::tests::unexpected_character ... ok
+test ordering::tests::cross_type_rank_order ... ok
+test ordering::tests::lists_compare_elementwise_then_by_size ... ok
+test engine::with_stream::tests::declines_error_sensitive_and_nonstreaming_shapes_before_source_access ... ok
+test ordering::tests::strings_compare_by_utf16 ... ok
+test ordering::tests::null_sorts_greatest ... ok
+test lexer::tests::unterminated_block_comment_lexes_as_operators ... ok
+test ordering::tests::nan_sorts_greatest ... ok
+test lexer::tests::unterminated_string_reports_start_column ... ok
+test parser::correlated_expression_tests::pattern_comprehension_and_exists_keep_patterns_filters_maps_and_native_clauses ... ok
+test ordering::tests::numbers_compare_across_types ... ok
+test parser::graph_predicate_tests::distinguishes_node_labels_relationship_patterns_and_parenthesized_arithmetic ... ok
+test parser::mutation_tests::retains_set_remove_and_merge_actions_in_the_production_ast ... ok
+test parser::native_grammar_diagnostics::grammar_failure_occurs_before_an_earlier_mutation_can_execute ... ok
+test parser::native_grammar_diagnostics::malformed_numbers_keep_identifier_position_diagnostics_distinct ... ok
+test procedures::tests::parser_preserves_explicit_implicit_and_yield_shapes ... ok
+test property_graph::tests::transaction_unwind_restores_state_and_releases_the_session ... ok
+test parser::native_grammar_diagnostics::valid_signed_boundaries_numeric_parameter_names_and_property_map_parameters_are_preserved ... ok
+test parser::native_grammar_diagnostics::invalid_literals_and_pattern_predicates_have_precise_origin_diagnostics ... ok
+test render::tests::arithmetic_columns_lose_parentheses ... ok
+test render::tests::collections_and_case ... ok
+test procedures::tests::ordinary_executor_calls_registered_providers_with_native_coercion_and_yield_aliases ... ok
+test render::tests::function_columns ... ok
+test render::tests::property_and_variable_columns ... ok
+test render::tests::literals_render_like_kotlin ... ok
+test procedures::tests::procedure_contract_errors_are_checked_before_provider_execution ... ok
+test semantics::tests::exact_long_conversion_rejects_fractional_nonfinite_and_out_of_range_values ... ok
+test semantics::tests::kotlin_parse_long_follows_kotlin_grammar ... ok
+test semantics::tests::kotlin_to_string_renders_collections_like_the_jvm ... ok
+test semantics::tests::numeric_comparison_is_exact_and_orders_nonfinite_values_explicitly ... ok
+test semantics::tests::structural_equality_is_recursive_exact_and_three_valued ... ok
+test render::tests::string_predicates_and_null_checks ... ok
+test semantics::tests::to_double_coercion ... ok
+test render::tests::subscript_and_slice ... ok
+test semantics::tests::compare_values_fallbacks ... ok
+test semantics::tests::equality_across_types_and_nulls ... ok
+test semantics::tests::java_double_to_string_matches_jvm_layout ... ok
+test semantics::tests::value_keys_for_maps_are_order_independent ... ok
+test semantics::tests::java_parse_double_follows_jvm_grammar ... ok
+test semantics::tests::requires_normalization_detects_numbers ... ok
+test semantics::tests::skip_limit_int_coercion ... ok
+test semantics::tests::utf16_helpers ... ok
+test semantics::tests::value_keys_normalize_numbers_recursively_without_losing_precision ... ok
+test temporal::duration_tests::proleptic_gregorian_extremes_use_integer_calendar_arithmetic ... ok
+test temporal::tests::malformed_dates_and_components_return_errors_without_panicking ... ok
+test temporal::tests::date_calendar_week_ordinal_and_quarter_are_typed ... ok
+test temporal::duration_tests::duration_differences_distinguish_calendar_and_elapsed_time_across_dst ... ok
+test temporal::duration_tests::query_clock_is_stable_and_all_clock_modes_propagate_null ... ok
+test temporal::tests::named_zones_use_historical_offsets_and_calendar_truncation ... ok
+test temporal::tests::clock_precision_and_zone_offsets_are_preserved ... ok
+test engine::string_seed::tests::persisted_inline_literal_relationship_filters_match_generic_across_graphs ... ok
+test tostring::tests::renders_java_collection_syntax ... ok
+test temporal::tests::partial_date_zone_projection_and_subsecond_truncation_preserve_components ... ok
+test validation::tests::aggregate_sources_do_not_capture_comprehension_local_variables ... ok
+test validation::tests::aggregate_validation_descends_all_expression_containers ... ok
+test validation::tests::delete_labels_and_invalid_path_properties_have_distinct_diagnostics ... ok
+test validation::tests::aliases_function_arity_and_repeated_bindings_report_native_origin ... ok
+test validation::tests::empty_star_and_explicit_empty_node_maps_preserve_write_semantics ... ok
+test validation::tests::homogeneous_list_elements_constrain_numeric_predicates ... ok
+test engine::scan::annotation::tests::coalesce_pushdown_preserves_safe_empty_fallbacks_and_rejects_matching_alternatives ... ok
+test validation::tests::fused_scope_proof_respects_comprehension_locals_and_outer_inputs ... ok
+test engine::scan::signature::tests::every_eligible_substring_of_composed_descriptors_occurs_in_a_dictionary_component ... ok
+test validation::tests::star_projection_is_sorted_and_known_before_rows_exist ... ok
+test validation::tests::exists_validation_is_correlated_and_rejects_writes_before_execution ... ok
+test validation::tests::patterns_are_predicates_and_comprehensions_bind_only_local_names ... ok
+test validation::tests::relationship_type_predicates_are_case_sensitive ... ok
+test validation::tests::static_errors_are_reported_on_empty_inputs_and_star_headers_remain_visible ... ok
+test validation::tests::undefined_scopes_and_local_comprehension_bindings_are_distinct ... ok
+test temporal::tests::projection_preserves_weekyear_and_component_fields ... ok
+test engine::scan::synthetic_id_sweep_tests::compiled_decimal_contains_matches_formatted_identity ... ok
+test engine::scan::annotation::tests::rendered_annotation_boundaries_and_values_match_independent_generic_results ... ok
+test engine::scan::annotation::tests::every_eligible_substring_of_rendered_annotations_is_dictionary_backed ... ok
+test temporal::duration_tests::duration_components_retain_calendar_units_and_subsecond_precision ... ok
+test temporal::duration_tests::calendar_arithmetic_clamps_month_end_and_clock_arithmetic_wraps ... ok
+test engine::pipeline::projected_filter_tests::cancellation_and_polling_remain_active_for_rejected_candidates ... ok
+
+test result: ok. 388 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/complex_aggregation_workload.rs (target/aarch64-apple-darwin/debug/deps/complex_aggregation_workload-df6c48a4b77c1fb3)
+
+running 1 test
+test complex_catalog_preserves_global_counts_distinct_and_optional_semantics ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/dialect.rs (target/aarch64-apple-darwin/debug/deps/dialect-03c47018f25aaedd)
+
+running 12 tests
+test dialect_names_are_explicit_and_round_trip ... ok
+test graphite_unwind_rebinding_is_preserved_while_m23_rejects_it ... ok
+test graphite_distinct_allows_legacy_hidden_order_sources ... ok
+test graphite_default_headers_keep_canonical_rendering_and_runtime_binding ... ok
+test graphite_nested_collect_slice_keeps_runtime_aggregation_error ... ok
+test graphite_dynamic_indexing_extensions_remain_available ... ok
+test graph_functions_check_runtime_types_in_standard_mode_and_preserve_legacy_fallbacks ... ok
+test m23_rejects_graph_entities_independently_of_storage_source ... ok
+test correlated_exists_inherits_the_enclosing_dialect_through_projections ... ok
+test default_preserves_container_formatting_and_m23_rejects_at_runtime ... ok
+test graphite_order_by_aggregate_expression_keeps_runtime_error_and_aliases_work ... ok
+test graphite_aggregation_policies_and_unknown_function_errors_remain_compatible ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/inherited_fields_interop.rs (target/aarch64-apple-darwin/debug/deps/inherited_fields_interop-9d30f91cde107efb)
+
+running 1 test
+test java_inherited_aliases_survive_both_builders_resave_and_native_containers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/projection_dialects.rs (target/aarch64-apple-darwin/debug/deps/projection_dialects-4f3c5757e4d5039b)
+
+running 3 tests
+test union_column_validation_is_standard_while_legacy_retains_dynamic_columns ... ok
+test ordering_alias_expressions_preserves_each_profiles_binding_scope ... ok
+test with_predicate_scope_and_distinct_boundary_are_explicit_dialect_contracts ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/property_transaction_cancellation.rs (target/aarch64-apple-darwin/debug/deps/property_transaction_cancellation-f07eec3a4d55717a)
+
+running 3 tests
+test cancellation_while_queued_does_not_wait_for_another_transaction ... ok
+test pre_cancelled_request_does_not_wait_for_another_transaction ... ok
+test deadline_while_queued_does_not_wait_for_another_transaction ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/scalar_dialects.rs (target/aarch64-apple-darwin/debug/deps/scalar_dialects-1419996c0953838a)
+
+running 10 tests
+test checked_range_progress_and_cancellation_remain_available_in_both_modes ... ok
+test graphite_uses_rendered_list_comparison_while_m23_uses_partial_lexical_order ... ok
+test float_range_arguments_keep_legacy_truncation_and_standard_integer_contract ... ok
+test floating_division_by_zero_preserves_graphite_error_and_standard_ieee_result ... ok
+test map_properties_and_null_labels_keep_legacy_shape ... ok
+test powers_and_comparison_chains_keep_dialect_specific_ast_and_cache_entries ... ok
+test pagination_coercion_is_legacy_only ... ok
+test explicit_null_slice_bounds_use_legacy_defaults_only_in_graphite ... ok
+test list_addition_preserves_legacy_string_precedence_and_left_list_only_append ... ok
+test decimal_string_integer_conversion_is_opt_in_and_invalid_legacy_inputs_remain_null ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tck_scalar_conformance.rs (target/aarch64-apple-darwin/debug/deps/tck_scalar_conformance-9fda496e4b3719ea)
+
+running 23 tests
+test exponentiation_is_left_associative_in_ast_and_execution ... ok
+test list_prepend_preserves_scalar_types ... ok
+test chained_comparisons_compare_adjacent_operands ... ok
+test decimal_string_to_integer_truncates_without_losing_integer_precision ... ok
+test aggregate_order_expressions_use_finalized_values_and_aliases ... ok
+test dynamic_element_access_requires_valid_container_and_index_types ... ok
+test order_by_expressions_resolve_projected_aliases_before_shadowed_input_bindings ... ok
+test distinct_projection_keeps_order_keys_for_equivalent_projected_expressions ... ok
+test list_comparison_is_lexicographic_and_three_valued ... ok
+test null_slices_and_graph_functions_preserve_null_and_map_values ... ok
+test integer_sum_retains_exact_integer_type_and_promotes_only_floating_inputs ... ok
+test float_nan_comparison_is_not_an_integer_divide_error ... ok
+test extrema_order_strings_lists_and_mixed_types ... ok
+test aggregates_work_inside_complete_projected_expressions ... ok
+test result_headers_preserve_original_expression_spelling_and_unicode_offsets ... ok
+test signed_minimum_integer_literals_are_valid ... ok
+test conversion_functions_preserve_null_and_reject_unsupported_runtime_types ... ok
+test union_column_contract_is_checked_before_graph_mutation ... ok
+test date_arithmetic_uses_complete_elapsed_days_and_duration_scaling_discards_fractional_nanos ... ok
+test skip_limit_parameters_require_nonnegative_integer_values ... ok
+test range_is_integer_only_checked_at_boundaries_and_cancellable ... ok
+test with_where_sees_input_and_projected_bindings_without_leaking_dropped_variables ... ok
+test percentile_aggregations_use_the_requested_parameter_and_reject_out_of_range_values ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests graphite_cypher
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

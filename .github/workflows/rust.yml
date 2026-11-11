@@ -349,6 +349,7 @@ jobs:
         cargo test --release --locked -p graphite-cypher a_relaxed_plan_still_applies_the_dropped_conjunct -- --nocapture
         cargo test --release --locked -p graphite-cypher probed_execution_returns_the_same_rows_and_knows_when_more_exist -- --nocapture
         cargo test --release --locked -p graphite-cypher a_fused_with_prefix_answers_as_the_generic_pipeline_does -- --nocapture
+        cargo test --release --locked -p graphite-cypher native_multi_source_pairs_match_retained_pipeline_and_http_probe -- --nocapture
         cargo test --release --locked -p graphite-cli select_sites_reads_call_site_keys_off_a_real_graph -- --nocapture
         cargo test --release --locked -p graphite-cypher partition::tests -- --nocapture
         cargo test --release --locked -p graphite-cypher scan::descriptor_tests -- --nocapture

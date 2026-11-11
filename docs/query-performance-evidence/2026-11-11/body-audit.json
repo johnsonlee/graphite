@@ -1,0 +1,10 @@
+{
+  "verifiedBodies": 8798,
+  "cases": 73,
+  "completeHTTP200": true,
+  "receiptHashesMatch": true,
+  "graphCountEveryResponse": 64,
+  "exactParsedResponsesAcrossRevisionsAndRepeats": true,
+  "artifactId": 13809902215,
+  "runId": 42912084315
+}

@@ -23354,3 +23354,543 @@ conclusions separate per operation/workload/pair with independent5% resource lim
 Review core outcomes before another final Apple three-graph comparison. Source tests
 are correctness evidence only. The attachment's experiment-history copy records
 actual measurements and retention decisions; this entry claims no measured recovery.
+
+### Attempt315 — stream proven string-pair UNWIND aggregation (2026-11-11)
+
+**Baseline and scope.** Native baseline `58215b98` was independently built from
+`a911529a` (only workload/tests/docs added) with Rust1.93.0 in a private physical
+Cargo target. Binary SHA256 is
+`8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c`.
+Use the same real64 saved head graphs from PR211 for both implementations;
+manifest SHA256
+`ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf`.
+The [predeclared local protocol](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)
+records source/input boundaries, full response consumption, concurrency4 and
+sampling. User priority is slow/complex-query P95, with P50 diagnostic only;
+correctness, availability and independent CPU/RSS bounds remain in force.
+
+**Observed problem.** Six global64 first-use queries completed. The dependency
+co-use query took46,300.031ms in that diagnostic pass, not a P95 distribution.
+The subsequent baseline pilot failed during warmup: co-use exceeded the70s client
+deadline and another in-flight request was interrupted when the failed stage
+stopped. Query-process lifetime kernel peak RSS was31,360,630,784bytes, including
+loading and executed stages. No pressure samples exist for this pilot; a baseline
+P95 and mixed-pressure CPU comparison are unavailable. Preserve both successful
+smoke and failed pilot; never remove the failing query or label partial work PASS.
+
+**Hypothesis and change.** The exact double-UNWIND/string-pair filter/count shape
+retains huge intermediate row vectors before aggregation. Prove all seeds are
+string lists and two carried strings, with nonshadowing identity projections and
+safe count expressions. Enumerate every original left/right pair in encounter
+order, reuse a projected row, and feed the original aggregate states directly.
+Keep UTF-16 comparison, duplicate multiplicity, first encounters, graph provenance,
+final sorting/SKIP/LIMIT and generic fallback. Decline any work budget, including
+ancestor tokens, so bounded work retains its original charging/error boundary.
+No data change, result truncation, concurrency reduction, or timeout relaxation.
+
+**Correctness and initial decision.** Six focused unit tests, full Cypher module
+433 tests, strict module all-target Clippy and explicit two-source native fixture
+parity passed. The native parity fixture is for correctness only. Independent
+source review checked error ordering, aliases, provenance and cancellation.
+The initial test-only Clippy initializer failure was fixed and retained in the
+session record. Candidate performance remains pending; this entry does not claim
+recovery or waive the failed baseline. The candidate is the commit containing
+this entry; its exact binary identity and measured keep/revert decision will be
+recorded in the local experiment report before PR delivery.
+
+### Attempt316 — compact bounded string-pair counts and provenance (2026-11-11)
+
+**Parent, hypothesis and precise scope.** Retain Attempt315's streaming implementation
+at `94c7d3b9` as the incremental runtime reference. The original-main warmup failure
+recorded above remains a failure, not a measurable pressure baseline. Attempt315
+removes intermediate UNWIND vectors but still allocates generic group keys, Rows,
+aggregate states and DISTINCT sets. The next hypothesis is that a compact pair
+representation can reduce that remaining CPU and memory work without omitting any
+input pair or requested result.
+
+Admission retains all Attempt315 string/identity/count proofs and additionally
+requires exactly `ORDER BY count_alias DESC, left_alias ASC, right_alias ASC` and
+a trailing nonnegative literal LIMIT no greater than65536. The effective bound
+includes the existing HTTP probe's extra row. Intern target strings by content,
+rank them once using the original UTF-16 comparator, and preserve every list's
+order and duplicate multiplicity. Count integer-ID pairs in encounter-ordered
+state. DISTINCT carried values and contributing provenance use independent
+64-bit dictionaries, each proven to contain at most64 strings before consuming
+pairs. Missing provenance is supported; empty, malformed, duplicate or unsorted
+provenance and larger dictionaries retain Attempt315's streaming fallback.
+
+Reuse the existing `DeferredCount` implementation with internal visibility changes
+only. Finalize every group in encounter order, including losers and LIMIT0,
+before constructing any output Row. Rank with `Reverse<i64>` rather than negating
+a possibly wrapped minimum integer. Materialize only bounded winners, rebuild
+provenance through the existing helper, and retain the original downstream ORDER
+and LIMIT. Work-budget tokens, including their ancestors, still use the original
+pipeline. No storage/producer changes, persistent cache, raised timeout, reduced
+concurrency, numeric-comparison generalization or weakened semantic checks.
+
+**Correctness and source verification.** Fourteen combined Attempt315/316 focused
+tests and all441 Cypher module tests passed. Fixture-gated cases in the ordinary
+module run retain their existing skip convention; the new native differential test
+was also explicitly run against the real PR211 head `fixture-tika-00`, represented
+as two source identities. Its two-class restriction is correctness coverage only,
+not multi-graph performance acceptance. Both dialects matched the retained generic
+path, complete provenance and HTTP probe behavior. Strict module all-target Clippy
+and the release CLI build passed. A separate release-mode test verified the shared
+wrapping-count/winner behavior; debug tests verified that losing and zero-limit
+counts do not hide deferred overflow. Deterministic counters assert only winners
+are materialized. Tests also cover UTF-16 versus provenance ordering, aliases,
+duplicates, independent64/65 dictionary boundaries, missing/empty provenance,
+parent work budgets and fallback to both streaming and generic paths. Independent
+source review found no material blocker. No timing assertion uses these fixtures.
+
+The frozen cumulative candidate executable is
+`/private/tmp/graphite-attempt316-candidate-c98he5_x/graphite`, SHA256
+`c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374`,
+built with Rust1.93.0. The matching Attempt315 frozen binary SHA256 is
+`3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8`.
+The candidate source mapping is commit `3498c8ea`, recorded after the binary was
+built and frozen. The run reports bind binary hashes and fixture seals, but do not
+contain source commits or compiler identities. The [derived provenance record](query-performance-evidence/2026-11-11/complex-p95/provenance.json)
+binds the session build records to Git objects and rechecks the retained executable
+hashes; this is session attestation, not an independent build manifest or proof
+embedded in the executable.
+
+**Predeclared matched evaluation and decision.** Performance measurement is pending.
+Use the unchanged real64 saved head corpus and manifest SHA256
+`ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf`,
+with every request actually targeting all64 graphs and completely consuming its
+HTTP body. Follow the [protocol's Attempt316 amendment](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md):
+all six fixed complex queries, concurrency4, fresh servers, unchanged60s/70s
+deadlines, first use and two warmups, three paired20-request-per-case rounds in
+AB/BA/AB order, then an unconditional separate paired100-request confirmation in
+BA order. A is retained Attempt315 and B is the cumulative candidate. Keep all
+samples and failures, report per-case/per-round nearest-rank P95 without pooling,
+P50 as diagnostic data, absolute milliseconds before percentages, and the
+uncertainty of one100-sample confirmation rather than three such rounds.
+
+Report correctness, stability, P95, complete workload time, pressure-window server
+CPU and declared fresh-process lifetime kernel peak RSS separately. CPU and RSS
+must each satisfy the independent5% bound on matching complete workloads; incomplete
+original-main runs cannot supply those comparisons. Preserve loading/first-use
+costs and the original-main failure. The existing73-query regression workload and
+required PR correctness/OOM checks remain required for the cumulative change.
+Initial source-time decision: retain as an unmeasured candidate for this paired evaluation;
+no latency, CPU, RSS gain, final performance acceptance or original-main recovery
+is claimed by this source/correctness record.
+
+**First paired result (AB, 20 pressure requests per case per arm).** Run
+`paired-pilot-01` independently verified all276 complete typed responses:
+six first-use, twelve warmup and120 pressure requests in each arm. Every request
+used the same64 real graphs and full result consumption. Fixture/content/query
+identities matched; no request or process failure was recorded. A is the frozen
+Attempt315 binary above; B is cumulative316 at `3498c8ea`, with the same candidate
+binary identity above. Controller `3d1d19c1` records Mach ticks and the timebase;
+its CPU snapshots independently corroborated wait4. This pair needs no historical
+CPU-unit correction.
+
+| Case | A P95 ms | B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |3949.706|2536.270|-1413.436|-35.786%|
+| global target support |4388.318|2776.441|-1611.877|-36.731%|
+| two-hop DATAFLOW |4265.109|4061.495|-203.614|-4.774%|
+| DATAFLOW degree histogram |8959.953|5650.064|-3309.889|-36.941%|
+| OPTIONAL DATAFLOW sinks |16655.825|10696.064|-5959.761|-35.782%|
+| dependency co-use |38919.123|2264.064|-36655.059|-94.183%|
+
+| First-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.560|18.262|+0.702 (+3.995%)|Within bound|
+| Loading kernel peak RSS MiB |3804.578|3799.484|-5.094 (-0.134%)|Within bound|
+| Complete mixed-pressure CPU s |1130.778|545.562|-585.216 (-51.753%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32915.859|26668.109|-6247.750 (-18.981%)|Within bound|
+| Complete pressure-stage wall ms |329730.649|141781.215|-187949.434|Not a resource limit|
+
+CPU is server user+system. Query kernel peak RSS includes the fresh process's
+loading, first use, warmup and pressure; it is not a resettable pressure-window
+peak or an individual-query resource measure. Complete pressure-stage wall
+includes client validation gaps, not the complete build/load/query pipeline.
+P50 diagnostic values and every raw sample remain in the audit. Twenty-sample
+P95 is rank19; this first pair does not quantify cross-run uncertainty. Reduced
+co-use contention may explain some other cases' gains; this does not establish
+independent changes to their execution paths.
+
+**Incremental decision after this pair.** Keep the positively verified compact
+path for continued composition and validation. All six P95 observations improved
+and the four declared phase/resource comparisons were within their independent
+limits in this pair. This is not final acceptance: the predeclared BA and AB
+pilot pairs, separate BA100-sample confirmation and original-main73-query
+regression remain pending. Report each round separately without pooling. Required
+PR correctness/OOM checks also remain separate. The original-main complex-query
+warmup failure is retained; it supplies neither a pressure P95 nor complete mixed
+CPU/RSS baseline, so no original-main recovery ratio is constructed.
+
+Evidence: [independent first-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-summary.md),
+and [859-file original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-manifest.json).
+The compressed archive SHA256 is
+`1578eded657ba38ff206f31d84cfbf95a0534f131dd5d9c5535cdb9400abe948`.
+
+**Second paired result (BA,20 samples per case per arm).** Run `paired-pilot-02`
+reversed the fresh-process order while retaining the same binaries, sealed64
+graphs, six queries, concurrency4 and complete-result boundary. All276 issued
+requests passed the independent typed-body/hash/journal/scope audit. Both arms
+completed; there were no retained request errors. Mach CPU conversions again
+corroborated independent wait4 snapshots.
+
+| Case | Second-pair A P95 ms | Second-pair B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |3785.510|2537.866|-1247.644|-32.958%|
+| global target support |4146.769|2787.224|-1359.545|-32.786%|
+| two-hop DATAFLOW |4148.833|4061.434|-87.399|-2.107%|
+| DATAFLOW degree histogram |9363.787|5660.043|-3703.744|-39.554%|
+| OPTIONAL DATAFLOW sinks |15986.252|10619.568|-5366.684|-33.571%|
+| dependency co-use |37186.954|2268.983|-34917.972|-93.898%|
+
+| Second-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.894|17.671|-0.224 (-1.251%)|Within bound|
+| Loading kernel peak RSS MiB |3796.625|3797.672|+1.047 (+0.028%)|Within bound|
+| Complete mixed-pressure CPU s |1111.713|546.922|-564.791 (-50.804%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32680.109|25998.078|-6682.031 (-20.447%)|Within bound|
+| Complete pressure-stage wall ms |319971.137|142334.671|-177636.466|Not a resource limit|
+
+Keep the beneficial increment while continuing the declared evaluation. This
+second pair independently met the four resource comparisons and improved all six
+P95 observations. Do not pool its requests with the first pair or replace the
+separate100-sample confirmation. All resource boundaries and production/semantic
+limitations stated above still apply. Original-main's failed complex baseline
+still cannot supply a pressure comparison.
+
+Evidence: [second-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-summary.md),
+[859-file manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-manifest.json).
+The archive SHA256 is
+`e3c5a1044ec7255c160c3e8484bd3f609ffed29d827c9f4f12bf04d0f0023843`.
+
+**Third paired result (AB,20 samples per case per arm).** Run `paired-pilot-03`
+completed another276 requests with full typed-body, receipt, journal and scope
+validation. Both binaries, query/fixture identities and complete results match
+the earlier pairs. CPU conversion again corroborated independent wait4. Each
+case has20 pressure samples per arm at concurrency4; preserve this pair separately.
+
+| Case | Third-pair A P95 ms | Third-pair B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |2636.761|2522.399|-114.362|-4.337%|
+| global target support |4041.096|2787.069|-1254.026|-31.032%|
+| two-hop DATAFLOW |4125.299|4070.277|-55.021|-1.334%|
+| DATAFLOW degree histogram |7466.682|5649.511|-1817.172|-24.337%|
+| OPTIONAL DATAFLOW sinks |13816.374|10554.603|-3261.771|-23.608%|
+| dependency co-use |31239.094|2274.597|-28964.497|-92.719%|
+
+| Third-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.708|18.185|+0.477 (+2.695%)|Within bound|
+| Loading kernel peak RSS MiB |3797.281|3796.859|-0.422 (-0.011%)|Within bound|
+| Complete mixed-pressure CPU s |1081.894|543.809|-538.085 (-49.735%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32301.609|26852.344|-5449.266 (-16.870%)|Within bound|
+| Complete pressure-stage wall ms |297177.209|140917.865|-156259.344|Not a resource limit|
+
+All six P95 observations improved and all four resource observations remained
+within the declared independent bounds in this third pair. Keep the positive
+increment. The reference co-use P95 varied from38919.123ms in pair1 to31239.094ms
+here, so retain the actual pair values rather than selecting the largest gain.
+Do not pool the three20-sample rounds or use them in place of the separately
+declared100-sample confirmation. Original-main complex-query failure remains
+incomparable; no original-main pressure recovery ratio is constructed.
+
+Evidence: [third-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-summary.md),
+[original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-manifest.json).
+Archive SHA256:
+`17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081`.
+
+**Separate100-sample confirmation (BA).** Run `paired-measure-01` completed
+618 requests per arm: six first-use, twelve warmup and600 pressure. Independent
+audit verified all1236 full typed responses, every receipt/journal and sample,
+64-graph scope and CPU/wait4 corroboration. Binary, source-input, fixture, query
+and complete-result identities match all three pilot pairs. Each case/arm P95
+below is rank95 of this run’s100 requests; do not pool with the20-sample pilots.
+
+| Case | Confirmation A P95 ms | Confirmation B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |5768.295|2528.259|-3240.036|-56.170%|
+| global target support |4889.072|2801.873|-2087.198|-42.691%|
+| two-hop DATAFLOW |4595.136|4081.245|-513.891|-11.183%|
+| DATAFLOW degree histogram |12708.706|5808.666|-6900.039|-54.294%|
+| OPTIONAL DATAFLOW sinks |21838.016|11352.328|-10485.687|-48.016%|
+| dependency co-use |46058.471|2292.147|-43766.323|-95.023%|
+
+| Confirmation resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |18.028|17.590|-0.438 (-2.430%)|Within bound|
+| Loading kernel peak RSS MiB |3795.984|3798.109|+2.125 (+0.056%)|Within bound|
+| Complete mixed-pressure CPU s |5655.693|2766.472|-2889.221 (-51.085%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |34390.297|27372.078|-7018.219 (-20.408%)|Within bound|
+| Complete pressure-stage wall ms |1687126.441|705436.207|-981690.234|Not a resource limit|
+
+All six P95 and four phase/resource observations meet the declared comparisons
+in this independent confirmation. Retain the positive compact increment. This is
+one100-sample confirmation, not three independent such runs or a cross-round
+confidence interval. P50 diagnostics, min/max and every sample remain archived.
+CPU is mixed-workload server user+system; RSS is complete query-process lifetime
+including loading and warmup. These are not individual-case resource proofs.
+Original-main’s failed complex pilot remains incomparable, so this does not
+establish an original-main pressure recovery ratio or full production acceptance.
+
+Evidence: [confirmation audit](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-summary.md),
+[original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-manifest.json).
+Archive SHA256:
+`1dc802fa8b884b782ce0b4b40d79a2e66b48bed5b89e41757d6cb99d68274bc5`.
+
+**Original-main→316 73-case regression (AB), separate conclusion.**
+`paired-regression-01` completed4599 requests per arm:73 first-use,146 warmup,
+1460 pressure (20 per case at concurrency4), and2920 isolated (40 per case at
+concurrency1; all73 qualified under the existing pressure-p50<100ms rule).
+Independent audit verified all9198 complete typed responses and182027538 body
+bytes, receipts, journals, per-case quantiles and64-graph identities. This is
+not isolated-only, and its mode name does not change regression pressure20 to
+complex-confirmation100. The isolated replay is not sustained pressure.
+
+The original-main binary SHA256 is
+`8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c`
+(build checkout `a911529a`); the316 binary remains unchanged. Result equality,
+complete execution and the four declared resource comparisons passed. However,
+42 of73 pressure P95 values and47 of73 P50 values increased. Preserve these
+adverse observations; do not claim every query was nonregressing.
+
+| Largest observed pressure P95 increases | Original main ms |316 ms| Absolute Δ ms |
+| --- | ---: | ---: | ---: |
+|shape-equality|1.343792|4.045833|+2.702041|
+|shape-skip|2.140750|3.330000|+1.189250|
+|shape-with-aggregate|48.694083|49.844792|+1.150709|
+|shape-coalesce|1.666417|2.074500|+0.408083|
+|shape-case-expr|1.173791|1.509875|+0.336084|
+|shape-count-traversal|14.652709|14.980834|+0.328125|
+
+| Regression resource/boundary | Original main |316| Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+|Loading CPU s|17.947510|17.922770|-0.024740 (-0.138%)|Within bound|
+|Loading kernel peak RSS MiB|3796.968750|3797.765625|+0.796875 (+0.021%)|Within bound|
+|Complete mixed-pressure CPU s|10.290476|10.082159|-0.208317 (-2.024%)|Within bound|
+|Query-process lifetime kernel peak RSS MiB|4998.859375|5010.500000|+11.640625 (+0.233%)|Within bound|
+
+CPU covers the complete pressure mix; query lifetime RSS additionally includes
+loading, first use, warmup and isolated replay. A single20-sample observation
+cannot establish the cause of small P95 increases or prove their absence. Do not
+repeat tiny-timing optimization/stabilization loops or select favorable reruns.
+The complex workload improvements do not erase these observations or prove
+universal recovery. Original-main’s complex pilot remains a retained failure.
+
+Evidence: [73-case audit](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-audit.json),
+[all-case summary](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-summary.md),
+[27627-file manifest](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-manifest.json).
+Archive SHA256:
+`dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154`.
+
+**Local decision and remaining limits.** Retain315/316: three separate pilots
+and the separate100-sample confirmation establish a positive complex-query
+increment with the declared mixed-workload resource bounds. All predeclared
+local measurements are complete. Do not label this universal performance
+acceptance: existing-query adverse P95 observations, producer/production scope
+limitations and the failed original-main complex baseline remain explicit.
+After all measurements, local formatting and benchmark module tests passed
+(68 passed,0 failed,1 pre-existing ignored), as did diff checks. Final-HEAD PR
+correctness/OOM CI has not yet run; earlier `f6d2c565` CI applies only to that
+recorded version. No future CI pass is claimed.
+
+### Attempt317 — adaptive multiword pair-group masks (2026-11-11)
+
+**Hypothesis and scope.** Attempt316's independent 64-value distinct and
+provenance dictionaries cause an abrupt return to315's generic group state at
+65 values. Preserve the proven pair-tail admission, ordering, count overflow,
+work-budget fallback and bounded winner materialization while allowing both
+dictionaries to grow independently. The first word stays inline and the
+64-value pair loop is selected once through a const-generic dispatch. Higher
+words use a flat arena when their combined stride is at most eight words;
+larger strides use one sparse map keyed by group index and word index, storing
+only nonzero words. Eight words is a representation choice, not an admission
+limit. No new256-value or other dictionary cutoff is introduced. Distinct
+popcounts occur only for retained winners; all group counts still finish before
+LIMIT, including LIMIT0. Sparse storage avoids allocating the full global
+vocabulary for every pair, but neither bounded output nor sparse masks bound
+pair enumeration or the number of unique groups. Wide-dictionary performance
+and resource behavior remain empirical questions.
+
+**Baseline and candidate.** Compare with frozen316 binary
+`/private/tmp/graphite-attempt316-candidate-c98he5_x/graphite`, SHA256
+`c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374`.
+Candidate source, build log, toolchain and frozen-binary identities will be
+recorded with the317 build; no pre-build commit or embedded identity is implied.
+
+**Correctness before measurement.** Focused pair-tail tests passed17/17;
+complete `graphite-cypher` tests passed444/444 and all-target clippy with
+`-D warnings` passed. Deterministic fixtures assert compact admission and exact
+parity with both retained315 and generic execution in both dialects at64,65,
+130,257 and1025 distinct/provenance values, independently and together. They
+cover duplicate membership, word boundaries, multiple provenance values in one
+source, independent groups, missing provenance, LIMIT0, cancellation and parent
+work budgets. A sparse-path assertion checks actual occupied words without a
+synthetic timing or allocation-performance claim. Existing overflow, UTF16,
+alias, probe and malformed-provenance fallback checks remain in place. The
+real Tika shard loaded under two source IDs is a correctness-only native parity
+check, not evidence for more than64 physical graphs.
+
+**Predeclared representative evaluation.** Use the same pinned real64 manifest
+`/private/tmp/graphite-pr211-final-benchmark/fresh-run/results/frontend/head/graphs/graphs.tsv`,
+complete typed-body consumption and four concurrent workers. First compare316
+and317 with normal six-query AB pilot20 requests per case to assess the common
+64-value path. Separately run a six-query wide-distinct pilot20 per case whose
+co-use tail counts DISTINCT caller rather than graph; its requests still target
+the real64 physical graphs. This tests a wider logical dictionary and must not
+be described as a greater-than64-physical-graph workload. Preserve any316
+fallback timeout/failure rather than manufacturing a comparable percentile.
+A positive normal pilot proceeds to a separate BA100-per-case confirmation;
+keep pilot and confirmation samples separate. Report P95 milliseconds and
+absolute changes first, P50 diagnostically, complete query CPU and lifetime
+kernel peak RSS, plus loading CPU/RSS independently. Each CPU/RSS increase must
+remain within5% of its matching baseline. Existing73-query correctness/OOM CI
+remains required; no repeated local73-query timing loop is added for this narrow
+tail change. No317 latency, CPU/RSS gain or acceptance decision is claimed yet.
+
+**Frozen candidate before commit.** Release CLI build succeeded; binary
+`/private/tmp/graphite-attempt317-candidate-gye0sejo/graphite` has SHA256
+`9238e0d5318a6343d11c42b41bfd6ec711595ee4dc9910a7113a1693382565ce`.
+That directory retains the build log, module test log, product diff and
+`source-manifest.json` with Rust/Cargo source-file hashes, compiler identity and
+source HEAD `10a61f96d40b53594377465dde6847d5f9a7d028` plus the uncommitted317
+change. This is a post-build filesystem snapshot and session build record, not
+embedded commit identity or an independent reproducible-build proof. Explicit
+native Tika two-source parity also passed after the adaptive storage change.
+
+**Attempt317 normal pilot result (independent AB20 round).** All276 issued
+responses/receipts independently verify with complete typed equality. Per-case
+P95 ms316→317: rollup2524.002→2535.378(+11.376), global2769.479→2795.812(+26.333),
+two-hop4064.870→4046.487(-18.383), degree5644.167→5618.247(-25.920),
+optional10367.474→10457.890(+90.415), co-use2254.600→2320.536(+65.936,+2.925%).
+No common-path latency benefit is claimed. Mixed pressure CPU543.036754→545.651686s
+(+0.482%); query lifetime peak RSS26685.109→26297.172MiB(-1.454%). Separate
+loading CPU17.258692→18.093887s(+4.839%) and RSS3800.000→3799.719MiB remain within
+this pair's5% limits; loading CPU is close to the boundary. These resources cover
+the declared operation/mix, not each individual case. E2E improvement, production
+availability and final acceptance are not established by this diagnostic pilot.
+BA100 and wide results remain separate pending observations; no pooling.
+[Independent audit](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-audit.json)
+and [P50/P95 summary](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-summary.md)
+retain all cases, failures and resource boundaries. Raw archive compression is
+deferred until measurement ends to avoid competing IO.
+
+**Attempt317 normal confirmation (independent BA100 round).** All1236 complete
+typed responses/receipts and per-case nearest-rank percentiles independently
+verify. P95 ms316→317: rollup2528.601→2546.549(+17.948), global2785.255→2797.968
+(+12.713), two-hop4066.375→4076.518(+10.143), degree5668.089→5594.670(-73.419),
+optional11037.184→10516.431(-520.753), co-use2285.934→2323.029(+37.095,+1.623%).
+Four cases increase; this does not establish common-path latency recovery.
+Mixed pressure CPU2757.364602→2732.097328s(-0.916%); lifetime peak
+RSS26936.219→27343.719MiB(+1.513%). Separate loading CPU17.973277→17.765459s
+(-1.156%) and RSS3798.047→3796.281MiB satisfy the independent5% bounds.
+No pilot pooling, E2E win, production stability recovery or final acceptance is
+claimed. [Audit](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-audit.json)
+and [summary](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-summary.md)
+retain every case including P50. Wide workload remains separate.
+
+**Attempt317 wide DISTINCT pilot (separate AB20 round).** Both arms completed;
+all276 typed responses/receipts and nearest-rank percentiles independently verify.
+Each request still targets64 real physical graphs. Across all23 co-use responses
+per arm, maximum returned callers is19397; retained hashes/body paths establish
+more than576 distinct values with at most64 provenance values, proving sparse
+mask coverage without an extra timing query. This is not >64-physical-graph evidence.
+P95 ms316→317: rollup6244.053→2551.590(-3692.463), global7155.821→2808.682
+(-4347.139), two-hop4691.521→4110.402(-581.119), degree11137.442→5658.224
+(-5479.217), optional16972.665→10630.145(-6342.520), wide co-use51231.978→3891.426
+(-47340.551,-92.404%). Mixed pressure CPU1160.296319→582.278693s(-49.816%);
+query lifetime RSS36966154240→26957873152bytes(-27.074%). Separate loading
+CPU17.688042→18.301058s(+3.466%) and RSS3983327232→3980787712bytes(-0.064%)
+meet this workload's independent5% resource limits. Other cases share concurrent
+pressure and cannot independently attribute algorithm improvements from this result.
+Retain the verified wide benefit alongside normal BA100 co-use+37.095ms and other
+increases. This is one20-sample pilot, not100-sample wide confirmation or universal
+P95 acceptance. No E2E or production availability recovery is claimed.
+[Evidence](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)
+retains audits, response cardinality proof, raw archives and source/controller identity.
+
+
+### Attempt318 — avoid first-element provenance polling; observe dense masks (2026-11-11)
+
+**Review hypothesis.** The high-provenance contribution loop checked cancellation
+at element zero for every pair, duplicating the surrounding source check and
+periodic pair-loop polling. Skip only that first-element direct check; retain
+checks at each subsequent 1024 elements, all pair ticks, and work-budget behavior.
+The correctness fixture now includes1154 provenance values to cross the inner
+polling boundary. This does not claim a measured high-provenance speedup.
+
+**Feedback path and predeclared evidence.** Reuse the sealed real64 persisted
+fixture and frozen316 baseline; do not rebuild or transfer5.1GB of inputs.
+Run module correctness and lint first, build/freeze the native candidate and
+controller once, then a candidate-only six-case correctness smoke. A separate
+AB pilot uses20 pressure requests per case per arm, concurrency4, nearest-rank
+P50/P95, server60s/client70s timeouts, and complete response consumption. Estimate
+roughly1–3minutes for the smoke and10–15minutes for the pair from the earlier
+wide fallback run; final hosted CI is a separate approximately25–40minute path.
+No archive compression or competing builds run during measurement.
+
+The dense workload keeps all six real64 queries, changing only co-use to derive
+at most four distinct keys per physical graph from caller-name length modulo4.
+A complete returned count greater than64, together with the256-key upper bound
+and at most64 physical provenance values, must establish dense-tier coverage.
+If this proof fails, report missing coverage instead of inferring the tier from
+latency. No graphs are duplicated and every request targets all64 real graphs.
+This is evidence for a logical dictionary representation, not65–320 physical
+graphs or the high-provenance cancellation branch. Compare against frozen316's
+streaming fallback to show this tier's actual resource/latency behavior. Retain
+all samples and failures; do not pool with normal or sparse workloads or claim
+formal acceptance from this diagnostic pilot. Report baseline/candidate ms and
+absolute changes first, separate loading/query CPU and peak RSS with independent
+5% limits, complete results, errors and uncertainty. The73-case hosted correctness
+and OOM gate remains required; hosted timings remain report-only.
+
+
+**Frozen candidate and correctness.** Source HEAD21b8310f plus the two-file318
+native patch produced `/private/tmp/graphite-attempt318-candidate-h2eh5wjm/graphite`,
+SHA256`6334e74baa9649ad0d7e16f94b9209a689a9528b29425d3ce440d821742f7af7`.
+The retained source manifest/diff and build log are post-build session provenance,
+not an embedded commit or independent reproducible-build proof. All444 Cypher
+tests,17 focused tests and all-target clippy passed. Budgeted queries still
+bypass this optimization, so their generic work accounting remains unchanged.
+The1154-value fixture is correctness-only and crosses the long provenance loop's
+1024-element polling boundary.
+
+The measured controller SHA256 is
+`358cf552b3af78dea051885534de4ad9144cd8f52766cb8b9121b926e2849579`;
+its source snapshot, patch and session-attested validation summary are retained.
+Controller70 tests passed with one existing ignored test, and lint/release build
+passed. The smoke returned six complete results and maximum distinct256.
+The raw controller's `tier: Dense` metadata describes cardinality eligibility,
+not per-binary instrumentation:316 still falls back to streaming. The final
+controller labels this field `candidateRepresentationByCardinality` explicitly;
+this metadata clarification does not alter queries, timings or product binaries,
+and original reports are not rewritten.
+
+
+**Dense pilot result and decision.** All276 pilot responses and six smoke
+responses pass independent complete typed-body/receipt/journal audits. All46
+co-use bodies return maximum distinct256, proving the candidate's three-word
+Dense eligibility with the fixed source admission. P95 ms316→318:
+rollup4353.696→2505.796(-1847.901), global4773.585→2767.121(-2006.464),
+two-hop4226.245→4075.309(-150.936), degree9861.022→5670.554(-4190.468),
+optional16180.194→10396.458(-5783.736), co-use41313.780→2692.884(-38620.897).
+Mixed query CPU1140.544925→550.634461s and query lifetime peak
+RSS36414455808→28023980032bytes decrease. Loading CPU17.434059→18.162500s
+(+4.178%) and peak RSS3978756096→3987079168bytes(+0.209%) increase within
+independent5% limits. All six P95 values improve in this single pilot;20 samples
+and one pair do not establish precise confidence bounds or universal recovery.
+Other cases share pressure and cannot attribute independent algorithm gains.
+No E2E or production availability recovery is claimed; this complete run had
+zero errors/OOM. Retain the cancellation fix with correctness coverage, and
+retain the empirical Dense benefit as evidence for317's representation. Real64
+has no high provenance word, so the timing gain is not attributed to318 polling.
+Dense three-word storage still uses24 logical extra bytes per group (up to64
+at the tier maximum), before capacity/allocator overhead. This probe does not
+establish memory bounds for all group cardinalities or more than64 physical graphs.
+[Full evidence and reproduction](query-performance-evidence/2026-11-11/complex-p95/attempt318/README.md)
+retain all samples, limits, source proof, raw logs and checksum-pinned external archives.

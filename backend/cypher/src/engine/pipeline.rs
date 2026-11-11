@@ -27,6 +27,9 @@ mod grouped_with;
 #[path = "collect_prefix.rs"]
 mod collect_prefix;
 
+#[path = "unwind_groups.rs"]
+mod unwind_groups;
+
 pub type Row = IndexMap<String, Value>;
 
 /// Hidden row key carrying cross-graph provenance (sorted unique graph ids as a list of strings).
@@ -508,6 +511,14 @@ impl Executor {
                     rows = out;
                 }
                 Clause::Unwind { expr, variable } => {
+                    if let Some((cols, grouped)) =
+                        unwind_groups::try_execute(self, &ev, &clauses[i..], &rows)?
+                    {
+                        columns = cols;
+                        rows = grouped;
+                        i += 4;
+                        continue;
+                    }
                     let mut out = Vec::new();
                     for r in rows {
                         self.tick()?;
