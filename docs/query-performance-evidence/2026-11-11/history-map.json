@@ -1,0 +1,106 @@
+{
+  "base": "58215b986f8c1be68b0480bc209e00311bc80dc1",
+  "remoteLease": "10a61f96d40b53594377465dde6847d5f9a7d028",
+  "originalHead": "6649c990353fe05d0797b27a2ee376ce4ddea973",
+  "filteredHead": "b35a4d866d2e1b498540907b46e4740faffd007c",
+  "unchangedFinalTree": "bf00fdd27a82c056813621453f70062851593054",
+  "removedPaths": [
+    "docs/query-performance-evidence/2026-11-11/base-requests.json.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/historical-baseline-attempt315.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/paired-measure-01.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/complex-p95/paired-regression-01.tar.gz",
+    "docs/query-performance-evidence/2026-11-11/head-requests.json.gz"
+  ],
+  "commits": [
+    {
+      "originalCommit": "a911529a8fe2fc66185dca7715179ec13bf7b7c3",
+      "filteredCommit": "417745b02419d17c7cd255a49c0225029995d4bf",
+      "subject": "test: define complex aggregation workload and correctness oracles"
+    },
+    {
+      "originalCommit": "01db2da2d65c1f59f4bc52ed463392cb94e14e0c",
+      "filteredCommit": "26c900f4a54fd778003c1cbf948328f1eb205e45",
+      "subject": "feat(benchmark): add reproducible local multi-graph query pressure runs"
+    },
+    {
+      "originalCommit": "94c7d3b9ed19f54324ed2a8379ff2597c1af3163",
+      "filteredCommit": "1c0abc6cb666ea54b99f7ffff539adafe4718742",
+      "subject": "perf(cypher): stream proven string-pair unwind aggregation"
+    },
+    {
+      "originalCommit": "76dba6d86ad3eb5b28ad20fd8a18b7ac4dc0bf2b",
+      "filteredCommit": "83defb16043842dbafcdb903b28f2bf771f2a59d",
+      "subject": "docs: bound confirmation cost and preserve failed baseline evidence"
+    },
+    {
+      "originalCommit": "3d1d19c16d4a3439297a09aad84bc6a666206c50",
+      "filteredCommit": "72fe0eaf930051cc3f4ab38f6b6656b408a65af3",
+      "subject": "fix(benchmark): convert Darwin CPU ticks using Mach timebase"
+    },
+    {
+      "originalCommit": "3498c8ead089e2d881719104ac6f368ec24d8c94",
+      "filteredCommit": "e6bdaf0e49d10b6219ed04b276c5d5329bd5c871",
+      "subject": "perf(cypher): compact bounded string-pair aggregation"
+    },
+    {
+      "originalCommit": "f6d2c5651d608257a66c02317ff86982d1ad1e1c",
+      "filteredCommit": "f8557e4e2621f5f48dd1251033682d38aa9fc4f8",
+      "subject": "ci: exercise pair aggregation against the persisted fixture"
+    },
+    {
+      "originalCommit": "76fa5515a7e4d96ed271248ea4c7539f39673fe3",
+      "filteredCommit": "378931abe0bd2247516d4e5657a0d381a077f543",
+      "subject": "docs: retain audited multi-graph pilots and build provenance"
+    },
+    {
+      "originalCommit": "705037fab8b3116a5639a2fb33edb33c96f0fa9d",
+      "filteredCommit": "a91fdf7ea5f2cd5821dd892d16ff377862bb66d2",
+      "subject": "docs: record complex P95 confirmation and full query regression evidence"
+    },
+    {
+      "originalCommit": "cc800eb0ce2002c9e6bb2f22d507d6cd47faac3a",
+      "filteredCommit": "0e7f8593a265a97ae686f291af70bbcfcbd8de9b",
+      "subject": "docs: compact machine-generated evidence indexes for review"
+    },
+    {
+      "originalCommit": "10a61f96d40b53594377465dde6847d5f9a7d028",
+      "filteredCommit": "1504e8ca76cfac8aef304fad8064802863ad6cf9",
+      "subject": "docs: mark generated performance evidence for review"
+    },
+    {
+      "originalCommit": "671930225da8d3efb10e51e97937a228ceeca348",
+      "filteredCommit": "231af0b49180e60f458d8fe081b2ea43761095aa",
+      "subject": "fix(benchmark): retire process groups before resource reaping"
+    },
+    {
+      "originalCommit": "1c85b1cb759023cff194718444eff0be6c20cf0c",
+      "filteredCommit": "123474e6c8a62f991e4356efb99bf35d69426b79",
+      "subject": "perf(cypher): extend compact aggregation with adaptive wide masks"
+    },
+    {
+      "originalCommit": "5ef909b5be7d3a2c89cc8f97fd1adb657c619e8c",
+      "filteredCommit": "18b7a99eaf1e3a0b13abf2754182311676d0113d",
+      "subject": "test(benchmark): document local protocols and exercise wide distinct aggregation"
+    },
+    {
+      "originalCommit": "78350cb7eda710b9b00d4cac381f3e705b5375fd",
+      "filteredCommit": "b5e3b7e706470896c5803bbdf78d7f78efc772cc",
+      "subject": "docs: move raw query evidence to checksum-pinned release assets"
+    },
+    {
+      "originalCommit": "b5efda8ce4767a9c062ce95b31e6edb7b2b37442",
+      "filteredCommit": "4fce27e58b1069bcd393710e9d26789448b72f51",
+      "subject": "docs: retain audited wide-mask validation and external evidence links"
+    },
+    {
+      "originalCommit": "6649c990353fe05d0797b27a2ee376ce4ddea973",
+      "filteredCommit": "b35a4d866d2e1b498540907b46e4740faffd007c",
+      "subject": "docs: distinguish current review validation from historical measurements"
+    }
+  ],
+  "scope": "Only this unmerged PR branch was rewritten; main and published evidence are unchanged.",
+  "nonArchiveFilesVerifiedUnchangedForEveryCommit": true
+}

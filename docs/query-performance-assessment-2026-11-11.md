@@ -2,6 +2,8 @@
 
 评估日期：2026 年 11 月 11 日，Asia/Seoul。本报告分为两个证据阶段：初始目标 `58215b98` 的 PR211 历史 CI 评估，以及随后新增的真实 64 图复杂查询实验。历史原生候选为 Attempt315（`94c7d3b9`）和累计 Attempt316（`3498c8ea`），评审修复后的候选为 Attempt317（`1c85b1cb`）；不能再用初始 CI 的整树一致性代表开发分支 HEAD。
 
+文中的实验提交保留测量时原ID；归档迁出Git后，可用[提交映射](query-performance-evidence/2026-11-11/history-map.json)检出逐文件验证一致的源码。
+
 **目标：优先解决慢查询、复杂聚合的 P95。P50 仅作诊断，不能抵消 P95 退化。** 正确性、可用性、稳定性以及 CPU/RSS 各自的 5% 限制保持不变。用户报告生产 50+ 图 P95 经常达到几十秒；四组真实 JAR 的 64 个分片不能完整代表这些生产项目。
 
 **评审修复后的最新结论：Attempt317 已移除64值准入上限，并使用自适应 dense/sparse 高位存储。** 真实64图的宽 DISTINCT pilot 中，co-use P95 为316的 **51,231.978 ms →317的3,891.426 ms**（减少47,340.551 ms）；返回19,397个不同caller，证明稀疏路径实际执行。这是每类20样本的pilot，不是65/130个实体图测试。独立常规100样本确认保留co-use **2,285.934→2,323.029 ms（+37.095 ms）**的观察；各项CPU/RSS比较均在5%界限内，不宣称常规P95全面无回退。详见[317证据与复现](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)。
@@ -191,7 +193,7 @@ Attempt316阶段本地测量结束后，`cargo fmt --all --check`通过，`cargo
 
 ### 历史 Attempt316 的 64/65 边界与 Attempt317 验证范围
 
-以下限制描述固定版本 [Attempt316 的实现](https://github.com/johnsonlee/graphite/blob/3498c8ead089e2d881719104ac6f368ec24d8c94/backend/cypher/src/engine/unwind_groups_compact.rs)，不代表后续 HEAD：两个字典分别限制为一次查询输入中至多 64 个 DISTINCT carried 字符串值、至多 64 个 provenance 字符串。它不是 target 类名最多 64，也不是每个 pair 分别最多 64。
+以下限制描述固定版本 [Attempt316 的实现](https://github.com/johnsonlee/graphite/blob/e6bdaf0e49d10b6219ed04b276c5d5329bd5c871/backend/cypher/src/engine/unwind_groups_compact.rs)，不代表后续 HEAD：两个字典分别限制为一次查询输入中至多 64 个 DISTINCT carried 字符串值、至多 64 个 provenance 字符串。它不是 target 类名最多 64，也不是每个 pair 分别最多 64。
 
 - 当前 catalog 的 carried 值是 graphId。50 个参与图通常在范围内；65 个不同 graphId 且贡献输入行的图通常触发回退。
 - 加载超过 64 图不必然回退：没有贡献输入行的图可能不进入字典。反之，若 DISTINCT 对象换成 caller，即使图数少也可能超过 64。判断依据是实际输入字典，不是服务器注册图数量。

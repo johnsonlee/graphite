@@ -49,3 +49,7 @@ python3 docs/query-performance-evidence/2026-11-11/complex-p95/verify_archive.py
 The manifest checks every archived regular file's size and SHA256, rejects extra
 or missing entries and unsafe archive paths. See [local-query evidence](complex-p95/README.md)
 for the independent response/percentile audit commands and measurement limitations.
+
+## Source history after archive migration
+
+[history-map.json](history-map.json) maps the original experiment commit IDs to the filtered PR commits. The rewrite removed only the eight externally archived gzip paths. Every other file was verified unchanged for every mapped commit, and the final tree was identical before adding this explanation. Historical run records retain their original IDs and hashes; use the map to check out the equivalent source. Main was not rewritten.

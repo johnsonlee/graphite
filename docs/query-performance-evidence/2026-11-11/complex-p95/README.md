@@ -24,10 +24,10 @@ The original run reports record executable hashes and fixture identities; they d
 
 | Role | Fixed source reference | Executable SHA256 |
 | --- | --- | --- |
-| Original main native implementation | [58215b98](https://github.com/johnsonlee/graphite/tree/58215b986f8c1be68b0480bc209e00311bc80dc1), built from [a911529a](https://github.com/johnsonlee/graphite/tree/a911529a8fe2fc66185dca7715179ec13bf7b7c3) | `8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c` |
-| Attempt315 | [94c7d3b9](https://github.com/johnsonlee/graphite/tree/94c7d3b9ed19f54324ed2a8379ff2597c1af3163) | `3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8` |
-| Cumulative Attempt316 | [3498c8ea](https://github.com/johnsonlee/graphite/tree/3498c8ead089e2d881719104ac6f368ec24d8c94) | `c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374` |
-| Fixed local controller | [3d1d19c1](https://github.com/johnsonlee/graphite/tree/3d1d19c16d4a3439297a09aad84bc6a666206c50) | `d26e591832bdb8e1df50e264335e7934c94eab1da7cc27af70dbb0c048cac2d8` (current retained executable checked after the runs) |
+| Original main native implementation | [58215b98](https://github.com/johnsonlee/graphite/tree/58215b986f8c1be68b0480bc209e00311bc80dc1), built from [a911529a](https://github.com/johnsonlee/graphite/tree/417745b02419d17c7cd255a49c0225029995d4bf) | `8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c` |
+| Attempt315 | [94c7d3b9](https://github.com/johnsonlee/graphite/tree/1c0abc6cb666ea54b99f7ffff539adafe4718742) | `3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8` |
+| Cumulative Attempt316 | [3498c8ea](https://github.com/johnsonlee/graphite/tree/e6bdaf0e49d10b6219ed04b276c5d5329bd5c871) | `c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374` |
+| Fixed local controller | [3d1d19c1](https://github.com/johnsonlee/graphite/tree/72fe0eaf930051cc3f4ab38f6b6656b408a65af3) | `d26e591832bdb8e1df50e264335e7934c94eab1da7cc27af70dbb0c048cac2d8` (current retained executable checked after the runs) |
 
 The baseline checkout adds workload tests and documentation; its native production
 source objects, CLI, Cargo manifest and lockfile match original main. Its complete
@@ -235,3 +235,5 @@ files,265,960,247 raw bytes in18,666,997 compressed bytes. Verify the
 [manifest](paired-regression-01-manifest.json) with
 `verify_archive.py --manifest paired-regression-01-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-regression-01.tar.gz"`. Archive SHA256:
 `dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154`.
+
+Historical source IDs remain the IDs recorded during measurement. Fixed source links now resolve to byte-equivalent filtered commits; see the [history map](../history-map.json). Only the externally hosted gzip archives were removed from those commits.
