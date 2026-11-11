@@ -20,16 +20,19 @@ internal data class CallSiteTrigramPostingRange(
         get() = end - start
 }
 
-internal class SplitCallSiteTask<T>(private val task: Callable<T>) {
+internal class SplitCallSiteTask<T>(task: Callable<T>) {
     private val state = AtomicInteger(NEW)
     private val exited = CountDownLatch(1)
+    private val trackedTask = trackedSplitCallSiteTask(task)
     lateinit var future: Future<T>
 
     val callable = Callable {
         if (!state.compareAndSet(NEW, RUNNING)) throw CancellationException()
         try {
-            task.call()
+            trackedTask.call()
         } finally {
+            // Publish exit only after worker accounting has finished. A cancelled task that
+            // never passed the state gate must not enter worker accounting at all.
             state.set(FINISHED)
             exited.countDown()
         }
@@ -141,7 +144,7 @@ internal fun <T> executeSplitCallSiteTasks(
     if (tasks.size == 1) return listOf(tasks.single().call())
     val executor = splitCallSiteExecutor(backgroundParallelism)
     val backgroundTasks = tasks.drop(1).map { task -> SplitCallSiteTask(task) }
-    backgroundTasks.forEach { task -> task.future = executor.submit(trackedSplitCallSiteTask(task.callable)) }
+    backgroundTasks.forEach { task -> task.future = executor.submit(task.callable) }
     val results = arrayOfNulls<Any?>(tasks.size)
     try {
         results[0] = tasks.first().call()

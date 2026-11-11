@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -19,6 +20,54 @@ import kotlin.test.assertTrue
 
 /** Verifies split call site worker. */
 class SplitCallSiteWorkerTest : GraphStoreTestFixture() {
+
+    @Test
+    fun `split task exit includes worker accounting after cancellation`() {
+        resetSplitCallSiteWorkerMetrics()
+        val started = CountDownLatch(1)
+        val interrupted = CountDownLatch(1)
+        val releaseCleanup = CountDownLatch(1)
+        val executor = Executors.newSingleThreadExecutor()
+        val task = SplitCallSiteTask(Callable {
+            started.countDown()
+            try {
+                releaseCleanup.await()
+            } catch (_: InterruptedException) {
+                interrupted.countDown()
+                releaseCleanup.await()
+            }
+            intArrayOf(1)
+        })
+        try {
+            task.future = executor.submit(task.callable)
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertEquals(1, splitCallSiteActiveWorkers.get())
+            task.cancel()
+            assertTrue(interrupted.await(5, TimeUnit.SECONDS))
+            assertEquals(1, splitCallSiteActiveWorkers.get(), "Cancellation must not finish running cleanup")
+            releaseCleanup.countDown()
+            assertEquals(null, task.awaitExit())
+            assertEquals(0, splitCallSiteActiveWorkers.get(), "Exit includes accounting teardown")
+        } finally {
+            releaseCleanup.countDown()
+            executor.shutdownNow()
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+        }
+    }
+
+    @Test
+    fun `split task cancelled before entry never starts worker accounting`() {
+        resetSplitCallSiteWorkerMetrics()
+        val ran = AtomicBoolean()
+        val task = SplitCallSiteTask(Callable { ran.set(true) })
+        task.future = FutureTask(task.callable)
+        task.cancel()
+        assertEquals(null, task.awaitExit())
+        assertFailsWith<CancellationException> { task.callable.call() }
+        assertFalse(ran.get())
+        assertEquals(0, splitCallSiteActiveWorkers.get())
+        assertEquals(0, splitCallSitePeakActiveWorkers())
+    }
 
     @Test
     fun `background task failure preserves its cause after all workers exit`() {
