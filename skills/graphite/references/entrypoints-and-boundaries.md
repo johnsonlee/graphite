@@ -1,5 +1,9 @@
 # Entry points and boundaries
 
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
 Goal: list how control enters the application (inbound) and where it leaves the
 application for other systems (outbound). Replace `com.example` with the
 application's package prefix throughout.
@@ -97,7 +101,7 @@ ORDER BY m.signature
 ```
 
 Interface implementations will show up here because callers target the interface
-method (see SKILL.md section 3). Cross-check against the annotation and callback
+method (see [query semantics](../SKILL.md#3-jvm-facts-that-change-how-you-write-queries)). Cross-check against the annotation and callback
 lists above before calling anything dead.
 
 ## Outbound: what the application calls outside itself

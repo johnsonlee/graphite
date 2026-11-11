@@ -4,7 +4,18 @@
 
 English · [简体中文](README.zh.md)
 
-**Structured codebase context for LLMs.** Graphite turns JVM bytecode and compiled JavaScript artifacts into a queryable program graph — so AI agents can understand your codebase without reading every file.
+**Structured codebase context for LLMs.** Graphite turns JVM/Android bytecode, compiled JavaScript artifacts and Swift/Objective-C compiler indexes into a queryable program graph — so AI agents can understand your codebase without reading every file.
+
+| Language / platform | Input | Frontend |
+|---|---|---|
+| Java / Kotlin | JVM bytecode: JAR, WAR or class directory | `jvm` |
+| Android | APK | `jvm` |
+| JavaScript / TypeScript / ECMAScript | Emitted `.js`, `.mjs`, `.cjs` files or artifact directories; compile TypeScript first | `js` |
+| Swift / Objective-C (Apple projects) | Swift packages, Xcode projects/workspaces or an existing compiler index store with sources | `apple` |
+
+All frontends feed the same Cypher, MCP and Explorer interfaces. Graph coverage and
+call/dataflow semantics depend on the frontend; JavaScript analysis does not accept
+raw TS/TSX/JSX, and Apple analysis uses compiler indexes plus source analysis.
 
 [Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
@@ -201,10 +212,11 @@ so building a graph requires no separate Node.js, Bun or npm installation. Saved
 the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
 See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).
 
-**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
-adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
-program graph through Graph IR. This work is not yet merged. Language frontends
-extend the input paths to Graphite's structured context and query tools.
+The **Apple frontend** supports Swift packages, Xcode projects/workspaces and
+existing compiler index stores with sources, including indexed Objective-C
+relationships. It feeds the shared program graph through Graph IR. See
+[Apple frontend setup and coverage](#other-languages-the-swift-frontend) for build
+requirements and analysis limits.
 
 ## Quick Start
 
@@ -1062,10 +1074,10 @@ repositories {
 ## MCP Integration
 
 The `graphite` binary is a [Model Context Protocol](https://modelcontextprotocol.io)
-server: the thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
+server: thirteen analysis tools (`graphs`,
 `cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
-`resource`, `subgraph`, `overview`, `c4`, `openapi`) plus `schema`, served in-process by
-the same code as the REST API. `schema` (`GET /api/schema`, `GET /api/graphs/{id}/schema`)
+`resource`, `subgraph`, `overview`, `c4`, `schema`), served in-process by
+the same code as the REST API, plus `help` for on-demand usage guidance. `schema` (`GET /api/schema`, `GET /api/graphs/{id}/schema`)
 describes what a graph holds -- every label set with its node count and property keys,
 every relationship type with its count, the most frequent `(labels)-[type]->(labels)`
 patterns -- in milliseconds, so an agent reads it before writing Cypher instead of
@@ -1178,7 +1190,7 @@ providing `graph_id` selects exactly one graph. The exceptions are `node`,
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 
-LLMs can use tools such as openapi, graphs, cypher, resources, resource,
+LLMs can use tools such as graphs, schema, cypher, resources, resource,
 endpoints, c4, and annotations. Node, call-site, and method discovery goes
 through the `cypher` tool.
 
@@ -1196,29 +1208,41 @@ guessing multiple endpoints. The default response is a Structurizr workspace
 JSON document. For text rendering, use `format=dsl`, `format=mermaid`, or
 `format=plantuml`.
 
-### Agent skill
+### Agent workflow
 
-[`skills/graphite`](skills/graphite/SKILL.md) is an [Agent Skill](https://code.claude.com/docs/en/skills)
-that teaches an agent how to answer code questions with these tools: identify entry
-points and boundaries, trace control flow, data flow and configuration, find A/B test
-and feature flag touch points, and assess the blast radius of a change. It records
-how the graph is shaped (the call graph is a join on signatures, dataflow stops at
-call sites, branch polarity is JVM-level) so queries return evidence instead of empty
-results. Install it with the [`skills` CLI](https://github.com/vercel-labs/skills),
-which fetches it from this repository:
+The MCP `tools/list` catalog provides concise tool purposes and argument contracts.
+Call `help` for the workflow, or `help(topic="cypher")` for query recipes and
+frontend-specific semantics when needed; no separate Graphite skill installation
+is required. The same tools serve Java/Kotlin/Android, JavaScript/TypeScript/ECMAScript
+and Swift/Apple graphs. Start with `graphs` to discover loaded artifacts, then
+`schema` for the selected graph scope before writing Cypher: graph shapes and
+call/dataflow semantics depend on the frontend. Use `endpoints`, `resources`/`resource`,
+`annotations`, `overview` or `c4` for focused exploration, and `cypher` for call-chain,
+dataflow and impact queries. Preserve graph IDs when following up with `node`,
+`incoming`, `outgoing` or `subgraph` because node IDs are local to each graph.
+
+The optional [Graphite skill](skills/graphite/SKILL.md) provides extended JVM query
+recipes for entry points, control flow, configuration and feature flags. Install
+it when those additional playbooks are useful:
 
 ```bash
-npx skills add johnsonlee/graphite --skill graphite -a claude-code      # this project
-npx skills add johnsonlee/graphite --skill graphite -a claude-code -g   # every project
+npx skills add johnsonlee/graphite --skill graphite -a claude-code
 ```
 
-Omit `-a` to choose among the other supported agents. Without Node.js, copy it from a
-Graphite checkout into every project, or into one project (replace `/path/to/project`):
+Add `-g` to install for every project, or omit `-a` to choose another agent.
+Without Node.js or network access, copy the skill from a local Graphite checkout
+into either your user-wide or project-specific skill directory:
 
 ```bash
+# User-wide
 mkdir -p ~/.claude/skills && cp -r skills/graphite ~/.claude/skills/
+# One project (replace /path/to/project)
 mkdir -p /path/to/project/.claude/skills && cp -r skills/graphite /path/to/project/.claude/skills/
 ```
+
+Graphs describe compiled artifacts rather than uncommitted source; distinguish
+returned evidence from inference and confirm runtime behavior in source where
+needed.
 
 ## License
 

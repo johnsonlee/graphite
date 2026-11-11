@@ -1,6 +1,10 @@
 # Control flow
 
-Graphite has two levels of control flow:
+These recipes describe JVM graphs (Java/Kotlin/Android). API names, signatures
+and call/dataflow behavior are frontend-specific; inspect `schema` and actual
+edges before adapting them to JavaScript/TypeScript/ECMAScript or Swift graphs.
+
+The JVM recipes use two levels of control flow:
 
 1. **Inter-procedural**: which method calls which, recovered by joining call
    sites on signatures (there are no method-to-method edges).

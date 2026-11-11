@@ -5,10 +5,22 @@ description: Investigate a codebase through a Graphite program graph (Cypher ove
 
 # Graphite: answering code questions from the program graph
 
+This optional skill provides extended query recipes for agents and CLI users.
+MCP tools are self-contained: agents can use Graphite directly from the descriptions
+returned by `tools/list` and on-demand `help`, without loading this skill.
+
 Graphite turns compiled artifacts into a graph of values, call sites, fields,
 parameters, returns, annotations and packaged resources, and answers Cypher over it.
-Each language has a frontend that builds the graph (`graphite frontend list`); the
-storage, Cypher engine and MCP tools are shared.
+Frontends cover Java/Kotlin/Android (`jvm`), JavaScript/TypeScript/ECMAScript
+(`js`) and Swift/Apple (`apple`). Run `graphite frontend list` and
+`graphite frontend describe <name>` to inspect available frontends and accepted
+inputs. Storage, the Cypher engine and MCP tools are shared, but labels,
+properties, signatures and edge semantics depend on the frontend and artifact.
+
+The detailed recipes below were developed for JVM graphs. Treat their JVM APIs,
+signature formats and call/dataflow limitations as frontend-specific examples,
+not universal Graphite rules. For JS/TS/ES or Swift graphs, inspect `schema` and
+actual nodes/edges first; changing API names alone may not adapt a JVM recipe.
 Use it to get **evidence** (exact call sites, constants, signatures) quickly, then
 read source only where the graph points.
 
@@ -16,9 +28,11 @@ read source only where the graph points.
 
 Pick whichever is available, in this order:
 
-1. **MCP tools** (`schema`, `cypher`, `endpoints`, `resources`, `resource`,
-   `annotations`, `overview`, `c4`, `graphs`, `node`, `incoming`, `outgoing`,
-   `subgraph`). Omitting `graph_id` queries every loaded graph; `node`, `incoming`
+1. **MCP tools** (start with `graphs`, then `schema`, `cypher`, `endpoints`, `resources`, `resource`,
+   `annotations`, `overview`, `c4`, `node`, `incoming`, `outgoing`,
+   `subgraph`, plus `help` for on-demand usage guidance). Their tool and argument
+   descriptions include usage guidance; no separate agent skill is required.
+   Omitting `graph_id` queries every loaded graph; `node`, `incoming`
    and `outgoing` require it.
 2. **CLI**: `graphite query --format json <graph> "<cypher>"`, where `<graph>` is a
    `.graphite` file or saved graph directory.
@@ -30,8 +44,14 @@ Pick whichever is available, in this order:
    `WEB-INF/lib`/`BOOT-INF/lib` jars or Android platform classes; APKs need
    `--android-sdk` or `ANDROID_HOME`). Then either query with the CLI or
    `graphite serve --id app app.graphite --port 8080` for HTTP + MCP at `/mcp`.
-   Large inputs (for example `android-all`) need a larger heap; set it through
-   `JAVA_OPTS`, e.g. `JAVA_OPTS=-Xmx16g graphite build ...`.
+   Configure the JVM heap through `JAVA_OPTS`, for example
+   `JAVA_OPTS=-Xmx4g graphite build app.jar -o app.graphite`. The repository
+   validation workloads use fixed limits of 4 GiB for JARs and 8 GiB for APKs;
+   these are validation settings, not a limit on user builds. Large inputs such
+   as `android-all` or large APKs may need more heap. For a user build on a
+   machine with sufficient memory, raise it as needed, for example
+   `JAVA_OPTS=-Xmx16g graphite build large.apk -o app.graphite`. Keep the fixed
+   validation limits unchanged when running repository regression gates.
 
 A graph reflects the artifact it was built from, not your working tree. If the
 question concerns uncommitted code, say so or rebuild.
@@ -43,25 +63,29 @@ It returns every label set with counts and property keys, every relationship typ
 with counts, and the most frequent `(labels)-[type]->(labels)` patterns, in
 milliseconds. Graphs differ by builder version and input: for example
 `ResourceValue` nodes and some `CONTROL_FLOW` kinds may be absent. Do not assume a
-label exists because this skill mentions it.
+label exists because this guide mentions it.
 
-## 2. What `schema` does not tell you
+## 2. Schema details and query semantics
 
-`schema` lists labels, property keys, relationship types and patterns. It omits:
+`schema` lists persisted labels, property keys, relationship types and patterns.
+Its `virtual_nodes` section also describes **`Method`**, a virtual label for every
+recorded declared method (including uncalled ones): `signature`, `class`, `name`,
+`parameter_types`, `return_type` and nullable generic/type-information properties.
+Older saved graphs may not carry the optional type metadata. Virtual methods do
+not add method-to-method edges.
 
-- **`Method`**, a virtual label for every declared method (including uncalled
-  ones): `signature`, `class`, `name`, `parameter_types`, `return_type`.
+The following details are useful beyond the schema summary:
 - **Relationship properties.** `r.kind` on `DATAFLOW` is one of `ASSIGN`,
   `PARAMETER_PASS`, `RETURN_VALUE`, `FIELD_STORE`, `FIELD_LOAD`, `ARRAY_STORE`,
   `ARRAY_LOAD`, `CAST`, `PHI`; on `CONTROL_FLOW` it is `SEQUENTIAL`,
   `BRANCH_TRUE`, `BRANCH_FALSE`, `SWITCH_CASE`, `SWITCH_DEFAULT`, `EXCEPTION` or
   `RETURN` (which of these appear depends on the frontend). `CALL` has
   `r.virtual` and `r.dynamic`.
-- **Signature format**: `com.example.Foo.bar(java.lang.String,int[])`; nested
+- **JVM signature format**: `com.example.Foo.bar(java.lang.String,int[])`; nested
   classes use `$`, constructors are `<init>`, static initializers `<clinit>`.
   `Annotation.member` is `<class>` for a type-level annotation.
 
-## 3. Facts that change how you write queries
+## 3. JVM facts that change how you write queries
 
 Getting these wrong gives empty or misleading results. They were verified on
 graphs from the JVM frontend. On a graph from another frontend, check the
@@ -70,12 +94,12 @@ connect distinct nodes or only loop on call sites).
 
 - **There are no method-to-method edges.** The call graph is a *join*:
   a call site's `callee_signature` equals another call site's `caller_signature`.
-  Walk it hop by hop (see `references/control-flow.md`).
+  Walk it hop by hop (see [control-flow.md](references/control-flow.md)).
 - **Calls record the declared target.** A call through an interface or superclass
   has `callee_class` = that interface/superclass, not the implementation. Type
   hierarchy is not queryable in Cypher; find implementations with
   `MATCH (m:Method {name: 'send'}) RETURN m.signature` and confirm in source.
-- **Dataflow stops at call sites.** Arguments flow into the `CallSiteNode`
+- **In these JVM graphs, dataflow stops at call sites.** Arguments flow into the `CallSiteNode`
   (`PARAMETER_PASS`), and the call site flows to the local receiving its result
   (`RETURN_VALUE`). The callee's `ParameterNode`/`ReturnNode` are not linked to
   callers; cross a method boundary with a join on
@@ -88,7 +112,7 @@ connect distinct nodes or only loop on call sites).
   holder type, `name` = the constant) through `FIELD_LOAD`. When searching for the
   key, flag or value reaching a call, run `(key:Constant)` and
   `(key:FieldNode) WHERE key.static` as two halves joined by `UNION`
-  (`references/feature-flags.md` step 2). On the Kotlin compiler graph, every
+  ([feature-flags.md](references/feature-flags.md) step 2). On the Kotlin compiler graph, every
   `LanguageFeature` flag arrives as a `FieldNode` and none as a `Constant`.
 - **The argument position is not recorded.** Every constant reaching a call site
   comes back together: `DeviceConfig.getBoolean(namespace, key, default)` yields
@@ -134,7 +158,7 @@ JVM frontend specifics (javac/kotlinc output):
   before [#162](https://github.com/johnsonlee/graphite/pull/162), only
   `invokedynamic` lambdas were linked, so class-based bodies had no callers;
   there, hop to the enclosing method through the class's `<init>` call
-  site or `INSTANCE` field read (`references/control-flow.md`, "Lambda and
+  site or `INSTANCE` field read ([control-flow.md](references/control-flow.md), "Lambda and
   coroutine bodies"). Erased bridge methods (`invoke(Object)`) may still have no
   caller; their typed sibling does.
 
@@ -152,8 +176,8 @@ JVM frontend specifics (javac/kotlinc output):
 - Use `RETURN DISTINCT`, aggregate (`count`, `collect(DISTINCT ...)`), and `LIMIT`.
   MCP/HTTP responses carry `total`; `relation: gte` means results were cut
   (`graphite query` output has no `total`, so compare the row count to your `LIMIT`).
-- Label predicates are not supported inside `WHERE` (`WHERE n:Constant` is a
-  syntax error). Put the label in the pattern, or test `'Constant' IN labels(n)`.
+- Prefer labels in anchored `MATCH` patterns. Label predicates such as
+  `WHERE n:Constant` and tests such as `'Constant' IN labels(n)` are also supported.
 - `=~` in the `graphite` binary uses Rust regex syntax (no look-around or
   backreferences). Escape dots: `'com\\.example\\..*'`.
 - For multi-graph servers, omit `graph_id` for one union query;
@@ -163,18 +187,19 @@ JVM frontend specifics (javac/kotlinc output):
 
 Read the reference for the task at hand; each has verified query recipes.
 The recipes name JVM APIs and frameworks (Spring, `System.getenv`,
-`java.sql`, ...) as examples. The query shapes carry over to other frontends:
-substitute that platform's APIs, found with the outbound grouping query in
-`references/entrypoints-and-boundaries.md`.
+`java.sql`, ...) as examples. Other frontends may require different query shapes
+as well as platform APIs; inspect their schema before adapting the outbound
+grouping query in
+[entrypoints-and-boundaries.md](references/entrypoints-and-boundaries.md).
 
 | Task | Reference |
 |---|---|
-| Identify entry points and boundaries (HTTP, main, listeners, outbound I/O, service topology) | `references/entrypoints-and-boundaries.md` |
-| Trace control flow (callers/callees, call chains, paths from an entry point, branch guards, lambdas) | `references/control-flow.md` |
-| Trace data flow (where a value comes from, where it goes, across fields and methods) | `references/data-flow.md` |
-| Trace configuration (resource files, property keys, env vars, system properties) | `references/configuration.md` |
-| Find existing A/B test and feature flag touch points | `references/feature-flags.md` |
-| Blast radius of a change, architecture overview, dependency/API usage audits, dead code, security sinks | `references/more-recipes.md` |
+| Identify entry points and boundaries (HTTP, main, listeners, outbound I/O, service topology) | [entrypoints-and-boundaries.md](references/entrypoints-and-boundaries.md) |
+| Trace control flow (callers/callees, call chains, paths from an entry point, branch guards, lambdas) | [control-flow.md](references/control-flow.md) |
+| Trace data flow (where a value comes from, where it goes, across fields and methods) | [data-flow.md](references/data-flow.md) |
+| Trace configuration (resource files, property keys, env vars, system properties) | [configuration.md](references/configuration.md) |
+| Find existing A/B test and feature flag touch points | [feature-flags.md](references/feature-flags.md) |
+| Blast radius of a change, architecture overview, dependency/API usage audits, dead code, security sinks | [more-recipes.md](references/more-recipes.md) |
 
 ## 6. Reporting
 

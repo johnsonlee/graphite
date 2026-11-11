@@ -364,14 +364,15 @@ addition: the registry exposes `lang` per graph and the UI shows it; C4 inferenc
 `Module`/`Type`/`Member` and `CONTAINS` when present and falls back to the string-prefix
 heuristics for v3 graphs.
 
-The server also speaks the Model Context Protocol: the thirteen tools of the former
-`graphite-mcp` npm package (`graphs`, `openapi`, `cypher`, `node`, `outgoing`, `incoming`,
-`annotations`, `endpoints`, `resources`, `resource`, `subgraph`, `overview`, `c4`) plus
-`schema` (`GET /api/schema`, `GET /api/graphs/{id}/schema`: label sets with node counts
+The server also speaks the Model Context Protocol: thirteen analysis tools (`graphs`, `cypher`,
+`node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`, `resource`,
+`subgraph`, `overview`, `c4`, and `schema`) are built in. The schema tool
+(`GET /api/schema`, `GET /api/graphs/{id}/schema`: label sets with node counts
 and keys, relationship types with counts, the most frequent `(labels)-[type]->(labels)`
-patterns) are built in, each dispatched in-process to the same route handler the REST API
-runs. Two
-transports: `graphite mcp` over stdio for local clients, and `POST /mcp` on `graphite
+patterns) describes the loaded graphs before querying. A fourteenth tool, `help`,
+returns usage guidance and recipes on demand, keeping the discovery catalog concise.
+Each analysis tool dispatches in-process
+to the same route handler the REST API runs. Two transports: `graphite mcp` over stdio for local clients, and `POST /mcp` on `graphite
 serve` (Streamable HTTP) for remote ones. The npm package is retired with v2.5.0.
 
 ### 6.4 CLI (`graphite`)
