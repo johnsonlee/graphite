@@ -142,7 +142,7 @@ fixed six-case workload. Five cases are unchanged; co-use becomes
 `count(DISTINCT graph) AS graphs` with `count(DISTINCT caller) AS callers`.
 This exercises a wider distinct-value dictionary on the same real64 inputs;
 it does **not** measure 65 or 130 physical graphs. Retain a complete response with
-`callers > 64` (and, when observed, `> 512`), or an independent untimed dictionary
+`callers > 64` (and, to prove sparse storage with at most64 provenance values, `> 576`), or an independent untimed dictionary
 cardinality check, as evidence that the changed path was exercised. A workload
 name alone does not prove dictionary width. Modes, sample counts, four workers,
 and fixed 60/70-second timeouts are the same as `complex`. Do not combine samples

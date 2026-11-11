@@ -15,10 +15,11 @@ def verify(path, row):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--manifest', type=Path, default=Path(__file__).with_name('assets.json'), help='Pinned asset manifest for the desired evidence release')
     parser.add_argument('--cache-dir', type=Path, default=Path.home() / '.cache/graphite/evidence/pr212-2026-11-11')
     parser.add_argument('--verify-only', action='store_true', help='Check existing cache files without network access')
     args = parser.parse_args()
-    catalog = json.loads(Path(__file__).with_name('assets.json').read_text())
+    catalog = json.loads(args.manifest.read_text())
     args.cache_dir.mkdir(parents=True, exist_ok=True)
     for row in catalog['assets']:
         name = row['name']

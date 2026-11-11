@@ -23762,3 +23762,54 @@ source HEAD `10a61f96d40b53594377465dde6847d5f9a7d028` plus the uncommitted317
 change. This is a post-build filesystem snapshot and session build record, not
 embedded commit identity or an independent reproducible-build proof. Explicit
 native Tika two-source parity also passed after the adaptive storage change.
+
+**Attempt317 normal pilot result (independent AB20 round).** All276 issued
+responses/receipts independently verify with complete typed equality. Per-case
+P95 ms316→317: rollup2524.002→2535.378(+11.376), global2769.479→2795.812(+26.333),
+two-hop4064.870→4046.487(-18.383), degree5644.167→5618.247(-25.920),
+optional10367.474→10457.890(+90.415), co-use2254.600→2320.536(+65.936,+2.925%).
+No common-path latency benefit is claimed. Mixed pressure CPU543.036754→545.651686s
+(+0.482%); query lifetime peak RSS26685.109→26297.172MiB(-1.454%). Separate
+loading CPU17.258692→18.093887s(+4.839%) and RSS3800.000→3799.719MiB remain within
+this pair's5% limits; loading CPU is close to the boundary. These resources cover
+the declared operation/mix, not each individual case. E2E improvement, production
+availability and final acceptance are not established by this diagnostic pilot.
+BA100 and wide results remain separate pending observations; no pooling.
+[Independent audit](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-audit.json)
+and [P50/P95 summary](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-summary.md)
+retain all cases, failures and resource boundaries. Raw archive compression is
+deferred until measurement ends to avoid competing IO.
+
+**Attempt317 normal confirmation (independent BA100 round).** All1236 complete
+typed responses/receipts and per-case nearest-rank percentiles independently
+verify. P95 ms316→317: rollup2528.601→2546.549(+17.948), global2785.255→2797.968
+(+12.713), two-hop4066.375→4076.518(+10.143), degree5668.089→5594.670(-73.419),
+optional11037.184→10516.431(-520.753), co-use2285.934→2323.029(+37.095,+1.623%).
+Four cases increase; this does not establish common-path latency recovery.
+Mixed pressure CPU2757.364602→2732.097328s(-0.916%); lifetime peak
+RSS26936.219→27343.719MiB(+1.513%). Separate loading CPU17.973277→17.765459s
+(-1.156%) and RSS3798.047→3796.281MiB satisfy the independent5% bounds.
+No pilot pooling, E2E win, production stability recovery or final acceptance is
+claimed. [Audit](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-audit.json)
+and [summary](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-summary.md)
+retain every case including P50. Wide workload remains separate.
+
+**Attempt317 wide DISTINCT pilot (separate AB20 round).** Both arms completed;
+all276 typed responses/receipts and nearest-rank percentiles independently verify.
+Each request still targets64 real physical graphs. Across all23 co-use responses
+per arm, maximum returned callers is19397; retained hashes/body paths establish
+more than576 distinct values with at most64 provenance values, proving sparse
+mask coverage without an extra timing query. This is not >64-physical-graph evidence.
+P95 ms316→317: rollup6244.053→2551.590(-3692.463), global7155.821→2808.682
+(-4347.139), two-hop4691.521→4110.402(-581.119), degree11137.442→5658.224
+(-5479.217), optional16972.665→10630.145(-6342.520), wide co-use51231.978→3891.426
+(-47340.551,-92.404%). Mixed pressure CPU1160.296319→582.278693s(-49.816%);
+query lifetime RSS36966154240→26957873152bytes(-27.074%). Separate loading
+CPU17.688042→18.301058s(+3.466%) and RSS3983327232→3980787712bytes(-0.064%)
+meet this workload's independent5% resource limits. Other cases share concurrent
+pressure and cannot independently attribute algorithm improvements from this result.
+Retain the verified wide benefit alongside normal BA100 co-use+37.095ms and other
+increases. This is one20-sample pilot, not100-sample wide confirmation or universal
+P95 acceptance. No E2E or production availability recovery is claimed.
+[Evidence](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)
+retains audits, response cardinality proof, raw archives and source/controller identity.

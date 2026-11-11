@@ -14,9 +14,10 @@ are not rewritten by this migration.
 
 The published release is immutable and contains the eight gzip assets only.
 The canonical asset manifest is this repository's [assets.json](assets.json),
-not an additional release attachment. Attempt317 evidence uses a separate planned
-release, `benchmark-evidence-pr212-attempt317-2026-11-11`; its complete archives and
-manifest must be uploaded and verified while draft before publication.
+not an additional release attachment. Attempt317 evidence uses a separate
+[published release](https://github.com/johnsonlee/graphite/releases/tag/benchmark-evidence-pr212-attempt317-2026-11-11);
+its four archives and five JSON manifests were uploaded and verified while draft
+before publication. See the [Attempt317 reproduction instructions](complex-p95/attempt317/README.md).
 
 To fetch all pinned assets into a cache outside the checkout:
 

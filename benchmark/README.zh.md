@@ -124,7 +124,7 @@ graphite-benchmark local-query --base /work/base/graphite \
 其中五个用例不变；co-use 改名为 `bi-dependency-co-use-wide-distinct`，仅将
 `count(DISTINCT graph) AS graphs` 替换为 `count(DISTINCT caller) AS callers`。
 它在同一批 real64 输入上覆盖更宽的 DISTINCT 值字典，**不代表 65 或 130 个实体图的性能测量**。
-应保留完整响应中 `callers > 64`（若实际观察到，也记录 `> 512`）的证据，
+应保留完整响应中 `callers > 64`（provenance 至多64时，证明稀疏存储需要 `> 576`）的证据，
 或独立执行不作延迟宣称的字典基数检查，证明覆盖了修改路径；负载名称本身不能证明字典宽度。
 模式、采样次数、四个 worker 及固定 60/70 秒超时与 `complex` 一致。
 两个负载的样本不能混合，也不能跨负载比较延迟。失败的基线必须保留，其百分位及配对资源比较不可用；

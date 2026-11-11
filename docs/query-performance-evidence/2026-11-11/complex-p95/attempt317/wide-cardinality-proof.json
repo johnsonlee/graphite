@@ -1,0 +1,378 @@
+{
+  "physicalGraphs": 64,
+  "distinctSparseThresholdExclusive": 576,
+  "arms": {
+    "base": [
+      {
+        "path": "base/query/first-use/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/warmup/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/warmup/000011.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000011.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000017.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000023.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000029.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000035.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000041.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000047.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000053.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000059.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000065.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000071.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000077.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000083.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000089.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000095.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000101.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000107.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000113.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "base/query/pressure/000119.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      }
+    ],
+    "candidate": [
+      {
+        "path": "candidate/query/first-use/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/warmup/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/warmup/000011.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000005.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000011.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000017.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000023.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000029.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000035.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000041.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000047.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000053.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000059.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000065.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000071.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000077.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000083.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000089.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000095.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000101.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000107.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000113.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      },
+      {
+        "path": "candidate/query/pressure/000119.json",
+        "sha256": "df0706708f68d43a2b6db9c9cff27269df855b8d4e0feaea0ec4b6918b789d76",
+        "graphCount": 64,
+        "maximumReturnedCallers": 19397,
+        "leftTarget": "java.lang.Object",
+        "rightTarget": "java.lang.StringBuilder"
+      }
+    ]
+  }
+}

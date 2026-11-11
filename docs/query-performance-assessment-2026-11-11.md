@@ -198,6 +198,53 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 
 Attempt317（`1c85b1cb`）将高位 DISTINCT/provenance 状态扩展为多字掩码；稀疏宽字典使用稀疏存储，内部表示阈值不是查询准入上限。新增 `complex-wide-distinct` 固定负载只把 co-use 的 DISTINCT 对象由 graph 改为 caller，其他五类不变，仍查询同一组真实 64 图。其字典宽度需要完整响应或独立基数证据证明；不能据此声称已测 65/130 个实体图。常规 AB pilot→BA100 确认及 wide AB pilot 的预声明见 [协议](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)。本段只记录实现及测量计划，不预先宣称 Attempt317 性能通过。
 
+#### Attempt317 常规负载首轮 pilot（独立结果）
+
+316→317 的 AB pilot 已完成：每臂 6 次首次使用、12 次预热、120 次 pressure，共 276 份完整带类型响应及收据全部独立复核通过。每类 pressure N=20、并发4，nearest-rank P95 取第19项；不与随后 BA100 确认混合。
+
+| 查询 | 316 P95 ms | 317 P95 ms | 绝对变化 ms |
+| --- | ---: | ---: | ---: |
+| caller rollup | 2,524.002 | 2,535.378 | +11.376 |
+| global target | 2,769.479 | 2,795.812 | +26.333 |
+| two-hop | 4,064.870 | 4,046.487 | -18.383 |
+| degree histogram | 5,644.167 | 5,618.247 | -25.920 |
+| optional sinks | 10,367.474 | 10,457.890 | +90.415 |
+| co-use | 2,254.600 | 2,320.536 | +65.936 |
+
+本轮没有建立常规 co-use 的性能收益：P95 +2.925%。混合 pressure CPU 543.036754→545.651686 秒（+0.482%），查询生命周期峰值 RSS 26,685.109→26,297.172 MiB（-1.454%）；独立加载 CPU 17.258692→18.093887 秒（+4.839%，接近5%上界），加载 RSS 3,800.000→3,799.719 MiB。资源均在本轮匹配限制内，但不代表每类查询的单独资源判定，也不构成最终性能通过。BA100 确认见下一节，wide 负载另行记录。见[审计原始统计](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-audit.json)及[全部P50/P95](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-pilot-summary.md)。
+
+#### Attempt317 常规负载独立确认（BA100）
+
+随后 BA100 确认两臂全部 1,236 份完整响应及收据独立审计通过，无失败；每类 P95 取第95项，不与pilot合并。
+
+| 查询 | 316 P95 ms | 317 P95 ms | 绝对变化 ms |
+| --- | ---: | ---: | ---: |
+| caller rollup | 2,528.601 | 2,546.549 | +17.948 |
+| global target | 2,785.255 | 2,797.968 | +12.713 |
+| two-hop | 4,066.375 | 4,076.518 | +10.143 |
+| degree histogram | 5,668.089 | 5,594.670 | -73.419 |
+| optional sinks | 11,037.184 | 10,516.431 | -520.753 |
+| co-use | 2,285.934 | 2,323.029 | +37.095 |
+
+co-use P95 +1.623%，常规负载的收益没有确立；4/6项P95上升仍如实保留。混合pressure CPU 2,757.364602→2,732.097328秒（-0.916%），查询生命周期峰值RSS 26,936.219→27,343.719MiB（+1.513%）。独立加载CPU 17.973277→17.765459秒（-1.156%），RSS 3,798.047→3,796.281MiB；本轮资源均在5%约束内。首次使用、加载和warmup未混入pressure分位数。wide负载单独记录，不能用其潜在收益冲抵常规查询回退。见[独立确认审计](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-audit.json)与[各项P50/P95](query-performance-evidence/2026-11-11/complex-p95/attempt317/normal-measure-summary.md)。
+
+#### Attempt317 宽 DISTINCT 负载（独立 AB20 pilot）
+
+wide 两臂都完成，并未发生预案中的基线失败；276份完整带类型响应、收据和分位数独立核验通过。所有请求仍针对真实64图。co-use 返回的最大 `callers=19,397`，两臂各23次完整响应均一致，超过在provenance≤64时证明稀疏掩码路径所需的577值阈值。见[逐响应基数证据](query-performance-evidence/2026-11-11/complex-p95/attempt317/wide-cardinality-proof.json)。这证明逻辑 DISTINCT 字典宽度，不是19,397个实体图或>64图性能。
+
+| 查询 | 316 P95 ms | 317 P95 ms | 绝对变化 ms |
+| --- | ---: | ---: | ---: |
+| caller rollup | 6,244.053 | 2,551.590 | -3,692.463 |
+| global target | 7,155.821 | 2,808.682 | -4,347.139 |
+| two-hop | 4,691.521 | 4,110.402 | -581.119 |
+| degree histogram | 11,137.442 | 5,658.224 | -5,479.217 |
+| optional sinks | 16,972.665 | 10,630.145 | -6,342.520 |
+| co-use DISTINCT caller | 51,231.978 | 3,891.426 | -47,340.551 |
+
+本轮宽 co-use P95下降92.404%，混合pressure CPU 1,160.296319→582.278693秒（-49.816%），生命周期峰值RSS 36,966,154,240→26,957,873,152字节（-27.074%）；独立加载CPU 17.688042→18.301058秒（+3.466%），RSS 3,983,327,232→3,980,787,712字节（-0.064%），资源均满足本轮5%约束。保留317的宽字典收益，同时保留常规确认中的co-use +37.095ms及其他小幅上升。不同查询共享并发混合阶段，其余五项下降不能独立归因于自身算法优化。
+
+wide只有一轮20/类pilot，未执行100/类确认；没有跨轮pool，也不声称全部P95恢复、每类资源或生产性能验收通过。全部[P50/P95及资源](query-performance-evidence/2026-11-11/complex-p95/attempt317/wide-pilot-summary.md)、[独立审计](query-performance-evidence/2026-11-11/complex-p95/attempt317/wide-pilot-audit.json)均保留，原始归档及身份记录见[317证据目录](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)。
+
 实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮pilot、独立确认和原73类回归各自结论见上文；不将42类小幅P95上升抹除，最终HEAD CI尚待运行。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
 
 ---

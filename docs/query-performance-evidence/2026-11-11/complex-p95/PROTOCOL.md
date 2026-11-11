@@ -144,7 +144,7 @@ inputs and complete result-consumption boundary. Before measurement, declare:
   variant changes only co-use to `count(DISTINCT caller) AS callers`; the other
   five cases remain unchanged. It targets all64 real graphs, not65/130 graphs.
   Preserve full typed responses proving a caller dictionary beyond64 values
-  (and beyond512 if observed), or an independent untimed cardinality check.
+  (and beyond576 to prove sparse storage when provenance has at most64 values), or an independent untimed cardinality check.
 - The server/client deadlines remain60/70seconds. If a baseline arm fails, retain
   every issued request and failure; no success-only P95 or matched full resource
   comparison is available. A subsequent BA or candidate-only run may establish
@@ -156,3 +156,10 @@ correctness requirements and5% independent resource limits remain in force.
 The new wider-dictionary workload must not be pooled with the original six-case
 measurements. Physical65/130-graph tests remain separate correctness coverage
 unless representative real persisted inputs and a performance protocol exist.
+
+Before the wide run, clarify the representation proof: the eight dense high
+words exclude the inline word. With at most64 provenance values,513–576 DISTINCT
+values still use eight high words and may remain dense; at least577 distinct
+callers in one returned group proves the wider sparse dictionary path. More
+than64 proves multiword width only. This clarification changes neither the
+query nor sampling protocol.
