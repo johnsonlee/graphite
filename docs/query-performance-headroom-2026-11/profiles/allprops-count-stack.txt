@@ -1,0 +1,24 @@
+# one gdb sample of the busy thread during MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'Spooler') RETURN count(*), local 58215b9
+GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
+#0  rotate_left<u64>
+#3  finish<core::hash::sip::Sip13Rounds>
+#6  hash_one<std::hash::random::RandomState, &alloc::string::String>
+#8  get_index_of<alloc::string::String, graphite_cypher::value::Value, ...>   (IndexMap row lookup of a variable name)
+#10 graphite_cypher::eval::Evaluator::eval
+#11 eval
+#12 eval
+#13 eval
+#14 graphite_cypher::eval::Evaluator::predicate_function          (any(k IN keys(n) WHERE ...))
+#15 eval
+#16 {closure#0}
+#17 graphite_cypher::engine::scan::sweep_prepared
+#18 run_by_source
+#19 run_inner
+#20 ScanPlan::run
+#21 stream_match
+#22 fused_rows
+#23 run_fused
+#24 run_segment_seeded
+#25 run_segment
+#26 execute_clauses_seeded
+#30 graphite_explore::routes::run_cypher (spawn_blocking)

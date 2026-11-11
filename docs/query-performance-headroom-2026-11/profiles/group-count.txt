@@ -1,0 +1,62 @@
+samples=30 busy_thread_samples=22
+
+--- leaf frames ---
+    5 copy_nonoverlapping<u8>
+    4 __memcmp_evex_movbe
+    2 swap_bytes
+    2 wrapping_add
+    2 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown:
+    1 __libc_recv
+    1 write<core::hash::sip::Sip13Rounds>
+    1 _mm_movemask_epi8
+    1 find_inner
+    1 finish<core::hash::sip::Sip13Rounds>
+    1 lowest_set_bit
+    1 tick
+
+--- inclusive (graphite frames) ---
+   20 {closure#0}<http::response::Response<axum_core::body::Body>, graphite_explore::routes::run_cypher::{async_fn#0}::{closur
+   20 call_once<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>, gr
+   20 do_call<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{closure
+   20 catch_unwind<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>,
+   20 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{cl
+   19 poll<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::response::Response<axum_core::body::Body>, gr
+   19 {closure#0}<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+   17 rustc_entry<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc
+   17 entry<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc::Glob
+   15 with_mut<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run
+   14 poll<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::
+   11 call_once<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explore:
+    8 find<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::rustc_entry::{im
+    7 do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<tokio::ru
+    6 resize_inner<alloc::alloc::Global>
+    6 reserve_rehash_inner<alloc::alloc::Global>
+    6 reserve_rehash<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::m
+    6 reserve<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::make_has
+    6 reserve<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc::Gl
+    6 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::rustc_ent
+    5 hash_one<std::hash::random::RandomState, &&str>
+    5 make_hash<&str, std::hash::random::RandomState>
+    4 {closure#0}<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc
+    4 catch_unwind<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explo
+    4 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<toki
+    3 finish<core::hash::sip::Sip13Rounds>
+    2 write<core::hash::sip::Sip13Rounds>
+    2 write_str<core::hash::sip::Sip13Rounds>
+    2 hash<std::hash::random::DefaultHasher>
+    2 hash<str, std::hash::random::DefaultHasher>
+    2 hash<&str, std::hash::random::DefaultHasher>
+    2 {closure#0}<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState>
+    2 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::make
+    2 poll_future<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+    1 then<u32, graphite_storage::callsite_index::{impl#5}::first::{closure_env#0}>
+    1 std::sys::net::connection::socket::unix::Socket::recv_with_flags
+    1 std::sys::net::connection::socket::unix::Socket::read
+    1 std::sys::net::connection::socket::TcpStream::read
+    1 std::net::tcp::{impl#3}::read
+    1 do_io<std::net::tcp::TcpStream, mio::net::tcp::stream::{impl#2}::read::{closure_env#0}, usize>
+    1 poll_read_head<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHyperService<tower::util::map_reques
+    1 poll_read<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHyperService<tower::util::map_request::Ma
+    1 poll_loop<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHyperService<tower::util::map_request::Ma
+    1 poll_inner<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHyperService<tower::util::map_request::M
+    1 poll_catch<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHyperService<tower::util::map_request::M

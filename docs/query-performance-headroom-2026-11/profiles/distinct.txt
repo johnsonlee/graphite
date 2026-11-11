@@ -1,0 +1,56 @@
+samples=30 busy_thread_samples=14
+
+--- leaf frames ---
+    3 index_of
+    3 next_code_point<core::slice::iter::Iter<u8>>
+    2 swap_bytes
+    1 __GI___close
+    1 map_break<core::cmp::Ordering,
+    1 eq<u8>
+    1 run
+    1 __memcmp_evex_movbe
+    1 next
+
+--- inclusive (graphite frames) ---
+   13 {closure#0}<http::response::Response<axum_core::body::Body>, graphite_explore::routes::run_cypher::{async_fn#0}::{closur
+   13 call_once<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>, gr
+   13 do_call<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{closure
+   13 catch_unwind<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>,
+   13 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{cl
+   12 poll<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::response::Response<axum_core::body::Body>, gr
+   11 {closure#0}<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+   10 with_mut<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run
+   10 poll<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::
+    7 call_once<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explore:
+    6 try_fold<core::str::iter::EncodeUtf16,
+    6 try_for_each<core::str::iter::EncodeUtf16, core::iter::traits::iterator::iter_compare::compare::{closure_env#0}<core::st
+    6 iter_compare<core::str::iter::EncodeUtf16, core::str::iter::EncodeUtf16, core::iter::traits::iterator::Iterator::cmp_by:
+    6 cmp_by<core::str::iter::EncodeUtf16, core::str::iter::EncodeUtf16, core::iter::traits::iterator::Iterator::cmp::{closure
+    6 cmp<core::str::iter::EncodeUtf16, core::str::iter::EncodeUtf16>
+    4 do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<tokio::ru
+    4 catch_unwind<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explo
+    4 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<toki
+    4 poll_future<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+    4 poll_inner<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<
+    4 next_code_point<core::slice::iter::Iter<u8>>
+    3 {closure#0}<core::str::iter::EncodeUtf16, u16, core::cmp::Ordering, core::iter::traits::iterator::Iterator::cmp_by::comp
+    3 {closure#0}<u16, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<core::cmp::Ordering, core::cm
+    1 drop_glue<std::os::fd::owned::OwnedFd>
+    1 drop_glue<std::sys::fd::unix::FileDesc>
+    1 drop_glue<std::sys::net::connection::socket::unix::Socket>
+    1 drop_glue<std::sys::net::connection::socket::TcpStream>
+    1 drop_glue<std::net::tcp::TcpStream>
+    1 drop_glue<mio::io_source::IoSource<std::net::tcp::TcpStream>>
+    1 drop_glue<hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<hyper_util::service::glue::TowerToHy
+    1 drop_glue<core::option::Option<hyper::server::conn::http1::Connection<hyper_util::common::rewind::Rewind<hyper_util::rt:
+    1 {closure#0}<axum::serve::handle_connection::{async_fn#0}::{async_block_env#3}<tokio::net::tcp::listener::TcpListener, ax
+    1 with_mut<tokio::runtime::task::core::Stage<axum::serve::handle_connection::{async_fn#0}::{async_block_env#3}<tokio::net:
+    1 poll<axum::serve::handle_connection::{async_fn#0}::{async_block_env#3}<tokio::net::tcp::listener::TcpListener, axum::rou
+    1 call_once<core::task::poll::Poll<()>, tokio::runtime::task::harness::poll_future::{closure_env#0}<axum::serve::handle_co
+    1 do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<axum::ser
+    1 catch_unwind<core::task::poll::Poll<()>, core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_
+    1 map_break<core::cmp::Ordering,
+    1 lt<core::option::Option<&str>, core::option::Option<&str>>
+    1 {closure#0}<graphite_cypher::value::Value, graphite_cypher::engine::pipeline::add_provenance_id::{closure_env#0}>
+    1 binary_search_by<graphite_cypher::value::Value, core::slice::{impl#0}::partition_point::{closure_env#0}<graphite_cypher:
+    1 partition_point<graphite_cypher::value::Value, graphite_cypher::engine::pipeline::add_provenance_id::{closure_env#0}>

@@ -1,0 +1,62 @@
+samples=30 busy_thread_samples=35
+
+--- leaf frames ---
+   18 sweep_edges
+    5 neighbors
+    2 next<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>
+    2 try_fold<core::slice::iter::Windows<u32>,
+    1 __GI___clock_gettime
+    1 eq<u32>
+    1 phn_merge_siblings
+    1 index<u64>
+    1 index<u32>
+    1 new<core::iter::adapters::map::Map<core::slice::iter::Iter<u8>, graphite_cypher::engine::partition::sweep_edge
+    1 non_null<alloc::alloc::Global, i64>
+    1 {closure#0}
+
+--- inclusive (graphite frames) ---
+   34 call_mut<(&graphite_cypher::engine::Source), graphite_cypher::engine::partition::{impl#2}::rows::{closure_env#0}>
+   34 call_once<(&graphite_cypher::engine::Source), &graphite_cypher::engine::partition::{impl#2}::rows::{closure_env#0}>
+   34 map<&graphite_cypher::engine::Source, core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::EdgeSlot,
+   34 next<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::EdgeSlot, alloc::alloc::Global>, graphite_
+   34 consume_iter<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine:
+   34 consume_iter<&graphite_cypher::engine::Source, core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::
+   34 fold_with<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapFolder<rayon::iter::collect:
+   34 helper<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::collect::
+   34 {closure#0}<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::
+   34 {closure#0}<rayon::iter::plumbing::bridge_producer_consumer::helper::{closure_env#0}<rayon::slice::IterProducer<graphite
+   34 in_worker<rayon_core::join::join_context::{closure_env#0}<rayon::iter::plumbing::bridge_producer_consumer::helper::{clos
+   34 join_context<rayon::iter::plumbing::bridge_producer_consumer::helper::{closure_env#0}<rayon::slice::IterProducer<graphit
+   31 {closure#0}<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::coll
+   31 call_once<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::pa
+   30 catch_unwind<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine:
+   29 do_call<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::iter::
+   27 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::i
+   24 halt_unwinding<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::iter::collect::consumer::CollectResult<cor
+   19 {closure#1}<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::coll
+   18 run_inline<rayon_core::latch::SpinLatch, rayon_core::join::join_context::call_b::{closure_env#0}<rayon::iter::collect::c
+    3 try_fold<core::slice::iter::Windows<u32>,
+    3 all<core::slice::iter::Windows<u32>, graphite_cypher::engine::partition::ascending::{closure_env#0}>
+    3 all<u8, graphite_cypher::engine::partition::{impl#2}::rows::{closure#0}::{closure_env#0}>
+    2 new<core::iter::adapters::map::Map<core::slice::iter::Iter<u8>, graphite_cypher::engine::partition::sweep_edges::{closur
+    2 next<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>
+    2 next<core::iter::adapters::zip::Zip<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>>
+    1 std::sys::pal::unix::time::Timespec::now
+    1 do_call<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::job::{impl#9}::call::{closure_env#0}<rayon::iter::collect
+    1 new<tower::util::map_future::MapFuture<axum::util::MapIntoResponse<tower::util::map_err::MapErr<axum::middleware::from_f
+    1 clone_box<http::request::Request<axum_core::body::Body>, tower::util::map_future::MapFuture<axum::util::MapIntoResponse<
+    1 clone<http::request::Request<axum_core::body::Body>, http::response::Response<axum_core::body::Body>, core::convert::Inf
+    1 clone<core::convert::Infallible>
+    1 clone<axum::routing::route::Route<core::convert::Infallible>, alloc::sync::Arc<graphite_explore::mcp::McpServer, alloc::
+    1 clone<axum::extension::AddExtension<axum::routing::route::Route<core::convert::Infallible>, alloc::sync::Arc<graphite_ex
+    1 clone<tower::util::map_err::MapErr<axum::extension::AddExtension<axum::routing::route::Route<core::convert::Infallible>,
+    1 clone<axum::util::MapIntoResponse<tower::util::map_err::MapErr<axum::extension::AddExtension<axum::routing::route::Route
+    1 index<u64, usize, alloc::alloc::Global>
+    1 index<u32, core::ops::range::Range<usize>>
+    1 index<u32, core::ops::range::Range<usize>, alloc::alloc::Global>
+    1 non_null<alloc::alloc::Global, i64>
+    1 ptr<alloc::alloc::Global, i64>
+    1 ptr<i64, alloc::alloc::Global>
+    1 as_ptr<i64, alloc::alloc::Global>
+    1 as_slice<i64, alloc::alloc::Global>
+    1 deref<i64, alloc::alloc::Global>

@@ -1,0 +1,18 @@
+rust-v2: 170 queries from 652 sampled terms (after a 170-query warmup on a different seed)
+  25/170
+  50/170
+  75/170
+  100/170
+  125/170
+  150/170
+{
+  "label": "rust-v2",
+  "mix": "v2",
+  "queries": 170,
+  "succeeded": 170,
+  "failures": 0,
+  "failure_statuses": {},
+  "p50_ms": 0.9,
+  "p95_ms": 4.2,
+  "max_ms": 8.7
+}

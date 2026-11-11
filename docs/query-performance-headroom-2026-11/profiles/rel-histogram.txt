@@ -1,0 +1,65 @@
+samples=30 busy_thread_samples=65
+
+--- leaf frames ---
+   38 sweep_edges
+    8 neighbors
+    5 try_fold<core::slice::iter::Windows<u32>,
+    3 map_or<&[u32], u32, graphite_cypher::engine::partition::sweep_edges::{closure_env#1}>
+    1 index<u8>
+    1 with_capacity_in<graphite_cypher::engine::partition::EdgeSlot, alloc::alloc::Global>
+    1 index<u32>
+    1 get
+    1 {closure#0}
+    1 next<u32>
+    1 next<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>
+    1 format_escaped_str_contents<&mut alloc::vec::Vec<u8, alloc::alloc::Global>, serde_json::ser::CompactFormatter>
+    1 new<core::iter::adapters::map::Map<core::slice::iter::Iter<u8>, graphite_cypher::engine::partition::sweep_edge
+    1 non_null<alloc::alloc::Global, i64>
+    1 ___pthread_mutex_trylock
+
+--- inclusive (graphite frames) ---
+   63 call_mut<(&graphite_cypher::engine::Source), graphite_cypher::engine::partition::{impl#2}::rows::{closure_env#0}>
+   63 call_once<(&graphite_cypher::engine::Source), &graphite_cypher::engine::partition::{impl#2}::rows::{closure_env#0}>
+   63 map<&graphite_cypher::engine::Source, core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::EdgeSlot,
+   63 next<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::EdgeSlot, alloc::alloc::Global>, graphite_
+   63 consume_iter<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine:
+   63 consume_iter<&graphite_cypher::engine::Source, core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partition::
+   63 fold_with<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapFolder<rayon::iter::collect:
+   63 helper<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::collect::
+   63 {closure#0}<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::
+   62 {closure#0}<rayon::iter::plumbing::bridge_producer_consumer::helper::{closure_env#0}<rayon::slice::IterProducer<graphite
+   61 in_worker<rayon_core::join::join_context::{closure_env#0}<rayon::iter::plumbing::bridge_producer_consumer::helper::{clos
+   60 join_context<rayon::iter::plumbing::bridge_producer_consumer::helper::{closure_env#0}<rayon::slice::IterProducer<graphit
+   59 call_once<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::pa
+   59 catch_unwind<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine:
+   51 {closure#0}<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::coll
+   49 do_call<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::iter::
+   48 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::i
+   44 {closure#1}<rayon::slice::IterProducer<graphite_cypher::engine::Source>, rayon::iter::map::MapConsumer<rayon::iter::coll
+   43 halt_unwinding<rayon_core::join::join_context::call_a::{closure_env#0}<rayon::iter::collect::consumer::CollectResult<cor
+   32 run_inline<rayon_core::latch::SpinLatch, rayon_core::join::join_context::call_b::{closure_env#0}<rayon::iter::collect::c
+   14 do_call<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::job::{impl#9}::call::{closure_env#0}<rayon::iter::collect
+   12 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<rayon_core::job::{impl#9}::call::{closure_env#0}<rayon::iter::co
+   12 halt_unwinding<rayon_core::job::{impl#9}::call::{closure_env#0}<rayon::iter::collect::consumer::CollectResult<core::resu
+   11 call<rayon::iter::collect::consumer::CollectResult<core::result::Result<alloc::vec::Vec<graphite_cypher::engine::partiti
+    8 execute<rayon_core::latch::SpinLatch, rayon_core::join::join_context::call_b::{closure_env#0}<rayon::iter::collect::cons
+    7 wait_until<rayon_core::latch::SpinLatch>
+    7 try_fold<core::slice::iter::Windows<u32>,
+    7 all<core::slice::iter::Windows<u32>, graphite_cypher::engine::partition::ascending::{closure_env#0}>
+    7 all<u8, graphite_cypher::engine::partition::{impl#2}::rows::{closure#0}::{closure_env#0}>
+    3 map_or<&[u32], u32, graphite_cypher::engine::partition::sweep_edges::{closure_env#1}>
+    1 index<u8, usize, alloc::alloc::Global>
+    1 with_capacity_in<graphite_cypher::engine::partition::EdgeSlot, alloc::alloc::Global>
+    1 with_capacity<graphite_cypher::engine::partition::EdgeSlot>
+    1 from_iter<graphite_cypher::engine::partition::EdgeSlot, core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<u
+    1 collect<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<usize, alloc::alloc::Global>, graphite_cypher::en
+    1 index<u32, core::ops::range::Range<usize>>
+    1 index<u32, core::ops::range::Range<usize>, alloc::alloc::Global>
+    1 {closure#0}<&[u32], graphite_cypher::engine::partition::ascending::{closure_env#0}>
+    1 next<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>
+    1 next<core::iter::adapters::zip::Zip<core::slice::iter::Iter<u32>, core::slice::iter::Iter<u8>>>
+    1 wait_until<rayon_core::latch::OnceLatch>
+    1 format_escaped_str_contents<&mut alloc::vec::Vec<u8, alloc::alloc::Global>, serde_json::ser::CompactFormatter>
+    1 format_escaped_str<&mut alloc::vec::Vec<u8, alloc::alloc::Global>, serde_json::ser::CompactFormatter>
+    1 serialize_str<&mut alloc::vec::Vec<u8, alloc::alloc::Global>, serde_json::ser::CompactFormatter>
+    1 serialize<&mut serde_json::ser::Serializer<&mut alloc::vec::Vec<u8, alloc::alloc::Global>, serde_json::ser::CompactForma

@@ -1,0 +1,8 @@
+# scripts/interfere.py, local 58215b9 release server, 64 graphs, 2026-11-11
+# fields: cheap alone [p50,p95,max] ms; heavy alone [p50,p95,max]; cheap under 1 heavy worker [p50,p95,max]; heavy p50 under load; heavy requests completed
+cheap=shape-equality heavy=schema-relationship-histogram
+{"cheap_alone_p50_p95_max": [0.5515, 1.2264, 1.2351], "heavy_alone_p50_p95_max": [95.5255, 106.6579, 106.6579], "cheap_under_load_p50_p95_max": [0.8125, 92.4246, 98.3179], "heavy_under_load_p50": 97.0787, "heavy_requests": 9}
+cheap=shape-inequality heavy=schema-relationship-histogram
+{"cheap_alone_p50_p95_max": [0.8674, 1.1841, 1.3015], "heavy_alone_p50_p95_max": [92.4691, 96.8239, 96.8239], "cheap_under_load_p50_p95_max": [0.8230, 4.6981, 8.1993], "heavy_under_load_p50": 98.3334, "heavy_requests": 6}
+cheap=shape-equality heavy=shape-group-count
+{"cheap_alone_p50_p95_max": [0.5388, 0.9845, 1.3043], "heavy_alone_p50_p95_max": [93.6631, 109.6185, 109.6185], "cheap_under_load_p50_p95_max": [0.8272, 1.1894, 1.3750], "heavy_under_load_p50": 89.8210, "heavy_requests": 6}

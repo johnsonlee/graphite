@@ -1,0 +1,58 @@
+samples=30 busy_thread_samples=21
+
+--- leaf frames ---
+    3 bounded_call_site_groups
+    3 write<core::hash::sip::Sip13Rounds>
+    3 __memcmp_evex_movbe
+    2 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown:
+    2 wrapping_add
+    2 copy_nonoverlapping<u8>
+    2 c_rounds
+    1 get
+    1 drop
+    1 lowest_set_bit
+    1 _mm_movemask_epi8
+
+--- inclusive (graphite frames) ---
+   20 {closure#0}<http::response::Response<axum_core::body::Body>, graphite_explore::routes::run_cypher::{async_fn#0}::{closur
+   20 call_once<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>, gr
+   17 do_call<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{closure
+   17 catch_unwind<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_cypher::error::CypherError>,
+   17 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<graphite_explore::query_job::run::{async_fn#0}::{closure#0}::{cl
+   17 poll<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::response::Response<axum_core::body::Body>, gr
+   16 {closure#0}<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+   16 rustc_entry<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc
+   16 entry<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc::Glob
+   11 with_mut<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run
+   10 poll<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<http::
+   10 call_once<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explore:
+    8 do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<tokio::ru
+    8 catch_unwind<core::task::poll::Poll<core::result::Result<http::response::Response<axum_core::body::Body>, graphite_explo
+    7 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::{closure_env#0}<toki
+    7 write<core::hash::sip::Sip13Rounds>
+    7 write_str<core::hash::sip::Sip13Rounds>
+    7 hash<std::hash::random::DefaultHasher>
+    7 hash<str, std::hash::random::DefaultHasher>
+    7 hash<&str, std::hash::random::DefaultHasher>
+    7 hash_one<std::hash::random::RandomState, &&str>
+    7 make_hash<&str, std::hash::random::RandomState>
+    6 find<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::rustc_entry::{im
+    6 resize_inner<alloc::alloc::Global>
+    6 reserve_rehash_inner<alloc::alloc::Global>
+    6 reserve_rehash<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::m
+    6 reserve<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::make_has
+    6 reserve<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc::Gl
+    5 poll_future<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}
+    5 poll_inner<tokio::runtime::blocking::task::BlockingTask<graphite_explore::query_job::run::{async_fn#0}::{closure_env#0}<
+    5 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::rustc_ent
+    3 {closure#0}<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState>
+    3 {closure#0}<(&str, graphite_cypher::engine::fastpath::bounded_groups::Group), alloc::alloc::Global, hashbrown::map::make
+    3 {closure#0}<&str, graphite_cypher::engine::fastpath::bounded_groups::Group, std::hash::random::RandomState, alloc::alloc
+    1 drop_glue<tokio::runtime::task::core::TaskIdGuard>
+    1 call_once<(), std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<tokio::runtime::blocking::pool::{imp
+    1 do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}
+    1 catch_unwind<(), core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closu
+    1 catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_e
+    1 call_once<std::thread::lifecycle::spawn_unchecked::{closure_env#1}<tokio::runtime::blocking::pool::{impl#6}::spawn_threa
+    1 alloc::boxed::{impl#31}::call_once<(),
+    1 std::sys::thread::unix::{impl#2}::new::thread_start
