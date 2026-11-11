@@ -30,6 +30,9 @@ mod collect_prefix;
 #[path = "unwind_groups.rs"]
 mod unwind_groups;
 
+#[path = "optional_groups.rs"]
+mod optional_groups;
+
 pub type Row = IndexMap<String, Value>;
 
 /// Hidden row key carrying cross-graph provenance (sorted unique graph ids as a list of strings).
@@ -416,6 +419,16 @@ impl Executor {
                     optional,
                     where_clause,
                 } => {
+                    if *optional {
+                        if let Some((cols, projected)) = optional_groups::try_execute(
+                            self, &matcher, &ev, &clauses[i..], &mut rows,
+                        )? {
+                            columns = cols;
+                            rows = projected;
+                            i += 2;
+                            continue;
+                        }
+                    }
                     if self.property_graph.is_none()
                         && !*optional
                         && rows.len() == 1

@@ -23894,3 +23894,37 @@ at the tier maximum), before capacity/allocator overhead. This probe does not
 establish memory bounds for all group cardinalities or more than64 physical graphs.
 [Full evidence and reproduction](query-performance-evidence/2026-11-11/complex-p95/attempt318/README.md)
 retain all samples, limits, source proof, raw logs and checksum-pinned external archives.
+
+
+### Attempt319 — stream total OPTIONAL matches into counts (2026-11-11)
+
+**Hypothesis.** For a proved one-hop outgoing DATAFLOW OPTIONAL followed by
+WITH source/graphId and count(b)/count(*), feed the existing matcher directly
+into existing aggregate states instead of collecting all matched/null rows.
+Keep original null extension, encounter order, provenance, late count overflow,
+cancellation and generic fallback for bounded work tokens or unsupported shapes.
+The initial MATCH and per-source groups remain; no O(1)-memory claim is made.
+Admission validates sparse node IDs through has_node, not node_count bounds.
+
+**Baseline and feedback protocol.** Accepted merged base69ba5f3072c4984d0e6cdb98eeeb107cd365bccd;
+reuse frozen318 binary6334e74baa9649ad0d7e16f94b9209a689a9528b29425d3ce440d821742f7af7,
+whose171 relevant product source/Cargo hashes match the merged base exactly.
+Build the local controller from the trusted base checkout. Reuse the unchanged
+real64 manifest `/private/tmp/graphite-pr211-final-benchmark/fresh-run/results/frontend/head/graphs/graphs.tsv`.
+Every measured request selects all64 physical graphs with full body consumption.
+Four workers run the six complex cases, nearest-rank per-case P95 primary and
+P50 diagnostic. Predeclare one AB20-per-case parent/candidate pilot per increment;
+then separate BA100-per-case base/cumulative confirmation and73-case regression.
+Keep all samples/failures; never pool rounds or substitute single-graph timings.
+Independent loading and query CPU/RSS each must remain within5% of their matched
+baseline; latency gains do not offset resource failures. Correctness, availability,
+OOM, cancellation and work budgets remain hard gates. Hosted CI is correctness/
+OOM acceptance only and timings remain report-only; JAR heaps stay4GiB.
+
+Fast feedback uses focused correctness first, cached incremental builds (~1–3min),
+a baseline real64 correctness smoke, and sealed existing graphs without rebuilding
+or moving5.1GB of inputs. Estimate6–9min per pilot pair, roughly25min for100-sample
+confirmation,5–10min for73-case regression and35–40min final CI. No competing local
+builds/archive work during measurement. Targeted correctness passed6 tests including
+explicit real Tika two-source admission/parity in both dialects; isolated module,
+lint, resource and latency evidence remain pending and must precede acceptance.
