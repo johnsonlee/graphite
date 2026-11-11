@@ -23397,3 +23397,79 @@ session record. Candidate performance remains pending; this entry does not claim
 recovery or waive the failed baseline. The candidate is the commit containing
 this entry; its exact binary identity and measured keep/revert decision will be
 recorded in the local experiment report before PR delivery.
+
+### Attempt316 — compact bounded string-pair counts and provenance (2026-11-11)
+
+**Parent, hypothesis and precise scope.** Retain Attempt315's streaming implementation
+at `94c7d3b9` as the incremental runtime reference. The original-main warmup failure
+recorded above remains a failure, not a measurable pressure baseline. Attempt315
+removes intermediate UNWIND vectors but still allocates generic group keys, Rows,
+aggregate states and DISTINCT sets. The next hypothesis is that a compact pair
+representation can reduce that remaining CPU and memory work without omitting any
+input pair or requested result.
+
+Admission retains all Attempt315 string/identity/count proofs and additionally
+requires exactly `ORDER BY count_alias DESC, left_alias ASC, right_alias ASC` and
+a trailing nonnegative literal LIMIT no greater than65536. The effective bound
+includes the existing HTTP probe's extra row. Intern target strings by content,
+rank them once using the original UTF-16 comparator, and preserve every list's
+order and duplicate multiplicity. Count integer-ID pairs in encounter-ordered
+state. DISTINCT carried values and contributing provenance use independent
+64-bit dictionaries, each proven to contain at most64 strings before consuming
+pairs. Missing provenance is supported; empty, malformed, duplicate or unsorted
+provenance and larger dictionaries retain Attempt315's streaming fallback.
+
+Reuse the existing `DeferredCount` implementation with internal visibility changes
+only. Finalize every group in encounter order, including losers and LIMIT0,
+before constructing any output Row. Rank with `Reverse<i64>` rather than negating
+a possibly wrapped minimum integer. Materialize only bounded winners, rebuild
+provenance through the existing helper, and retain the original downstream ORDER
+and LIMIT. Work-budget tokens, including their ancestors, still use the original
+pipeline. No storage/producer changes, persistent cache, raised timeout, reduced
+concurrency, numeric-comparison generalization or weakened semantic checks.
+
+**Correctness and source verification.** Fourteen combined Attempt315/316 focused
+tests and all441 Cypher module tests passed. Fixture-gated cases in the ordinary
+module run retain their existing skip convention; the new native differential test
+was also explicitly run against the real PR211 head `fixture-tika-00`, represented
+as two source identities. Its two-class restriction is correctness coverage only,
+not multi-graph performance acceptance. Both dialects matched the retained generic
+path, complete provenance and HTTP probe behavior. Strict module all-target Clippy
+and the release CLI build passed. A separate release-mode test verified the shared
+wrapping-count/winner behavior; debug tests verified that losing and zero-limit
+counts do not hide deferred overflow. Deterministic counters assert only winners
+are materialized. Tests also cover UTF-16 versus provenance ordering, aliases,
+duplicates, independent64/65 dictionary boundaries, missing/empty provenance,
+parent work budgets and fallback to both streaming and generic paths. Independent
+source review found no material blocker. No timing assertion uses these fixtures.
+
+The frozen cumulative candidate executable is
+`/private/tmp/graphite-attempt316-candidate-c98he5_x/graphite`, SHA256
+`c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374`,
+built with Rust1.93.0. The matching Attempt315 frozen binary SHA256 is
+`3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8`.
+The candidate source is the commit containing this entry; exact measured commit
+and fixture seals remain part of the run report.
+
+**Predeclared matched evaluation and decision.** Performance measurement is pending.
+Use the unchanged real64 saved head corpus and manifest SHA256
+`ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf`,
+with every request actually targeting all64 graphs and completely consuming its
+HTTP body. Follow the [protocol's Attempt316 amendment](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md):
+all six fixed complex queries, concurrency4, fresh servers, unchanged60s/70s
+deadlines, first use and two warmups, three paired20-request-per-case rounds in
+AB/BA/AB order, then an unconditional separate paired100-request confirmation in
+BA order. A is retained Attempt315 and B is the cumulative candidate. Keep all
+samples and failures, report per-case/per-round nearest-rank P95 without pooling,
+P50 as diagnostic data, absolute milliseconds before percentages, and the
+uncertainty of one100-sample confirmation rather than three such rounds.
+
+Report correctness, stability, P95, complete workload time, pressure-window server
+CPU and declared fresh-process lifetime kernel peak RSS separately. CPU and RSS
+must each satisfy the independent5% bound on matching complete workloads; incomplete
+original-main runs cannot supply those comparisons. Preserve loading/first-use
+costs and the original-main failure. The existing73-query regression workload and
+required PR correctness/OOM checks remain required for the cumulative change.
+Current decision: retain as an unmeasured candidate for this paired evaluation;
+no latency, CPU, RSS gain, final performance acceptance or original-main recovery
+is claimed by this source/correctness record.

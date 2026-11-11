@@ -8,6 +8,9 @@ use super::*;
 use crate::ast::CmpOp;
 use std::collections::HashSet;
 
+#[path = "unwind_groups_compact.rs"]
+mod compact;
+
 struct PairPlan<'a> {
     list: &'a str,
     left: &'a str,
@@ -259,6 +262,9 @@ pub(super) fn try_execute(
     }
     #[cfg(test)]
     HITS.with(|hits| hits.set(hits.get() + 1));
+    if let Some(result) = compact::try_execute(ex, &plan, clauses, rows)? {
+        return Ok(Some(result));
+    }
     plan.run(ex, ev, rows).map(Some)
 }
 

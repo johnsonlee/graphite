@@ -29,18 +29,18 @@ enum Kind {
 }
 
 #[derive(Default)]
-struct DeferredCount {
+pub(super) struct DeferredCount {
     value: i64,
     overflow: bool,
 }
 
 impl DeferredCount {
-    fn add(&mut self, value: i64) {
+    pub(super) fn add(&mut self, value: i64) {
         self.overflow |= self.value.checked_add(value).is_none();
         self.value = self.value.wrapping_add(value);
     }
 
-    fn finish(self) -> i64 {
+    pub(super) fn finish(self) -> i64 {
         assert!(
             !cfg!(debug_assertions) || !self.overflow,
             "attempt to add with overflow"
