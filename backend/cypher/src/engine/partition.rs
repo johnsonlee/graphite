@@ -3009,7 +3009,7 @@ mod tests {
         );
         let rows = plan.rows(&ex, &Evaluator::new(&ex, &ex.params)).unwrap();
         assert_eq!(rows.len(), 6);
-        for (source, chunk) in rows.chunks_exact(3).enumerate() {
+        for (source, chunk) in rows.as_chunks::<3>().0.iter().enumerate() {
             for (row, (first, weight)) in chunk.iter().zip([(0, 2), (1, 1), (3, 1)]) {
                 assert_eq!(row_weight(row), weight);
                 assert!(
