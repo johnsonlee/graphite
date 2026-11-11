@@ -7,6 +7,11 @@ import tarfile
 from pathlib import Path, PurePosixPath
 
 
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--extract", type=Path)
@@ -17,30 +22,36 @@ def main():
     manifest_path = args.manifest if args.manifest.is_absolute() else root / args.manifest
     manifest = json.loads(manifest_path.read_text())
     archive = args.archive if args.archive else manifest_path.parent / manifest["archive"]
-    assert hashlib.sha256(archive.read_bytes()).hexdigest() == manifest["archiveSha256"]
-    assert archive.stat().st_size == manifest["archiveBytes"]
+    require(hashlib.sha256(archive.read_bytes()).hexdigest() == manifest["archiveSha256"],
+            "Archive SHA256 mismatch")
+    require(archive.stat().st_size == manifest["archiveBytes"], "Archive size mismatch")
     expected = {row["path"]: row for row in manifest["files"]}
-    assert len(expected) == len(manifest["files"])
+    require(len(expected) == len(manifest["files"]), "Duplicate manifest member")
     if args.extract:
         destination = args.extract.resolve()
         destination.mkdir(parents=True, exist_ok=True)
-        assert not any(destination.iterdir()), "Extraction requires an empty directory"
+        require(not any(destination.iterdir()), "Extraction requires an empty directory")
     seen = set()
     with tarfile.open(archive, "r:gz") as tar:
         for entry in tar:
             path = PurePosixPath(entry.name)
-            assert entry.isfile() and not path.is_absolute() and ".." not in path.parts
-            assert entry.name in expected and entry.name not in seen
+            require(entry.isfile(), f"Non-regular archive member: {entry.name}")
+            require(not path.is_absolute() and ".." not in path.parts,
+                    f"Unsafe archive member path: {entry.name}")
+            require(entry.name in expected, f"Unexpected archive member: {entry.name}")
+            require(entry.name not in seen, f"Duplicate archive member: {entry.name}")
             seen.add(entry.name)
             body = tar.extractfile(entry).read()
             row = expected[entry.name]
-            assert len(body) == row["bytes"] and hashlib.sha256(body).hexdigest() == row["sha256"]
+            require(len(body) == row["bytes"], f"Member size mismatch: {entry.name}")
+            require(hashlib.sha256(body).hexdigest() == row["sha256"],
+                    f"Member SHA256 mismatch: {entry.name}")
             if args.extract:
                 target = destination.joinpath(*path.parts)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 with target.open("xb") as output:
                     output.write(body)
-    assert seen == set(expected)
+    require(seen == set(expected), "Missing archive members")
     print(json.dumps({"verifiedFiles": len(seen), "archiveSha256": manifest["archiveSha256"],
                       "extractedTo": str(destination) if args.extract else None}))
 
