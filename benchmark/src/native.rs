@@ -23,6 +23,10 @@ use crate::process::{ManagedProcess, ProcessSpec};
 #[path = "native_capacity.rs"]
 mod capacity;
 
+#[path = "local_query.rs"]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub mod local_query;
+
 const GRAPH_COUNT: usize = 64;
 const CASE_COUNT: usize = 73;
 const CONCURRENCY: usize = 4;
@@ -479,6 +483,16 @@ fn request(client: &Client, query: &str, path: &Path) -> Result<(Vec<u8>, f64)> 
 }
 
 fn request_at(client: &Client, url: &str, query: &str, path: &Path) -> Result<(Vec<u8>, f64)> {
+    request_at_timeout(client, url, query, path, QUERY_TIMEOUT_MS)
+}
+
+fn request_at_timeout(
+    client: &Client,
+    url: &str,
+    query: &str,
+    path: &Path,
+    timeout_ms: u64,
+) -> Result<(Vec<u8>, f64)> {
     let started = Instant::now();
     let mut bytes = Vec::new();
     let mut status = None;
@@ -487,7 +501,7 @@ fn request_at(client: &Client, url: &str, query: &str, path: &Path) -> Result<(V
         let mut reply = client
             .post(url)
             .header("Connection", "close")
-            .json(&json!({"query":query,"timeoutMs":QUERY_TIMEOUT_MS}))
+            .json(&json!({"query":query,"timeoutMs":timeout_ms}))
             .send()?;
         status = Some(reply.status().as_u16());
         let length = reply.content_length();
@@ -590,6 +604,41 @@ fn stage(
     samples: &mut Vec<Value>,
     started: Instant,
 ) -> Result<Vec<Value>> {
+    stage_with_timeout(
+        server,
+        client,
+        name,
+        tasks,
+        concurrency,
+        cases,
+        ids,
+        node_count,
+        expected,
+        output,
+        samples,
+        started,
+        QUERY_TIMEOUT_MS,
+        false,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn stage_with_timeout(
+    server: &mut ManagedProcess,
+    client: &Client,
+    name: &str,
+    tasks: &[usize],
+    concurrency: usize,
+    cases: &[Case],
+    ids: &BTreeSet<String>,
+    node_count: u64,
+    expected: Option<&[Value]>,
+    output: &Path,
+    samples: &mut Vec<Value>,
+    started: Instant,
+    timeout_ms: u64,
+    capture_resources: bool,
+) -> Result<Vec<Value>> {
     use std::sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
         mpsc, Barrier,
@@ -622,7 +671,7 @@ fn stage(
                     let mut wire_ms = None;
                     let result = (|| -> Result<Value> {
                         ensure!(started.elapsed() < SUITE_TIMEOUT, "Native suite work budget exhausted");
-                        let (bytes, ms) = request(client, &case.query, &path)?;
+                        let (bytes, ms) = request_at_timeout(client, &format!("http://127.0.0.1:{PORT}/api/cypher"), &case.query, &path, timeout_ms)?;
                         wire_ms = Some(ms);
                         let body = response(&bytes, ids)?;
                         validate_semantics(case, &body, node_count)?;
@@ -671,7 +720,18 @@ fn stage(
             if stop.load(Ordering::SeqCst) && !terminated {
                 // Close active sockets promptly on failure/cancellation rather than
                 // waiting for every in-flight HTTP timeout before reaping the group.
-                if let Err(error) = server.terminate() {
+                #[cfg(unix)]
+                let stopped = if capture_resources {
+                    server.terminate_with_rusage().map(|(outcome, _)| outcome)
+                } else {
+                    server.terminate()
+                };
+                #[cfg(not(unix))]
+                let stopped = {
+                    let _ = capture_resources;
+                    server.terminate()
+                };
+                if let Err(error) = stopped {
                     failures.push(format!("Terminate failed server group: {error:#}"));
                 }
                 terminated = true;

@@ -69,6 +69,8 @@ pub struct ManagedProcess {
     timeout: Duration,
     outcome: Option<ProcessOutcome>,
     signal_slot: usize,
+    #[cfg(unix)]
+    resource_usage: Option<libc::rusage>,
 }
 
 #[cfg(unix)]
@@ -156,6 +158,8 @@ impl ManagedProcess {
             timeout: spec.timeout,
             outcome: None,
             signal_slot,
+            #[cfg(unix)]
+            resource_usage: None,
         };
         // Close the race between the pre-spawn cancellation check and registration.
         if is_cancelled() {
@@ -203,6 +207,38 @@ impl ManagedProcess {
         self.stop("terminated")
     }
 
+    /// Reap this exact child with kernel lifetime resource accounting.
+    /// Call before try_wait reaps an exited process; missing usage is an error.
+    #[cfg(unix)]
+    pub fn terminate_with_rusage(&mut self) -> Result<(ProcessOutcome, libc::rusage)> {
+        use std::os::unix::process::ExitStatusExt;
+        anyhow::ensure!(
+            self.outcome.is_none(),
+            "process already reaped; resource evidence unavailable"
+        );
+        self.kill_group();
+        let mut status = 0;
+        let mut usage: libc::rusage = unsafe { std::mem::zeroed() };
+        loop {
+            let result = unsafe { libc::wait4(self.child.id() as i32, &mut status, 0, &mut usage) };
+            if result >= 0 {
+                break;
+            }
+            let error = std::io::Error::last_os_error();
+            if error.kind() != std::io::ErrorKind::Interrupted {
+                return Err(error.into());
+            }
+        }
+        let outcome = self.finish(ExitStatus::from_raw(status), "controlled-resource-stop");
+        self.resource_usage = Some(usage);
+        Ok((outcome, usage))
+    }
+
+    #[cfg(unix)]
+    pub fn captured_rusage(&self) -> Option<&libc::rusage> {
+        self.resource_usage.as_ref()
+    }
+
     pub fn try_wait(&mut self) -> Result<Option<ProcessOutcome>> {
         if let Some(outcome) = &self.outcome {
             return Ok(Some(outcome.clone()));
@@ -248,6 +284,19 @@ mod tests {
     use super::*;
     use std::sync::atomic::AtomicU64;
     static NEXT: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn exact_child_resource_reap_cannot_be_reused() {
+        let mut child =
+            ManagedProcess::spawn(&spec("while :; do :; done", Duration::from_secs(10))).unwrap();
+        std::thread::sleep(Duration::from_millis(30));
+        let (outcome, usage) = child.terminate_with_rusage().unwrap();
+        assert_eq!(outcome.reason, "controlled-resource-stop");
+        assert!(usage.ru_maxrss > 0);
+        assert!(usage.ru_utime.tv_sec > 0 || usage.ru_utime.tv_usec > 0);
+        assert!(child.terminate_with_rusage().is_err());
+        assert!(child.try_wait().unwrap().is_some());
+    }
 
     fn spec(script: &str, timeout: Duration) -> ProcessSpec {
         let directory = std::env::temp_dir().join(format!(

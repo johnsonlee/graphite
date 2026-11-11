@@ -86,6 +86,65 @@ benchmark machine is required.
 
 ## Timing protocol
 
+### Local saved-graph query diagnostics
+
+`local-query` is a separate development command for an existing trusted real64
+manifest. It does not rebuild frontend graphs or change `run`, the required
+73-case gate, or its policy. Start with `--mode smoke`: it executes one complete
+first-use request per case at four workers and stops, with no warmup or pressure.
+Failures stop the stage, retain every issued request/partial body, and leave
+unissued work explicitly incomplete; they never become passing timing samples.
+
+```sh
+graphite-benchmark local-query --base /work/base/graphite \
+  --manifest /work/graphs/graphs.tsv --output /work/discovery --mode smoke
+graphite-benchmark local-query --base /work/base/graphite \
+  --candidate /work/candidate/graphite --manifest /work/graphs/graphs.tsv \
+  --output /work/paired-pilot --mode pilot --order ab
+```
+
+The default `--workload complex` uses the six fixed entries in
+`complex_aggregation_queries.json`. Pilot has two warmups and twenty pressure
+requests per case; measure has two warmups and one hundred pressure requests.
+Both include the first-use pass. `--order ba` reverses the two fresh processes;
+repeat into a new output directory to retain independent pairs. There is no
+arbitrary query/sample-count override. `--workload regression` reuses the unchanged
+73-case catalog, with twenty pressure samples in both pilot and measure modes
+and forty isolated samples at concurrency one when pressure p50 is below 100 ms.
+This local regression command is not the complete trusted CI pipeline: frontend,
+capacity/recovery and dedicated scope probes remain in `run` and ordinary tests.
+The local command fixes server timeout at 60 seconds and client timeout at
+70 seconds, independently of the existing CI timeout. Every request targets all
+64 registered graphs and consumes the complete response. Workers validate and
+write artifacts before taking the next task; this is not a saturation test.
+
+Input manifest/source provenance checks are shared with `run`. All saved files
+are hashed once before execution, paths/sizes/modification times are checked
+after each arm, and binary/catalog hashes are retained. The same saved inputs
+serve both binaries; a storage-format-changing candidate requires a different
+reviewed protocol. Hashing warms filesystem caches: first-use means a fresh
+server's first query sequence, **not disk-cold inputs or independent cold requests**.
+Use a release-built controller for measurements and avoid concurrent compilation.
+
+On macOS, `proc_pid_rusage` supplies server user/system CPU and instantaneous RSS;
+Linux uses `/proc`. `wait4` supplies exact child lifetime CPU and kernel peak RSS
+(Darwin bytes, Linux KiB converted to bytes). Pilot/measure run a separate
+load-only server to obtain a loading-only kernel peak. The query process's peak
+includes its own loading, first use, warmup and pressure (and regression isolated
+samples); it is **not** a resettable pressure-window peak. Never subtract the
+loading peak from this lifetime peak. Pressure CPU is the difference of server
+CPU snapshots around the complete mixed stage; client/controller CPU is excluded.
+Resources cover the fixed mix, not individual queries. Failure before a snapshot
+leaves it unavailable, not zero.
+
+`report.json` always has `performanceAcceptance: false`. Complete repeated typed
+responses and matched arm oracles establish comparability, not an independent
+semantic oracle or production representativeness. The command records per-case
+nearest-rank p50/p95 and every failure; it cannot approve the CPU/RSS 5% bounds,
+correctness/stability or production P95 recovery by itself. Smoke's one first-use
+observation is not a percentile distribution. No synthetic or single-graph
+performance execution is supported.
+
 The current main-branch catalog contains 73 multi-graph cases. Each revision uses a fresh server,
 one complete oracle pass, two warmups per case and twenty measured requests per case at four
 workers. Requests are interleaved by round. Cases whose pressure p50 is below 100 ms receive
