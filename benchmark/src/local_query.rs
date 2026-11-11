@@ -36,6 +36,8 @@ pub enum Workload {
     Complex,
     /// Same six real64 cases, with caller rather than graph distinctness in co-use.
     ComplexWideDistinct,
+    /// Four caller-length buckets per graph exercise the bounded dense tier.
+    ComplexDenseDistinct,
     Regression,
 }
 impl Workload {
@@ -135,6 +137,52 @@ fn wide_distinct_cases() -> Result<Vec<Case>> {
         .replace(original, "count(DISTINCT caller) AS callers");
     case.id = "bi-dependency-co-use-wide-distinct".into();
     Ok(cases)
+}
+
+fn dense_distinct_cases() -> Result<Vec<Case>> {
+    let mut cases = cases()?;
+    let case = cases
+        .iter_mut()
+        .find(|case| case.id == "bi-dependency-co-use")
+        .context("Missing co-use case")?;
+    let original = "UNWIND targets AS left_target";
+    ensure!(
+        case.query.matches(original).count() == 1,
+        "Co-use shape changed"
+    );
+    case.query = case.query.replace(original,
+        "WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets UNWIND targets AS left_target");
+    case.id = "bi-dependency-co-use-dense-distinct".into();
+    Ok(cases)
+}
+
+fn dense_tier_evidence(cases: &[Case], oracle: &[Value]) -> Result<Value> {
+    let index = cases
+        .iter()
+        .position(|case| case.id == "bi-dependency-co-use-dense-distinct")
+        .context("Missing dense co-use case")?;
+    let rows = oracle.get(index).context("Missing dense oracle")?["rows"]
+        .as_array()
+        .context("Missing dense rows")?;
+    let counts = rows
+        .iter()
+        .map(|row| {
+            row["graphs"]
+                .as_u64()
+                .context("Invalid dense distinct count")
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let maximum = counts.iter().copied().max().unwrap_or(0);
+    ensure!(
+        maximum > 64 && maximum <= 256,
+        "Dense tier not demonstrated: returned distinct maximum {maximum}, expected 65..=256"
+    );
+    Ok(
+        json!({"returnedRows":rows.len(),"maximumReturnedDistinct":maximum,
+        "globalDistinctUpperBound":256,"provenanceUpperBound":64,
+        "maximumHighWordStride":3,"candidateRepresentationByCardinality":"Dense",
+        "basis":"Eligibility by cardinality only, not execution-path instrumentation for this binary: 64 physical graphs times four caller-length buckets; returned count exceeds inline64; full response validated"}),
+    )
 }
 
 fn files(directory: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
@@ -426,6 +474,9 @@ fn arm(
                 started,
             )?;
             data["oracle"] = json!(oracle);
+            if matches!(workload, Workload::ComplexDenseDistinct) {
+                data["denseTierEvidence"] = dense_tier_evidence(cases, &oracle)?;
+            }
             data["afterFirstUse"] = resources::snapshot(server.id())?;
             if !matches!(mode, Mode::Smoke) {
                 local_stage(
@@ -585,6 +636,7 @@ pub fn run(args: &LocalQueryArgs) -> Result<bool> {
         let cases = match args.workload {
             Workload::Complex => cases()?,
             Workload::ComplexWideDistinct => wide_distinct_cases()?,
+            Workload::ComplexDenseDistinct => dense_distinct_cases()?,
             Workload::Regression => catalog(&manifest)?,
         };
         report["sourceInputs"] = sources;
@@ -653,6 +705,7 @@ pub fn run(args: &LocalQueryArgs) -> Result<bool> {
             let catalog = match args.workload {
                 Workload::Complex => cases(),
                 Workload::ComplexWideDistinct => wide_distinct_cases(),
+                Workload::ComplexDenseDistinct => dense_distinct_cases(),
                 Workload::Regression => catalog(&manifest),
             };
             if let Ok(cases) = catalog {
@@ -709,6 +762,39 @@ mod tests {
         }
         assert_eq!(Workload::ComplexWideDistinct.pressure(Mode::Pilot), 20);
         assert_eq!(Workload::ComplexWideDistinct.pressure(Mode::Measure), 100);
+    }
+    #[test]
+    fn dense_workload_preserves_case_scope_and_requires_observed_tier() {
+        let original = cases().unwrap();
+        let dense = dense_distinct_cases().unwrap();
+        assert_eq!(dense.len(), 6);
+        for (original, dense) in original.iter().zip(&dense) {
+            if original.id == "bi-dependency-co-use" {
+                assert_eq!(dense.id, "bi-dependency-co-use-dense-distinct");
+                assert_eq!(dense.query, original.query.replace("UNWIND targets AS left_target",
+                    "WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets UNWIND targets AS left_target"));
+            } else {
+                assert_eq!(dense.query, original.query);
+                assert_eq!(dense.id, original.id);
+            }
+        }
+        let mut oracle = vec![json!({"rows":[]}); 6];
+        for count in [0, 64, 257] {
+            oracle[5] = json!({"rows":[{"graphs":count}]});
+            assert!(dense_tier_evidence(&dense, &oracle).is_err());
+        }
+        oracle[5] = json!({"rows":[{"graphs":65},{"graphs":256}]});
+        let proof = dense_tier_evidence(&dense, &oracle).unwrap();
+        assert_eq!(proof["returnedRows"], 2);
+        assert_eq!(proof["maximumReturnedDistinct"], 256);
+        assert_eq!(proof["maximumHighWordStride"], 3);
+        assert_eq!(proof["candidateRepresentationByCardinality"], "Dense");
+        assert!(proof.get("tier").is_none());
+        assert!(proof["basis"]
+            .as_str()
+            .unwrap()
+            .contains("not execution-path instrumentation"));
+        assert_eq!(Workload::ComplexDenseDistinct.pressure(Mode::Pilot), 20);
     }
     #[test]
     fn summary_never_passes_missing_or_failed_evidence() {

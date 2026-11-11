@@ -150,6 +150,28 @@ or compare latencies across the two workloads. Preserve a failed baseline and
 mark its percentiles/resources unavailable for paired comparison; a completed
 candidate-only run does not create a baseline.
 
+`--workload complex-dense-distinct` keeps the same six cases and real64 scope.
+Only co-use adds `WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets`
+after collecting targets. This derives four caller-length buckets per physical graph;
+it does not create graphs or change pair multiplicity. The distinct dictionary has
+at most 256 values, while provenance still has at most 64 graph IDs. First-use
+must return a complete validated response with a `graphs` count in 65..=256;
+otherwise the arm fails before pressure. `denseTierEvidence` retains the returned
+row count and maximum distinct count. Together with the query's upper bound this
+proves a 1..=3 high-word stride, selecting Dense rather than inline64 or Sparse
+in the reviewed candidate. The baseline need not implement that representation.
+
+The predeclared Dense follow-up is a candidate-only smoke for query/tier correctness,
+then **one AB pilot pair, twenty requests per case**, frozen316 baseline versus
+318 candidate. Reuse the existing manifest and frozen binaries; do not compile
+alongside measurement. Keep all six cases, four workers, complete HTTP bodies,
+first-use/warmup separation, failures, per-case nearest-rank P50/P95 (P95 rank19),
+pressure CPU and query-process lifetime peak RSS. This is diagnostic tier evidence,
+not formal performance acceptance; no repeats or hundred-sample confirmation are
+planned unless a failure justifies new work. Compare only matching Dense workloads.
+The fixed64 provenance domain does not validate the separate high-provenance fix,
+and this run does not demonstrate deployments with more than64 physical graphs.
+
 Input manifest/source provenance checks are shared with `run`. All saved files
 are hashed once before execution, paths/sizes/modification times are checked
 after each arm, and binary/catalog hashes are retained. The same saved inputs

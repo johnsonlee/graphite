@@ -130,6 +130,24 @@ graphite-benchmark local-query --base /work/base/graphite \
 两个负载的样本不能混合，也不能跨负载比较延迟。失败的基线必须保留，其百分位及配对资源比较不可用；
 候选单独运行完成不能补出一个基线。
 
+`--workload complex-dense-distinct` 保留相同六用例及 real64 图作用域。
+仅 co-use 在收集 targets 后添加
+`WITH graph + ':' + toString(size(caller) % 4) AS graph, caller, targets`，
+按 caller 长度为每个实体图派生四个桶，不创建图，也不改变 pair 的重复次数。
+DISTINCT 字典最多256个值，provenance 仍最多64个图 ID。首次使用必须完整返回并通过校验，
+且至少一个 `graphs` 计数处于65至256；否则该版本在压测前失败。
+`denseTierEvidence` 保留返回行数及最大 DISTINCT 计数。结合查询的上界，
+这证明高位 word stride 为1至3，审阅中的候选会选择 Dense，而非 inline64 或 Sparse。
+基线不必实现相同存储表示。
+
+Dense 后续验证预先约定为：候选单独 smoke 验证查询及存储层级，再运行
+**一次 AB pilot 配对，每用例20个请求**，使用冻结316基线及318候选。
+复用已有 manifest 和冻结二进制，测量期间不编译。保留全部六用例、四个 worker、完整 HTTP 响应、
+首次使用与预热分离、全部失败、逐用例 nearest-rank P50/P95（P95为第19个排序样本）、
+压测 CPU 及查询进程整个生命周期的峰值 RSS。这是存储层级诊断证据，不是正式性能验收；
+除非失败证明有必要，不增加重复轮次或百样本确认。只比较相同 Dense 负载。
+固定64图的 provenance 范围不能验证另外的高 provenance 修复，也不能证明超过64个实体图的部署性能。
+
 输入 manifest 及来源校验与 `run` 共享。执行前对所有已保存文件计算一次哈希，
 每个版本结束后检查路径、大小及修改时间，并保留二进制和查询目录哈希。
 两个二进制使用同一组已保存输入；改变存储格式的候选版本需要另行审查测量协议。

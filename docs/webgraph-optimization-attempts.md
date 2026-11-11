@@ -23813,3 +23813,84 @@ increases. This is one20-sample pilot, not100-sample wide confirmation or univer
 P95 acceptance. No E2E or production availability recovery is claimed.
 [Evidence](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)
 retains audits, response cardinality proof, raw archives and source/controller identity.
+
+
+### Attempt318 — avoid first-element provenance polling; observe dense masks (2026-11-11)
+
+**Review hypothesis.** The high-provenance contribution loop checked cancellation
+at element zero for every pair, duplicating the surrounding source check and
+periodic pair-loop polling. Skip only that first-element direct check; retain
+checks at each subsequent 1024 elements, all pair ticks, and work-budget behavior.
+The correctness fixture now includes1154 provenance values to cross the inner
+polling boundary. This does not claim a measured high-provenance speedup.
+
+**Feedback path and predeclared evidence.** Reuse the sealed real64 persisted
+fixture and frozen316 baseline; do not rebuild or transfer5.1GB of inputs.
+Run module correctness and lint first, build/freeze the native candidate and
+controller once, then a candidate-only six-case correctness smoke. A separate
+AB pilot uses20 pressure requests per case per arm, concurrency4, nearest-rank
+P50/P95, server60s/client70s timeouts, and complete response consumption. Estimate
+roughly1–3minutes for the smoke and10–15minutes for the pair from the earlier
+wide fallback run; final hosted CI is a separate approximately25–40minute path.
+No archive compression or competing builds run during measurement.
+
+The dense workload keeps all six real64 queries, changing only co-use to derive
+at most four distinct keys per physical graph from caller-name length modulo4.
+A complete returned count greater than64, together with the256-key upper bound
+and at most64 physical provenance values, must establish dense-tier coverage.
+If this proof fails, report missing coverage instead of inferring the tier from
+latency. No graphs are duplicated and every request targets all64 real graphs.
+This is evidence for a logical dictionary representation, not65–320 physical
+graphs or the high-provenance cancellation branch. Compare against frozen316's
+streaming fallback to show this tier's actual resource/latency behavior. Retain
+all samples and failures; do not pool with normal or sparse workloads or claim
+formal acceptance from this diagnostic pilot. Report baseline/candidate ms and
+absolute changes first, separate loading/query CPU and peak RSS with independent
+5% limits, complete results, errors and uncertainty. The73-case hosted correctness
+and OOM gate remains required; hosted timings remain report-only.
+
+
+**Frozen candidate and correctness.** Source HEAD21b8310f plus the two-file318
+native patch produced `/private/tmp/graphite-attempt318-candidate-h2eh5wjm/graphite`,
+SHA256`6334e74baa9649ad0d7e16f94b9209a689a9528b29425d3ce440d821742f7af7`.
+The retained source manifest/diff and build log are post-build session provenance,
+not an embedded commit or independent reproducible-build proof. All444 Cypher
+tests,17 focused tests and all-target clippy passed. Budgeted queries still
+bypass this optimization, so their generic work accounting remains unchanged.
+The1154-value fixture is correctness-only and crosses the long provenance loop's
+1024-element polling boundary.
+
+The measured controller SHA256 is
+`358cf552b3af78dea051885534de4ad9144cd8f52766cb8b9121b926e2849579`;
+its source snapshot, patch and session-attested validation summary are retained.
+Controller70 tests passed with one existing ignored test, and lint/release build
+passed. The smoke returned six complete results and maximum distinct256.
+The raw controller's `tier: Dense` metadata describes cardinality eligibility,
+not per-binary instrumentation:316 still falls back to streaming. The final
+controller labels this field `candidateRepresentationByCardinality` explicitly;
+this metadata clarification does not alter queries, timings or product binaries,
+and original reports are not rewritten.
+
+
+**Dense pilot result and decision.** All276 pilot responses and six smoke
+responses pass independent complete typed-body/receipt/journal audits. All46
+co-use bodies return maximum distinct256, proving the candidate's three-word
+Dense eligibility with the fixed source admission. P95 ms316→318:
+rollup4353.696→2505.796(-1847.901), global4773.585→2767.121(-2006.464),
+two-hop4226.245→4075.309(-150.936), degree9861.022→5670.554(-4190.468),
+optional16180.194→10396.458(-5783.736), co-use41313.780→2692.884(-38620.897).
+Mixed query CPU1140.544925→550.634461s and query lifetime peak
+RSS36414455808→28023980032bytes decrease. Loading CPU17.434059→18.162500s
+(+4.178%) and peak RSS3978756096→3987079168bytes(+0.209%) increase within
+independent5% limits. All six P95 values improve in this single pilot;20 samples
+and one pair do not establish precise confidence bounds or universal recovery.
+Other cases share pressure and cannot attribute independent algorithm gains.
+No E2E or production availability recovery is claimed; this complete run had
+zero errors/OOM. Retain the cancellation fix with correctness coverage, and
+retain the empirical Dense benefit as evidence for317's representation. Real64
+has no high provenance word, so the timing gain is not attributed to318 polling.
+Dense three-word storage still uses24 logical extra bytes per group (up to64
+at the tier maximum), before capacity/allocator overhead. This probe does not
+establish memory bounds for all group cardinalities or more than64 physical graphs.
+[Full evidence and reproduction](query-performance-evidence/2026-11-11/complex-p95/attempt318/README.md)
+retain all samples, limits, source proof, raw logs and checksum-pinned external archives.

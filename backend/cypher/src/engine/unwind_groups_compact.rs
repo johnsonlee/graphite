@@ -311,7 +311,9 @@ fn accumulate<const WIDE: bool>(
                 }
                 group.provenance |= prepared.provenance[source];
                 for (at, &id) in prepared.provenance_high[source].iter().enumerate() {
-                    if at & 1023 == 0 {
+                    // The pair loop already polls cancellation through tick;
+                    // add direct checks only within long inner loops.
+                    if at != 0 && at & 1023 == 0 {
                         ex.cancel.check()?;
                     }
                     extra.insert(

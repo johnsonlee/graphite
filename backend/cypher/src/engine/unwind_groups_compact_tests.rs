@@ -237,7 +237,9 @@ fn one_source_merges_multiple_high_provenance_words_and_keeps_pairs_separate() {
     for dialect in [CypherDialect::Graphite, CypherDialect::OpenCypherM23] {
         let ex = Executor::new(vec![], true).with_dialect(dialect);
         let mut all = seed("g", &["a", "b"], None);
-        let names: Vec<_> = (0..130).map(|i| format!("p{i:04}")).collect();
+        // More than 1024 high-word memberships exercises the periodic inner
+        // cancellation-check boundary as well as the first contribution.
+        let names: Vec<_> = (0..1154).map(|i| format!("p{i:04}")).collect();
         for name in &names {
             add_provenance_id(&mut all, Arc::from(name.as_str()));
         }
