@@ -102,3 +102,33 @@ Each optimization attempt is a separate commit and chronological history entry;
 retain independently beneficial increments while reporting unresolved constraints.
 No claimed production recovery or formal performance pass can be inferred merely
 from a clean PR or a controller's successful exit status.
+
+## Amendment before Attempt316 measurement
+
+The original main baseline failed during the unchanged60s-server/70s-client
+warmup, before any pressure sample. Preserve that failure; do not repeatedly run
+it to manufacture a percentile. It cannot provide a numerical P95 recovery or a
+matched complete mixed-pressure CPU comparison. Attempt315 provides an incremental
+reference only if its full pilot completes; it is not the accepted original main.
+
+Observed Attempt315 pilot throughput (80/120 completed at approximately304s,
+including startup and warmup) puts three100-request paired rounds on a roughly
+multi-hour critical path. To keep feedback short without presenting reduced
+sampling as equivalent precision, use this amended, predeclared sequence:
+
+- Three paired20-request-per-case rounds in AB/BA/AB order for incremental
+  screening and variability, with per-round rank19 P95 and no pooling.
+- One separate paired100-request-per-case confirmation in BA order for the final
+  retained cumulative candidate against the retained working incremental reference.
+  It includes all six cases and the same concurrency, full results and resource
+  boundaries. This confirmation is required independently of whether the20-sample
+  result looks favorable; it is not conditional on selecting a favorable statistic.
+- Retain each round's complete evidence and all prior failed arms. The100-sample
+  confirmation is not three independent100-sample rounds; disclose that uncertainty.
+  Neither incremental reference nor sample-count amendment permits a claim that
+  original-main pressure P95/CPU recovery was measured when that baseline failed.
+
+This changes statistical precision and execution cost, not query scope, semantic
+coverage, request completeness, timeout/capacity behavior or resource allowances.
+If a candidate cannot complete the declared workload or satisfy available matching
+resource checks, report that outcome rather than relaxing the protocol again.
