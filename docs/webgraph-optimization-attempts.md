@@ -24075,3 +24075,48 @@ location of final per-workload correctness/stability/P50/P95/CPU/RSS and E2E-sco
 conclusions; incremental pilots above are not its substitute. Product code is
 frozen while remote CI and this final validation run independently; PR readiness
 requires both, and no data is rewritten to turn an adverse observation into PASS.
+
+### Attempt325 — bound OPTIONAL seed cancellation polling (2026-11-12)
+
+**Review and hypothesis.** PR214 review found direct cancellation/deadline checks
+for every admission row and every OPTIONAL seed. Poll at index0 and every1024
+rows, with completion checks and checks before rejected admission. Keep seed
+polling independently of matcher edge polling so isolated nodes cannot starve
+cancellation. Existing ancestor work-budget rejection and matcher checks remain
+unchanged. The review's small stack sample is a diagnostic, not performance
+acceptance or a promised latency gain.
+
+**Declared validation and feedback.** Parent runtime is Attempt324 (868158af),
+represented by integrated PR head d03ddd5a; accepted baseline69ba5f30 and current
+main3e74abf4 have identical product runtime sources. Run module tests, all-target
+lint and explicit real-fixture parity first; then one cumulative baseline/candidate
+real64 BA100 complex-query pair and the existing73-case AB regression protocol.
+Every request spans all64 physical real graphs, concurrency4, complete response
+consumption; retain every sample and failure, nearest-rank per-case P50/P95, and
+separate load/query CPU and kernel peak RSS with independent+5% limits. No new
+single-graph performance evidence or parent-relative tiny-gain stabilization runs.
+Reuse the unchanged trusted controller, sealed fixture and baseline binary proofs;
+freeze the candidate before measurement and avoid concurrent local builds. Expected
+critical path is a few minutes for correctness/build plus roughly25 minutes for
+complex measurement and a few minutes for regression, parallel with hosted CI.
+
+The separate CI review fix explicitly names the OPTIONAL, two-hop and degree
+real-fixture parity tests in the existing GRAPHITE_INDEX_FIXTURE step; it does not
+change product code. Correctness, stability, latency, CPU/RSS and retention results
+for325 are pending until the frozen candidate is validated. Earlier immutable
+measurements remain historical and do not describe this polling change.
+
+Local correctness:466 module/integration tests pass, including deterministic
+2051-sink-seed compact/streamed/generic parity in both dialects and empty/short
+input cancellation/deadline checks. All three newly wired fixture tests also pass
+with real Tika shard00 loaded explicitly. Format and the CI-profile all-target
+Clippy gate pass. An extra release-profile Clippy invocation failed on two
+unchanged aggregate_state.rs constant assertions; its log is retained separately
+and it is not represented as a passing check. The new polling code does not alter
+those assertions or release overflow behavior.
+
+Frozen source/binary identities, final measured outcomes and exact-head CI will
+be retained in the [review325 evidence appendix](https://github.com/johnsonlee/graphite/releases/tag/benchmark-evidence-seconds-p95-review325-2026-11-12).
+This link is pending publication while validation runs; it is not a declaration
+of acceptance. The appendix will retain failures and separate performance/resource
+conclusions rather than replacing historical measurements.

@@ -103,12 +103,18 @@ impl<'a> Plan<'a> {
     }
 
     fn total_inputs(&self, ex: &Executor, rows: &[Row]) -> CypherResult<bool> {
-        for row in rows {
-            ex.cancel.check()?;
+        // Admission can scan millions of seeds without entering the matcher.
+        // Poll at entry, bounded row intervals, and completion like finalization.
+        for (index, row) in rows.iter().enumerate() {
+            if index & 1023 == 0 {
+                ex.cancel.check()?;
+            }
             if row.contains_key(self.target) || row.contains_key(INTERNAL_WEIGHT_KEY) {
+                ex.cancel.check()?;
                 return Ok(false);
             }
             let Some(Value::Node(node)) = row.get(self.source) else {
+                ex.cancel.check()?;
                 return Ok(false);
             };
             let valid = match &ex.property_graph {
@@ -119,9 +125,11 @@ impl<'a> Plan<'a> {
                     .is_some_and(|source| source.graph.has_node(node.id)),
             };
             if !valid {
+                ex.cancel.check()?;
                 return Ok(false);
             }
         }
+        ex.cancel.check()?;
         Ok(true)
     }
 }
@@ -251,8 +259,11 @@ pub(super) fn try_execute(
     if let Some(mut groups) = CompactGroups::build(ex, &plan) {
         #[cfg(test)]
         COMPACT_HITS.with(|hits| hits.set(hits.get() + 1));
-        for mut seed in std::mem::take(rows) {
-            ex.cancel.check()?;
+        // Keep seed polling even though the matcher polls edges: sinks have none.
+        for (index, mut seed) in std::mem::take(rows).into_iter().enumerate() {
+            if index & 1023 == 0 {
+                ex.cancel.check()?;
+            }
             let mut produced = false;
             matcher.match_patterns(&seed, plan.patterns, &mut |row| {
                 produced = true;
@@ -293,8 +304,10 @@ pub(super) fn try_execute(
     };
     // Ownership transfers only after admission. Release seeds as their matches
     // finish rather than retaining the entire initial MATCH during aggregation.
-    for mut seed in std::mem::take(rows) {
-        ex.cancel.check()?;
+    for (index, mut seed) in std::mem::take(rows).into_iter().enumerate() {
+        if index & 1023 == 0 {
+            ex.cancel.check()?;
+        }
         let mut produced = false;
         matcher.match_patterns(&seed, plan.patterns, &mut |row| {
             produced = true;

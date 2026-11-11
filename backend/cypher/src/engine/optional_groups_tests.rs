@@ -340,6 +340,33 @@ fn compact_native_counts_keep_sinks_duplicates_source_identity_and_provenance() 
             seed(1, 2, None),
             seed(1, 2, None),
         ];
+        // Bound isolated nodes do not tick the native edge matcher. Exercise
+        // more than two seed-poll intervals, including a nonempty remainder,
+        // without using time or thread scheduling as a correctness oracle.
+        let sinks: Vec<_> = (0..2051)
+            .map(|index| seed((index % 2) as _, 2, Some("sink")))
+            .collect();
+        let sink_clauses = parse(&format!("{WITH} RETURN graph, source, degree")).unwrap();
+        let before = COMPACT_HITS.with(|hits| hits.get());
+        let sink_result = ex.run_segment_seeded(&sink_clauses, sinks.clone()).unwrap();
+        assert!(COMPACT_HITS.with(|hits| hits.get()) > before);
+        same(
+            &sink_result,
+            &streamed(|| ex.run_segment_seeded(&sink_clauses, sinks.clone())).unwrap(),
+        );
+        same(
+            &sink_result,
+            &original(|| ex.run_segment_seeded(&sink_clauses, sinks)).unwrap(),
+        );
+        assert_eq!(sink_result.rows.len(), 2);
+        for (index, row) in sink_result.rows.iter().enumerate() {
+            assert_eq!(row["graph"].as_str(), Some("same"));
+            assert!(
+                matches!(row["source"], Value::Node(node) if node.source as usize == index && node.id == 2)
+            );
+            assert!(matches!(row["degree"], Value::Int(0)));
+            assert_eq!(QueryResult::graph_ids(row), ["sink"]);
+        }
         let query = format!("{WITH} RETURN graph, source, degree");
         let clauses = parse(&query).unwrap();
         let before = COMPACT_HITS.with(|hits| hits.get());
@@ -508,4 +535,28 @@ fn compact_optional_finalizes_zero_and_overflow_groups_and_checks_cancellation()
         groups.finish(&cancelled),
         Err(CypherError::Cancelled)
     ));
+}
+
+#[test]
+fn admission_observes_cancel_and_deadline_for_empty_and_short_inputs() {
+    let clauses = parse(WITH).unwrap();
+    let plan = Plan::build(&clauses).unwrap();
+    for size in [0, 1, 17] {
+        let ex = fixture(CypherDialect::Graphite);
+        let rows = ex.execute("MATCH(a:CallSite) RETURN a", None).unwrap().rows;
+        let seeds = vec![rows[0].clone(); size];
+        let token = CancelToken::new();
+        token.cancel();
+        let cancelled = ex.with_cancel(token);
+        assert!(matches!(
+            plan.total_inputs(&cancelled, &seeds),
+            Err(CypherError::Cancelled)
+        ));
+        // A zero deadline is already expired; no sleep or race is required.
+        let expired = fixture(CypherDialect::Graphite).with_cancel(CancelToken::with_timeout(0));
+        assert!(matches!(
+            plan.total_inputs(&expired, &seeds),
+            Err(CypherError::Timeout(0))
+        ));
+    }
 }
