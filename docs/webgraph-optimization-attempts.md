@@ -23928,3 +23928,24 @@ confirmation,5–10min for73-case regression and35–40min final CI. No competin
 builds/archive work during measurement. Targeted correctness passed6 tests including
 explicit real Tika two-source admission/parity in both dialects; isolated module,
 lint, resource and latency evidence remain pending and must precede acceptance.
+
+
+### Attempt320 — compact physical source degree groups (2026-11-11)
+
+**Hypothesis.** The degree histogram already streams MATCH into WITH. Replace
+only its first-level generic aggregate key/state with an encounter-ordered map
+keyed by physical NodeRef for the exact CallSite→DATAFLOW source graphId/node/
+count(*) shape. Evaluate deterministic graphId once per source, retain shared
+matcher traversal, DeferredCount overflow and provenance, and leave the second
+histogram stage unchanged. Distinct physical sources remain distinct even when
+external graph IDs coincide. Unsupported shapes, property graphs, nonempty seeds
+and inherited work budgets retain generic execution.
+
+**Protocol and current evidence.** Incremental parent is319(2f40f4fb), cumulative
+baseline is merged69ba5f30. Apply319's declared real64 six-case AB20 pilot protocol
+and5% independent loading/query CPU/RSS limits, then cumulative BA100 and73-case
+validation. Four focused tests passed, including explicit real Tika multi-source
+parity in both dialects, cross mode, LIMIT0/SKIP, shape rejection, deferred overflow
+and cancellation; this does not establish performance. Isolated commit validation
+and matched measurements remain pending. No duplicate streaming-fusion benefit is
+claimed and no single-graph performance evidence is used.
