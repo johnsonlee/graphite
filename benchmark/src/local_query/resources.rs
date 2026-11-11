@@ -3,9 +3,37 @@ use anyhow::{Context, Result};
 use serde_json::{json, Value};
 
 #[cfg(target_os = "macos")]
+fn mach_timebase() -> Result<(u32, u32)> {
+    #[repr(C)]
+    struct Timebase {
+        numer: u32,
+        denom: u32,
+    }
+    unsafe extern "C" {
+        fn mach_timebase_info(info: *mut Timebase) -> i32;
+    }
+    let mut info = Timebase { numer: 0, denom: 0 };
+    let status = unsafe { mach_timebase_info(&mut info) };
+    anyhow::ensure!(
+        status == 0 && info.numer > 0 && info.denom > 0,
+        "mach_timebase_info failed: {status}, {}/{}",
+        info.numer,
+        info.denom
+    );
+    Ok((info.numer, info.denom))
+}
+
+#[cfg(target_os = "macos")]
+fn mach_seconds(ticks: u64, numer: u32, denom: u32) -> f64 {
+    ticks as f64 * f64::from(numer) / f64::from(denom) / 1e9
+}
+
+#[cfg(target_os = "macos")]
 pub fn snapshot(pid: u32) -> Result<Value> {
     // Darwin rusage_info_v2: UUID followed by eighteen uint64 fields. The ABI
-    // uses nanoseconds for CPU and bytes for resident size (not ru_maxrss).
+    // returns CPU in Mach absolute-time ticks, not nanoseconds. On Apple Silicon
+    // the timebase is commonly 125/3; assuming 1/1 silently undercounts CPU.
+    // Resident size is bytes. wait4's timeval CPU uses seconds/microseconds.
     #[repr(C)]
     struct Info {
         uuid: [u8; 16],
@@ -24,9 +52,14 @@ pub fn snapshot(pid: u32) -> Result<Value> {
         "proc_pid_rusage({pid}): {}",
         std::io::Error::last_os_error()
     );
-    Ok(json!({"pid":pid,"userSeconds":info.fields[0] as f64 / 1e9,
-        "systemSeconds":info.fields[1] as f64 / 1e9,"residentBytes":info.fields[6],
-        "residentMetric":"instantaneous RSS, not peak","source":"proc_pid_rusage v2"}))
+    let (numer, denom) = mach_timebase()?;
+    Ok(
+        json!({"pid":pid,"userSeconds":mach_seconds(info.fields[0], numer, denom),
+        "systemSeconds":mach_seconds(info.fields[1], numer, denom),"residentBytes":info.fields[6],
+        "rawUserTicks":info.fields[0],"rawSystemTicks":info.fields[1],
+        "cpuTimeUnit":"Mach absolute-time ticks","timebaseNumer":numer,"timebaseDenom":denom,
+        "residentMetric":"instantaneous RSS, not peak","source":"proc_pid_rusage v2"}),
+    )
 }
 
 #[cfg(target_os = "linux")]
@@ -79,6 +112,45 @@ pub fn lifetime(usage: &libc::rusage) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn mach_cpu_conversion_matches_independent_getrusage_bracket() {
+        fn self_cpu() -> f64 {
+            let mut usage: libc::rusage = unsafe { std::mem::zeroed() };
+            assert_eq!(unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) }, 0);
+            lifetime(&usage)["cpuSeconds"].as_f64().unwrap()
+        }
+        // Ensure enough CPU has accrued to expose a wrong timebase even when
+        // this test is the only selected test. This is an accounting correctness
+        // test; elapsed durations are not benchmark or performance evidence.
+        let start = self_cpu();
+        let mut state = 1u64;
+        while self_cpu() - start < 0.02 {
+            for _ in 0..10_000 {
+                state =
+                    std::hint::black_box(state.wrapping_mul(6364136223846793005).wrapping_add(1));
+            }
+        }
+        std::hint::black_box(state);
+        let before = self_cpu();
+        let snapshot = snapshot(std::process::id()).unwrap();
+        let after = self_cpu();
+        let observed =
+            snapshot["userSeconds"].as_f64().unwrap() + snapshot["systemSeconds"].as_f64().unwrap();
+        // Kernel accounting samples may differ by a microsecond of rounding.
+        assert!(
+            observed >= before - 0.001 && observed <= after + 0.001,
+            "CPU snapshot {observed} outside getrusage bracket {before}..{after}: {snapshot}"
+        );
+        let (numer, denom) = mach_timebase().unwrap();
+        assert_eq!(snapshot["timebaseNumer"], numer);
+        assert_eq!(snapshot["timebaseDenom"], denom);
+        assert_eq!(
+            snapshot["userSeconds"].as_f64().unwrap(),
+            mach_seconds(snapshot["rawUserTicks"].as_u64().unwrap(), numer, denom)
+        );
+        assert_eq!(mach_seconds(24_000_000, 125, 3), 1.0);
+    }
     #[test]
     fn process_snapshot_and_cpu_units() {
         let a = snapshot(std::process::id()).unwrap();
