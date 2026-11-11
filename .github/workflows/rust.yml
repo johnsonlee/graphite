@@ -26,6 +26,59 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    # Resolve native build dependencies before spending time compiling and testing.
+    - name: Install musl build tools
+      run: |
+        # Fetch through an independent mirror when the default Ubuntu hosts fail DNS.
+        # Keep Ubuntu archive signature verification and leave host repositories intact.
+        ci_ubuntu_apt_dir=$(mktemp -d "${RUNNER_TEMP}/ubuntu-musl-apt.XXXXXX")
+        chmod 755 "$ci_ubuntu_apt_dir"
+        mkdir -p "$ci_ubuntu_apt_dir/empty-sourceparts" "$ci_ubuntu_apt_dir/lists/partial"
+        cat > "$ci_ubuntu_apt_dir/ubuntu.sources" <<'EOF'
+        Types: deb
+        URIs: https://mirrors.edge.kernel.org/ubuntu
+        Suites: noble noble-updates noble-security
+        Components: main universe
+        Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+        EOF
+        apt_options=(
+          -o "Dir::Etc::sourcelist=$ci_ubuntu_apt_dir/ubuntu.sources"
+          -o "Dir::Etc::sourceparts=$ci_ubuntu_apt_dir/empty-sourceparts"
+          -o "Dir::State::lists=$ci_ubuntu_apt_dir/lists"
+          -o Acquire::Retries=0
+          -o Acquire::http::Timeout=30
+          -o Acquire::https::Timeout=30
+        )
+        for attempt in 1 2 3; do
+          echo "Installing musl build tools (attempt ${attempt}/3)"
+          if sudo apt-get "${apt_options[@]}" update --error-on=any &&
+            sudo apt-get "${apt_options[@]}" install -y -q musl-tools; then
+            exit 0
+          else
+            install_status=$?
+          fi
+          if [ "${attempt}" -lt 3 ]; then
+            echo "Package refresh/install failed (exit ${install_status}); retrying"
+            sleep "$((attempt * 5))"
+          fi
+        done
+        echo "musl-tools setup failed after 3 attempts (exit ${install_status}); checking runner DNS"
+        cat /etc/resolv.conf || true
+        if command -v resolvectl >/dev/null 2>&1; then
+          timeout 5s resolvectl status || true
+        fi
+        for host in mirrors.edge.kernel.org azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
+          echo "DNS lookup as runner: ${host}"
+          timeout 5s getent ahosts "${host}" || true
+          echo "DNS lookup as root: ${host}"
+          sudo timeout 5s getent ahosts "${host}" || true
+          if id -u _apt >/dev/null 2>&1; then
+            echo "DNS lookup as _apt: ${host}"
+            sudo -u _apt timeout 5s getent ahosts "${host}" || true
+          fi
+        done
+        exit "${install_status}"
+
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
@@ -62,27 +115,6 @@ jobs:
       env:
         CC_x86_64_unknown_linux_musl: musl-gcc
       run: |
-        # Fetch through an independent mirror when the default Ubuntu hosts fail DNS.
-        # Keep Ubuntu archive signature verification and leave host repositories intact.
-        ci_ubuntu_apt_dir=$(mktemp -d "${RUNNER_TEMP}/ubuntu-musl-apt.XXXXXX")
-        chmod 755 "$ci_ubuntu_apt_dir"
-        mkdir -p "$ci_ubuntu_apt_dir/empty-sourceparts" "$ci_ubuntu_apt_dir/lists/partial"
-        cat > "$ci_ubuntu_apt_dir/ubuntu.sources" <<'EOF'
-        Types: deb
-        URIs: https://mirrors.edge.kernel.org/ubuntu
-        Suites: noble noble-updates noble-security
-        Components: main universe
-        Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
-        EOF
-        apt_scope=(
-          -o "Dir::Etc::sourcelist=$ci_ubuntu_apt_dir/ubuntu.sources"
-          -o "Dir::Etc::sourceparts=$ci_ubuntu_apt_dir/empty-sourceparts"
-          -o "Dir::State::lists=$ci_ubuntu_apt_dir/lists"
-          -o Acquire::Retries=3
-          -o APT::Update::Error-Mode=any
-        )
-        sudo apt-get "${apt_scope[@]}" update -q
-        sudo apt-get "${apt_scope[@]}" install -y -q musl-tools
         cargo build --release --locked --target x86_64-unknown-linux-musl -p graphite-cli
         bun .github/scripts/checks/static-link.ts target/x86_64-unknown-linux-musl/release/graphite
         mkdir -p release-assets/linux/amd64
