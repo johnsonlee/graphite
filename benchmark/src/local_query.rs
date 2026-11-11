@@ -34,6 +34,8 @@ pub enum Order {
 #[serde(rename_all = "kebab-case")]
 pub enum Workload {
     Complex,
+    /// Same six real64 cases, with caller rather than graph distinctness in co-use.
+    ComplexWideDistinct,
     Regression,
 }
 impl Workload {
@@ -63,7 +65,7 @@ pub struct LocalQueryArgs {
     pub mode: Mode,
     #[arg(long, value_enum, default_value = "ab")]
     pub order: Order,
-    /// Fixed six analytical queries or the unchanged 73-case query regression catalog.
+    /// Fixed analytical queries (including a wide distinct variant) or 73 regression cases.
     #[arg(long, value_enum, default_value = "complex")]
     pub workload: Workload,
 }
@@ -115,6 +117,24 @@ fn cases() -> Result<Vec<Case>> {
             selectivity: "complex-local".into(),
         })
         .collect())
+}
+
+fn wide_distinct_cases() -> Result<Vec<Case>> {
+    let mut cases = cases()?;
+    let case = cases
+        .iter_mut()
+        .find(|case| case.id == "bi-dependency-co-use")
+        .context("Missing co-use case")?;
+    let original = "count(DISTINCT graph) AS graphs";
+    ensure!(
+        case.query.matches(original).count() == 1,
+        "Co-use shape changed"
+    );
+    case.query = case
+        .query
+        .replace(original, "count(DISTINCT caller) AS callers");
+    case.id = "bi-dependency-co-use-wide-distinct".into();
+    Ok(cases)
 }
 
 fn files(directory: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
@@ -192,10 +212,11 @@ fn start(
         std::net::TcpListener::bind(("127.0.0.1", PORT)).is_ok(),
         "Native server port already occupied"
     );
+    let port = PORT.to_string();
     let mut args: Vec<OsString> = [
         "serve",
         "--port",
-        "18080",
+        port.as_str(),
         "--cypher-max-timeout-ms",
         "60000",
         "--max-concurrent-cypher",
@@ -550,7 +571,7 @@ pub fn run(args: &LocalQueryArgs) -> Result<bool> {
         "availableParallelism":std::thread::available_parallelism().ok().map(|n|n.get()),
         "backgroundLoad":"uncontrolled; record external observations separately; controller does not stop other processes"},
         "performanceAcceptance":false,"complete":false,"arms":{},"errors":[],
-        "protocol":{"graphs":64,"cases":if matches!(args.workload,Workload::Complex){6}else{73},"concurrency":4,"firstUsePerCase":1,"warmupPerCase":if matches!(args.mode,Mode::Smoke){0}else{2},
+        "protocol":{"graphs":64,"cases":if matches!(args.workload,Workload::Regression){73}else{6},"concurrency":4,"firstUsePerCase":1,"warmupPerCase":if matches!(args.mode,Mode::Smoke){0}else{2},
         "pressurePerCase":args.workload.pressure(args.mode),"isolatedPerCase":if matches!(args.workload,Workload::Regression){40}else{0},"isolatedThresholdMs":100,"serverTimeoutMs":60000,"clientTimeoutMs":70000,"percentiles":"nearest rank per case; preserve all failures",
         "cache":"filesystem cache uncontrolled; fixture hashing precedes runs; load-only process precedes query process except smoke",
         "boundary":"complete HTTP response; closed-loop workers validate before next request; not saturation",
@@ -563,6 +584,7 @@ pub fn run(args: &LocalQueryArgs) -> Result<bool> {
         let sources = source_inputs(&args.manifest, &manifest.graphs)?;
         let cases = match args.workload {
             Workload::Complex => cases()?,
+            Workload::ComplexWideDistinct => wide_distinct_cases()?,
             Workload::Regression => catalog(&manifest)?,
         };
         report["sourceInputs"] = sources;
@@ -630,6 +652,7 @@ pub fn run(args: &LocalQueryArgs) -> Result<bool> {
         if let Ok(manifest) = read_manifest(&args.manifest) {
             let catalog = match args.workload {
                 Workload::Complex => cases(),
+                Workload::ComplexWideDistinct => wide_distinct_cases(),
                 Workload::Regression => catalog(&manifest),
             };
             if let Ok(cases) = catalog {
@@ -663,6 +686,29 @@ mod tests {
             .query
             .contains("UNWIND targets AS left_target UNWIND targets AS right_target")));
         assert!(cases.iter().all(|c| c.query.matches("LIMIT").count() == 1));
+    }
+    #[test]
+    fn wide_distinct_workload_changes_only_the_co_use_distinct_operand() {
+        let original = cases().unwrap();
+        let wide = wide_distinct_cases().unwrap();
+        assert_eq!(wide.len(), original.len());
+        for (original, wide) in original.iter().zip(&wide) {
+            if original.id == "bi-dependency-co-use" {
+                assert_eq!(wide.id, "bi-dependency-co-use-wide-distinct");
+                assert_eq!(
+                    wide.query,
+                    original.query.replace(
+                        "count(DISTINCT graph) AS graphs",
+                        "count(DISTINCT caller) AS callers"
+                    )
+                );
+            } else {
+                assert_eq!(wide.id, original.id);
+                assert_eq!(wide.query, original.query);
+            }
+        }
+        assert_eq!(Workload::ComplexWideDistinct.pressure(Mode::Pilot), 20);
+        assert_eq!(Workload::ComplexWideDistinct.pressure(Mode::Measure), 100);
     }
     #[test]
     fn summary_never_passes_missing_or_failed_evidence() {

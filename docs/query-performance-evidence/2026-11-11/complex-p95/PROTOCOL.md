@@ -132,3 +132,27 @@ This changes statistical precision and execution cost, not query scope, semantic
 coverage, request completeness, timeout/capacity behavior or resource allowances.
 If a candidate cannot complete the declared workload or satisfy available matching
 resource checks, report that outcome rather than relaxing the protocol again.
+
+## Predeclared Attempt317 follow-up
+
+Compare retained Attempt316 (A) with Attempt317 (B), using the same sealed real64
+inputs and complete result-consumption boundary. Before measurement, declare:
+
+- Original `complex`: AB pilot with20 pressure samples per case, followed by a
+  separate BA measure confirmation with100 per case. Keep the two rounds separate.
+- `complex-wide-distinct`: AB pilot with20 pressure samples per case. This fixed
+  variant changes only co-use to `count(DISTINCT caller) AS callers`; the other
+  five cases remain unchanged. It targets all64 real graphs, not65/130 graphs.
+  Preserve full typed responses proving a caller dictionary beyond64 values
+  (and beyond512 if observed), or an independent untimed cardinality check.
+- The server/client deadlines remain60/70seconds. If a baseline arm fails, retain
+  every issued request and failure; no success-only P95 or matched full resource
+  comparison is available. A subsequent BA or candidate-only run may establish
+  completion and preserve observations, but cannot repair the missing baseline
+  distribution or establish comparative performance acceptance.
+
+All existing loading/query CPU and lifetime RSS boundaries, fixed warmups,
+correctness requirements and5% independent resource limits remain in force.
+The new wider-dictionary workload must not be pooled with the original six-case
+measurements. Physical65/130-graph tests remain separate correctness coverage
+unless representative real persisted inputs and a performance protocol exist.

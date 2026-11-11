@@ -86,7 +86,25 @@ benchmark machine is required.
 
 ## Timing protocol
 
-### Local saved-graph query diagnostics
+The current main-branch catalog contains 73 multi-graph cases. Each revision uses a fresh server,
+one complete oracle pass, two warmups per case and twenty measured requests per case at four
+workers. Requests are interleaved by round. Cases whose pressure p50 is below 100 ms receive
+forty additional isolated requests; this is a fixed sampling rule, not a pass threshold.
+Isolated and concurrent results remain separate. If only one revision qualifies for isolated
+sampling, the report does not invent a paired delta.
+
+Report each case's nearest-rank p50/p95 separately. Do not pool different query cases. Latency
+ends after the complete HTTP body is read; response validation, hashing and artifact writes
+are retained as client-cycle diagnostics outside that latency. Report registry-ready time and
+startup through the first complete oracle pass separately so deferred initialization stays visible.
+The JMH construction result includes its complete usable-save/readback boundary.
+
+Every comparison shows base/head milliseconds, absolute difference, percentage, method and
+sample count. A zero baseline has no defined percentage change. Missing or incomparable values
+are `UNAVAILABLE`, never zero. Hosted-runner timings are observations affected by environment
+noise; they do not establish performance regression acceptance or recovery.
+
+## Local saved-graph query diagnostics
 
 `local-query` is a separate development command for an existing trusted real64
 manifest. It does not rebuild frontend graphs or change `run`, the required
@@ -118,6 +136,20 @@ The local command fixes server timeout at 60 seconds and client timeout at
 64 registered graphs and consumes the complete response. Workers validate and
 write artifacts before taking the next task; this is not a saturation test.
 
+`--workload complex-wide-distinct` (`Workload::ComplexWideDistinct`) is a separate
+fixed six-case workload. Five cases are unchanged; co-use becomes
+`bi-dependency-co-use-wide-distinct`, replacing only
+`count(DISTINCT graph) AS graphs` with `count(DISTINCT caller) AS callers`.
+This exercises a wider distinct-value dictionary on the same real64 inputs;
+it does **not** measure 65 or 130 physical graphs. Retain a complete response with
+`callers > 64` (and, when observed, `> 512`), or an independent untimed dictionary
+cardinality check, as evidence that the changed path was exercised. A workload
+name alone does not prove dictionary width. Modes, sample counts, four workers,
+and fixed 60/70-second timeouts are the same as `complex`. Do not combine samples
+or compare latencies across the two workloads. Preserve a failed baseline and
+mark its percentiles/resources unavailable for paired comparison; a completed
+candidate-only run does not create a baseline.
+
 Input manifest/source provenance checks are shared with `run`. All saved files
 are hashed once before execution, paths/sizes/modification times are checked
 after each arm, and binary/catalog hashes are retained. The same saved inputs
@@ -127,7 +159,8 @@ server's first query sequence, **not disk-cold inputs or independent cold reques
 Use a release-built controller for measurements and avoid concurrent compilation.
 
 On macOS, `proc_pid_rusage` supplies server user/system CPU and instantaneous RSS;
-Linux uses `/proc`. `wait4` supplies exact child lifetime CPU and kernel peak RSS
+Linux uses `/proc`. Darwin CPU raw Mach ticks are converted to seconds with
+`mach_timebase_info`; raw ticks and the conversion ratio are retained. `wait4` supplies exact child lifetime CPU and kernel peak RSS
 (Darwin bytes, Linux KiB converted to bytes). Pilot/measure run a separate
 load-only server to obtain a loading-only kernel peak. The query process's peak
 includes its own loading, first use, warmup and pressure (and regression isolated
@@ -144,24 +177,6 @@ nearest-rank p50/p95 and every failure; it cannot approve the CPU/RSS 5% bounds,
 correctness/stability or production P95 recovery by itself. Smoke's one first-use
 observation is not a percentile distribution. No synthetic or single-graph
 performance execution is supported.
-
-The current main-branch catalog contains 73 multi-graph cases. Each revision uses a fresh server,
-one complete oracle pass, two warmups per case and twenty measured requests per case at four
-workers. Requests are interleaved by round. Cases whose pressure p50 is below 100 ms receive
-forty additional isolated requests; this is a fixed sampling rule, not a pass threshold.
-Isolated and concurrent results remain separate. If only one revision qualifies for isolated
-sampling, the report does not invent a paired delta.
-
-Report each case's nearest-rank p50/p95 separately. Do not pool different query cases. Latency
-ends after the complete HTTP body is read; response validation, hashing and artifact writes
-are retained as client-cycle diagnostics outside that latency. Report registry-ready time and
-startup through the first complete oracle pass separately so deferred initialization stays visible.
-The JMH construction result includes its complete usable-save/readback boundary.
-
-Every comparison shows base/head milliseconds, absolute difference, percentage, method and
-sample count. A zero baseline has no defined percentage change. Missing or incomparable values
-are `UNAVAILABLE`, never zero. Hosted-runner timings are observations affected by environment
-noise; they do not establish performance regression acceptance or recovery.
 
 ## GitHub integration
 
