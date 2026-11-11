@@ -23354,3 +23354,46 @@ conclusions separate per operation/workload/pair with independent5% resource lim
 Review core outcomes before another final Apple three-graph comparison. Source tests
 are correctness evidence only. The attachment's experiment-history copy records
 actual measurements and retention decisions; this entry claims no measured recovery.
+
+### Attempt315 — stream proven string-pair UNWIND aggregation (2026-11-11)
+
+**Baseline and scope.** Native baseline `58215b98` was independently built from
+`a911529a` (only workload/tests/docs added) with Rust1.93.0 in a private physical
+Cargo target. Binary SHA256 is
+`8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c`.
+Use the same real64 saved head graphs from PR211 for both implementations;
+manifest SHA256
+`ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf`.
+The [predeclared local protocol](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)
+records source/input boundaries, full response consumption, concurrency4 and
+sampling. User priority is slow/complex-query P95, with P50 diagnostic only;
+correctness, availability and independent CPU/RSS bounds remain in force.
+
+**Observed problem.** Six global64 first-use queries completed. The dependency
+co-use query took46,300.031ms in that diagnostic pass, not a P95 distribution.
+The subsequent baseline pilot failed during warmup: co-use exceeded the70s client
+deadline and another in-flight request was interrupted when the failed stage
+stopped. Query-process lifetime kernel peak RSS was31,360,630,784bytes, including
+loading and executed stages. No pressure samples exist for this pilot; a baseline
+P95 and mixed-pressure CPU comparison are unavailable. Preserve both successful
+smoke and failed pilot; never remove the failing query or label partial work PASS.
+
+**Hypothesis and change.** The exact double-UNWIND/string-pair filter/count shape
+retains huge intermediate row vectors before aggregation. Prove all seeds are
+string lists and two carried strings, with nonshadowing identity projections and
+safe count expressions. Enumerate every original left/right pair in encounter
+order, reuse a projected row, and feed the original aggregate states directly.
+Keep UTF-16 comparison, duplicate multiplicity, first encounters, graph provenance,
+final sorting/SKIP/LIMIT and generic fallback. Decline any work budget, including
+ancestor tokens, so bounded work retains its original charging/error boundary.
+No data change, result truncation, concurrency reduction, or timeout relaxation.
+
+**Correctness and initial decision.** Six focused unit tests, full Cypher module
+433 tests, strict module all-target Clippy and explicit two-source native fixture
+parity passed. The native parity fixture is for correctness only. Independent
+source review checked error ordering, aliases, provenance and cancellation.
+The initial test-only Clippy initializer failure was fixed and retained in the
+session record. Candidate performance remains pending; this entry does not claim
+recovery or waive the failed baseline. The candidate is the commit containing
+this entry; its exact binary identity and measured keep/revert decision will be
+recorded in the local experiment report before PR delivery.
