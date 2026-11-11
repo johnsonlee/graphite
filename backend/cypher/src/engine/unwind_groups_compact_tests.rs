@@ -161,31 +161,92 @@ fn compact_unicode_ranks_aliases_and_provenance_use_their_original_orders() {
 }
 
 #[test]
-fn dictionary_bounds_are_independent_and_fall_back_before_pair_consumption() {
+fn wide_dictionaries_are_independent_and_preserve_word_boundaries() {
+    for dialect in [CypherDialect::Graphite, CypherDialect::OpenCypherM23] {
+        let ex = Executor::new(vec![], true).with_dialect(dialect);
+        for size in [64, 65, 130, 257, 1025] {
+            for (distinct_many, provenance_many) in [(true, true), (true, false), (false, true)] {
+                let mut rows: Vec<_> = (0..size)
+                    .map(|i| {
+                        seed(
+                            &format!("g{}", if distinct_many { i } else { 0 }),
+                            &["b", "a"],
+                            Some(&format!(
+                                "p{:04}",
+                                if provenance_many { size - 1 - i } else { 0 }
+                            )),
+                        )
+                    })
+                    .collect();
+                // Repeat memberships on both sides of each multiword boundary.
+                for i in [0, 63, 64, 127, 128, 256, 1023, 1024] {
+                    if i < size {
+                        rows.push(rows[i].clone());
+                    }
+                }
+                // Another pair must have an independent arena slice, and a
+                // missing provenance must not manufacture a provenance value.
+                rows.push(seed("g0", &["a", "c"], None));
+                let pairs = rows.len() - 1;
+                let result = compare(&ex, &format!("{TAIL} LIMIT 2"), rows.clone(), true);
+                assert_eq!(result.rows.len(), 2);
+                assert!(matches!(result.rows[0]["pairs"], Value::Int(n) if n == pairs as i64));
+                assert!(
+                    matches!(result.rows[0]["graphs"], Value::Int(n) if n == if distinct_many { size as i64 } else { 1 })
+                );
+                let expected: Vec<_> = (0..if provenance_many { size } else { 1 })
+                    .map(|i| format!("p{i:04}"))
+                    .collect();
+                assert_eq!(QueryResult::graph_ids(&result.rows[0]), expected);
+                assert!(matches!(result.rows[1]["pairs"], Value::Int(1)));
+                assert!(matches!(result.rows[1]["graphs"], Value::Int(1)));
+                assert!(!result.rows[1].contains_key(INTERNAL_PROVENANCE_KEY));
+                compare(&ex, &format!("{TAIL} LIMIT 0"), rows, true);
+            }
+        }
+    }
+}
+
+#[test]
+fn sparse_masks_store_only_present_words_without_an_admission_cap() {
     let ex = Executor::new(vec![], true);
-    let query = format!("{TAIL} LIMIT 1");
-    let rows: Vec<_> = (0..64)
-        .map(|i| seed(&format!("g{i}"), &["b", "a"], Some(&format!("p{i}"))))
+    let clauses = parse(&format!("{TAIL} LIMIT 2")).unwrap();
+    let plan = PairPlan::build(&clauses).unwrap();
+    let rows: Vec<_> = (0..1025)
+        .map(|i| seed(&format!("g{i}"), &["a", "b"], Some(&format!("p{i}"))))
         .collect();
-    let result = compare(&ex, &query, rows, true);
-    assert!(matches!(result.rows[0]["pairs"], Value::Int(64)));
-    assert!(matches!(result.rows[0]["graphs"], Value::Int(64)));
-    assert_eq!(QueryResult::graph_ids(&result.rows[0]).len(), 64);
-    for rows in [
-        (0..65)
-            .map(|i| seed(&format!("g{i}"), &["a", "b"], Some("one")))
-            .collect(),
-        (0..65)
-            .map(|i| seed("one", &["a", "b"], Some(&format!("p{i}"))))
-            .collect(),
-    ] {
-        let before = super::super::HITS.with(|hits| hits.get());
-        let result = compare(&ex, &query, rows, false);
-        assert!(
-            super::super::HITS.with(|hits| hits.get()) > before,
-            "must retain streaming fallback"
-        );
-        assert!(matches!(result.rows[0]["pairs"], Value::Int(65)));
+    let prepared = prepare(&ex, &plan, &rows).unwrap().unwrap();
+    let mut masks = ExtraMasks::new(prepared.distinct_count, prepared.provenance_names.len());
+    assert!(matches!(masks.storage, MaskStorage::Sparse(_)));
+    let groups = accumulate::<true>(&ex, &prepared, &mut masks).unwrap();
+    assert_eq!(groups.len(), 1);
+    let MaskStorage::Sparse(words) = &masks.storage else {
+        unreachable!()
+    };
+    assert_eq!(words.len(), 32); // 16 occupied high words in each independent dictionary.
+    assert_eq!(
+        masks.distinct_count(&ex, groups[0].distinct, 0).unwrap(),
+        1025
+    );
+    assert_eq!(masks.word(1, 0), 0); // Absent group/word never creates a stored entry.
+    assert_eq!(words.len(), 32);
+}
+
+#[test]
+fn one_source_merges_multiple_high_provenance_words_and_keeps_pairs_separate() {
+    for dialect in [CypherDialect::Graphite, CypherDialect::OpenCypherM23] {
+        let ex = Executor::new(vec![], true).with_dialect(dialect);
+        let mut all = seed("g", &["a", "b"], None);
+        let names: Vec<_> = (0..130).map(|i| format!("p{i:04}")).collect();
+        for name in &names {
+            add_provenance_id(&mut all, Arc::from(name.as_str()));
+        }
+        let rows = vec![all.clone(), seed("g", &["a", "c"], Some("p0064")), all];
+        let result = compare(&ex, &format!("{TAIL} LIMIT 2"), rows, true);
+        assert!(matches!(result.rows[0]["pairs"], Value::Int(2)));
+        assert!(matches!(result.rows[0]["graphs"], Value::Int(1)));
+        assert_eq!(QueryResult::graph_ids(&result.rows[0]), names);
+        assert_eq!(QueryResult::graph_ids(&result.rows[1]), ["p0064"]);
     }
 }
 
@@ -273,6 +334,40 @@ fn bounded_parent_tokens_decline_before_compact_preparation() {
     assert_eq!(result.rows.len(), 1);
     assert_eq!(HITS.with(|hits| hits.get()), before);
     assert_eq!(super::super::HITS.with(|hits| hits.get()), streamed_before);
+}
+
+#[test]
+fn wide_dictionary_cancellation_and_parent_budget_keep_generic_behavior() {
+    let clauses = parse(&format!("{TAIL} LIMIT 2")).unwrap();
+    let rows: Vec<_> = (0..130)
+        .map(|i| seed(&format!("g{i}"), &["a", "b"], Some(&format!("p{i}"))))
+        .collect();
+    for budget in [1, 100, 100_000] {
+        let executor = || {
+            let parent = CancelToken::child_with_limits(CancelToken::new(), 60_000, budget);
+            Executor::new(vec![], true).with_cancel(Arc::new(CancelToken {
+                parent: Some(parent),
+                ..CancelToken::default()
+            }))
+        };
+        let before = HITS.with(|hits| hits.get());
+        let actual = executor().run_segment_seeded(&clauses, rows.clone());
+        let expected = generic(|| executor().run_segment_seeded(&clauses, rows.clone()));
+        match (actual, expected) {
+            (Ok(a), Ok(b)) => same(&a, &b),
+            (Err(a), Err(b)) => assert_eq!(format!("{a:?}"), format!("{b:?}")),
+            other => panic!("different budget outcome: {other:?}"),
+        }
+        assert_eq!(HITS.with(|hits| hits.get()), before);
+    }
+    let token = CancelToken::new();
+    token.cancel();
+    let ex = Executor::new(vec![], true).with_cancel(token);
+    let plan = PairPlan::build(&clauses).unwrap();
+    assert!(matches!(
+        try_execute(&ex, &plan, &clauses, &rows),
+        Err(CypherError::Cancelled)
+    ));
 }
 
 #[test]

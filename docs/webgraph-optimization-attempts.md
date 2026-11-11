@@ -23698,3 +23698,67 @@ After all measurements, local formatting and benchmark module tests passed
 (68 passed,0 failed,1 pre-existing ignored), as did diff checks. Final-HEAD PR
 correctness/OOM CI has not yet run; earlier `f6d2c565` CI applies only to that
 recorded version. No future CI pass is claimed.
+
+### Attempt317 — adaptive multiword pair-group masks (2026-11-11)
+
+**Hypothesis and scope.** Attempt316's independent 64-value distinct and
+provenance dictionaries cause an abrupt return to315's generic group state at
+65 values. Preserve the proven pair-tail admission, ordering, count overflow,
+work-budget fallback and bounded winner materialization while allowing both
+dictionaries to grow independently. The first word stays inline and the
+64-value pair loop is selected once through a const-generic dispatch. Higher
+words use a flat arena when their combined stride is at most eight words;
+larger strides use one sparse map keyed by group index and word index, storing
+only nonzero words. Eight words is a representation choice, not an admission
+limit. No new256-value or other dictionary cutoff is introduced. Distinct
+popcounts occur only for retained winners; all group counts still finish before
+LIMIT, including LIMIT0. Sparse storage avoids allocating the full global
+vocabulary for every pair, but neither bounded output nor sparse masks bound
+pair enumeration or the number of unique groups. Wide-dictionary performance
+and resource behavior remain empirical questions.
+
+**Baseline and candidate.** Compare with frozen316 binary
+`/private/tmp/graphite-attempt316-candidate-c98he5_x/graphite`, SHA256
+`c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374`.
+Candidate source, build log, toolchain and frozen-binary identities will be
+recorded with the317 build; no pre-build commit or embedded identity is implied.
+
+**Correctness before measurement.** Focused pair-tail tests passed17/17;
+complete `graphite-cypher` tests passed444/444 and all-target clippy with
+`-D warnings` passed. Deterministic fixtures assert compact admission and exact
+parity with both retained315 and generic execution in both dialects at64,65,
+130,257 and1025 distinct/provenance values, independently and together. They
+cover duplicate membership, word boundaries, multiple provenance values in one
+source, independent groups, missing provenance, LIMIT0, cancellation and parent
+work budgets. A sparse-path assertion checks actual occupied words without a
+synthetic timing or allocation-performance claim. Existing overflow, UTF16,
+alias, probe and malformed-provenance fallback checks remain in place. The
+real Tika shard loaded under two source IDs is a correctness-only native parity
+check, not evidence for more than64 physical graphs.
+
+**Predeclared representative evaluation.** Use the same pinned real64 manifest
+`/private/tmp/graphite-pr211-final-benchmark/fresh-run/results/frontend/head/graphs/graphs.tsv`,
+complete typed-body consumption and four concurrent workers. First compare316
+and317 with normal six-query AB pilot20 requests per case to assess the common
+64-value path. Separately run a six-query wide-distinct pilot20 per case whose
+co-use tail counts DISTINCT caller rather than graph; its requests still target
+the real64 physical graphs. This tests a wider logical dictionary and must not
+be described as a greater-than64-physical-graph workload. Preserve any316
+fallback timeout/failure rather than manufacturing a comparable percentile.
+A positive normal pilot proceeds to a separate BA100-per-case confirmation;
+keep pilot and confirmation samples separate. Report P95 milliseconds and
+absolute changes first, P50 diagnostically, complete query CPU and lifetime
+kernel peak RSS, plus loading CPU/RSS independently. Each CPU/RSS increase must
+remain within5% of its matching baseline. Existing73-query correctness/OOM CI
+remains required; no repeated local73-query timing loop is added for this narrow
+tail change. No317 latency, CPU/RSS gain or acceptance decision is claimed yet.
+
+**Frozen candidate before commit.** Release CLI build succeeded; binary
+`/private/tmp/graphite-attempt317-candidate-gye0sejo/graphite` has SHA256
+`9238e0d5318a6343d11c42b41bfd6ec711595ee4dc9910a7113a1693382565ce`.
+That directory retains the build log, module test log, product diff and
+`source-manifest.json` with Rust/Cargo source-file hashes, compiler identity and
+source HEAD `10a61f96d40b53594377465dde6847d5f9a7d028` plus the uncommitted317
+change. This is a post-build filesystem snapshot and session build record, not
+embedded commit identity or an independent reproducible-build proof. Explicit
+native Tika two-source parity also passed after the adaptive storage change.

@@ -14,7 +14,7 @@ const MAX_OUTPUT_ROWS: usize = 65_536;
 type Pair = (u32, u32);
 // Smallest rank is best; the max heap exposes the worst retained complete count.
 // Reverse avoids negating i64::MIN after the established release wrapping count.
-type Winner = (Reverse<i64>, u32, u32, u32, u32, u64, u64);
+type Winner = (Reverse<i64>, u32, u32, u32, u32, u64, u64, usize);
 
 #[derive(Default)]
 struct CompactGroup {
@@ -27,9 +27,11 @@ struct Prepared<'a> {
     strings: Vec<&'a str>,
     ranks: Vec<u32>,
     lists: Vec<Vec<u32>>,
-    distinct: Vec<u64>,
+    distinct: Vec<usize>,
     provenance: Vec<u64>,
     provenance_names: Vec<&'a str>,
+    provenance_high: Vec<Vec<usize>>,
+    distinct_count: usize,
 }
 
 fn capacity(plan: &PairPlan<'_>, clauses: &[Clause]) -> Option<usize> {
@@ -55,17 +57,81 @@ fn capacity(plan: &PairPlan<'_>, clauses: &[Clause]) -> Option<usize> {
     (limit <= MAX_OUTPUT_ROWS).then_some(limit)
 }
 
-fn mask<'a>(ids: &mut HashMap<&'a str, u8>, value: &'a str) -> Option<u64> {
-    let next = ids.len();
-    let id = match ids.get(value) {
-        Some(id) => *id,
-        None if next < 64 => {
-            ids.insert(value, next as u8);
-            next as u8
+// This threshold chooses a representation, never query admission. Wide sparse
+// dictionaries must not reserve dictionary-size words for every pair group.
+const DENSE_HIGH_WORDS: usize = 8;
+
+enum MaskStorage {
+    Dense(Vec<u64>),
+    Sparse(HashMap<(usize, usize), u64>),
+}
+
+struct ExtraMasks {
+    storage: MaskStorage,
+    distinct_words: usize,
+    provenance_words: usize,
+}
+
+impl ExtraMasks {
+    fn new(distinct: usize, provenance: usize) -> Self {
+        let distinct_words = distinct.div_ceil(64).saturating_sub(1);
+        let provenance_words = provenance.div_ceil(64).saturating_sub(1);
+        let storage = if distinct_words + provenance_words <= DENSE_HIGH_WORDS {
+            MaskStorage::Dense(Vec::new())
+        } else {
+            MaskStorage::Sparse(HashMap::new())
+        };
+        Self {
+            storage,
+            distinct_words,
+            provenance_words,
         }
-        None => return None,
-    };
-    Some(1u64 << id)
+    }
+
+    fn allocate(&mut self, group: usize) {
+        if let MaskStorage::Dense(words) = &mut self.storage {
+            words.resize(
+                (group + 1) * (self.distinct_words + self.provenance_words),
+                0,
+            );
+        }
+    }
+
+    fn insert(&mut self, group: usize, word: usize, bit: u64) {
+        match &mut self.storage {
+            MaskStorage::Dense(words) => {
+                words[group * (self.distinct_words + self.provenance_words) + word] |= bit;
+            }
+            MaskStorage::Sparse(words) => {
+                *words.entry((group, word)).or_default() |= bit;
+            }
+        }
+    }
+
+    fn word(&self, group: usize, word: usize) -> u64 {
+        match &self.storage {
+            MaskStorage::Dense(words) => {
+                words[group * (self.distinct_words + self.provenance_words) + word]
+            }
+            MaskStorage::Sparse(words) => words.get(&(group, word)).copied().unwrap_or(0),
+        }
+    }
+
+    fn distinct_count(&self, ex: &Executor, inline: u64, group: usize) -> CypherResult<u64> {
+        let mut count = u64::from(inline.count_ones());
+        for word in 0..self.distinct_words {
+            if word & 1023 == 0 {
+                ex.cancel.check()?;
+            }
+            count += u64::from(self.word(group, word).count_ones());
+        }
+        Ok(count)
+    }
+}
+
+fn intern<'a>(ids: &mut HashMap<&'a str, usize>, value: &'a str) -> usize {
+    let next = ids.len();
+    *ids.entry(value).or_insert(next)
 }
 
 fn prepare<'a>(
@@ -89,17 +155,19 @@ fn prepare<'a>(
         distinct: Vec::with_capacity(rows.len()),
         provenance: Vec::with_capacity(rows.len()),
         provenance_names: Vec::new(),
+        provenance_high: Vec::with_capacity(rows.len()),
+        distinct_count: 0,
     };
     for row in rows {
         ex.cancel.check()?;
         let Some(Value::Str(value)) = row.get(distinct_name) else {
             return Ok(None);
         };
-        let Some(bit) = mask(&mut distinct_ids, value.as_ref()) else {
-            return Ok(None);
-        };
-        prepared.distinct.push(bit);
+        prepared
+            .distinct
+            .push(intern(&mut distinct_ids, value.as_ref()));
         let mut provenance = 0u64;
+        let mut provenance_high = Vec::new();
         match row.get(INTERNAL_PROVENANCE_KEY) {
             None => {}
             Some(Value::List(values)) if !values.is_empty() => {
@@ -116,13 +184,16 @@ fn prepare<'a>(
                     }
                     previous = Some(value);
                     let old_len = provenance_ids.len();
-                    let Some(bit) = mask(&mut provenance_ids, value) else {
-                        return Ok(None);
-                    };
+                    ex.cancel.check()?;
+                    let id = intern(&mut provenance_ids, value);
                     if provenance_ids.len() > old_len {
                         prepared.provenance_names.push(value);
                     }
-                    provenance |= bit;
+                    if id < 64 {
+                        provenance |= 1u64 << id;
+                    } else {
+                        provenance_high.push(id);
+                    }
                 }
             }
             // Missing and present-but-empty are observably different in the old
@@ -130,6 +201,7 @@ fn prepare<'a>(
             Some(_) => return Ok(None),
         }
         prepared.provenance.push(provenance);
+        prepared.provenance_high.push(provenance_high);
         let Some(Value::List(values)) = row.get(plan.list) else {
             return Ok(None);
         };
@@ -157,6 +229,7 @@ fn prepare<'a>(
         }
         prepared.lists.push(ids);
     }
+    prepared.distinct_count = distinct_ids.len();
     let mut ordered: Vec<usize> = (0..prepared.strings.len()).collect();
     ordered.sort_by(|&a, &b| compare_utf16(prepared.strings[a], prepared.strings[b]));
     ex.cancel.check()?;
@@ -174,7 +247,7 @@ fn select(
     limit: usize,
 ) -> CypherResult<BinaryHeap<Winner>> {
     let mut winners = BinaryHeap::new();
-    for ((left, right), group) in groups {
+    for (index, ((left, right), group)) in groups.into_iter().enumerate() {
         ex.tick()?;
         // This must precede either LIMIT 0 or heap rejection. Preserve the same
         // first-group overflow boundary as finalize_groups, not a winning subset.
@@ -190,6 +263,7 @@ fn select(
             right,
             group.distinct,
             group.provenance,
+            index,
         );
         if winners.len() < limit {
             winners.push(winner);
@@ -198,6 +272,58 @@ fn select(
         }
     }
     Ok(winners)
+}
+
+fn accumulate<const WIDE: bool>(
+    ex: &Executor,
+    prepared: &Prepared<'_>,
+    extra: &mut ExtraMasks,
+) -> CypherResult<IndexMap<Pair, CompactGroup>> {
+    let mut groups: IndexMap<Pair, CompactGroup> = IndexMap::new();
+    for (source, ids) in prepared.lists.iter().enumerate() {
+        ex.cancel.check()?;
+        for &left in ids {
+            ex.tick()?;
+            for &right in ids {
+                ex.tick()?;
+                if prepared.ranks[left as usize] >= prepared.ranks[right as usize] {
+                    continue;
+                }
+                if !WIDE {
+                    let group = groups.entry((left, right)).or_default();
+                    group.count.add(1);
+                    group.distinct |= 1u64 << prepared.distinct[source];
+                    group.provenance |= prepared.provenance[source];
+                    continue;
+                }
+                let entry = groups.entry((left, right));
+                let group_index = entry.index();
+                let group = entry.or_insert_with(|| {
+                    extra.allocate(group_index);
+                    CompactGroup::default()
+                });
+                group.count.add(1);
+                let distinct = prepared.distinct[source];
+                if distinct < 64 {
+                    group.distinct |= 1u64 << distinct;
+                } else {
+                    extra.insert(group_index, distinct / 64 - 1, 1u64 << (distinct % 64));
+                }
+                group.provenance |= prepared.provenance[source];
+                for (at, &id) in prepared.provenance_high[source].iter().enumerate() {
+                    if at & 1023 == 0 {
+                        ex.cancel.check()?;
+                    }
+                    extra.insert(
+                        group_index,
+                        extra.distinct_words + id / 64 - 1,
+                        1u64 << (id % 64),
+                    );
+                }
+            }
+        }
+    }
+    Ok(groups)
 }
 
 pub(super) fn try_execute(
@@ -218,28 +344,19 @@ pub(super) fn try_execute(
     };
     #[cfg(test)]
     HITS.with(|hits| hits.set(hits.get() + 1));
-    let mut groups: IndexMap<Pair, CompactGroup> = IndexMap::new();
-    for (source, ids) in prepared.lists.iter().enumerate() {
-        ex.cancel.check()?;
-        for &left in ids {
-            ex.tick()?;
-            for &right in ids {
-                ex.tick()?;
-                if prepared.ranks[left as usize] >= prepared.ranks[right as usize] {
-                    continue;
-                }
-                let group = groups.entry((left, right)).or_default();
-                group.count.add(1);
-                group.distinct |= prepared.distinct[source];
-                group.provenance |= prepared.provenance[source];
-            }
-        }
-    }
+    let mut extra = ExtraMasks::new(prepared.distinct_count, prepared.provenance_names.len());
+    let groups = if extra.distinct_words == 0 && extra.provenance_words == 0 {
+        accumulate::<false>(ex, &prepared, &mut extra)?
+    } else {
+        accumulate::<true>(ex, &prepared, &mut extra)?
+    };
     ex.cancel.check()?;
     let winners = select(ex, groups, &prepared.ranks, limit)?;
     let columns = item_names(plan.output);
     let mut output = Vec::with_capacity(winners.len());
-    for (Reverse(count), _, _, left, right, distinct, provenance) in winners.into_sorted_vec() {
+    for (Reverse(count), _, _, left, right, distinct, provenance, offset) in
+        winners.into_sorted_vec()
+    {
         ex.tick()?;
         let mut row = Row::from([
             (
@@ -253,11 +370,19 @@ pub(super) fn try_execute(
             (columns[2].clone(), Value::Int(count)),
             (
                 columns[3].clone(),
-                Value::Int(i64::from(distinct.count_ones())),
+                Value::Int(extra.distinct_count(ex, distinct, offset)? as i64),
             ),
         ]);
         for (id, name) in prepared.provenance_names.iter().enumerate() {
-            if provenance & (1u64 << id) != 0 {
+            if id & 1023 == 0 {
+                ex.cancel.check()?;
+            }
+            let word = if id < 64 {
+                provenance
+            } else {
+                extra.word(offset, extra.distinct_words + id / 64 - 1)
+            };
+            if word & (1u64 << (id % 64)) != 0 {
                 add_provenance_id(&mut row, Arc::from(*name));
             }
         }
