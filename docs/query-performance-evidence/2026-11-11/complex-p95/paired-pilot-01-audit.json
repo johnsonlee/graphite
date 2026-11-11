@@ -1,0 +1,1919 @@
+{
+  "baseline": {
+    "run": "/private/tmp/graphite-complex-p95/paired-pilot-01",
+    "arm": "base",
+    "reportSha256": "a1d2aa6c98f3f3d5d4b7e9bf5080d1427ee1628f536e05262521b4e26af5a1d2",
+    "performanceAcceptance": false,
+    "errors": [],
+    "warnings": [],
+    "cases": [
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 2625.764959,
+        "minMs": 2625.764959,
+        "maxMs": 2625.764959,
+        "rawRequestMs": [
+          2625.764959
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2568.396792,
+        "p95Ms": 2570.8669999999997,
+        "firstUseMs": null,
+        "minMs": 2568.396792,
+        "maxMs": 2570.8669999999997,
+        "rawRequestMs": [
+          2570.8669999999997,
+          2568.396792
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2632.148167,
+        "p95Ms": 3949.706208,
+        "firstUseMs": null,
+        "minMs": 2471.22275,
+        "maxMs": 4093.261458,
+        "rawRequestMs": [
+          3693.407125,
+          3377.049667,
+          2471.22275,
+          2536.641875,
+          2588.058833,
+          2483.3083340000003,
+          2701.6196250000003,
+          2564.926125,
+          2854.4233750000003,
+          2856.248916,
+          3923.6496669999997,
+          2716.013916,
+          2514.260958,
+          2527.538,
+          2535.972625,
+          3524.090958,
+          2632.148167,
+          4093.261458,
+          2564.647708,
+          3949.706208
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 2923.6459999999997,
+        "minMs": 2923.6459999999997,
+        "maxMs": 2923.6459999999997,
+        "rawRequestMs": [
+          2923.6459999999997
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2747.2725410000003,
+        "p95Ms": 2794.808709,
+        "firstUseMs": null,
+        "minMs": 2747.2725410000003,
+        "maxMs": 2794.808709,
+        "rawRequestMs": [
+          2794.808709,
+          2747.2725410000003
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2941.3917500000002,
+        "p95Ms": 4388.31825,
+        "firstUseMs": null,
+        "minMs": 2747.6855,
+        "maxMs": 5646.053583000001,
+        "rawRequestMs": [
+          5646.053583000001,
+          3068.100625,
+          2810.235208,
+          2759.719,
+          2941.3917500000002,
+          2898.219792,
+          2747.6855,
+          2841.223541,
+          2862.574083,
+          3452.565333,
+          4200.3688329999995,
+          2875.8936670000003,
+          2814.880625,
+          2993.2571669999998,
+          2979.3195419999997,
+          2988.232875,
+          3489.111833,
+          4388.31825,
+          2883.1825000000003,
+          3600.3410000000003
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 4063.4237080000003,
+        "minMs": 4063.4237080000003,
+        "maxMs": 4063.4237080000003,
+        "rawRequestMs": [
+          4063.4237080000003
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 4086.204958,
+        "p95Ms": 4108.822166000001,
+        "firstUseMs": null,
+        "minMs": 4086.204958,
+        "maxMs": 4108.822166000001,
+        "rawRequestMs": [
+          4108.822166000001,
+          4086.204958
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 4103.6611250000005,
+        "p95Ms": 4265.109209,
+        "firstUseMs": null,
+        "minMs": 4026.2835419999997,
+        "maxMs": 4531.904333,
+        "rawRequestMs": [
+          4531.904333,
+          4097.916375,
+          4112.792875,
+          4103.6611250000005,
+          4124.032749999999,
+          4043.6470839999997,
+          4039.512083,
+          4074.54625,
+          4050.395375,
+          4076.357666,
+          4265.109209,
+          4062.7485419999994,
+          4026.2835419999997,
+          4112.54,
+          4036.7021660000005,
+          4123.008458,
+          4119.919334,
+          4210.716917,
+          4163.866917,
+          4186.708833
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 5750.909917,
+        "minMs": 5750.909917,
+        "maxMs": 5750.909917,
+        "rawRequestMs": [
+          5750.909917
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 5638.9142090000005,
+        "p95Ms": 5864.510541,
+        "firstUseMs": null,
+        "minMs": 5638.9142090000005,
+        "maxMs": 5864.510541,
+        "rawRequestMs": [
+          5864.510541,
+          5638.9142090000005
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 6298.155084,
+        "p95Ms": 8959.953042000001,
+        "firstUseMs": null,
+        "minMs": 5645.683875,
+        "maxMs": 11642.903709,
+        "rawRequestMs": [
+          11642.903709,
+          5720.316583,
+          5929.692833,
+          6298.155084,
+          5645.683875,
+          5988.842542,
+          5791.783916,
+          6517.5335,
+          5713.046125,
+          7341.678583,
+          7798.083334,
+          5817.3135,
+          7276.786167,
+          5861.501709,
+          8269.504667,
+          5789.592667,
+          8945.251459,
+          8218.776791,
+          8959.953042000001,
+          8333.838958
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 10116.490416999999,
+        "minMs": 10116.490416999999,
+        "maxMs": 10116.490416999999,
+        "rawRequestMs": [
+          10116.490416999999
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 10525.1005,
+        "p95Ms": 10709.25475,
+        "firstUseMs": null,
+        "minMs": 10525.1005,
+        "maxMs": 10709.25475,
+        "rawRequestMs": [
+          10525.1005,
+          10709.25475
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 11687.408542,
+        "p95Ms": 16655.82475,
+        "firstUseMs": null,
+        "minMs": 10568.285875000001,
+        "maxMs": 19074.626667,
+        "rawRequestMs": [
+          12839.9065,
+          10741.269084000001,
+          10926.285542,
+          11656.989959,
+          10568.285875000001,
+          10667.577792,
+          11025.215375,
+          12728.307958,
+          11687.408542,
+          16574.060416999997,
+          13772.555709,
+          10576.729125,
+          12006.849041000001,
+          10946.877958,
+          14746.294792,
+          10602.163499999999,
+          19074.626667,
+          12481.169790999998,
+          16655.82475,
+          13205.132458
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 24608.782417000002,
+        "minMs": 24608.782417000002,
+        "maxMs": 24608.782417000002,
+        "rawRequestMs": [
+          24608.782417000002
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 25633.498583,
+        "p95Ms": 26250.147834,
+        "firstUseMs": null,
+        "minMs": 25633.498583,
+        "maxMs": 26250.147834,
+        "rawRequestMs": [
+          25633.498583,
+          26250.147834
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 29604.842708,
+        "p95Ms": 38919.123374999996,
+        "firstUseMs": null,
+        "minMs": 26255.551541999997,
+        "maxMs": 41012.688541999996,
+        "rawRequestMs": [
+          29604.842708,
+          27362.017,
+          28497.537874999998,
+          27089.298958,
+          28841.390874999997,
+          26255.551541999997,
+          30223.496791999998,
+          27227.843167,
+          41012.688541999996,
+          38650.729499999994,
+          27480.063000000002,
+          29476.341291,
+          27312.673416999998,
+          35182.564458,
+          29683.741625,
+          37126.094583,
+          38919.123374999996,
+          37788.749292,
+          33574.428916000004,
+          33849.800167
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      }
+    ],
+    "controllerComplete": true,
+    "controllerErrors": [],
+    "protocol": {
+      "graphs": 64,
+      "cases": 6,
+      "concurrency": 4,
+      "firstUsePerCase": 1,
+      "warmupPerCase": 2,
+      "pressurePerCase": 20,
+      "isolatedPerCase": 0,
+      "isolatedThresholdMs": 100,
+      "serverTimeoutMs": 60000,
+      "clientTimeoutMs": 70000,
+      "percentiles": "nearest rank per case; preserve all failures",
+      "cache": "filesystem cache uncontrolled; fixture hashing precedes runs; load-only process precedes query process except smoke",
+      "boundary": "complete HTTP response; closed-loop workers validate before next request; not saturation",
+      "resources": "server CPU user+system; exact kernel RSS is process lifetime including loading, never subtracted",
+      "correctness": "own first-use repeat oracle and matched full typed responses; not an independent real-data semantic oracle",
+      "acceptance": "local diagnostic only; official 73-case CI and production acceptance unchanged"
+    },
+    "environment": {
+      "os": "macos",
+      "arch": "aarch64",
+      "availableParallelism": 16,
+      "backgroundLoad": "uncontrolled; record external observations separately; controller does not stop other processes"
+    },
+    "binarySha256": "3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8",
+    "catalogSha256": "a329bd30cc37deb134481c39cfb22c82a3dd8d4d344581a33bac874a4e66fb81",
+    "manifestSha256": "ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf",
+    "sourceInputsDigest": "3bbd3d7150568462b7fdefd41d8b31b1be048f962ffca8e0179629a6f3f1137b",
+    "registryTotals": {
+      "nodes": 19438099,
+      "edges": 21081153,
+      "methods": 1451922,
+      "callSites": 5051914
+    },
+    "fixtureContentDigest": "0d204d10abf669be465e246a41b613a746d706ceb5fd7fcb7a8782f4640d2677",
+    "fixtureFiles": 1472,
+    "fixtureBytes": 10602794474,
+    "queryDigests": {
+      "bi-caller-dependency-rollup": "1a9bb9aa2d925adce57df8131584d4efc8ba94ccdb2b232f2e7c7845c1a4bed4",
+      "bi-global-target-support": "192087fc7f97a4a22b2324a16d9722c50d207784d7d3962a1279218e832424d6",
+      "bi-two-hop-dataflow": "bbe89d995147a486af06c0436f3428d85fc2199483f6fce4ed187d9c1d327a07",
+      "bi-dataflow-degree-histogram": "28fa6c54b5f2753fba5c6d2557c7b272110ea4788c3217ea1b00b722261b7cd6",
+      "bi-dataflow-optional-sinks": "9de5d312149c971aa3db851bf56af18232713be9173d5ff2394126a8d641a7ab",
+      "bi-dependency-co-use": "36a1532bfe41b0f18e8dcf9eeba96ff7418e8dee39cde2ed2cefb42d75154266"
+    },
+    "issuedRequests": 138,
+    "stageCounts": {
+      "first-use": 6,
+      "warmup": 12,
+      "pressure": 120
+    },
+    "verifiedCompleteBodyBytes": 6188633,
+    "oracleTypedDigests": {
+      "bi-caller-dependency-rollup": "eacdbbe27c5c3393d8cba223e422346c0e06f851cb4ca5d0a915cbd934c961db",
+      "bi-global-target-support": "91dc2041fa9b8871b56862b8772d561e688681d64ce11a9d389314905db4b1a9",
+      "bi-two-hop-dataflow": "30d69b5385b4fefb67e8154302290f429aca3d165e80fa9a7da2f23faf3a908d",
+      "bi-dataflow-degree-histogram": "89701593267aea7339ada14c3911993a22f6bfaaff7a59cd1cc471c5e2e690d2",
+      "bi-dataflow-optional-sinks": "23d2af3e8536ac7105dffd5553da51ef5fcff333e7768d2c94644c569c215e9c",
+      "bi-dependency-co-use": "b35b3cbba7a77bf81672b17e7f78d31e9707dc66bb9506ad43539b6e9f0c1102"
+    },
+    "resources": {
+      "loading": {
+        "ready": {
+          "pid": 98750,
+          "userSeconds": 16.183605916666664,
+          "systemSeconds": 1.3462084583333334,
+          "residentBytes": 3844456448,
+          "rawUserTicks": 388406542,
+          "rawSystemTicks": 32309003,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "lifetime": {
+          "userSeconds": 16.183616,
+          "systemSeconds": 1.376405,
+          "cpuSeconds": 17.560021,
+          "kernelPeakRssBytes": 3989389312,
+          "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+        },
+        "boundary": "fresh server start through verified registry readiness; controlled stop"
+      },
+      "pressure": {
+        "before": {
+          "pid": 98803,
+          "userSeconds": 162.61418833333335,
+          "systemSeconds": 12.344370416666665,
+          "residentBytes": 19180847104,
+          "rawUserTicks": 3902740520,
+          "rawSystemTicks": 296264890,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "after": {
+          "pid": 98803,
+          "userSeconds": 1160.884707125,
+          "systemSeconds": 144.85217479166667,
+          "residentBytes": 9310011392,
+          "rawUserTicks": 27861232971,
+          "rawSystemTicks": 3476452195,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "cpuSeconds": 1130.7783231666667,
+        "wallMs": 329730.649042,
+        "boundary": "complete fixed mixed pressure stage including client validation gaps; server CPU only"
+      },
+      "queryLifecycle": {
+        "userSeconds": 1160.884706,
+        "systemSeconds": 145.051943,
+        "cpuSeconds": 1305.936649,
+        "kernelPeakRssBytes": 34514780160,
+        "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+      },
+      "queryLifecycleError": null,
+      "queryReady": {
+        "pid": 98803,
+        "userSeconds": 16.542772708333334,
+        "systemSeconds": 1.3913749166666667,
+        "residentBytes": 3840393216,
+        "rawUserTicks": 397026545,
+        "rawSystemTicks": 33392998,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "afterFirstUse": {
+        "pid": 98803,
+        "userSeconds": 64.34394066666667,
+        "systemSeconds": 5.400144666666667,
+        "residentBytes": 11484102656,
+        "rawUserTicks": 1544254576,
+        "rawSystemTicks": 129603472,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "queryEnd": {
+        "pid": 98803,
+        "userSeconds": 1160.884707125,
+        "systemSeconds": 144.85217479166667,
+        "residentBytes": 9310011392,
+        "rawUserTicks": 27861232971,
+        "rawSystemTicks": 3476452195,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "cpuUnitVerified": true,
+      "timebaseAudit": {
+        "snapshots": [
+          {
+            "path": "queryReady",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 397026545,
+            "userSeconds": 16.542772708333334,
+            "rawSystemTicks": 33392998,
+            "systemSeconds": 1.3913749166666667
+          },
+          {
+            "path": "afterFirstUse",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 1544254576,
+            "userSeconds": 64.34394066666667,
+            "rawSystemTicks": 129603472,
+            "systemSeconds": 5.400144666666667
+          },
+          {
+            "path": "queryEnd",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 27861232971,
+            "userSeconds": 1160.884707125,
+            "rawSystemTicks": 3476452195,
+            "systemSeconds": 144.85217479166667
+          },
+          {
+            "path": "loading.ready",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 388406542,
+            "userSeconds": 16.183605916666668,
+            "rawSystemTicks": 32309003,
+            "systemSeconds": 1.3462084583333334
+          },
+          {
+            "path": "pressure.before",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 3902740520,
+            "userSeconds": 162.61418833333335,
+            "rawSystemTicks": 296264890,
+            "systemSeconds": 12.344370416666667
+          },
+          {
+            "path": "pressure.after",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 27861232971,
+            "userSeconds": 1160.884707125,
+            "rawSystemTicks": 3476452195,
+            "systemSeconds": 144.85217479166667
+          }
+        ],
+        "wait4Corroboration": [
+          {
+            "boundary": "queryLifecycle",
+            "snapshotCpuSeconds": 1305.7368819166666,
+            "independentWait4CpuSeconds": 1305.936649,
+            "gapSeconds": 0.19976708333333,
+            "maximumAllowedPostSnapshotCpuSeconds": 6.529683245,
+            "passed": true
+          },
+          {
+            "boundary": "loading",
+            "snapshotCpuSeconds": 17.529814374999997,
+            "independentWait4CpuSeconds": 17.560021,
+            "gapSeconds": 0.0302066250000026,
+            "maximumAllowedPostSnapshotCpuSeconds": 0.25,
+            "passed": true
+          }
+        ],
+        "proof": null,
+        "originalResourceEvidence": {
+          "loading": {
+            "ready": {
+              "pid": 98750,
+              "userSeconds": 16.183605916666664,
+              "systemSeconds": 1.3462084583333334,
+              "residentBytes": 3844456448,
+              "rawUserTicks": 388406542,
+              "rawSystemTicks": 32309003,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "lifetime": {
+              "userSeconds": 16.183616,
+              "systemSeconds": 1.376405,
+              "cpuSeconds": 17.560021,
+              "kernelPeakRssBytes": 3989389312,
+              "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+            },
+            "boundary": "fresh server start through verified registry readiness; controlled stop"
+          },
+          "pressure": {
+            "before": {
+              "pid": 98803,
+              "userSeconds": 162.61418833333335,
+              "systemSeconds": 12.344370416666665,
+              "residentBytes": 19180847104,
+              "rawUserTicks": 3902740520,
+              "rawSystemTicks": 296264890,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "after": {
+              "pid": 98803,
+              "userSeconds": 1160.884707125,
+              "systemSeconds": 144.85217479166667,
+              "residentBytes": 9310011392,
+              "rawUserTicks": 27861232971,
+              "rawSystemTicks": 3476452195,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "cpuSeconds": 1130.7783231666665,
+            "wallMs": 329730.649042,
+            "boundary": "complete fixed mixed pressure stage including client validation gaps; server CPU only"
+          },
+          "queryLifecycle": {
+            "userSeconds": 1160.884706,
+            "systemSeconds": 145.051943,
+            "cpuSeconds": 1305.936649,
+            "kernelPeakRssBytes": 34514780160,
+            "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+          },
+          "queryLifecycleError": null,
+          "queryReady": {
+            "pid": 98803,
+            "userSeconds": 16.542772708333334,
+            "systemSeconds": 1.3913749166666667,
+            "residentBytes": 3840393216,
+            "rawUserTicks": 397026545,
+            "rawSystemTicks": 33392998,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          },
+          "afterFirstUse": {
+            "pid": 98803,
+            "userSeconds": 64.34394066666667,
+            "systemSeconds": 5.400144666666667,
+            "residentBytes": 11484102656,
+            "rawUserTicks": 1544254576,
+            "rawSystemTicks": 129603472,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          },
+          "queryEnd": {
+            "pid": 98803,
+            "userSeconds": 1160.884707125,
+            "systemSeconds": 144.85217479166667,
+            "residentBytes": 9310011392,
+            "rawUserTicks": 27861232971,
+            "rawSystemTicks": 3476452195,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          }
+        },
+        "note": "Derived corrected output only. Original report, raw request evidence, wait4 CPU/RSS and latency are unchanged."
+      },
+      "recomputedPressureCpuSeconds": 1130.7783231666667,
+      "limitations": [
+        "CPU covers fixed mixed workload, not each case",
+        "query kernel peak RSS includes loading, first use, warmup, pressure and any isolated samples",
+        "kernel lifetime peak cannot be subtracted to derive query-window peak",
+        "load-only server is a separate process; first use does not mean disk-cold files",
+        "resource snapshots do not prove environment isolation or independent result semantics"
+      ]
+    },
+    "auditValid": true,
+    "workloadComplete": true
+  },
+  "performanceAcceptance": false,
+  "candidate": {
+    "run": "/private/tmp/graphite-complex-p95/paired-pilot-01",
+    "arm": "candidate",
+    "reportSha256": "a1d2aa6c98f3f3d5d4b7e9bf5080d1427ee1628f536e05262521b4e26af5a1d2",
+    "performanceAcceptance": false,
+    "errors": [],
+    "warnings": [],
+    "cases": [
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 2654.56375,
+        "minMs": 2654.56375,
+        "maxMs": 2654.56375,
+        "rawRequestMs": [
+          2654.56375
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2473.338958,
+        "p95Ms": 2497.017667,
+        "firstUseMs": null,
+        "minMs": 2473.338958,
+        "maxMs": 2497.017667,
+        "rawRequestMs": [
+          2497.017667,
+          2473.338958
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2495.372959,
+        "p95Ms": 2536.270416,
+        "firstUseMs": null,
+        "minMs": 2459.811959,
+        "maxMs": 2536.658125,
+        "rawRequestMs": [
+          2462.039708,
+          2459.811959,
+          2500.7354579999997,
+          2504.5367499999998,
+          2512.1412090000003,
+          2534.842333,
+          2493.372792,
+          2490.330875,
+          2492.2909999999997,
+          2516.697917,
+          2496.907875,
+          2478.66675,
+          2478.286375,
+          2482.845875,
+          2536.270416,
+          2502.814792,
+          2536.658125,
+          2509.920083,
+          2486.453708,
+          2495.372959
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-caller-dependency-rollup",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 2921.620792,
+        "minMs": 2921.620792,
+        "maxMs": 2921.620792,
+        "rawRequestMs": [
+          2921.620792
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2741.4890830000004,
+        "p95Ms": 2810.846375,
+        "firstUseMs": null,
+        "minMs": 2741.4890830000004,
+        "maxMs": 2810.846375,
+        "rawRequestMs": [
+          2810.846375,
+          2741.4890830000004
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2738.6153750000003,
+        "p95Ms": 2776.44125,
+        "firstUseMs": null,
+        "minMs": 2700.6919580000003,
+        "maxMs": 2799.703208,
+        "rawRequestMs": [
+          2738.6153750000003,
+          2751.426084,
+          2729.953583,
+          2731.83725,
+          2700.6919580000003,
+          2768.6500419999998,
+          2726.7535000000003,
+          2739.903709,
+          2734.86125,
+          2720.920584,
+          2740.550625,
+          2751.128625,
+          2773.801625,
+          2735.039417,
+          2740.226583,
+          2799.703208,
+          2746.025875,
+          2735.1682090000004,
+          2731.815083,
+          2776.44125
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-global-target-support",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 4075.238333,
+        "minMs": 4075.238333,
+        "maxMs": 4075.238333,
+        "rawRequestMs": [
+          4075.238333
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 4082.1168329999996,
+        "p95Ms": 4098.284542,
+        "firstUseMs": null,
+        "minMs": 4082.1168329999996,
+        "maxMs": 4098.284542,
+        "rawRequestMs": [
+          4098.284542,
+          4082.1168329999996
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 4040.253375,
+        "p95Ms": 4061.49525,
+        "firstUseMs": null,
+        "minMs": 4020.416583,
+        "maxMs": 4067.676208,
+        "rawRequestMs": [
+          4067.676208,
+          4053.806084,
+          4042.878667,
+          4033.5540830000004,
+          4058.249125,
+          4039.057541,
+          4036.470209,
+          4051.3472500000003,
+          4052.8304999999996,
+          4040.253375,
+          4037.2572499999997,
+          4034.962042,
+          4043.2577920000003,
+          4050.815333,
+          4039.608,
+          4055.9482500000004,
+          4032.999125,
+          4021.7446250000003,
+          4020.416583,
+          4061.49525
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 5727.261084000001,
+        "minMs": 5727.261084000001,
+        "maxMs": 5727.261084000001,
+        "rawRequestMs": [
+          5727.261084000001
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 5536.016791999999,
+        "p95Ms": 5667.1005000000005,
+        "firstUseMs": null,
+        "minMs": 5536.016791999999,
+        "maxMs": 5667.1005000000005,
+        "rawRequestMs": [
+          5536.016791999999,
+          5667.1005000000005
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 5536.67125,
+        "p95Ms": 5650.064292,
+        "firstUseMs": null,
+        "minMs": 5434.181917,
+        "maxMs": 5779.78625,
+        "rawRequestMs": [
+          5516.72575,
+          5542.266,
+          5508.454291999999,
+          5637.678416,
+          5613.454583000001,
+          5443.991042000001,
+          5536.67125,
+          5630.260875,
+          5593.190250000001,
+          5481.548417,
+          5434.181917,
+          5617.541625000001,
+          5542.7269160000005,
+          5521.4815,
+          5650.064292,
+          5779.78625,
+          5502.185666,
+          5530.759583,
+          5634.975542,
+          5506.274291000001
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 9938.243584,
+        "minMs": 9938.243584,
+        "maxMs": 9938.243584,
+        "rawRequestMs": [
+          9938.243584
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 10167.841958,
+        "p95Ms": 10264.533542000001,
+        "firstUseMs": null,
+        "minMs": 10167.841958,
+        "maxMs": 10264.533542000001,
+        "rawRequestMs": [
+          10167.841958,
+          10264.533542000001
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 10341.124334,
+        "p95Ms": 10696.064166,
+        "firstUseMs": null,
+        "minMs": 10061.646625,
+        "maxMs": 10861.333374999998,
+        "rawRequestMs": [
+          10326.767583,
+          10341.124334,
+          10442.601292,
+          10316.682083,
+          10127.12975,
+          10408.170875,
+          10498.266375,
+          10235.276084000001,
+          10061.646625,
+          10351.085625,
+          10300.554791999999,
+          10433.120459,
+          10538.490790999998,
+          10861.333374999998,
+          10238.083583,
+          10614.014333,
+          10594.855958,
+          10222.9355,
+          10696.064166,
+          10151.407792
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "first-use",
+        "issued": 1,
+        "expected": 1,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": 2132.0454170000003,
+        "minMs": 2132.0454170000003,
+        "maxMs": 2132.0454170000003,
+        "rawRequestMs": [
+          2132.0454170000003
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "warmup",
+        "issued": 2,
+        "expected": 2,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2184.924375,
+        "p95Ms": 2191.121291,
+        "firstUseMs": null,
+        "minMs": 2184.924375,
+        "maxMs": 2191.121291,
+        "rawRequestMs": [
+          2191.121291,
+          2184.924375
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "pressure",
+        "issued": 20,
+        "expected": 20,
+        "failedCount": 0,
+        "available": true,
+        "p50Ms": 2221.473875,
+        "p95Ms": 2264.064,
+        "firstUseMs": null,
+        "minMs": 2160.680792,
+        "maxMs": 2264.4055,
+        "rawRequestMs": [
+          2160.680792,
+          2201.4035,
+          2232.149417,
+          2225.82825,
+          2180.780666,
+          2244.804458,
+          2232.433125,
+          2205.2655419999996,
+          2207.711459,
+          2264.4055,
+          2204.804375,
+          2170.409541,
+          2238.4380419999998,
+          2229.463666,
+          2221.473875,
+          2241.656583,
+          2264.064,
+          2195.7645,
+          2250.9754169999997,
+          2192.379875
+        ],
+        "failures": []
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "stage": "isolated",
+        "issued": 0,
+        "expected": 0,
+        "failedCount": 0,
+        "available": false,
+        "p50Ms": null,
+        "p95Ms": null,
+        "firstUseMs": null,
+        "minMs": null,
+        "maxMs": null,
+        "rawRequestMs": [],
+        "failures": []
+      }
+    ],
+    "controllerComplete": true,
+    "controllerErrors": [],
+    "protocol": {
+      "graphs": 64,
+      "cases": 6,
+      "concurrency": 4,
+      "firstUsePerCase": 1,
+      "warmupPerCase": 2,
+      "pressurePerCase": 20,
+      "isolatedPerCase": 0,
+      "isolatedThresholdMs": 100,
+      "serverTimeoutMs": 60000,
+      "clientTimeoutMs": 70000,
+      "percentiles": "nearest rank per case; preserve all failures",
+      "cache": "filesystem cache uncontrolled; fixture hashing precedes runs; load-only process precedes query process except smoke",
+      "boundary": "complete HTTP response; closed-loop workers validate before next request; not saturation",
+      "resources": "server CPU user+system; exact kernel RSS is process lifetime including loading, never subtracted",
+      "correctness": "own first-use repeat oracle and matched full typed responses; not an independent real-data semantic oracle",
+      "acceptance": "local diagnostic only; official 73-case CI and production acceptance unchanged"
+    },
+    "environment": {
+      "os": "macos",
+      "arch": "aarch64",
+      "availableParallelism": 16,
+      "backgroundLoad": "uncontrolled; record external observations separately; controller does not stop other processes"
+    },
+    "binarySha256": "c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374",
+    "catalogSha256": "a329bd30cc37deb134481c39cfb22c82a3dd8d4d344581a33bac874a4e66fb81",
+    "manifestSha256": "ce217bcec57cb59d50a24f68baa0e88ce0275ae6d5172b07830b8cfef58f21bf",
+    "sourceInputsDigest": "3bbd3d7150568462b7fdefd41d8b31b1be048f962ffca8e0179629a6f3f1137b",
+    "registryTotals": {
+      "nodes": 19438099,
+      "edges": 21081153,
+      "methods": 1451922,
+      "callSites": 5051914
+    },
+    "fixtureContentDigest": "0d204d10abf669be465e246a41b613a746d706ceb5fd7fcb7a8782f4640d2677",
+    "fixtureFiles": 1472,
+    "fixtureBytes": 10602794474,
+    "queryDigests": {
+      "bi-caller-dependency-rollup": "1a9bb9aa2d925adce57df8131584d4efc8ba94ccdb2b232f2e7c7845c1a4bed4",
+      "bi-global-target-support": "192087fc7f97a4a22b2324a16d9722c50d207784d7d3962a1279218e832424d6",
+      "bi-two-hop-dataflow": "bbe89d995147a486af06c0436f3428d85fc2199483f6fce4ed187d9c1d327a07",
+      "bi-dataflow-degree-histogram": "28fa6c54b5f2753fba5c6d2557c7b272110ea4788c3217ea1b00b722261b7cd6",
+      "bi-dataflow-optional-sinks": "9de5d312149c971aa3db851bf56af18232713be9173d5ff2394126a8d641a7ab",
+      "bi-dependency-co-use": "36a1532bfe41b0f18e8dcf9eeba96ff7418e8dee39cde2ed2cefb42d75154266"
+    },
+    "issuedRequests": 138,
+    "stageCounts": {
+      "first-use": 6,
+      "warmup": 12,
+      "pressure": 120
+    },
+    "verifiedCompleteBodyBytes": 6188633,
+    "oracleTypedDigests": {
+      "bi-caller-dependency-rollup": "eacdbbe27c5c3393d8cba223e422346c0e06f851cb4ca5d0a915cbd934c961db",
+      "bi-global-target-support": "91dc2041fa9b8871b56862b8772d561e688681d64ce11a9d389314905db4b1a9",
+      "bi-two-hop-dataflow": "30d69b5385b4fefb67e8154302290f429aca3d165e80fa9a7da2f23faf3a908d",
+      "bi-dependency-co-use": "b35b3cbba7a77bf81672b17e7f78d31e9707dc66bb9506ad43539b6e9f0c1102",
+      "bi-dataflow-degree-histogram": "89701593267aea7339ada14c3911993a22f6bfaaff7a59cd1cc471c5e2e690d2",
+      "bi-dataflow-optional-sinks": "23d2af3e8536ac7105dffd5553da51ef5fcff333e7768d2c94644c569c215e9c"
+    },
+    "resources": {
+      "loading": {
+        "ready": {
+          "pid": 910,
+          "userSeconds": 16.72033275,
+          "systemSeconds": 1.5213189583333333,
+          "residentBytes": 3839557632,
+          "rawUserTicks": 401287986,
+          "rawSystemTicks": 36511655,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "lifetime": {
+          "userSeconds": 16.720344,
+          "systemSeconds": 1.5412240000000001,
+          "cpuSeconds": 18.261568,
+          "kernelPeakRssBytes": 3984048128,
+          "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+        },
+        "boundary": "fresh server start through verified registry readiness; controlled stop"
+      },
+      "pressure": {
+        "before": {
+          "pid": 918,
+          "userSeconds": 94.87727904166667,
+          "systemSeconds": 4.813043,
+          "residentBytes": 19946225664,
+          "rawUserTicks": 2277054697,
+          "rawSystemTicks": 115513032,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "after": {
+          "pid": 918,
+          "userSeconds": 620.4317740833334,
+          "systemSeconds": 24.820869625,
+          "residentBytes": 24669880320,
+          "rawUserTicks": 14890362578,
+          "rawSystemTicks": 595700871,
+          "cpuTimeUnit": "Mach absolute-time ticks",
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "residentMetric": "instantaneous RSS, not peak",
+          "source": "proc_pid_rusage v2"
+        },
+        "cpuSeconds": 545.5623216666668,
+        "wallMs": 141781.21504200003,
+        "boundary": "complete fixed mixed pressure stage including client validation gaps; server CPU only"
+      },
+      "queryLifecycle": {
+        "userSeconds": 620.431773,
+        "systemSeconds": 25.210483,
+        "cpuSeconds": 645.642256,
+        "kernelPeakRssBytes": 27963539456,
+        "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+      },
+      "queryLifecycleError": null,
+      "queryReady": {
+        "pid": 918,
+        "userSeconds": 16.518944416666667,
+        "systemSeconds": 1.3686565416666667,
+        "residentBytes": 3839950848,
+        "rawUserTicks": 396454666,
+        "rawSystemTicks": 32847757,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "afterFirstUse": {
+        "pid": 918,
+        "userSeconds": 42.51944825,
+        "systemSeconds": 2.7390619166666665,
+        "residentBytes": 12445335552,
+        "rawUserTicks": 1020466758,
+        "rawSystemTicks": 65737486,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "queryEnd": {
+        "pid": 918,
+        "userSeconds": 620.4317740833334,
+        "systemSeconds": 24.820869625,
+        "residentBytes": 24669880320,
+        "rawUserTicks": 14890362578,
+        "rawSystemTicks": 595700871,
+        "cpuTimeUnit": "Mach absolute-time ticks",
+        "timebaseNumer": 125,
+        "timebaseDenom": 3,
+        "residentMetric": "instantaneous RSS, not peak",
+        "source": "proc_pid_rusage v2"
+      },
+      "cpuUnitVerified": true,
+      "timebaseAudit": {
+        "snapshots": [
+          {
+            "path": "queryReady",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 396454666,
+            "userSeconds": 16.518944416666667,
+            "rawSystemTicks": 32847757,
+            "systemSeconds": 1.3686565416666667
+          },
+          {
+            "path": "afterFirstUse",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 1020466758,
+            "userSeconds": 42.51944825,
+            "rawSystemTicks": 65737486,
+            "systemSeconds": 2.7390619166666665
+          },
+          {
+            "path": "queryEnd",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 14890362578,
+            "userSeconds": 620.4317740833334,
+            "rawSystemTicks": 595700871,
+            "systemSeconds": 24.820869625
+          },
+          {
+            "path": "loading.ready",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 401287986,
+            "userSeconds": 16.72033275,
+            "rawSystemTicks": 36511655,
+            "systemSeconds": 1.5213189583333333
+          },
+          {
+            "path": "pressure.before",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 2277054697,
+            "userSeconds": 94.87727904166667,
+            "rawSystemTicks": 115513032,
+            "systemSeconds": 4.813043
+          },
+          {
+            "path": "pressure.after",
+            "status": "RECORDED_RAW_TICKS",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "rawUserTicks": 14890362578,
+            "userSeconds": 620.4317740833334,
+            "rawSystemTicks": 595700871,
+            "systemSeconds": 24.820869625
+          }
+        ],
+        "wait4Corroboration": [
+          {
+            "boundary": "queryLifecycle",
+            "snapshotCpuSeconds": 645.2526437083334,
+            "independentWait4CpuSeconds": 645.642256,
+            "gapSeconds": 0.3896122916666,
+            "maximumAllowedPostSnapshotCpuSeconds": 3.22821128,
+            "passed": true
+          },
+          {
+            "boundary": "loading",
+            "snapshotCpuSeconds": 18.241651708333332,
+            "independentWait4CpuSeconds": 18.261568,
+            "gapSeconds": 0.0199162916666668,
+            "maximumAllowedPostSnapshotCpuSeconds": 0.25,
+            "passed": true
+          }
+        ],
+        "proof": null,
+        "originalResourceEvidence": {
+          "loading": {
+            "ready": {
+              "pid": 910,
+              "userSeconds": 16.72033275,
+              "systemSeconds": 1.5213189583333333,
+              "residentBytes": 3839557632,
+              "rawUserTicks": 401287986,
+              "rawSystemTicks": 36511655,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "lifetime": {
+              "userSeconds": 16.720344,
+              "systemSeconds": 1.5412240000000001,
+              "cpuSeconds": 18.261568,
+              "kernelPeakRssBytes": 3984048128,
+              "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+            },
+            "boundary": "fresh server start through verified registry readiness; controlled stop"
+          },
+          "pressure": {
+            "before": {
+              "pid": 918,
+              "userSeconds": 94.87727904166667,
+              "systemSeconds": 4.813043,
+              "residentBytes": 19946225664,
+              "rawUserTicks": 2277054697,
+              "rawSystemTicks": 115513032,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "after": {
+              "pid": 918,
+              "userSeconds": 620.4317740833334,
+              "systemSeconds": 24.820869625,
+              "residentBytes": 24669880320,
+              "rawUserTicks": 14890362578,
+              "rawSystemTicks": 595700871,
+              "cpuTimeUnit": "Mach absolute-time ticks",
+              "timebaseNumer": 125,
+              "timebaseDenom": 3,
+              "residentMetric": "instantaneous RSS, not peak",
+              "source": "proc_pid_rusage v2"
+            },
+            "cpuSeconds": 545.5623216666668,
+            "wallMs": 141781.21504200003,
+            "boundary": "complete fixed mixed pressure stage including client validation gaps; server CPU only"
+          },
+          "queryLifecycle": {
+            "userSeconds": 620.431773,
+            "systemSeconds": 25.210483,
+            "cpuSeconds": 645.642256,
+            "kernelPeakRssBytes": 27963539456,
+            "source": "wait4 exact child lifetime; peak includes loading and all executed stages"
+          },
+          "queryLifecycleError": null,
+          "queryReady": {
+            "pid": 918,
+            "userSeconds": 16.518944416666667,
+            "systemSeconds": 1.3686565416666667,
+            "residentBytes": 3839950848,
+            "rawUserTicks": 396454666,
+            "rawSystemTicks": 32847757,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          },
+          "afterFirstUse": {
+            "pid": 918,
+            "userSeconds": 42.51944825,
+            "systemSeconds": 2.7390619166666665,
+            "residentBytes": 12445335552,
+            "rawUserTicks": 1020466758,
+            "rawSystemTicks": 65737486,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          },
+          "queryEnd": {
+            "pid": 918,
+            "userSeconds": 620.4317740833334,
+            "systemSeconds": 24.820869625,
+            "residentBytes": 24669880320,
+            "rawUserTicks": 14890362578,
+            "rawSystemTicks": 595700871,
+            "cpuTimeUnit": "Mach absolute-time ticks",
+            "timebaseNumer": 125,
+            "timebaseDenom": 3,
+            "residentMetric": "instantaneous RSS, not peak",
+            "source": "proc_pid_rusage v2"
+          }
+        },
+        "note": "Derived corrected output only. Original report, raw request evidence, wait4 CPU/RSS and latency are unchanged."
+      },
+      "recomputedPressureCpuSeconds": 545.5623216666668,
+      "limitations": [
+        "CPU covers fixed mixed workload, not each case",
+        "query kernel peak RSS includes loading, first use, warmup, pressure and any isolated samples",
+        "kernel lifetime peak cannot be subtracted to derive query-window peak",
+        "load-only server is a separate process; first use does not mean disk-cold files",
+        "resource snapshots do not prove environment isolation or independent result semantics"
+      ]
+    },
+    "auditValid": true,
+    "workloadComplete": true
+  },
+  "comparison": {
+    "comparable": true,
+    "unavailableReasons": [],
+    "cases": [
+      {
+        "case": "bi-caller-dependency-rollup",
+        "p50Ms": {
+          "base": 2632.148167,
+          "candidate": 2495.372959,
+          "delta": -136.775208,
+          "deltaPercent": -5.196333918994006
+        },
+        "p95Ms": {
+          "base": 3949.706208,
+          "candidate": 2536.270416,
+          "delta": -1413.435792,
+          "deltaPercent": -35.78584627730367
+        },
+        "comparable": true
+      },
+      {
+        "case": "bi-global-target-support",
+        "p50Ms": {
+          "base": 2941.3917500000002,
+          "candidate": 2738.6153750000003,
+          "delta": -202.7763749999999,
+          "deltaPercent": -6.893892151563962
+        },
+        "p95Ms": {
+          "base": 4388.31825,
+          "candidate": 2776.44125,
+          "delta": -1611.877,
+          "deltaPercent": -36.73108713115782
+        },
+        "comparable": true
+      },
+      {
+        "case": "bi-two-hop-dataflow",
+        "p50Ms": {
+          "base": 4103.6611250000005,
+          "candidate": 4040.253375,
+          "delta": -63.4077500000005,
+          "deltaPercent": -1.545150734150849
+        },
+        "p95Ms": {
+          "base": 4265.109209,
+          "candidate": 4061.49525,
+          "delta": -203.613959,
+          "deltaPercent": -4.77394479302769
+        },
+        "comparable": true
+      },
+      {
+        "case": "bi-dataflow-degree-histogram",
+        "p50Ms": {
+          "base": 6298.155084,
+          "candidate": 5536.67125,
+          "delta": -761.483834,
+          "deltaPercent": -12.09058563728438
+        },
+        "p95Ms": {
+          "base": 8959.953042000001,
+          "candidate": 5650.064292,
+          "delta": -3309.888750000001,
+          "deltaPercent": -36.94091625798501
+        },
+        "comparable": true
+      },
+      {
+        "case": "bi-dataflow-optional-sinks",
+        "p50Ms": {
+          "base": 11687.408542,
+          "candidate": 10341.124334,
+          "delta": -1346.284208,
+          "deltaPercent": -11.519099406527788
+        },
+        "p95Ms": {
+          "base": 16655.82475,
+          "candidate": 10696.064166,
+          "delta": -5959.760584,
+          "deltaPercent": -35.78184012773069
+        },
+        "comparable": true
+      },
+      {
+        "case": "bi-dependency-co-use",
+        "p50Ms": {
+          "base": 29604.842708,
+          "candidate": 2221.473875,
+          "delta": -27383.368833,
+          "deltaPercent": -92.49624834385727
+        },
+        "p95Ms": {
+          "base": 38919.123374999996,
+          "candidate": 2264.064,
+          "delta": -36655.059375,
+          "deltaPercent": -94.18264389414706
+        },
+        "comparable": true
+      }
+    ],
+    "resourceObservations": [
+      {
+        "metric": "loadingCpuSeconds",
+        "base": 17.560021,
+        "candidate": 18.261568,
+        "delta": 0.701547,
+        "deltaPercent": 3.995137591236366,
+        "observedWithinFivePercent": true
+      },
+      {
+        "metric": "loadingPeakRssBytes",
+        "base": 3989389312,
+        "candidate": 3984048128,
+        "delta": -5341184,
+        "deltaPercent": -0.13388475233374267,
+        "observedWithinFivePercent": true
+      },
+      {
+        "metric": "pressureMixedCpuSeconds",
+        "base": 1130.7783231666667,
+        "candidate": 545.5623216666668,
+        "delta": -585.2160015,
+        "deltaPercent": -51.753379907490874,
+        "observedWithinFivePercent": true
+      },
+      {
+        "metric": "queryLifecyclePeakRssBytes",
+        "base": 34514780160,
+        "candidate": 27963539456,
+        "delta": -6551240704,
+        "deltaPercent": -18.980971843455023,
+        "observedWithinFivePercent": true
+      }
+    ],
+    "performanceAcceptance": false,
+    "limitations": "One local matched mix observation; no each-case resource proof, uncertainty or full production acceptance."
+  }
+}

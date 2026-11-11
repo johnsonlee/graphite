@@ -23448,8 +23448,12 @@ The frozen cumulative candidate executable is
 `c774c87c5ffbff94491fa7b48f478b67d392c88c9d59737b16f8d04ddbf39374`,
 built with Rust1.93.0. The matching Attempt315 frozen binary SHA256 is
 `3fae4f183c160a93ccb04382de98205fcb799ca1c6728fc5fee3a9f32a1e6ac8`.
-The candidate source is the commit containing this entry; exact measured commit
-and fixture seals remain part of the run report.
+The candidate source mapping is commit `3498c8ea`, recorded after the binary was
+built and frozen. The run reports bind binary hashes and fixture seals, but do not
+contain source commits or compiler identities. The [derived provenance record](query-performance-evidence/2026-11-11/complex-p95/provenance.json)
+binds the session build records to Git objects and rechecks the retained executable
+hashes; this is session attestation, not an independent build manifest or proof
+embedded in the executable.
 
 **Predeclared matched evaluation and decision.** Performance measurement is pending.
 Use the unchanged real64 saved head corpus and manifest SHA256
@@ -23470,6 +23474,136 @@ must each satisfy the independent5% bound on matching complete workloads; incomp
 original-main runs cannot supply those comparisons. Preserve loading/first-use
 costs and the original-main failure. The existing73-query regression workload and
 required PR correctness/OOM checks remain required for the cumulative change.
-Current decision: retain as an unmeasured candidate for this paired evaluation;
+Initial source-time decision: retain as an unmeasured candidate for this paired evaluation;
 no latency, CPU, RSS gain, final performance acceptance or original-main recovery
 is claimed by this source/correctness record.
+
+**First paired result (AB, 20 pressure requests per case per arm).** Run
+`paired-pilot-01` independently verified all276 complete typed responses:
+six first-use, twelve warmup and120 pressure requests in each arm. Every request
+used the same64 real graphs and full result consumption. Fixture/content/query
+identities matched; no request or process failure was recorded. A is the frozen
+Attempt315 binary above; B is cumulative316 at `3498c8ea`, with the same candidate
+binary identity above. Controller `3d1d19c1` records Mach ticks and the timebase;
+its CPU snapshots independently corroborated wait4. This pair needs no historical
+CPU-unit correction.
+
+| Case | A P95 ms | B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |3949.706|2536.270|-1413.436|-35.786%|
+| global target support |4388.318|2776.441|-1611.877|-36.731%|
+| two-hop DATAFLOW |4265.109|4061.495|-203.614|-4.774%|
+| DATAFLOW degree histogram |8959.953|5650.064|-3309.889|-36.941%|
+| OPTIONAL DATAFLOW sinks |16655.825|10696.064|-5959.761|-35.782%|
+| dependency co-use |38919.123|2264.064|-36655.059|-94.183%|
+
+| First-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.560|18.262|+0.702 (+3.995%)|Within bound|
+| Loading kernel peak RSS MiB |3804.578|3799.484|-5.094 (-0.134%)|Within bound|
+| Complete mixed-pressure CPU s |1130.778|545.562|-585.216 (-51.753%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32915.859|26668.109|-6247.750 (-18.981%)|Within bound|
+| Complete pressure-stage wall ms |329730.649|141781.215|-187949.434|Not a resource limit|
+
+CPU is server user+system. Query kernel peak RSS includes the fresh process's
+loading, first use, warmup and pressure; it is not a resettable pressure-window
+peak or an individual-query resource measure. Complete pressure-stage wall
+includes client validation gaps, not the complete build/load/query pipeline.
+P50 diagnostic values and every raw sample remain in the audit. Twenty-sample
+P95 is rank19; this first pair does not quantify cross-run uncertainty. Reduced
+co-use contention may explain some other cases' gains; this does not establish
+independent changes to their execution paths.
+
+**Incremental decision after this pair.** Keep the positively verified compact
+path for continued composition and validation. All six P95 observations improved
+and the four declared phase/resource comparisons were within their independent
+limits in this pair. This is not final acceptance: the predeclared BA and AB
+pilot pairs, separate BA100-sample confirmation and original-main73-query
+regression remain pending. Report each round separately without pooling. Required
+PR correctness/OOM checks also remain separate. The original-main complex-query
+warmup failure is retained; it supplies neither a pressure P95 nor complete mixed
+CPU/RSS baseline, so no original-main recovery ratio is constructed.
+
+Evidence: [independent first-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-summary.md),
+and [859-file original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01-manifest.json).
+The compressed archive SHA256 is
+`1578eded657ba38ff206f31d84cfbf95a0534f131dd5d9c5535cdb9400abe948`.
+
+**Second paired result (BA,20 samples per case per arm).** Run `paired-pilot-02`
+reversed the fresh-process order while retaining the same binaries, sealed64
+graphs, six queries, concurrency4 and complete-result boundary. All276 issued
+requests passed the independent typed-body/hash/journal/scope audit. Both arms
+completed; there were no retained request errors. Mach CPU conversions again
+corroborated independent wait4 snapshots.
+
+| Case | Second-pair A P95 ms | Second-pair B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |3785.510|2537.866|-1247.644|-32.958%|
+| global target support |4146.769|2787.224|-1359.545|-32.786%|
+| two-hop DATAFLOW |4148.833|4061.434|-87.399|-2.107%|
+| DATAFLOW degree histogram |9363.787|5660.043|-3703.744|-39.554%|
+| OPTIONAL DATAFLOW sinks |15986.252|10619.568|-5366.684|-33.571%|
+| dependency co-use |37186.954|2268.983|-34917.972|-93.898%|
+
+| Second-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.894|17.671|-0.224 (-1.251%)|Within bound|
+| Loading kernel peak RSS MiB |3796.625|3797.672|+1.047 (+0.028%)|Within bound|
+| Complete mixed-pressure CPU s |1111.713|546.922|-564.791 (-50.804%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32680.109|25998.078|-6682.031 (-20.447%)|Within bound|
+| Complete pressure-stage wall ms |319971.137|142334.671|-177636.466|Not a resource limit|
+
+Keep the beneficial increment while continuing the declared evaluation. This
+second pair independently met the four resource comparisons and improved all six
+P95 observations. Do not pool its requests with the first pair or replace the
+separate100-sample confirmation. All resource boundaries and production/semantic
+limitations stated above still apply. Original-main's failed complex baseline
+still cannot supply a pressure comparison.
+
+Evidence: [second-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-summary.md),
+[859-file manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02-manifest.json).
+The archive SHA256 is
+`e3c5a1044ec7255c160c3e8484bd3f609ffed29d827c9f4f12bf04d0f0023843`.
+
+**Third paired result (AB,20 samples per case per arm).** Run `paired-pilot-03`
+completed another276 requests with full typed-body, receipt, journal and scope
+validation. Both binaries, query/fixture identities and complete results match
+the earlier pairs. CPU conversion again corroborated independent wait4. Each
+case has20 pressure samples per arm at concurrency4; preserve this pair separately.
+
+| Case | Third-pair A P95 ms | Third-pair B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |2636.761|2522.399|-114.362|-4.337%|
+| global target support |4041.096|2787.069|-1254.026|-31.032%|
+| two-hop DATAFLOW |4125.299|4070.277|-55.021|-1.334%|
+| DATAFLOW degree histogram |7466.682|5649.511|-1817.172|-24.337%|
+| OPTIONAL DATAFLOW sinks |13816.374|10554.603|-3261.771|-23.608%|
+| dependency co-use |31239.094|2274.597|-28964.497|-92.719%|
+
+| Third-pair resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |17.708|18.185|+0.477 (+2.695%)|Within bound|
+| Loading kernel peak RSS MiB |3797.281|3796.859|-0.422 (-0.011%)|Within bound|
+| Complete mixed-pressure CPU s |1081.894|543.809|-538.085 (-49.735%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |32301.609|26852.344|-5449.266 (-16.870%)|Within bound|
+| Complete pressure-stage wall ms |297177.209|140917.865|-156259.344|Not a resource limit|
+
+All six P95 observations improved and all four resource observations remained
+within the declared independent bounds in this third pair. Keep the positive
+increment. The reference co-use P95 varied from38919.123ms in pair1 to31239.094ms
+here, so retain the actual pair values rather than selecting the largest gain.
+Do not pool the three20-sample rounds or use them in place of the separately
+declared100-sample confirmation. Original-main complex-query failure remains
+incomparable; no original-main pressure recovery ratio is constructed.
+
+Evidence: [third-pair audit](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-summary.md),
+[original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-manifest.json).
+Archive SHA256:
+`17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081`.
+
+**Remaining predeclared observations.** Separate BA100-sample confirmation: pending.
+Original-main→316 73-case regression: pending. Required PR checks and final
+acceptance remain separate; pending items are not passing results.
