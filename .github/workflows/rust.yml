@@ -27,7 +27,28 @@ jobs:
     # Resolve native build dependencies before spending time compiling and testing.
     - name: Install musl build tools
       run: |
-        apt_options=(-o Acquire::Retries=0 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30)
+        # Use the independent Ubuntu mirror validated in PR #214 without changing
+        # the runner's DNS, configured repositories or Ubuntu signing-key trust.
+        . /etc/os-release
+        ci_ubuntu_codename="${VERSION_CODENAME:?Ubuntu release codename is required}"
+        ci_ubuntu_apt_dir=$(mktemp -d "${RUNNER_TEMP}/ubuntu-musl-apt.XXXXXX")
+        chmod 755 "$ci_ubuntu_apt_dir"
+        mkdir -p "$ci_ubuntu_apt_dir/empty-sourceparts" "$ci_ubuntu_apt_dir/lists/partial"
+        cat > "$ci_ubuntu_apt_dir/ubuntu.sources" <<EOF
+        Types: deb
+        URIs: https://mirrors.edge.kernel.org/ubuntu
+        Suites: ${ci_ubuntu_codename} ${ci_ubuntu_codename}-updates ${ci_ubuntu_codename}-security
+        Components: main universe
+        Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+        EOF
+        apt_options=(
+          -o "Dir::Etc::sourcelist=$ci_ubuntu_apt_dir/ubuntu.sources"
+          -o "Dir::Etc::sourceparts=$ci_ubuntu_apt_dir/empty-sourceparts"
+          -o "Dir::State::lists=$ci_ubuntu_apt_dir/lists"
+          -o Acquire::Retries=0
+          -o Acquire::http::Timeout=30
+          -o Acquire::https::Timeout=30
+        )
         for attempt in 1 2 3; do
           echo "Installing musl build tools (attempt ${attempt}/3)"
           if sudo apt-get "${apt_options[@]}" update --error-on=any &&
@@ -46,7 +67,7 @@ jobs:
         if command -v resolvectl >/dev/null 2>&1; then
           timeout 5s resolvectl status || true
         fi
-        for host in azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
+        for host in mirrors.edge.kernel.org azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
           echo "DNS lookup as runner: ${host}"
           timeout 5s getent ahosts "${host}" || true
           echo "DNS lookup as root: ${host}"
