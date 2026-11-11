@@ -1,0 +1,6 @@
+ProductName:		macOS
+ProductVersion:		14.3
+BuildVersion:		23D56
+Apple M3 Max
+68719476736
+16

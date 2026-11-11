@@ -24040,3 +24040,38 @@ real Tika duplicate-ID multi-source parity in both dialects, and all-target clip
 pass. Candidate binary and matched performance evidence remain pending. No timing
 gain is inferred from the representation change and no traversal semantics are
 weakened to improve timing.
+
+
+**Attempts319–324 incremental results and retained limits.** Six independent real64
+AB20 pairs completed1656 full typed responses with no request failures/OOM and
+independent receipt/sample/resource verification.319 OPTIONAL P95 -159.150ms with
+all resource comparisons within5%; the small change is not strong path attribution.
+320 degree P95 -2125.071ms and pressureCPU -5.265%, but loadingCPU +5.544% fails
+its parent-relative bound and other cases increase.321 two-hop P95 +32.680ms has
+no target latency benefit; pressureCPU -1.243% and queryRSS -1.878% are retained
+mixed observations, not compensation for latency.322 rollup/global P95 improve
+164.073/148.742ms, but loadingCPU +7.072% violates its bound, co-use +16.039ms and
+OPTIONAL +710.830ms remain visible.323 OPTIONAL P95 -3302.127ms, pressureCPU
+-12.617% and queryRSS -17.961% meet its resource bounds, while degree +466.730ms
+is retained.324 two-hop P95 -954.797ms and pressureCPU -4.421%, but queryRSS
++6.613% exceeds its parent-relative bound and OPTIONAL P95 +416.850ms increases.
+
+Retain positive increments for cumulative evaluation; do not call any mixed or
+violating pair universally recovered. No total pipeline E2E or production availability
+recovery is established; first-use/pressure/resource operation boundaries and all
+P50/P95/min/max remain separate. All individual correctness checks passed, with
+final465 module/integration tests and lint. Baseline loading code is unchanged,
+but lack of a source change does not waive observed CPU increases. No synthetic or
+single-graph performance evidence was used.
+
+[Detailed incremental report](seconds-query-p95-2026-11-12.md) and
+[all six audits/raw archives](query-performance-evidence/2026-11-12/seconds-p95/README.md)
+record baseline/candidate values, absolute deltas and independent resource limits.
+The final main69ba5f30→cumulative868158af BA100 confirmation,73-case regression
+and any separately declared loading diagnosis are the
+[cumulative experiment-history appendix](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-seconds-p95-final-2026-11-12/final-assessment.md),
+with checksum-pinned raw evidence in its immutable release. This appendix is the
+location of final per-workload correctness/stability/P50/P95/CPU/RSS and E2E-scope
+conclusions; incremental pilots above are not its substitute. Product code is
+frozen while remote CI and this final validation run independently; PR readiness
+requires both, and no data is rewritten to turn an adverse observation into PASS.
