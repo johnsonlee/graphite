@@ -4,7 +4,7 @@
 
 **目标：优先解决慢查询、复杂聚合的 P95。P50 仅作诊断，不能抵消 P95 退化。** 正确性、可用性、稳定性以及 CPU/RSS 各自的 5% 限制保持不变。用户报告生产 50+ 图 P95 经常达到几十秒；四组真实 JAR 的 64 个分片不能完整代表这些生产项目。
 
-**最新结论：新增复杂工作负载已暴露几十秒级尾延迟，且 Attempt316 的三轮配对观察显示明确的增量收益。** 原 main 在复杂查询 pilot 的预热阶段超时，没有压力 P95；它不能作为完整压力比较基线。首轮 315→316 配对中，dependency co-use P95 从 **38,919.123 ms 降至 2,264.064 ms**，绝对减少 **36,655.059 ms**；反序 BA 第二轮为 **37,186.954→2,268.983 ms**。三轮全部六类 P95 均下降，混合压力 CPU 与查询进程峰值 RSS 也下降。目前三轮 pilot 已完成，独立 100 样本确认和原 73 类回归尚未全部完成，不能宣布最终验收或原 main 回归恢复。
+**最新结论：新增复杂工作负载已暴露几十秒级尾延迟，Attempt316 在独立100样本确认中显示明确的增量收益。** 以完整工作的315为增量参考，dependency co-use P95 从 **46,058.471 ms 降至2,292.147 ms**，绝对减少 **43,766.323 ms（95.023%）**；另外五类P95也下降，混合压力CPU下降51.085%，查询进程生命周期峰值RSS下降20.408%。三个pilot与独立确认分别保留，未pool。原main在复杂查询预热阶段超时，没有完整压力P95/CPU基线，因此不能把这些增量数字说成原main恢复比率。原73类回归已完整通过结果/资源核验，但42/73类pressure P95出现小幅上升（最大+2.702041 ms），不能宣称所有查询无回退；最终HEAD CI尚待运行。
 
 ## 本地复杂查询新证据与当前状态
 
@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | 原 main `58215b98`，测量构建 checkout `a911529a` | 六条 first-use 均完成，其中 co-use 46,300.031 ms；随后 pilot 预热 co-use 超过 70 秒客户端期限，另一在途请求在失败停止时中断；压力样本为 0 | 保留可用性失败；first-use 不是 P95，不能构造原 main 压力 P95 或完整压力 CPU 基线 |
 | Attempt315 `94c7d3b9` | 六条 first-use、12 条 warmup、120 条 pressure 共 138 请求完成；每类 pressure N=20 | 有当前固定复杂 workload 的每类 rank19 P95；尚不是与原 main 的完整配对恢复证据 |
-| Attempt316 `3498c8ea` | 紧凑字符串 pair 计数、有限字典 bitset 与 bounded winners；441 项模块测试、专项差分、显式真实双源 fixture、lint 和 release 构建通过；AB、BA、AB 三轮各276请求全部成功并匹配 | 已验证三轮增量收益，保留继续验证；不以现有轮次代替后续确认及累计验收 |
+| Attempt316 `3498c8ea` | 紧凑字符串 pair 计数、有限字典 bitset 与 bounded winners；441 项模块测试、专项差分、显式真实双源 fixture、lint 和 release 构建通过；AB、BA、AB 三轮各276请求及独立100样本确认的1,236请求全部成功并匹配 | 三轮pilot和独立确认均验证增量收益；原73类回归结果/资源成立但保留P95上升，最终HEAD CI待运行 |
 
 Attempt315 的单轮压力观察如下，均为完整请求的毫秒；不能与后文 Linux CI 73 类查询的分布拼接：
 
@@ -102,22 +102,80 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 
 来源：[第三轮审计](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-audit.json)、[摘要](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-summary.md)、[原始归档manifest](query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03-manifest.json)。
 
+### 独立 BA 确认：每类每臂100个压力样本
+
+按预声明协议单独运行，顺序为BA，每臂6次first-use、12次warmup和600次pressure，共618请求。两臂合计1,236份完整类型响应及原始收据、全部样本通过独立审计；二进制、fixture、查询及完整结果身份与三个pilot一致。每类P95取本轮100个样本的第95个顺序统计量，**不与三个20样本pilot合并**。
+
+| 查询 | 确认轮315 P95 ms | 确认轮316 P95 ms | 绝对变化 ms | 变化 |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup | 5,768.295 | 2,528.259 | -3,240.036 | -56.170% |
+| global target support | 4,889.072 | 2,801.873 | -2,087.198 | -42.691% |
+| two-hop DATAFLOW | 4,595.136 | 4,081.245 | -513.891 | -11.183% |
+| DATAFLOW degree histogram | 12,708.706 | 5,808.666 | -6,900.039 | -54.294% |
+| OPTIONAL DATAFLOW sinks | 21,838.016 | 11,352.328 | -10,485.687 | -48.016% |
+| dependency co-use | 46,058.471 | 2,292.147 | -43,766.323 | -95.023% |
+
+| 独立确认轮资源与完整压力阶段 | 315 | 316 | 绝对变化 | 5%资源上限观察 |
+| --- | ---: | ---: | ---: | --- |
+| loading CPU，秒 | 18.028 | 17.590 | -0.438（-2.430%） | 在界限内 |
+| loading kernel peak RSS，MiB | 3,795.984 | 3,798.109 | +2.125（+0.056%） | 在界限内 |
+| 完整混合 pressure CPU，秒 | 5,655.693 | 2,766.472 | -2,889.221（-51.085%） | 在界限内 |
+| query-process lifetime kernel peak RSS，MiB | 34,390.297 | 27,372.078 | -7,018.219（-20.408%） | 在界限内 |
+| 完整 pressure 阶段 wall，ms | 1,687,126.441 | 705,436.207 | -981,690.234 | 非资源限制项 |
+
+本轮六类P95均改善，四项资源分别在5%界限内。复杂查询目前已具备三个独立pilot和一份独立100样本确认的增量证据；只有这一份100样本确认，不能把它描述成三份独立确认或补造跨轮置信区间。P50、min/max及所有原始样本仍在审计与归档中。资源口径不变：CPU为固定混合窗口，RSS为含加载/预热的新查询进程生命周期，不能推导单查询资源上限或与failed原main比较。
+
+来源：[100样本确认审计](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-audit.json)、[独立确认摘要](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-summary.md)、[原始归档manifest](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-manifest.json)。
+
+### 原main→316：原73类查询回归单独结论
+
+`paired-regression-01`按AB运行，A为原main源码闭包的冻结binary（SHA256 `8176dd0f…`，构建checkout `a911529a`），B为相同316候选（`c774c87c…`）。每臂73次first-use、146次warmup、1,460次pressure及2,920次isolated，共4,599请求；全部9,198份完整类型响应、182,027,538字节body及原始收据通过独立审计，64图身份、查询及完整结果一致。
+
+这里**确实包含并发4、每类20次的pressure阶段**；后续所有73类满足p50<100 ms条件，各追加并发1的40次isolated。后者是隔离回放，不能冒充持续压力；两类样本分别保留。这次mode名称虽为measure，regression协议仍固定pressure20，不是complex确认轮的每类100次。
+
+结果正确性、完整执行和本轮四项资源观察成立；**不能把它标为每类P95都无回退**。73类中42类pressure P95上升，47类pressure P50上升。最大的绝对P95上升为2.702041 ms，全部用例和样本在链接的审计及摘要中保留，不删除不利观察，也不只展示改善项。
+
+| pressure P95上升的代表用例 | 原main ms | 316 ms | 绝对变化 ms |
+| --- | ---: | ---: | ---: |
+| shape-equality | 1.343792 | 4.045833 | +2.702041 |
+| shape-skip | 2.140750 | 3.330000 | +1.189250 |
+| shape-with-aggregate | 48.694083 | 49.844792 | +1.150709 |
+| shape-coalesce | 1.666417 | 2.074500 | +0.408083 |
+| shape-case-expr | 1.173791 | 1.509875 | +0.336084 |
+| shape-count-traversal | 14.652709 | 14.980834 | +0.328125 |
+
+| 原73类回归资源 | 原main | 316 | 绝对变化 | 5%资源上限观察 |
+| --- | ---: | ---: | ---: | --- |
+| loading CPU，秒 | 17.947510 | 17.922770 | -0.024740（-0.138%） | 在界限内 |
+| loading kernel peak RSS，MiB | 3,796.968750 | 3,797.765625 | +0.796875（+0.021%） | 在界限内 |
+| 完整混合 pressure CPU，秒 | 10.290476 | 10.082159 | -0.208317（-2.024%） | 在界限内 |
+| query-process lifetime kernel peak RSS，MiB | 4,998.859375 | 5,010.500000 | +11.640625（+0.233%） | 在界限内 |
+
+本轮pressure CPU只覆盖完整混合pressure窗口；query-process RSS包括加载、first-use、warmup、pressure及isolated全过程。四项资源在各自5%界限内，但一轮20样本不能证明小幅P95上升来自代码，也不能证明其不存在。没有用小基数百分比启动重复优化或挑选更有利的重跑。此结论独立于复杂六类查询的明显P95收益；后者不能抵消前者的观测或让总体无回退自动成立。
+
+来源：[原73类回归审计](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-audit.json)、[全部用例摘要](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-summary.md)、[原始归档manifest](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-manifest.json)。
+
+### 累计验证状态
+
 | 后续预声明验证 | 当前证据状态 |
 | --- | --- |
 | 第二轮 BA，20样本/类/臂 | 已独立审计，单独结果见上表 |
 | 第三轮 AB，20样本/类/臂 | 已独立审计，单独结果见上表 |
-| 独立 BA 确认，100样本/类/臂 | 正在执行，完成后独立审计；不与20样本轮次池化 |
-| 原 main→316，原73类查询回归 | 待执行/审计，单独结论 |
+| 独立 BA 确认，100样本/类/臂 | 已完成独立审计，单独rank95结果见上表 |
+| 原 main→316，原73类查询回归 | 已独立审计；结果/资源成立，42类pressure P95上升原样保留 |
 
-当前决定是保留这个已显示正收益的增量并继续验证，最终验收尚未成立。**原 main 的复杂查询 pilot 失败仍保留：不存在可与316构成压力 P95/CPU/RSS 恢复比较的原 main 完整样本。**
+当前决定是保留已独立确认的复杂查询正收益增量。全部预声明本地测量已完成，但原73类的P95上升与生产代表性限制仍保留，不声明全系统无回退或最终性能验收通过。最终HEAD CI尚待运行。**原 main 的复杂查询 pilot 失败仍保留：不存在可与316构成压力 P95/CPU/RSS 恢复比较的原 main 完整样本。**
 
 源代码和实测二进制的对应关系见[身份映射](query-performance-evidence/2026-11-11/complex-p95/README.md#source-and-executable-identities)及[provenance.json](query-performance-evidence/2026-11-11/complex-p95/provenance.json)。315/316先构建并冻结二进制、后提交源码；提交映射依据当时的会话构建记录，原始run report只记录binary SHA和输入，不能声称它含有独立的产品构建manifest或二进制内嵌源码证明。
 
 [PR212](https://github.com/johnsonlee/graphite/pull/212) 在 `f6d2c565` 的十项CI检查均已成功，包括[必需benchmark gate](https://github.com/johnsonlee/graphite/actions/runs/42960174517)和[JVM检查](https://github.com/johnsonlee/graphite/actions/runs/42960174879)。这是该提交的正确性/完整执行/OOM证据，benchmark时延仍为report-only；之后新增报告内容形成的新HEAD需要对应检查，不能沿用旧HEAD状态冒充。
 
+
+全部本地测量结束后，`cargo fmt --all --check`通过，`cargo test --locked -p graphite-benchmark`为68通过、0失败、1个既有忽略项，`git diff --check`通过。这些是本地检查；不声称尚未运行的最终提交CI已通过。已有`f6d2c565`的CI结果仅适用于其明确版本，不能自动升级为最终HEAD结果。
+
 ## 剩余优化空间：以复杂查询实际路径为中心
 
-以下是源码支持的待测假设，不是收益预测。316首轮中，尾延迟重点已转向 OPTIONAL sinks（P95 10,696.064 ms）、degree histogram（5,650.064 ms）和两跳 DATAFLOW（4,061.495 ms）；需用后续轮次确认这一排序，不能仅凭首轮就启动新的优化或扩大本轮范围。
+以下是源码支持的待测假设，不是收益预测。316的独立100样本确认中，剩余尾延迟重点为 OPTIONAL sinks（P95 11,352.328 ms）、degree histogram（5,808.666 ms）和两跳 DATAFLOW（4,081.245 ms）。这些是下一阶段可研究的绝对成本，不代表本次已完成其余优化，也不自动扩展当前实验范围。
 
 | 路径 | 已有实现与剩余成本 | 下一项可测假设及限制 |
 | --- | --- | --- |
@@ -138,7 +196,7 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 - 超过任一上限、出现空或非规范 provenance，均在累计 pair 前回退到 Attempt315 streaming；不会截断图或结果，但也不会得到 316 的紧凑状态收益，并会付出一次有限预处理成本。
 - 64/65 测试只证明正确性和回退。当前真实 64 图测量不能证明 65、96 或更多生产图的延迟/CPU/RSS边界。若要扩展 bitset，需在相应真实持久化多图工作负载上独立比较，不以合成 fixture 的时延代替。
 
-实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮配对结果见上文；其余轮次与累计验收仍待完成。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
+实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮pilot、独立确认和原73类回归各自结论见上文；不将42类小幅P95上升抹除，最终HEAD CI尚待运行。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
 
 ---
 

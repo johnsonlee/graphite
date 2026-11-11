@@ -191,3 +191,40 @@ input/query/binary/result identities match the earlier pairs. No rounds are pool
 [manifest](paired-pilot-03-manifest.json) retain the original evidence. Verify with
 `verify_archive.py --manifest paired-pilot-03-manifest.json`. Archive SHA256:
 `17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081`.
+
+
+## Independent100-sample confirmation (BA)
+
+[paired-measure-01-summary.md](paired-measure-01-summary.md) and
+[paired-measure-01-audit.json](paired-measure-01-audit.json) retain the separate
+100-pressure-sample-per-case/arm confirmation. Both arms completed618 requests;
+all1236 full typed responses passed independent verification. Its rank95 P95
+values remain separate from the three rank19 pilot rounds. Source-input, fixture,
+query, binary and complete-result identities match those rounds.
+
+[paired-measure-01.tar.gz](paired-measure-01.tar.gz) preserves3739 original files,
+67,834,939 raw bytes in6,665,823 compressed bytes. Verify the
+[manifest](paired-measure-01-manifest.json) using
+`verify_archive.py --manifest paired-measure-01-manifest.json`. Archive SHA256:
+`1dc802fa8b884b782ce0b4b40d79a2e66b48bed5b89e41757d6cb99d68274bc5`.
+
+
+## Original-main→316 73-case regression (AB)
+
+[paired-regression-01-summary.md](paired-regression-01-summary.md) and
+[paired-regression-01-audit.json](paired-regression-01-audit.json) retain the
+separate regression run: each arm73 first-use,146 warmup,1460 pressure and2920
+isolated requests. All9198 complete typed responses passed independent audit.
+The pressure stage is20 requests/case at concurrency4; isolated is40 at
+concurrency1, not sustained pressure. All73 qualified for isolated sampling.
+
+42/73 pressure P95 observations increased (largest absolute+2.702041ms). The
+resource bounds held for the measured mix, but this is not a claim of per-case
+latency nonregression. No adverse observations were removed or favorable reruns
+selected. Complete pressure and isolated values remain in the audit JSON.
+
+[paired-regression-01.tar.gz](paired-regression-01.tar.gz) preserves27627 original
+files,265,960,247 raw bytes in18,666,997 compressed bytes. Verify the
+[manifest](paired-regression-01-manifest.json) with
+`verify_archive.py --manifest paired-regression-01-manifest.json`. Archive SHA256:
+`dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154`.

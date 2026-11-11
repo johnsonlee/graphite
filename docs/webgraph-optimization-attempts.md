@@ -23604,6 +23604,97 @@ Evidence: [third-pair audit](query-performance-evidence/2026-11-11/complex-p95/p
 Archive SHA256:
 `17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081`.
 
-**Remaining predeclared observations.** Separate BA100-sample confirmation: pending.
-Original-main→316 73-case regression: pending. Required PR checks and final
-acceptance remain separate; pending items are not passing results.
+**Separate100-sample confirmation (BA).** Run `paired-measure-01` completed
+618 requests per arm: six first-use, twelve warmup and600 pressure. Independent
+audit verified all1236 full typed responses, every receipt/journal and sample,
+64-graph scope and CPU/wait4 corroboration. Binary, source-input, fixture, query
+and complete-result identities match all three pilot pairs. Each case/arm P95
+below is rank95 of this run’s100 requests; do not pool with the20-sample pilots.
+
+| Case | Confirmation A P95 ms | Confirmation B P95 ms | Absolute Δ ms | Δ % |
+| --- | ---: | ---: | ---: | ---: |
+| caller dependency rollup |5768.295|2528.259|-3240.036|-56.170%|
+| global target support |4889.072|2801.873|-2087.198|-42.691%|
+| two-hop DATAFLOW |4595.136|4081.245|-513.891|-11.183%|
+| DATAFLOW degree histogram |12708.706|5808.666|-6900.039|-54.294%|
+| OPTIONAL DATAFLOW sinks |21838.016|11352.328|-10485.687|-48.016%|
+| dependency co-use |46058.471|2292.147|-43766.323|-95.023%|
+
+| Confirmation resource/boundary | A | B | Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+| Loading CPU s |18.028|17.590|-0.438 (-2.430%)|Within bound|
+| Loading kernel peak RSS MiB |3795.984|3798.109|+2.125 (+0.056%)|Within bound|
+| Complete mixed-pressure CPU s |5655.693|2766.472|-2889.221 (-51.085%)|Within bound|
+| Query-process lifetime kernel peak RSS MiB |34390.297|27372.078|-7018.219 (-20.408%)|Within bound|
+| Complete pressure-stage wall ms |1687126.441|705436.207|-981690.234|Not a resource limit|
+
+All six P95 and four phase/resource observations meet the declared comparisons
+in this independent confirmation. Retain the positive compact increment. This is
+one100-sample confirmation, not three independent such runs or a cross-round
+confidence interval. P50 diagnostics, min/max and every sample remain archived.
+CPU is mixed-workload server user+system; RSS is complete query-process lifetime
+including loading and warmup. These are not individual-case resource proofs.
+Original-main’s failed complex pilot remains incomparable, so this does not
+establish an original-main pressure recovery ratio or full production acceptance.
+
+Evidence: [confirmation audit](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-audit.json),
+[summary](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-summary.md),
+[original-evidence manifest](query-performance-evidence/2026-11-11/complex-p95/paired-measure-01-manifest.json).
+Archive SHA256:
+`1dc802fa8b884b782ce0b4b40d79a2e66b48bed5b89e41757d6cb99d68274bc5`.
+
+**Original-main→316 73-case regression (AB), separate conclusion.**
+`paired-regression-01` completed4599 requests per arm:73 first-use,146 warmup,
+1460 pressure (20 per case at concurrency4), and2920 isolated (40 per case at
+concurrency1; all73 qualified under the existing pressure-p50<100ms rule).
+Independent audit verified all9198 complete typed responses and182027538 body
+bytes, receipts, journals, per-case quantiles and64-graph identities. This is
+not isolated-only, and its mode name does not change regression pressure20 to
+complex-confirmation100. The isolated replay is not sustained pressure.
+
+The original-main binary SHA256 is
+`8176dd0faa6203e7ec753007ddef98d8f30ab918ae56dddad6f2ee7678c4175c`
+(build checkout `a911529a`); the316 binary remains unchanged. Result equality,
+complete execution and the four declared resource comparisons passed. However,
+42 of73 pressure P95 values and47 of73 P50 values increased. Preserve these
+adverse observations; do not claim every query was nonregressing.
+
+| Largest observed pressure P95 increases | Original main ms |316 ms| Absolute Δ ms |
+| --- | ---: | ---: | ---: |
+|shape-equality|1.343792|4.045833|+2.702041|
+|shape-skip|2.140750|3.330000|+1.189250|
+|shape-with-aggregate|48.694083|49.844792|+1.150709|
+|shape-coalesce|1.666417|2.074500|+0.408083|
+|shape-case-expr|1.173791|1.509875|+0.336084|
+|shape-count-traversal|14.652709|14.980834|+0.328125|
+
+| Regression resource/boundary | Original main |316| Absolute Δ | Independent5% bound observation |
+| --- | ---: | ---: | ---: | --- |
+|Loading CPU s|17.947510|17.922770|-0.024740 (-0.138%)|Within bound|
+|Loading kernel peak RSS MiB|3796.968750|3797.765625|+0.796875 (+0.021%)|Within bound|
+|Complete mixed-pressure CPU s|10.290476|10.082159|-0.208317 (-2.024%)|Within bound|
+|Query-process lifetime kernel peak RSS MiB|4998.859375|5010.500000|+11.640625 (+0.233%)|Within bound|
+
+CPU covers the complete pressure mix; query lifetime RSS additionally includes
+loading, first use, warmup and isolated replay. A single20-sample observation
+cannot establish the cause of small P95 increases or prove their absence. Do not
+repeat tiny-timing optimization/stabilization loops or select favorable reruns.
+The complex workload improvements do not erase these observations or prove
+universal recovery. Original-main’s complex pilot remains a retained failure.
+
+Evidence: [73-case audit](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-audit.json),
+[all-case summary](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-summary.md),
+[27627-file manifest](query-performance-evidence/2026-11-11/complex-p95/paired-regression-01-manifest.json).
+Archive SHA256:
+`dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154`.
+
+**Local decision and remaining limits.** Retain315/316: three separate pilots
+and the separate100-sample confirmation establish a positive complex-query
+increment with the declared mixed-workload resource bounds. All predeclared
+local measurements are complete. Do not label this universal performance
+acceptance: existing-query adverse P95 observations, producer/production scope
+limitations and the failed original-main complex baseline remain explicit.
+After all measurements, local formatting and benchmark module tests passed
+(68 passed,0 failed,1 pre-existing ignored), as did diff checks. Final-HEAD PR
+correctness/OOM CI has not yet run; earlier `f6d2c565` CI applies only to that
+recorded version. No future CI pass is claimed.
