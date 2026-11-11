@@ -1,13 +1,17 @@
 """Recompute retained real64 observations; no benchmark or performance acceptance."""
+import argparse
 import collections
 import gzip
 import hashlib
 import json
 import math
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("raw_root", nargs="?", type=Path)
+parser.add_argument("--requests-dir", type=Path, default=ROOT, help="Directory containing the two pinned request gzip files")
+args = parser.parse_args()
 report = json.loads((ROOT / "ci-report.json").read_text())
 suite = next(s for s in report["suites"] if s["suite"] == "native-real64")
 assert report["passed"] and not report["performanceAcceptance"]
@@ -17,7 +21,7 @@ audit = {"measuredHead": report["headSha"], "sourceTree": suite["inputs"]["head"
          "performanceAcceptance": False, "arms": {}, "cases": [], "sha256": {}}
 groups = {}
 for arm in ("base", "head"):
-    path = ROOT / f"{arm}-requests.json.gz"
+    path = args.requests_dir / f"{arm}-requests.json.gz"
     records = json.loads(gzip.decompress(path.read_bytes()))
     assert len(records) == 4399
     assert all(r["passed"] and r["error"] is None for r in records)
@@ -59,17 +63,17 @@ audit["cases"].sort(key=lambda c: c["head"]["p95Ms"], reverse=True)
 assert len(audit["cases"]) == 73
 audit["identicalNativeBinary"] = suite["inputs"]["base"]["binarySha256"] == suite["inputs"]["head"]["binarySha256"]
 for name in ("ci-report.json", "base-requests.json.gz", "head-requests.json.gz"):
-    audit["sha256"][name] = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+    audit["sha256"][name] = hashlib.sha256(((args.requests_dir if name.endswith(".gz") else ROOT) / name).read_bytes()).hexdigest()
 (ROOT / "audit.json").write_text(json.dumps(audit, indent=2) + "\n")
 print("Verified 8798 recorded requests and every reported pressure/isolated percentile; 73 cases; report-only.")
 
 # Optional extracted benchmark-evidence artifact, including complete response bodies.
-if len(sys.argv) > 1:
-    raw_root = Path(sys.argv[1])
+if args.raw_root:
+    raw_root = args.raw_root
     oracles = {}
     count = 0
     for arm in ("base", "head"):
-        records = json.loads(gzip.decompress((ROOT / f"{arm}-requests.json.gz").read_bytes()))
+        records = json.loads(gzip.decompress((args.requests_dir / f"{arm}-requests.json.gz").read_bytes()))
         for row in records:
             path = raw_root / Path(row["bodyPath"]).relative_to("benchmark-run")
             body = path.read_bytes()

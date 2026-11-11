@@ -1,0 +1,64 @@
+{
+  "repository": "johnsonlee/graphite",
+  "releaseTag": "benchmark-evidence-pr212-2026-11-11",
+  "publicationStatus": "published",
+  "assets": [
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/base-requests.json.gz",
+      "name": "base-requests.json.gz",
+      "bytes": 317407,
+      "sha256": "fd74afd0a34bf6e0f14033160cb9b5e8da9ea31bddb7b43751880b7367260a4d",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/base-requests.json.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/historical-baseline-attempt315.tar.gz",
+      "name": "historical-baseline-attempt315.tar.gz",
+      "bytes": 1176912,
+      "sha256": "cc56b1b363f903f6d042ab523a48a5a4c6b34e70430a854da5751398c11345a3",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/historical-baseline-attempt315.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/paired-measure-01.tar.gz",
+      "name": "paired-measure-01.tar.gz",
+      "bytes": 6665823,
+      "sha256": "1dc802fa8b884b782ce0b4b40d79a2e66b48bed5b89e41757d6cb99d68274bc5",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-measure-01.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-01.tar.gz",
+      "name": "paired-pilot-01.tar.gz",
+      "bytes": 1707360,
+      "sha256": "1578eded657ba38ff206f31d84cfbf95a0534f131dd5d9c5535cdb9400abe948",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-01.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-02.tar.gz",
+      "name": "paired-pilot-02.tar.gz",
+      "bytes": 1706220,
+      "sha256": "e3c5a1044ec7255c160c3e8484bd3f609ffed29d827c9f4f12bf04d0f0023843",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-02.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/paired-pilot-03.tar.gz",
+      "name": "paired-pilot-03.tar.gz",
+      "bytes": 1707605,
+      "sha256": "17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-03.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/complex-p95/paired-regression-01.tar.gz",
+      "name": "paired-regression-01.tar.gz",
+      "bytes": 18666997,
+      "sha256": "dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-regression-01.tar.gz"
+    },
+    {
+      "repositoryPath": "docs/query-performance-evidence/2026-11-11/head-requests.json.gz",
+      "name": "head-requests.json.gz",
+      "bytes": 317334,
+      "sha256": "4ee5716f153937ddfaa647a40a5a03adf142499b3a38ee49a7faa13f92e18b0f",
+      "url": "https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/head-requests.json.gz"
+    }
+  ],
+  "releaseUrl": "https://github.com/johnsonlee/graphite/releases/tag/benchmark-evidence-pr212-2026-11-11"
+}

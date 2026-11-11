@@ -10,12 +10,13 @@ from pathlib import Path, PurePosixPath
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--extract", type=Path)
+    parser.add_argument("--archive", type=Path, help="External archive path; defaults to the manifest-adjacent archive")
     parser.add_argument("--manifest", type=Path, default=Path("archive-manifest.json"))
     args = parser.parse_args()
     root = Path(__file__).resolve().parent
     manifest_path = args.manifest if args.manifest.is_absolute() else root / args.manifest
     manifest = json.loads(manifest_path.read_text())
-    archive = root / manifest["archive"]
+    archive = args.archive if args.archive else manifest_path.parent / manifest["archive"]
     assert hashlib.sha256(archive.read_bytes()).hexdigest() == manifest["archiveSha256"]
     assert archive.stat().st_size == manifest["archiveBytes"]
     expected = {row["path"]: row for row in manifest["files"]}

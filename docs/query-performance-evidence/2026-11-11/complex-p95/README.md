@@ -1,5 +1,9 @@
 # Retained local complex-query evidence
 
+Archive cache/migration instructions and fixed asset pins are in the
+[parent evidence README](../README.md). `verify_archive.py --archive PATH` accepts
+an external cached archive while preserving all manifest checks.
+
 These files preserve the first baseline pilot and Attempt315 pilot, including the
 failed baseline. They are separate from the later matched 315→316 run and do not
 establish final performance acceptance. The fixed workload and boundaries are in
@@ -49,7 +53,7 @@ session output independently recorded Rust1.93.0, not a frozen Cargo version.
 
 ## Contents and integrity
 
-- [historical-baseline-attempt315.tar.gz](historical-baseline-attempt315.tar.gz)
+- [historical-baseline-attempt315.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/historical-baseline-attempt315.tar.gz)
   preserves 505 original files, 11,127,585 uncompressed bytes, in 1,176,912 bytes.
   It includes both complete run directories: protocol, queries, report, arm
   report, input seal, registry snapshots, every issued request journal, complete
@@ -111,10 +115,13 @@ load-only process's peak. These limits remain explicit in every summary.
 
 ## Reproduce the independent audit
 
-From the repository root, verify and extract to a fresh empty directory:
+From the repository root, fetch the pinned archives into the external cache,
+then verify and extract to a fresh empty directory:
 
 ```sh
+python3 docs/query-performance-evidence/2026-11-11/fetch_assets.py
 python3 docs/query-performance-evidence/2026-11-11/complex-p95/verify_archive.py \
+  --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/historical-baseline-attempt315.tar.gz" \
   --extract /tmp/graphite-complex-p95-historical-recheck
 
 python3 docs/query-performance-evidence/2026-11-11/complex-p95/audit_local.py \
@@ -148,10 +155,10 @@ typed results. Each case has20 pressure samples per arm at concurrency4. This is
 an incremental comparison against retained315, not recovery against the original
 failed baseline. Further rounds and confirmation are separate evidence.
 
-[paired-pilot-01.tar.gz](paired-pilot-01.tar.gz) contains859 original files,
+[paired-pilot-01.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-01.tar.gz) contains859 original files,
 17,222,741 raw bytes in1,707,360 compressed bytes; the
 [manifest](paired-pilot-01-manifest.json) binds every member and the archive.
-Verify or extract with `verify_archive.py --manifest paired-pilot-01-manifest.json`
+Verify or extract with `verify_archive.py --manifest paired-pilot-01-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-pilot-01.tar.gz"`
 and optionally `--extract` pointing at a fresh empty directory. Then audit the
 extracted `paired-pilot-01` directory as both baseline and candidate with
 `--candidate-arm candidate`. No historical CPU correction proof is needed.
@@ -167,10 +174,10 @@ reverse-order pair separately. Both arms completed138 requests; the independent
 audit verified all complete typed responses and the identical input/binary/query
 identities. Do not pool its20 pressure samples per case/arm with other rounds.
 
-[paired-pilot-02.tar.gz](paired-pilot-02.tar.gz) preserves859 original files,
+[paired-pilot-02.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-02.tar.gz) preserves859 original files,
 17,222,627 raw bytes in1,706,220 compressed bytes. Its
 [manifest](paired-pilot-02-manifest.json) is accepted by
-`verify_archive.py --manifest paired-pilot-02-manifest.json`. The archive SHA256 is
+`verify_archive.py --manifest paired-pilot-02-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-pilot-02.tar.gz"`. The archive SHA256 is
 `e3c5a1044ec7255c160c3e8484bd3f609ffed29d827c9f4f12bf04d0f0023843`.
 
 [archive_run.py](archive_run.py) provides the same deterministic packaging for
@@ -187,9 +194,9 @@ necessary after packaging.
 20-sample pair. All276 responses passed the full typed evidence audit, and
 input/query/binary/result identities match the earlier pairs. No rounds are pooled.
 
-[paired-pilot-03.tar.gz](paired-pilot-03.tar.gz) and its
+[paired-pilot-03.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-pilot-03.tar.gz) and its
 [manifest](paired-pilot-03-manifest.json) retain the original evidence. Verify with
-`verify_archive.py --manifest paired-pilot-03-manifest.json`. Archive SHA256:
+`verify_archive.py --manifest paired-pilot-03-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-pilot-03.tar.gz"`. Archive SHA256:
 `17699d633bf75b465be3439a0855950f0d6e5410b07e27b71103657ca1a93081`.
 
 
@@ -202,10 +209,10 @@ all1236 full typed responses passed independent verification. Its rank95 P95
 values remain separate from the three rank19 pilot rounds. Source-input, fixture,
 query, binary and complete-result identities match those rounds.
 
-[paired-measure-01.tar.gz](paired-measure-01.tar.gz) preserves3739 original files,
+[paired-measure-01.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-measure-01.tar.gz) preserves3739 original files,
 67,834,939 raw bytes in6,665,823 compressed bytes. Verify the
 [manifest](paired-measure-01-manifest.json) using
-`verify_archive.py --manifest paired-measure-01-manifest.json`. Archive SHA256:
+`verify_archive.py --manifest paired-measure-01-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-measure-01.tar.gz"`. Archive SHA256:
 `1dc802fa8b884b782ce0b4b40d79a2e66b48bed5b89e41757d6cb99d68274bc5`.
 
 
@@ -223,8 +230,8 @@ resource bounds held for the measured mix, but this is not a claim of per-case
 latency nonregression. No adverse observations were removed or favorable reruns
 selected. Complete pressure and isolated values remain in the audit JSON.
 
-[paired-regression-01.tar.gz](paired-regression-01.tar.gz) preserves27627 original
+[paired-regression-01.tar.gz](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-pr212-2026-11-11/paired-regression-01.tar.gz) preserves27627 original
 files,265,960,247 raw bytes in18,666,997 compressed bytes. Verify the
 [manifest](paired-regression-01-manifest.json) with
-`verify_archive.py --manifest paired-regression-01-manifest.json`. Archive SHA256:
+`verify_archive.py --manifest paired-regression-01-manifest.json --archive "$HOME/.cache/graphite/evidence/pr212-2026-11-11/paired-regression-01.tar.gz"`. Archive SHA256:
 `dd9cbcf71e8322087b869d9dc90d93cca4e5f6c58ce4a46166177c4bebd52154`.

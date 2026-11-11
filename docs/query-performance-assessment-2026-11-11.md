@@ -187,14 +187,16 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 
 316 仍枚举每个 caller 的全部 `d²` target 配对，且保留每个 distinct pair 的完整计数状态；**只为 K 个赢家物化 Row，不等于全部状态空间只有 O(K)**。输入数、唯一 pair 数和必须输出的数据量仍有下界。后续 profile 应记录输入节点数 N、匹配/扩展数 M、分组数 G、caller fan-out 分布和分配量，不从源码推断固定提速百分比。
 
-### Attempt316 的 64/65 边界与生产适用范围
+### 历史 Attempt316 的 64/65 边界与 Attempt317 待测范围
 
-[`unwind_groups_compact.rs`](../backend/cypher/src/engine/unwind_groups_compact.rs) 的两个字典分别限制为一次查询输入中至多 64 个 DISTINCT carried 字符串值、至多 64 个 provenance 字符串。它不是 target 类名最多 64，也不是每个 pair 分别最多 64。
+以下限制描述固定版本 [Attempt316 的实现](https://github.com/johnsonlee/graphite/blob/3498c8ead089e2d881719104ac6f368ec24d8c94/backend/cypher/src/engine/unwind_groups_compact.rs)，不代表后续 HEAD：两个字典分别限制为一次查询输入中至多 64 个 DISTINCT carried 字符串值、至多 64 个 provenance 字符串。它不是 target 类名最多 64，也不是每个 pair 分别最多 64。
 
 - 当前 catalog 的 carried 值是 graphId。50 个参与图通常在范围内；65 个不同 graphId 且贡献输入行的图通常触发回退。
 - 加载超过 64 图不必然回退：没有贡献输入行的图可能不进入字典。反之，若 DISTINCT 对象换成 caller，即使图数少也可能超过 64。判断依据是实际输入字典，不是服务器注册图数量。
 - 超过任一上限、出现空或非规范 provenance，均在累计 pair 前回退到 Attempt315 streaming；不会截断图或结果，但也不会得到 316 的紧凑状态收益，并会付出一次有限预处理成本。
 - 64/65 测试只证明正确性和回退。当前真实 64 图测量不能证明 65、96 或更多生产图的延迟/CPU/RSS边界。若要扩展 bitset，需在相应真实持久化多图工作负载上独立比较，不以合成 fixture 的时延代替。
+
+Attempt317（`1c85b1cb`）将高位 DISTINCT/provenance 状态扩展为多字掩码；稀疏宽字典使用稀疏存储，内部表示阈值不是查询准入上限。新增 `complex-wide-distinct` 固定负载只把 co-use 的 DISTINCT 对象由 graph 改为 caller，其他五类不变，仍查询同一组真实 64 图。其字典宽度需要完整响应或独立基数证据证明；不能据此声称已测 65/130 个实体图。常规 AB pilot→BA100 确认及 wide AB pilot 的预声明见 [协议](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)。本段只记录实现及测量计划，不预先宣称 Attempt317 性能通过。
 
 实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮pilot、独立确认和原73类回归各自结论见上文；不将42类小幅P95上升抹除，最终HEAD CI尚待运行。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
 
@@ -424,16 +426,19 @@ CPU 按各操作窗口记录 user+system，RSS 记录独立进程峰值；冷启
 复算归档请求及全部分位数：
 
 ```bash
-python3 docs/query-performance-evidence/2026-11-11/verify.py
+python3 docs/query-performance-evidence/2026-11-11/fetch_assets.py
+python3 docs/query-performance-evidence/2026-11-11/verify.py \
+  --requests-dir "$HOME/.cache/graphite/evidence/pr212-2026-11-11"
 ```
 
 复算完整响应需先下载上述 raw artifact，再传入解压后的根目录：
 
 ```bash
-python3 docs/query-performance-evidence/2026-11-11/verify.py /path/to/extracted-evidence
+python3 docs/query-performance-evidence/2026-11-11/verify.py /path/to/extracted-evidence \
+  --requests-dir "$HOME/.cache/graphite/evidence/pr212-2026-11-11"
 ```
 
-脚本会核对 8,798 个请求、全部 pressure/isolated 统计；带原始 artifact 时进一步核对完整 body、receipt SHA256、结果一致及 64 图范围。SHA256 保存在 `audit.json`。原始请求完整保留于同目录两个 `.json.gz`，没有丢弃慢样本或失败。历史源代码定位以目标 SHA 为准；新增报告会改变工作区 tree，不应与被测产品 tree 混淆。
+脚本会核对 8,798 个请求、全部 pressure/isolated 统计；带原始 artifact 时进一步核对完整 body、receipt SHA256、结果一致及 64 图范围。SHA256 保存在 `audit.json`。原始请求完整保留于[专用 evidence release](https://github.com/johnsonlee/graphite/releases/tag/benchmark-evidence-pr212-2026-11-11) 的两个 `.json.gz`，按[固定 SHA256 清单](query-performance-evidence/2026-11-11/assets.json)下载至外部缓存，没有丢弃慢样本或失败。历史源代码定位以目标 SHA 为准；新增报告会改变工作区 tree，不应与被测产品 tree 混淆。
 
 下表为历史 CI 被测 head `2275a506`（与初始目标 `58215b98` 整树一致）的全部 73 类观察，全部为 ms。每类 pressure N=20；有 isolated 数据者 N=40。破折号表示按协议未采样，不是零。按 pressure p95 排序，不代表生产流量权重。
 
