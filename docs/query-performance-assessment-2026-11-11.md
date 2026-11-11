@@ -1,10 +1,12 @@
 # Graphite 查询性能与优化空间评估
 
-评估日期：2026 年 11 月 11 日，Asia/Seoul。本报告分为两个证据阶段：初始目标 `58215b98` 的 PR211 历史 CI 评估，以及随后新增的真实 64 图复杂查询实验。已实现的原生候选为 Attempt315（`94c7d3b9`）和累计 Attempt316（`3498c8ea`）；不能再用初始 CI 的整树一致性代表开发分支 HEAD。
+评估日期：2026 年 11 月 11 日，Asia/Seoul。本报告分为两个证据阶段：初始目标 `58215b98` 的 PR211 历史 CI 评估，以及随后新增的真实 64 图复杂查询实验。历史原生候选为 Attempt315（`94c7d3b9`）和累计 Attempt316（`3498c8ea`），评审修复后的候选为 Attempt317（`1c85b1cb`）；不能再用初始 CI 的整树一致性代表开发分支 HEAD。
 
 **目标：优先解决慢查询、复杂聚合的 P95。P50 仅作诊断，不能抵消 P95 退化。** 正确性、可用性、稳定性以及 CPU/RSS 各自的 5% 限制保持不变。用户报告生产 50+ 图 P95 经常达到几十秒；四组真实 JAR 的 64 个分片不能完整代表这些生产项目。
 
-**最新结论：新增复杂工作负载已暴露几十秒级尾延迟，Attempt316 在独立100样本确认中显示明确的增量收益。** 以完整工作的315为增量参考，dependency co-use P95 从 **46,058.471 ms 降至2,292.147 ms**，绝对减少 **43,766.323 ms（95.023%）**；另外五类P95也下降，混合压力CPU下降51.085%，查询进程生命周期峰值RSS下降20.408%。三个pilot与独立确认分别保留，未pool。原main在复杂查询预热阶段超时，没有完整压力P95/CPU基线，因此不能把这些增量数字说成原main恢复比率。原73类回归已完整通过结果/资源核验，但42/73类pressure P95出现小幅上升（最大+2.702041 ms），不能宣称所有查询无回退；最终HEAD CI尚待运行。
+**评审修复后的最新结论：Attempt317 已移除64值准入上限，并使用自适应 dense/sparse 高位存储。** 真实64图的宽 DISTINCT pilot 中，co-use P95 为316的 **51,231.978 ms →317的3,891.426 ms**（减少47,340.551 ms）；返回19,397个不同caller，证明稀疏路径实际执行。这是每类20样本的pilot，不是65/130个实体图测试。独立常规100样本确认保留co-use **2,285.934→2,323.029 ms（+37.095 ms）**的观察；各项CPU/RSS比较均在5%界限内，不宣称常规P95全面无回退。详见[317证据与复现](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)。
+
+**前一阶段结论（Attempt316）：新增复杂工作负载已暴露几十秒级尾延迟，Attempt316 在独立100样本确认中显示明确的增量收益。** 以完整工作的315为增量参考，dependency co-use P95 从 **46,058.471 ms 降至2,292.147 ms**，绝对减少 **43,766.323 ms（95.023%）**；另外五类P95也下降，混合压力CPU下降51.085%，查询进程生命周期峰值RSS下降20.408%。三个pilot与独立确认分别保留，未pool。原main在复杂查询预热阶段超时，没有完整压力P95/CPU基线，因此不能把这些增量数字说成原main恢复比率。原73类回归已完整通过结果/资源核验，但42/73类pressure P95出现小幅上升（最大+2.702041 ms），不能宣称所有查询无回退；最终CI状态以[PR212当前HEAD检查](https://github.com/johnsonlee/graphite/pull/212/checks)为准。
 
 ## 本地复杂查询新证据与当前状态
 
@@ -14,7 +16,7 @@
 | --- | --- | --- |
 | 原 main `58215b98`，测量构建 checkout `a911529a` | 六条 first-use 均完成，其中 co-use 46,300.031 ms；随后 pilot 预热 co-use 超过 70 秒客户端期限，另一在途请求在失败停止时中断；压力样本为 0 | 保留可用性失败；first-use 不是 P95，不能构造原 main 压力 P95 或完整压力 CPU 基线 |
 | Attempt315 `94c7d3b9` | 六条 first-use、12 条 warmup、120 条 pressure 共 138 请求完成；每类 pressure N=20 | 有当前固定复杂 workload 的每类 rank19 P95；尚不是与原 main 的完整配对恢复证据 |
-| Attempt316 `3498c8ea` | 紧凑字符串 pair 计数、有限字典 bitset 与 bounded winners；441 项模块测试、专项差分、显式真实双源 fixture、lint 和 release 构建通过；AB、BA、AB 三轮各276请求及独立100样本确认的1,236请求全部成功并匹配 | 三轮pilot和独立确认均验证增量收益；原73类回归结果/资源成立但保留P95上升，最终HEAD CI待运行 |
+| Attempt316 `3498c8ea` | 紧凑字符串 pair 计数、有限字典 bitset 与 bounded winners；441 项模块测试、专项差分、显式真实双源 fixture、lint 和 release 构建通过；AB、BA、AB 三轮各276请求及独立100样本确认的1,236请求全部成功并匹配 | 三轮pilot和独立确认均验证增量收益；原73类回归结果/资源成立但保留P95上升，最终CI状态见PR当前HEAD检查 |
 
 Attempt315 的单轮压力观察如下，均为完整请求的毫秒；不能与后文 Linux CI 73 类查询的分布拼接：
 
@@ -164,14 +166,14 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 | 独立 BA 确认，100样本/类/臂 | 已完成独立审计，单独rank95结果见上表 |
 | 原 main→316，原73类查询回归 | 已独立审计；结果/资源成立，42类pressure P95上升原样保留 |
 
-当前决定是保留已独立确认的复杂查询正收益增量。全部预声明本地测量已完成，但原73类的P95上升与生产代表性限制仍保留，不声明全系统无回退或最终性能验收通过。最终HEAD CI尚待运行。**原 main 的复杂查询 pilot 失败仍保留：不存在可与316构成压力 P95/CPU/RSS 恢复比较的原 main 完整样本。**
+当前决定是保留已独立确认的复杂查询正收益增量。全部预声明本地测量已完成，但原73类的P95上升与生产代表性限制仍保留，不声明全系统无回退或最终性能验收通过。最终CI状态以[PR212当前HEAD检查](https://github.com/johnsonlee/graphite/pull/212/checks)为准。**原 main 的复杂查询 pilot 失败仍保留：不存在可与316构成压力 P95/CPU/RSS 恢复比较的原 main 完整样本。**
 
 源代码和实测二进制的对应关系见[身份映射](query-performance-evidence/2026-11-11/complex-p95/README.md#source-and-executable-identities)及[provenance.json](query-performance-evidence/2026-11-11/complex-p95/provenance.json)。315/316先构建并冻结二进制、后提交源码；提交映射依据当时的会话构建记录，原始run report只记录binary SHA和输入，不能声称它含有独立的产品构建manifest或二进制内嵌源码证明。
 
 [PR212](https://github.com/johnsonlee/graphite/pull/212) 在 `f6d2c565` 的十项CI检查均已成功，包括[必需benchmark gate](https://github.com/johnsonlee/graphite/actions/runs/42960174517)和[JVM检查](https://github.com/johnsonlee/graphite/actions/runs/42960174879)。这是该提交的正确性/完整执行/OOM证据，benchmark时延仍为report-only；之后新增报告内容形成的新HEAD需要对应检查，不能沿用旧HEAD状态冒充。
 
 
-全部本地测量结束后，`cargo fmt --all --check`通过，`cargo test --locked -p graphite-benchmark`为68通过、0失败、1个既有忽略项，`git diff --check`通过。这些是本地检查；不声称尚未运行的最终提交CI已通过。已有`f6d2c565`的CI结果仅适用于其明确版本，不能自动升级为最终HEAD结果。
+Attempt316阶段本地测量结束后，`cargo fmt --all --check`通过，`cargo test --locked -p graphite-benchmark`为68通过、0失败、1个既有忽略项，`git diff --check`通过。这些是本地检查；最终提交CI状态单独从PR当前HEAD核对。已有`f6d2c565`的CI结果仅适用于其明确版本，不能自动升级为最终HEAD结果。
 
 ## 剩余优化空间：以复杂查询实际路径为中心
 
@@ -187,7 +189,7 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 
 316 仍枚举每个 caller 的全部 `d²` target 配对，且保留每个 distinct pair 的完整计数状态；**只为 K 个赢家物化 Row，不等于全部状态空间只有 O(K)**。输入数、唯一 pair 数和必须输出的数据量仍有下界。后续 profile 应记录输入节点数 N、匹配/扩展数 M、分组数 G、caller fan-out 分布和分配量，不从源码推断固定提速百分比。
 
-### 历史 Attempt316 的 64/65 边界与 Attempt317 待测范围
+### 历史 Attempt316 的 64/65 边界与 Attempt317 验证范围
 
 以下限制描述固定版本 [Attempt316 的实现](https://github.com/johnsonlee/graphite/blob/3498c8ead089e2d881719104ac6f368ec24d8c94/backend/cypher/src/engine/unwind_groups_compact.rs)，不代表后续 HEAD：两个字典分别限制为一次查询输入中至多 64 个 DISTINCT carried 字符串值、至多 64 个 provenance 字符串。它不是 target 类名最多 64，也不是每个 pair 分别最多 64。
 
@@ -196,7 +198,7 @@ CPU 是 server user+system，pressure 为固定六类混合窗口；RSS 是各�
 - 超过任一上限、出现空或非规范 provenance，均在累计 pair 前回退到 Attempt315 streaming；不会截断图或结果，但也不会得到 316 的紧凑状态收益，并会付出一次有限预处理成本。
 - 64/65 测试只证明正确性和回退。当前真实 64 图测量不能证明 65、96 或更多生产图的延迟/CPU/RSS边界。若要扩展 bitset，需在相应真实持久化多图工作负载上独立比较，不以合成 fixture 的时延代替。
 
-Attempt317（`1c85b1cb`）将高位 DISTINCT/provenance 状态扩展为多字掩码；稀疏宽字典使用稀疏存储，内部表示阈值不是查询准入上限。新增 `complex-wide-distinct` 固定负载只把 co-use 的 DISTINCT 对象由 graph 改为 caller，其他五类不变，仍查询同一组真实 64 图。其字典宽度需要完整响应或独立基数证据证明；不能据此声称已测 65/130 个实体图。常规 AB pilot→BA100 确认及 wide AB pilot 的预声明见 [协议](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)。本段只记录实现及测量计划，不预先宣称 Attempt317 性能通过。
+Attempt317（`1c85b1cb`）将高位 DISTINCT/provenance 状态扩展为多字掩码；稀疏宽字典使用稀疏存储，内部表示阈值不是查询准入上限。新增 `complex-wide-distinct` 固定负载只把 co-use 的 DISTINCT 对象由 graph 改为 caller，其他五类不变，仍查询同一组真实 64 图。其字典宽度需要完整响应或独立基数证据证明；不能据此声称已测 65/130 个实体图。常规 AB pilot→BA100 确认及 wide AB pilot 的预声明见 [协议](query-performance-evidence/2026-11-11/complex-p95/PROTOCOL.md)。以下分别保留预声明的测量结果。317通过444项Cypher模块测试、显式真实双源正确性检查、69项benchmark测试及lint/格式检查；仍保留常规P95的小幅上升，不宣称全面性能验收通过。
 
 #### Attempt317 常规负载首轮 pilot（独立结果）
 
@@ -245,7 +247,7 @@ wide 两臂都完成，并未发生预案中的基线失败；276份完整带类
 
 wide只有一轮20/类pilot，未执行100/类确认；没有跨轮pool，也不声称全部P95恢复、每类资源或生产性能验收通过。全部[P50/P95及资源](query-performance-evidence/2026-11-11/complex-p95/attempt317/wide-pilot-summary.md)、[独立审计](query-performance-evidence/2026-11-11/complex-p95/attempt317/wide-pilot-audit.json)均保留，原始归档及身份记录见[317证据目录](query-performance-evidence/2026-11-11/complex-p95/attempt317/README.md)。
 
-实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮pilot、独立确认和原73类回归各自结论见上文；不将42类小幅P95上升抹除，最终HEAD CI尚待运行。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
+实验过程与限定见 [Attempt315/316 历史](webgraph-optimization-attempts.md)。三轮pilot、独立确认和原73类回归各自结论见上文；不将42类小幅P95上升抹除，最终CI状态以[PR212当前HEAD检查](https://github.com/johnsonlee/graphite/pull/212/checks)为准。目前不宣称生产事故恢复、全系统倍数提升或性能验收通过。
 
 ---
 
@@ -455,7 +457,7 @@ CPU 按各操作窗口记录 user+system，RSS 记录独立进程峰值；冷启
 
 | 维度 | 该历史 CI 证据的结论 |
 | --- | --- |
-| 结果正确性 | 对 73 类真实多图请求、两臂全部响应一致和原 gate 检查成立；HEAD 的 Rust/TCK 等 CI 也通过 |
+| 结果正确性 | 对 73 类真实多图请求、两臂全部响应一致和原 gate 检查成立；初始基线58215b98对应的 Rust/TCK 等 CI 也通过 |
 | 可用性与稳定性 | 原 native 并发/非法输入/恢复检查和 OOM gate 通过；长时间饱和、断连取消、大结果序列化取消仍无完整结论 |
 | 查询 p50/p95 | 当前环境的实测观察已验证；无新候选，未声称优化或回归恢复 |
 | 加载 | head registry-ready 47,739.270 ms；启动至首次 oracle 完成 49,290.181 ms，各一次、文件缓存未受控 |
