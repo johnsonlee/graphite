@@ -21,6 +21,9 @@ use std::sync::Arc;
 mod aggregate_state;
 use aggregate_state::AggregateState;
 
+#[path = "two_hop_groups.rs"]
+mod two_hop_groups;
+
 #[path = "degree_groups.rs"]
 mod degree_groups;
 
@@ -973,6 +976,23 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
+            if let Some(mut groups) =
+                two_hop_groups::TwoHopGroups::build(self, items, shape, patterns, &rows)
+            {
+                for row in &rows {
+                    self.stream_match(
+                        matcher,
+                        ev,
+                        row,
+                        patterns,
+                        shape.where_clause.as_ref(),
+                        scan,
+                        hop,
+                        &mut |row| groups.consume(ev, row),
+                    )?;
+                }
+                return groups.finish(self);
+            }
             if let Some(mut groups) =
                 degree_groups::DegreeGroups::build(self, items, shape, patterns, &rows)
             {

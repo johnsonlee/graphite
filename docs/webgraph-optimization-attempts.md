@@ -24018,3 +24018,25 @@ The320 pilot has a verified degree benefit6013.233→3888.162ms(-2125.071ms), bu
 loadingCPU17.632174→18.609709s(+5.544%) exceeds5%; retain this violation and other
 case increases, not a parent-relative acceptance claim. Final cumulative resource
 and latency acceptance remain pending, with no allowance expansion or offsetting.
+
+
+### Attempt324 — compact fixed two-hop summary aggregation (2026-11-11)
+
+**Hypothesis.** Retain the original two-hop matcher, row construction and trail
+uniqueness, but specialize the exact graphId/count(*)/count(DISTINCT start)/
+count(DISTINCT destination) summary. Cache each source's actual graph-value group
+only after a real path, and use HashSet<NodeRef> rather than large generic Key
+sets. This removes per-path group-key/value vectors and repeated graphId evaluation;
+it does not eliminate path enumeration. Equal external graph IDs share a group,
+while distinct endpoint identity still includes physical source index. Encounter
+order, provenance, empty input, shared deferred overflow, downstream ordering and
+LIMIT stay intact; unsupported/property-graph/budgeted shapes retain generic code.
+
+**Protocol and correctness.** Parent323(c870d700), cumulative baseline69ba5f30.
+Add a separate incremental real64 six-case AB20 pilot before the declared final
+base/cumulative BA100 and73-case regression; same complete-response,CPU/RSS and
+failure-retention rules.465 module/integration tests, four targeted tests including
+real Tika duplicate-ID multi-source parity in both dialects, and all-target clippy
+pass. Candidate binary and matched performance evidence remain pending. No timing
+gain is inferred from the representation change and no traversal semantics are
+weakened to improve timing.
