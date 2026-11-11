@@ -23949,3 +23949,26 @@ parity in both dialects, cross mode, LIMIT0/SKIP, shape rejection, deferred over
 and cancellation; this does not establish performance. Isolated commit validation
 and matched measurements remain pending. No duplicate streaming-fusion benefit is
 claimed and no single-graph performance evidence is used.
+
+
+### Attempt321 — iterate adjacency without temporary edge vectors (2026-11-11)
+
+**Hypothesis.** Fixed and variable-length matcher expansion currently copies each
+adjacency into a fresh Vec. Iterate the immutable CSR slices instead, keeping
+outgoing-before-incoming order, incoming self-loop suppression for BOTH, edge
+isomorphism, target checks, Row construction and all per-edge ticks unchanged.
+Construct selected neighbor slices eagerly, including both sides for BOTH, so an
+early consumer still observes invalid CSR ranges. Subsequent Edge construction
+copies infallible fields only. Keep public edges_of's existing Vec API unchanged.
+This removes adjacency allocation/copy, not repeated edge visits or path explosion.
+
+**Protocol and correctness.** Parent320(608933e6), cumulative baseline69ba5f30;
+same declared real64 AB20 incremental and base/cumulative BA100 plus73-case protocol.
+Two correctness tests pass: exact legacy-vector parity for all directions, absent
+nodes and early consumers; explicit fixed/variable two-hop counts across two
+sources with self-loops/duplicate CSR entries; and malformed incoming range error
+visibility before early termination. The initial test fixture was rejected because
+persisted v3 forbids two differently labelled edges at the same endpoints; the
+retained failing log precedes a corrected legacy-CSR fixture, not relaxed storage
+validation. These synthetic checks are correctness-only. Isolated validation and
+latency/resource evidence remain pending; no speedup inferred from fewer allocations.

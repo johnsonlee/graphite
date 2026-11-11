@@ -304,3 +304,131 @@ fn shared_start_paths_use_distinct_edges_and_restore_state_after_stop() {
     assert!(state.used.is_empty());
     assert_eq!(format!("{seed:?}"), original_seed);
 }
+
+// Synthetic fixtures exercise correctness only, never performance.
+fn adjacency_fixture() -> (std::path::PathBuf, Graph) {
+    let path = std::env::temp_dir().join(format!(
+        "graphite-adjacency-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let data = br#"{"version":1,"methods":[],"nodes":[
+        {"id":0,"kind":"IntConstant","value":0},
+        {"id":1,"kind":"IntConstant","value":1},
+        {"id":2,"kind":"IntConstant","value":2}],"edges":[
+        {"from":0,"to":0,"kind":"ASSIGN"},
+        {"from":0,"to":1,"kind":"ASSIGN"},
+        {"from":1,"to":0,"kind":"ASSIGN"},
+        {"from":1,"to":2,"kind":"ASSIGN"}]}"#;
+    graphite_storage::interchange::import_json(&data[..], &path).unwrap();
+    let mut graph = Graph::load(&path).unwrap();
+    // The current importer deduplicates endpoint pairs. Exercise legacy CSR
+    // duplicate entries directly without changing persisted-format validation.
+    let outgoing = graph.forward.offsets[1] as usize;
+    let label = graph.forward.labels[outgoing - 1];
+    graph.forward.targets.insert(outgoing, 1);
+    graph.forward.labels.insert(outgoing, label);
+    for offset in &mut graph.forward.offsets[1..] {
+        *offset += 1;
+    }
+    let incoming = graph.backward.offsets[2] as usize;
+    let label = graph.backward.labels[incoming - 1];
+    graph.backward.targets.insert(incoming, 0);
+    graph.backward.labels.insert(incoming, label);
+    for offset in &mut graph.backward.offsets[2..] {
+        *offset += 1;
+    }
+    (path, graph)
+}
+
+#[test]
+fn adjacency_iterator_preserves_direction_multiplicity_and_order() {
+    let (path, graph) = adjacency_fixture();
+    let graph = Arc::new(graph);
+    let ex = Executor::new(
+        ["first", "second"]
+            .into_iter()
+            .map(|id| Source {
+                id: Arc::from(id),
+                graph: graph.clone(),
+            })
+            .collect(),
+        true,
+    );
+    let ev = Evaluator::new(&ex, &ex.params);
+    let matcher = Matcher { ex: &ex, ev: &ev };
+    for source in [0, 1] {
+        for id in [0, 1, 2, 99] {
+            for direction in [Direction::Outgoing, Direction::Incoming, Direction::Both] {
+                let n = NodeRef { source, id };
+                let expected = matcher.edges_of(n, direction);
+                assert_eq!(
+                    matcher.edge_iter(n, direction).collect::<Vec<_>>(),
+                    expected
+                );
+                assert_eq!(
+                    matcher.edge_iter(n, direction).take(1).collect::<Vec<_>>(),
+                    expected.into_iter().take(1).collect::<Vec<_>>()
+                );
+            }
+        }
+    }
+    let both = matcher
+        .edge_iter(NodeRef { source: 0, id: 0 }, Direction::Both)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        both.iter().map(|e| (e.from, e.to)).collect::<Vec<_>>(),
+        [(0, 0), (0, 1), (0, 1), (1, 0)]
+    );
+    // Both fixed and variable-length matching retain trail uniqueness, direction
+    // and distinct endpoint identity; results are concrete, not mere admission.
+    for query in [
+        "MATCH (a)-[:DATAFLOW]->(b)-[:DATAFLOW]->(c) RETURN count(*) AS paths, count(DISTINCT a) AS starts, count(DISTINCT c) AS ends",
+        "MATCH (a)-[:DATAFLOW*2..2]->(c) RETURN count(*) AS paths, count(DISTINCT a) AS starts, count(DISTINCT c) AS ends",
+    ] {
+        let result = ex.execute(query, None).unwrap();
+        assert!(matches!(result.rows[0]["paths"], Value::Int(18)));
+        assert!(matches!(result.rows[0]["starts"], Value::Int(4)));
+        assert!(matches!(result.rows[0]["ends"], Value::Int(6)));
+        assert_eq!(QueryResult::graph_ids(&result.rows[0]), ["first", "second"]);
+    }
+    drop((ex, graph));
+    std::fs::remove_dir_all(path).unwrap();
+}
+
+#[test]
+fn adjacency_iterator_checks_both_slices_before_early_stop() {
+    let (path, mut graph) = adjacency_fixture();
+    // Corrupt only the incoming range. Outgoing has a valid first edge, but BOTH
+    // must still expose the invalid incoming slice before an early consumer exits.
+    graph.backward.offsets[1] = u32::MAX;
+    let ex = Executor::new(
+        vec![Source {
+            id: Arc::from("g"),
+            graph: Arc::new(graph),
+        }],
+        false,
+    );
+    let ev = Evaluator::new(&ex, &ex.params);
+    let matcher = Matcher { ex: &ex, ev: &ev };
+    for collected in [false, true] {
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            if collected {
+                matcher
+                    .edges_of(NodeRef { source: 0, id: 0 }, Direction::Both)
+                    .into_iter()
+                    .next()
+            } else {
+                matcher
+                    .edge_iter(NodeRef { source: 0, id: 0 }, Direction::Both)
+                    .next()
+            }
+        }));
+        assert!(result.is_err());
+    }
+    drop(ex);
+    std::fs::remove_dir_all(path).unwrap();
+}
