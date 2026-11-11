@@ -4,8 +4,10 @@
 //! order. Only the intermediate matched-row Vec disappears; input seeds and the
 //! grouped result retain their original cardinalities. Arbitrary expressions or
 //! bounded work tokens keep the original clause boundaries.
+use super::aggregate_state::DeferredCount;
 use super::*;
 use crate::ast::Direction;
+use crate::value::NodeRef;
 use std::collections::HashSet;
 
 struct Plan<'a> {
@@ -124,6 +126,106 @@ impl<'a> Plan<'a> {
     }
 }
 
+// graphId is fixed by a native NodeRef's source. Use that identity as the
+// compound grouping key only for the exact graph/source/count(target) shape.
+struct CompactGroups<'a> {
+    source: &'a str,
+    target: &'a str,
+    graph_expr: &'a Expr,
+    columns: Vec<String>,
+    groups: IndexMap<NodeRef, CompactGroup>,
+}
+
+struct CompactGroup {
+    graph: Value,
+    count: DeferredCount,
+    provenance: Row,
+}
+
+impl<'a> CompactGroups<'a> {
+    fn build(ex: &Executor, plan: &Plan<'a>) -> Option<Self> {
+        #[cfg(test)]
+        if COMPACT_DISABLED.with(|flag| flag.get()) {
+            return None;
+        }
+        if ex.property_graph.is_some() || plan.order.is_some() {
+            return None;
+        }
+        let [graph, source, count] = plan.items else {
+            return None;
+        };
+        if !matches!(&graph.expr, Expr::Property { expr, key }
+            if key == "graphId" && matches!(expr.as_ref(), Expr::Variable(v) if v == plan.source))
+            || !matches!(&source.expr, Expr::Variable(v) if v == plan.source)
+            || !matches!(&count.expr, Expr::FunctionCall {name, args, distinct: false}
+                if name.eq_ignore_ascii_case("count") && matches!(args.as_slice(), [Expr::Variable(v)] if v == plan.target))
+        {
+            return None;
+        }
+        Some(Self {
+            source: plan.source,
+            target: plan.target,
+            graph_expr: &graph.expr,
+            columns: item_names(plan.items),
+            groups: IndexMap::new(),
+        })
+    }
+
+    fn consume(&mut self, ev: &Evaluator, mut row: Row) -> CypherResult<bool> {
+        let Some(Value::Node(node)) = row.get(self.source) else {
+            unreachable!("proved source")
+        };
+        let node = *node;
+        let increment = match row.get(self.target) {
+            Some(Value::Node(_)) => 1,
+            Some(Value::Null) => 0,
+            _ => unreachable!("original matcher or unmatched optional row"),
+        };
+        match self.groups.entry(node) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                let group = entry.get_mut();
+                group.count.add(increment);
+                merge_provenance(&mut group.provenance, &row);
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                let graph = ev.eval(self.graph_expr, &row)?;
+                row.retain(|key, _| key == INTERNAL_PROVENANCE_KEY);
+                let mut count = DeferredCount::default();
+                count.add(increment);
+                entry.insert(CompactGroup {
+                    graph,
+                    count,
+                    provenance: row,
+                });
+            }
+        }
+        Ok(true)
+    }
+
+    fn finish(self, ex: &Executor) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        let mut rows = Vec::with_capacity(self.groups.len());
+        for (index, (node, group)) in self.groups.into_iter().enumerate() {
+            if index & 1023 == 0 {
+                ex.cancel.check()?;
+            }
+            // All groups, including zero-degree sinks, finish in encounter order
+            // before any subsequent LIMIT can discard a row or hide overflow.
+            let count = group.count.finish();
+            let mut row = Row::from([
+                (self.columns[0].clone(), group.graph),
+                (self.columns[1].clone(), Value::Node(node)),
+                (self.columns[2].clone(), Value::Int(count)),
+            ]);
+            if let Some(value) = group.provenance.get(INTERNAL_PROVENANCE_KEY) {
+                row.insert(INTERNAL_PROVENANCE_KEY.into(), value.clone());
+            }
+            rows.push(row);
+        }
+        ex.cancel.check()?;
+        Ok((self.columns, rows))
+    }
+}
+
 pub(super) fn try_execute(
     ex: &Executor,
     matcher: &Matcher,
@@ -144,9 +246,27 @@ pub(super) fn try_execute(
     if !plan.total_inputs(ex, rows)? {
         return Ok(None);
     }
-    let agg = AggPlan::new(plan.items, plan.order, ex.dialect)?;
     #[cfg(test)]
     HITS.with(|hits| hits.set(hits.get() + 1));
+    if let Some(mut groups) = CompactGroups::build(ex, &plan) {
+        #[cfg(test)]
+        COMPACT_HITS.with(|hits| hits.set(hits.get() + 1));
+        for mut seed in std::mem::take(rows) {
+            ex.cancel.check()?;
+            let mut produced = false;
+            matcher.match_patterns(&seed, plan.patterns, &mut |row| {
+                produced = true;
+                groups.consume(ev, row)
+            })?;
+            if !produced {
+                seed.insert(plan.target.to_owned(), Value::Null);
+                groups.consume(ev, seed)?;
+            }
+        }
+        ex.cancel.check()?;
+        return groups.finish(ex).map(Some);
+    }
+    let agg = AggPlan::new(plan.items, plan.order, ex.dialect)?;
     let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
     let mut consume = |row: Row| -> CypherResult<bool> {
         let mut keys = Vec::with_capacity(agg.group_exprs.len());
@@ -206,6 +326,8 @@ fn has_work_budget(ex: &Executor) -> bool {
 thread_local! {
     static DISABLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     static HITS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    static COMPACT_DISABLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    static COMPACT_HITS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 #[cfg(test)]

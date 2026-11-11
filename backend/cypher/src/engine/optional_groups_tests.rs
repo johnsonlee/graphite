@@ -254,8 +254,14 @@ fn native_optional_counts_preserve_multi_source_identity_and_provenance() {
             "rows={rows:?}"
         );
         let before = HITS.with(|hits| hits.get());
+        let compact_before = COMPACT_HITS.with(|hits| hits.get());
         let actual = ex.run_segment_seeded(&clauses, rows.clone()).unwrap();
         assert!(HITS.with(|hits| hits.get()) > before);
+        assert!(COMPACT_HITS.with(|hits| hits.get()) > compact_before);
+        same(
+            &actual,
+            &streamed(|| ex.run_segment_seeded(&clauses, rows.clone())).unwrap(),
+        );
         let expected = original(|| ex.run_segment_seeded(&clauses, rows)).unwrap();
         same(&actual, &expected);
         assert_eq!(actual.rows.len(), 8);
@@ -266,4 +272,240 @@ fn native_optional_counts_preserve_multi_source_identity_and_provenance() {
             );
         }
     }
+}
+
+fn streamed<T>(run: impl FnOnce() -> T) -> T {
+    struct Reset(bool);
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            COMPACT_DISABLED.with(|flag| flag.set(self.0));
+        }
+    }
+    let _reset = Reset(COMPACT_DISABLED.with(|flag| flag.replace(true)));
+    run()
+}
+
+#[test]
+fn compact_native_counts_keep_sinks_duplicates_source_identity_and_provenance() {
+    // Tiny persisted graph solely for semantic parity; never a timing fixture.
+    let path = std::env::temp_dir().join(format!(
+        "graphite-optional-compact-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let data = br#"{"version":1,"methods":[],"nodes":[
+        {"id":0,"kind":"IntConstant","value":0},
+        {"id":1,"kind":"IntConstant","value":1},
+        {"id":2,"kind":"IntConstant","value":2}],"edges":[
+        {"from":0,"to":0,"kind":"ASSIGN"},
+        {"from":0,"to":1,"kind":"ASSIGN"},
+        {"from":1,"to":2,"kind":"ASSIGN"}]}"#;
+    graphite_storage::interchange::import_json(&data[..], &path).unwrap();
+    let mut graph = graphite_storage::Graph::load(&path).unwrap();
+    // Persisted legacy adjacency can contain duplicate entries, whereas the
+    // importer normalizes them. Preserve that multiplicity in the original walk.
+    let end = graph.forward.offsets[1] as usize;
+    let label = graph.forward.labels[end - 1];
+    graph.forward.targets.insert(end, 1);
+    graph.forward.labels.insert(end, label);
+    for offset in &mut graph.forward.offsets[1..] {
+        *offset += 1;
+    }
+    let graph = Arc::new(graph);
+    for dialect in [CypherDialect::Graphite, CypherDialect::OpenCypherM23] {
+        let ex = Executor::new(
+            (0..2)
+                .map(|_| Source {
+                    id: Arc::from("same"),
+                    graph: graph.clone(),
+                })
+                .collect(),
+            true,
+        )
+        .with_dialect(dialect);
+        let seed = |source, id, provenance: Option<&str>| {
+            let mut row = Row::from([("a".into(), Value::Node(NodeRef { source, id }))]);
+            if let Some(id) = provenance {
+                add_provenance_id(&mut row, Arc::from(id));
+            }
+            row
+        };
+        let seeds = vec![
+            seed(1, 0, Some("z")),
+            seed(0, 0, None),
+            seed(1, 0, Some("a")),
+            seed(1, 2, None),
+            seed(1, 2, None),
+        ];
+        let query = format!("{WITH} RETURN graph, source, degree");
+        let clauses = parse(&query).unwrap();
+        let before = COMPACT_HITS.with(|hits| hits.get());
+        let result = ex.run_segment_seeded(&clauses, seeds.clone()).unwrap();
+        assert!(COMPACT_HITS.with(|hits| hits.get()) > before);
+        same(
+            &result,
+            &streamed(|| ex.run_segment_seeded(&clauses, seeds.clone())).unwrap(),
+        );
+        same(
+            &result,
+            &original(|| ex.run_segment_seeded(&clauses, seeds.clone())).unwrap(),
+        );
+        assert_eq!(result.rows.len(), 3);
+        for (row, (source, id, degree)) in result.rows.iter().zip([(1, 0, 6), (0, 0, 3), (1, 2, 0)])
+        {
+            assert_eq!(row["graph"].as_str(), Some("same"));
+            assert!(
+                matches!(row["source"], Value::Node(node) if node.source == source && node.id == id)
+            );
+            assert!(matches!(row["degree"], Value::Int(n) if n == degree));
+        }
+        assert_eq!(QueryResult::graph_ids(&result.rows[0]), ["a", "same", "z"]);
+        assert_eq!(QueryResult::graph_ids(&result.rows[1]), ["same"]);
+        assert!(!result.rows[2].contains_key(INTERNAL_PROVENANCE_KEY));
+        for tail in [
+            "RETURN degree LIMIT 0",
+            "RETURN graph, source, degree ORDER BY degree DESC LIMIT 1",
+        ] {
+            let clauses = parse(&format!("{WITH} {tail}")).unwrap();
+            let actual = ex.run_segment_seeded(&clauses, seeds.clone()).unwrap();
+            same(
+                &actual,
+                &original(|| ex.run_segment_seeded(&clauses, seeds.clone())).unwrap(),
+            );
+        }
+        let clauses = parse(&format!("{WITH} RETURN degree")).unwrap();
+        let actual = ex.run_segment_seeded(&clauses, vec![]).unwrap();
+        assert!(actual.rows.is_empty());
+        same(
+            &actual,
+            &original(|| ex.run_segment_seeded(&clauses, vec![])).unwrap(),
+        );
+        let aliases = WITH
+            .replace("AS graph", "AS a")
+            .replace("AS source", "AS b");
+        let clauses = parse(&format!("{aliases} RETURN a, b, degree")).unwrap();
+        let actual = ex.run_segment_seeded(&clauses, seeds.clone()).unwrap();
+        same(
+            &actual,
+            &original(|| ex.run_segment_seeded(&clauses, seeds.clone())).unwrap(),
+        );
+        for limit in [1, 1000] {
+            let token = || CancelToken::child_with_limits(CancelToken::new(), 60_000, limit);
+            let fast_token = token();
+            let slow_token = token();
+            let bounded = |parent| {
+                Executor::new(
+                    (0..2)
+                        .map(|_| Source {
+                            id: Arc::from("same"),
+                            graph: graph.clone(),
+                        })
+                        .collect(),
+                    true,
+                )
+                .with_dialect(dialect)
+                .with_cancel(Arc::new(CancelToken {
+                    parent: Some(parent),
+                    ..CancelToken::default()
+                }))
+            };
+            let before = COMPACT_HITS.with(|hits| hits.get());
+            let actual = bounded(fast_token.clone()).run_segment_seeded(&clauses, seeds.clone());
+            let expected = original(|| {
+                bounded(slow_token.clone()).run_segment_seeded(&clauses, seeds.clone())
+            });
+            assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+            assert_eq!(COMPACT_HITS.with(|hits| hits.get()), before);
+            assert_eq!(
+                fast_token
+                    .work
+                    .as_ref()
+                    .unwrap()
+                    .consumed
+                    .load(AtomicOrdering::Relaxed),
+                slow_token
+                    .work
+                    .as_ref()
+                    .unwrap()
+                    .consumed
+                    .load(AtomicOrdering::Relaxed)
+            );
+        }
+        let token = CancelToken::new();
+        token.cancel();
+        assert!(matches!(
+            ex.with_cancel(token).run_segment_seeded(&clauses, seeds),
+            Err(CypherError::Cancelled)
+        ));
+    }
+    drop(graph);
+    std::fs::remove_dir_all(path).unwrap();
+}
+
+#[test]
+fn compact_admission_preserves_other_streamed_optional_shapes() {
+    let ex = Executor::new(vec![], true);
+    let clauses = parse(&format!("{WITH} RETURN degree")).unwrap();
+    assert!(CompactGroups::build(&ex, &Plan::build(&clauses).unwrap()).is_some());
+    for query in [
+        WITH.replace("count(b)", "count(*)"),
+        WITH.replace(
+            "a.graphId AS graph, a AS source",
+            "a AS source, a.graphId AS graph",
+        ),
+        format!("{WITH} ORDER BY degree"),
+        WITH.replace("a.graphId AS graph, ", ""),
+    ] {
+        let clauses = parse(&query).unwrap();
+        let plan = Plan::build(&clauses).unwrap();
+        assert!(CompactGroups::build(&ex, &plan).is_none(), "{query}");
+    }
+    let ex = fixture(CypherDialect::Graphite);
+    assert!(CompactGroups::build(&ex, &Plan::build(&clauses).unwrap()).is_none());
+}
+
+#[test]
+fn compact_optional_finalizes_zero_and_overflow_groups_and_checks_cancellation() {
+    let ex = Executor::new(vec![], true);
+    let clauses = parse(&format!("{WITH} RETURN degree LIMIT 0")).unwrap();
+    let plan = Plan::build(&clauses).unwrap();
+    let mut groups = CompactGroups::build(&ex, &plan).unwrap();
+    let mut count = DeferredCount::default();
+    count.add(i64::MAX);
+    count.add(1);
+    groups.groups.insert(
+        NodeRef { source: 0, id: 0 },
+        CompactGroup {
+            graph: Value::str("g"),
+            count: DeferredCount::default(),
+            provenance: Row::new(),
+        },
+    );
+    groups.groups.insert(
+        NodeRef { source: 0, id: 1 },
+        CompactGroup {
+            graph: Value::str("g"),
+            count,
+            provenance: Row::new(),
+        },
+    );
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| groups.finish(&ex)));
+    if cfg!(debug_assertions) {
+        assert!(result.is_err());
+    } else {
+        let rows = result.unwrap().unwrap().1;
+        assert!(matches!(rows[0]["degree"], Value::Int(0)));
+        assert!(matches!(rows[1]["degree"], Value::Int(i64::MIN)));
+    }
+    let token = CancelToken::new();
+    token.cancel();
+    let cancelled = Executor::new(vec![], true).with_cancel(token);
+    let groups = CompactGroups::build(&cancelled, &plan).unwrap();
+    assert!(matches!(
+        groups.finish(&cancelled),
+        Err(CypherError::Cancelled)
+    ));
 }

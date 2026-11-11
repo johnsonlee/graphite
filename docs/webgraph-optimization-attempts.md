@@ -23995,3 +23995,26 @@ charges to the original tuple sweep and separately preserve inherited cancellati
 Production budget logic is unchanged. Independent read-only review found no
 correctness blocker across320–322. Isolated cumulative correctness and measured
 latency/CPU/RSS remain pending; lower allocation alone is not acceptance evidence.
+
+
+### Attempt323 — compact OPTIONAL source/count(target) state (2026-11-11)
+
+**Motivation and hypothesis.**319's first real64 AB20 pilot completed276 responses
+with exact parity, but OPTIONAL P95 only10977.785→10818.636ms(-159.150ms),
+with unrelated cases also improving; this does not isolate a substantial gain.
+Its loadingCPU+0.717%, loadingRSS+0.065%, queryCPU-1.888% and queryRSS-2.491%
+are within5%. Retain the small positive increment, and address remaining generic
+key/value vectors and GroupAcc state for the exact native graphId/source/count(b)
+shape with an ordered NodeRef map. Keep original matcher/null extension, repeated
+seed contribution, zero-degree groups, provenance, DeferredCount finalization and
+budget/unsupported-shape fallback. Other319-admitted shapes retain generic states.
+
+**Protocol.** Parent is322(f9b667c0), cumulative baseline69ba5f30; add one separate
+AB20 incremental pilot under the same declared real64 six-case protocol and limits,
+then include beneficial changes in final BA100 and73-case comparison.461 module
+tests,9 focused tests, explicit real Tika9 focused tests and all-target clippy pass;
+independent source review found no blocker. Performance remains unmeasured.
+The320 pilot has a verified degree benefit6013.233→3888.162ms(-2125.071ms), but
+loadingCPU17.632174→18.609709s(+5.544%) exceeds5%; retain this violation and other
+case increases, not a parent-relative acceptance claim. Final cumulative resource
+and latency acceptance remain pending, with no allowance expansion or offsetting.
