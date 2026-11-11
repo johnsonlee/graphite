@@ -1249,6 +1249,24 @@ impl PartitionPlan {
                             continue;
                         }
                     }
+                    if let ([tag], None) = (tags, &self.where_clause) {
+                        if let Some(counts) = pair_column_groups(
+                            ex,
+                            &s.graph,
+                            *tag,
+                            self.strategies[si][*tag as usize],
+                            &columns[*tag as usize],
+                            &mut polled,
+                        )? {
+                            // Allocate the general key once per pair, not per node.
+                            parts[si].extend(
+                                counts
+                                    .into_iter()
+                                    .map(|(ids, part)| ((*tag, ids.to_vec(), KeySet::Fixed), part)),
+                            );
+                            continue;
+                        }
+                    }
                     // The walk the matcher makes over the same types, a type
                     // enumerated whole standing in with its first node only: the
                     // nodes after it change nothing the walk would meet first.
@@ -1393,6 +1411,45 @@ fn scalar_column_groups(
         let offset = partition_node_offset(graph, tag, id)?;
         let sid = read_string_field(graph.nodedata(), offset, *field);
         counts.entry(sid).or_insert((id, 0)).1 += 1;
+    }
+    Ok(Some(counts))
+}
+
+type PairColumnGroups = IndexMap<[StrId; 2], (u32, i64)>;
+
+/// Two-column grouping uses inline keys while preserving the scalar sweep's
+/// first representative, weights, polling and corrupt-record error behavior.
+fn pair_column_groups(
+    ex: &Executor,
+    graph: &Graph,
+    tag: u8,
+    strategy: Strategy,
+    columns: &[(&str, StringField)],
+    polled: &mut u32,
+) -> CypherResult<Option<PairColumnGroups>> {
+    let Strategy::Columns(mask) = strategy else {
+        return Ok(None);
+    };
+    if mask.count_ones() != 2 || !graph.ids_by_tag_sorted(tag) {
+        return Ok(None);
+    }
+    let first = mask.trailing_zeros() as usize;
+    let second = (mask & (mask - 1)).trailing_zeros() as usize;
+    let (Some((_, left)), Some((_, right))) = (columns.get(first), columns.get(second)) else {
+        return Ok(None);
+    };
+    let mut counts = IndexMap::new();
+    for &id in graph.ids_by_tag(tag) {
+        *polled = polled.wrapping_add(1);
+        if *polled & 1023 == 0 {
+            ex.cancel.check()?;
+        }
+        let offset = partition_node_offset(graph, tag, id)?;
+        let key = [
+            read_string_field(graph.nodedata(), offset, *left),
+            read_string_field(graph.nodedata(), offset, *right),
+        ];
+        counts.entry(key).or_insert((id, 0)).1 += 1;
     }
     Ok(Some(counts))
 }
@@ -2482,6 +2539,16 @@ mod tests {
         )
         .unwrap()
         .is_none());
+        assert!(pair_column_groups(
+            &ex,
+            &graph,
+            TAG_CALL_SITE_NODE,
+            Strategy::Columns(5),
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled,
+        )
+        .unwrap()
+        .is_none());
         assert_eq!(polled, 0);
         let hops = [
             "MATCH (a)<-[r]-(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC",
@@ -2830,6 +2897,231 @@ mod tests {
                     "Corrupt type index: node 1 of tag {TAG_LOCAL_VARIABLE} has no node record"
                 )
             );
+        }
+        drop((ex, graph));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn caller_callee_pair_groups_match_decoded_real_records() {
+        let Some(graph) = fixture() else { return };
+        let ex = executor(&graph, &["a", "b"]);
+        let query = "MATCH (n:CallSite) WITH n.caller_class AS caller, n.callee_class AS target, count(*) AS calls RETURN caller, target, calls";
+        let clauses = crate::parser::parse(query).unwrap();
+        let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+        let mut expected = IndexMap::<(String, String), (u32, i64)>::new();
+        for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+            let graphite_storage::NodeKind::CallSite { caller, callee, .. } =
+                graph.node(id).unwrap().kind
+            else {
+                panic!("expected CallSite");
+            };
+            expected
+                .entry((
+                    graph.str(caller.declaring_class).to_owned(),
+                    graph.str(callee.declaring_class).to_owned(),
+                ))
+                .or_insert((id, 0))
+                .1 += 1;
+        }
+        assert!(!expected.is_empty());
+        let mut polled = 0;
+        let actual = pair_column_groups(
+            &ex,
+            &graph,
+            TAG_CALL_SITE_NODE,
+            plan.strategies[0][TAG_CALL_SITE_NODE as usize],
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled,
+        )
+        .unwrap()
+        .expect("real caller/callee grouping must hit inline pair path");
+        assert_eq!(actual.len(), expected.len());
+        for ((ids, part), ((caller, target), expected_part)) in actual.iter().zip(&expected) {
+            assert_eq!(
+                (graph.str(ids[0]), graph.str(ids[1])),
+                (caller.as_str(), target.as_str())
+            );
+            assert_eq!(part, expected_part);
+        }
+        let result = ex.execute(query, None).unwrap();
+        assert_eq!(result.rows.len(), expected.len());
+        for (row, ((caller, target), (_, count))) in result.rows.iter().zip(&expected) {
+            assert!(matches!(row.get("caller"), Some(Value::Str(v)) if v.as_ref() == caller));
+            assert!(matches!(row.get("target"), Some(Value::Str(v)) if v.as_ref() == target));
+            assert!(matches!(row.get("calls"), Some(Value::Int(v)) if *v == 2 * count));
+            assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+        }
+    }
+
+    #[test]
+    fn pair_column_groups_preserve_tuple_order_weights_and_provenance() {
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-partition-pair-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let method = serde_json::json!({"declaringClass":"C","name":"m","parameterTypes":[],"returnType":"void"});
+        let nodes = [("z", "string"), ("a", "int"), ("z", "string"), ("z", "int")]
+            .iter()
+            .enumerate()
+            .map(|(id, (name, kind))| {
+                serde_json::json!({
+                    "id":id,"kind":"LocalVariable","name":name,"varType":kind,"method":method
+                })
+            })
+            .collect::<Vec<_>>();
+        let input = serde_json::json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]});
+        graphite_storage::interchange::import_json(input.to_string().as_bytes(), &dir).unwrap();
+        let graph = Arc::new(Graph::load(&dir).unwrap());
+        let ex = executor(&graph, &["a", "b"]);
+        let query =
+            "MATCH (n:LocalVariable) WITH n.name AS c, n.type AS t, count(*) AS k RETURN c, t, k";
+        let clauses = crate::parser::parse(query).unwrap();
+        let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+        let strategy = plan.strategies[0][TAG_LOCAL_VARIABLE as usize];
+        let columns = tag_columns(TAG_LOCAL_VARIABLE);
+        let mut polled = 0;
+        let groups = pair_column_groups(
+            &ex,
+            &graph,
+            TAG_LOCAL_VARIABLE,
+            strategy,
+            &columns,
+            &mut polled,
+        )
+        .unwrap()
+        .expect("two raw columns must use inline pairs");
+        assert_eq!(polled, 4);
+        assert_eq!(
+            groups
+                .iter()
+                .map(|(ids, part)| ((graph.str(ids[0]), graph.str(ids[1])), *part))
+                .collect::<Vec<_>>(),
+            [
+                (("z", "string"), (0, 2)),
+                (("a", "int"), (1, 1)),
+                (("z", "int"), (3, 1))
+            ]
+        );
+        let rows = plan.rows(&ex, &Evaluator::new(&ex, &ex.params)).unwrap();
+        assert_eq!(rows.len(), 6);
+        for (source, chunk) in rows.chunks_exact(3).enumerate() {
+            for (row, (first, weight)) in chunk.iter().zip([(0, 2), (1, 1), (3, 1)]) {
+                assert_eq!(row_weight(row), weight);
+                assert!(
+                    matches!(row.get("n"), Some(Value::Node(n)) if n.id == first && n.source as usize == source)
+                );
+                assert_eq!(
+                    QueryResult::graph_ids(row),
+                    [ex.sources[source].id.as_ref()]
+                );
+            }
+        }
+        let actual = ex.execute(query, None).unwrap();
+        assert_eq!(actual.columns, ["c", "t", "k"]);
+        assert_eq!(actual.rows.len(), 3);
+        for (row, (name, kind, count)) in
+            actual
+                .rows
+                .iter()
+                .zip([("z", "string", 4), ("a", "int", 2), ("z", "int", 2)])
+        {
+            assert!(matches!(row.get("c"), Some(Value::Str(v)) if v.as_ref() == name));
+            assert!(matches!(row.get("t"), Some(Value::Str(v)) if v.as_ref() == kind));
+            assert!(matches!(row.get("k"), Some(Value::Int(v)) if *v == count));
+            assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+        }
+        for unsupported in [
+            Strategy::Whole,
+            Strategy::Columns(0),
+            Strategy::Columns(1),
+            Strategy::Columns(7),
+            Strategy::Columns(0x81),
+            Strategy::Keys(3),
+        ] {
+            let mut polled = 7;
+            assert!(pair_column_groups(
+                &ex,
+                &graph,
+                TAG_LOCAL_VARIABLE,
+                unsupported,
+                &columns,
+                &mut polled
+            )
+            .unwrap()
+            .is_none());
+            assert_eq!(polled, 7);
+        }
+        // This fixture has no optional declared types; including that absent
+        // key partition forces the pre-existing generic tuple sweep.
+        // Compare identical partition rows and work charges, not the
+        // unpartitioned executor's intentionally different per-node boundary.
+        for limit in [1, 3, 100] {
+            let parent = || {
+                crate::engine::CancelToken::child_with_limits(
+                    crate::engine::CancelToken::new(),
+                    60_000,
+                    limit,
+                )
+            };
+            let left_parent = parent();
+            let right_parent = parent();
+            let fast = executor(&graph, &["a", "b"]).with_cancel(left_parent.clone());
+            let slow = executor(&graph, &["a", "b"]).with_cancel(right_parent.clone());
+            let (mut generic, _) = PartitionPlan::build(&slow, &clauses).unwrap();
+            let Strategy::Columns(mask) = strategy else {
+                panic!("expected raw columns")
+            };
+            for strategies in &mut generic.strategies {
+                strategies[TAG_LOCAL_VARIABLE as usize] = Strategy::DeclaredKeys(mask);
+            }
+            let actual = plan.rows(&fast, &Evaluator::new(&fast, &fast.params));
+            let expected = generic.rows(&slow, &Evaluator::new(&slow, &slow.params));
+            assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+            assert_eq!(
+                left_parent
+                    .work
+                    .as_ref()
+                    .unwrap()
+                    .consumed
+                    .load(std::sync::atomic::Ordering::Relaxed),
+                right_parent
+                    .work
+                    .as_ref()
+                    .unwrap()
+                    .consumed
+                    .load(std::sync::atomic::Ordering::Relaxed)
+            );
+            assert_eq!(actual.is_ok(), limit == 100);
+        }
+        let cancelled = crate::engine::CancelToken::new();
+        cancelled.cancel();
+        let inherited = Arc::new(crate::engine::CancelToken {
+            parent: Some(cancelled.clone()),
+            ..crate::engine::CancelToken::default()
+        });
+        for token in [
+            cancelled,
+            inherited,
+            crate::engine::CancelToken::with_timeout(0),
+        ] {
+            let checked = executor(&graph, &["a", "b"]).with_cancel(token.clone());
+            let mut polled = 1023;
+            let err = pair_column_groups(
+                &checked,
+                &graph,
+                TAG_LOCAL_VARIABLE,
+                strategy,
+                &columns,
+                &mut polled,
+            )
+            .unwrap_err();
+            assert_eq!(err.to_string(), token.check().unwrap_err().to_string());
+            assert_eq!(polled, 1024);
         }
         drop((ex, graph));
         std::fs::remove_dir_all(dir).unwrap();

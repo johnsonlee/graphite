@@ -23972,3 +23972,26 @@ persisted v3 forbids two differently labelled edges at the same endpoints; the
 retained failing log precedes a corrected legacy-CSR fixture, not relaxed storage
 validation. These synthetic checks are correctness-only. Isolated validation and
 latency/resource evidence remain pending; no speedup inferred from fewer allocations.
+
+
+### Attempt322 — inline two-column partition keys (2026-11-11)
+
+**Hypothesis.** For a single-tag, unfiltered, sorted two-string-column partition,
+use[StrId;2] in the local count map rather than constructing Vec<StrId> per node.
+Convert to the existing generic key only once per distinct pair. Preserve ascending
+field reads, first representative, weight, encounter order, source merging,
+provenance, offset errors and1024-step polling. Other strategies and unsorted
+indexes fall back unchanged. This targets the shared first grouping stage of
+caller/target rollup, global support and co-use; no semantic query rewrite.
+
+**Protocol and correctness.** Parent321(4ed65d86), cumulative baseline69ba5f30;
+reuse the declared real64 AB20 incremental pilot then BA100 base/cumulative and
+73-case regression. Four focused tests (including real Tika decoded pair oracle),
+the missing-offset test and all-target clippy pass. An earlier broad suite used a
+Tika shard lacking the Annotation fixture required by an existing test; that failure
+is retained, not represented as product success. A new budget test initially assumed
+parent-only tokens charge identical counters; corrected tests compare direct-token
+charges to the original tuple sweep and separately preserve inherited cancellation.
+Production budget logic is unchanged. Independent read-only review found no
+correctness blocker across320–322. Isolated cumulative correctness and measured
+latency/CPU/RSS remain pending; lower allocation alone is not acceptance evidence.
