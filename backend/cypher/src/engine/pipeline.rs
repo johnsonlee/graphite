@@ -21,6 +21,12 @@ use std::sync::Arc;
 mod aggregate_state;
 use aggregate_state::AggregateState;
 
+#[path = "two_hop_groups.rs"]
+mod two_hop_groups;
+
+#[path = "degree_groups.rs"]
+mod degree_groups;
+
 #[path = "grouped_with.rs"]
 mod grouped_with;
 
@@ -29,6 +35,9 @@ mod collect_prefix;
 
 #[path = "unwind_groups.rs"]
 mod unwind_groups;
+
+#[path = "optional_groups.rs"]
+mod optional_groups;
 
 pub type Row = IndexMap<String, Value>;
 
@@ -416,6 +425,20 @@ impl Executor {
                     optional,
                     where_clause,
                 } => {
+                    if *optional {
+                        if let Some((cols, projected)) = optional_groups::try_execute(
+                            self,
+                            &matcher,
+                            &ev,
+                            &clauses[i..],
+                            &mut rows,
+                        )? {
+                            columns = cols;
+                            rows = projected;
+                            i += 2;
+                            continue;
+                        }
+                    }
                     if self.property_graph.is_none()
                         && !*optional
                         && rows.len() == 1
@@ -953,6 +976,40 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
+            if let Some(mut groups) =
+                two_hop_groups::TwoHopGroups::build(self, items, shape, patterns, &rows)
+            {
+                for row in &rows {
+                    self.stream_match(
+                        matcher,
+                        ev,
+                        row,
+                        patterns,
+                        shape.where_clause.as_ref(),
+                        scan,
+                        hop,
+                        &mut |row| groups.consume(ev, row),
+                    )?;
+                }
+                return groups.finish(self);
+            }
+            if let Some(mut groups) =
+                degree_groups::DegreeGroups::build(self, items, shape, patterns, &rows)
+            {
+                for row in &rows {
+                    self.stream_match(
+                        matcher,
+                        ev,
+                        row,
+                        patterns,
+                        shape.where_clause.as_ref(),
+                        scan,
+                        hop,
+                        &mut |row| groups.consume(ev, row),
+                    )?;
+                }
+                return groups.finish(self);
+            }
             let mut plan = AggPlan::new(items, shape.order.as_deref(), self.dialect)?;
             plan.prefix_caps = prefix_caps.to_vec();
             let columns = item_names(items);

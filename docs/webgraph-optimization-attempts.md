@@ -23894,3 +23894,229 @@ at the tier maximum), before capacity/allocator overhead. This probe does not
 establish memory bounds for all group cardinalities or more than64 physical graphs.
 [Full evidence and reproduction](query-performance-evidence/2026-11-11/complex-p95/attempt318/README.md)
 retain all samples, limits, source proof, raw logs and checksum-pinned external archives.
+
+
+### Attempt319 — stream total OPTIONAL matches into counts (2026-11-11)
+
+**Hypothesis.** For a proved one-hop outgoing DATAFLOW OPTIONAL followed by
+WITH source/graphId and count(b)/count(*), feed the existing matcher directly
+into existing aggregate states instead of collecting all matched/null rows.
+Keep original null extension, encounter order, provenance, late count overflow,
+cancellation and generic fallback for bounded work tokens or unsupported shapes.
+The initial MATCH and per-source groups remain; no O(1)-memory claim is made.
+Admission validates sparse node IDs through has_node, not node_count bounds.
+
+**Baseline and feedback protocol.** Accepted merged base69ba5f3072c4984d0e6cdb98eeeb107cd365bccd;
+reuse frozen318 binary6334e74baa9649ad0d7e16f94b9209a689a9528b29425d3ce440d821742f7af7,
+whose171 relevant product source/Cargo hashes match the merged base exactly.
+Build the local controller from the trusted base checkout. Reuse the unchanged
+real64 manifest `/private/tmp/graphite-pr211-final-benchmark/fresh-run/results/frontend/head/graphs/graphs.tsv`.
+Every measured request selects all64 physical graphs with full body consumption.
+Four workers run the six complex cases, nearest-rank per-case P95 primary and
+P50 diagnostic. Predeclare one AB20-per-case parent/candidate pilot per increment;
+then separate BA100-per-case base/cumulative confirmation and73-case regression.
+Keep all samples/failures; never pool rounds or substitute single-graph timings.
+Independent loading and query CPU/RSS each must remain within5% of their matched
+baseline; latency gains do not offset resource failures. Correctness, availability,
+OOM, cancellation and work budgets remain hard gates. Hosted CI is correctness/
+OOM acceptance only and timings remain report-only; JAR heaps stay4GiB.
+
+Fast feedback uses focused correctness first, cached incremental builds (~1–3min),
+a baseline real64 correctness smoke, and sealed existing graphs without rebuilding
+or moving5.1GB of inputs. Estimate6–9min per pilot pair, roughly25min for100-sample
+confirmation,5–10min for73-case regression and35–40min final CI. No competing local
+builds/archive work during measurement. Targeted correctness passed6 tests including
+explicit real Tika two-source admission/parity in both dialects; isolated module,
+lint, resource and latency evidence remain pending and must precede acceptance.
+
+
+### Attempt320 — compact physical source degree groups (2026-11-11)
+
+**Hypothesis.** The degree histogram already streams MATCH into WITH. Replace
+only its first-level generic aggregate key/state with an encounter-ordered map
+keyed by physical NodeRef for the exact CallSite→DATAFLOW source graphId/node/
+count(*) shape. Evaluate deterministic graphId once per source, retain shared
+matcher traversal, DeferredCount overflow and provenance, and leave the second
+histogram stage unchanged. Distinct physical sources remain distinct even when
+external graph IDs coincide. Unsupported shapes, property graphs, nonempty seeds
+and inherited work budgets retain generic execution.
+
+**Protocol and current evidence.** Incremental parent is319(2f40f4fb), cumulative
+baseline is merged69ba5f30. Apply319's declared real64 six-case AB20 pilot protocol
+and5% independent loading/query CPU/RSS limits, then cumulative BA100 and73-case
+validation. Four focused tests passed, including explicit real Tika multi-source
+parity in both dialects, cross mode, LIMIT0/SKIP, shape rejection, deferred overflow
+and cancellation; this does not establish performance. Isolated commit validation
+and matched measurements remain pending. No duplicate streaming-fusion benefit is
+claimed and no single-graph performance evidence is used.
+
+
+### Attempt321 — iterate adjacency without temporary edge vectors (2026-11-11)
+
+**Hypothesis.** Fixed and variable-length matcher expansion currently copies each
+adjacency into a fresh Vec. Iterate the immutable CSR slices instead, keeping
+outgoing-before-incoming order, incoming self-loop suppression for BOTH, edge
+isomorphism, target checks, Row construction and all per-edge ticks unchanged.
+Construct selected neighbor slices eagerly, including both sides for BOTH, so an
+early consumer still observes invalid CSR ranges. Subsequent Edge construction
+copies infallible fields only. Keep public edges_of's existing Vec API unchanged.
+This removes adjacency allocation/copy, not repeated edge visits or path explosion.
+
+**Protocol and correctness.** Parent320(608933e6), cumulative baseline69ba5f30;
+same declared real64 AB20 incremental and base/cumulative BA100 plus73-case protocol.
+Two correctness tests pass: exact legacy-vector parity for all directions, absent
+nodes and early consumers; explicit fixed/variable two-hop counts across two
+sources with self-loops/duplicate CSR entries; and malformed incoming range error
+visibility before early termination. The initial test fixture was rejected because
+persisted v3 forbids two differently labelled edges at the same endpoints; the
+retained failing log precedes a corrected legacy-CSR fixture, not relaxed storage
+validation. These synthetic checks are correctness-only. Isolated validation and
+latency/resource evidence remain pending; no speedup inferred from fewer allocations.
+
+
+### Attempt322 — inline two-column partition keys (2026-11-11)
+
+**Hypothesis.** For a single-tag, unfiltered, sorted two-string-column partition,
+use[StrId;2] in the local count map rather than constructing Vec<StrId> per node.
+Convert to the existing generic key only once per distinct pair. Preserve ascending
+field reads, first representative, weight, encounter order, source merging,
+provenance, offset errors and1024-step polling. Other strategies and unsorted
+indexes fall back unchanged. This targets the shared first grouping stage of
+caller/target rollup, global support and co-use; no semantic query rewrite.
+
+**Protocol and correctness.** Parent321(4ed65d86), cumulative baseline69ba5f30;
+reuse the declared real64 AB20 incremental pilot then BA100 base/cumulative and
+73-case regression. Four focused tests (including real Tika decoded pair oracle),
+the missing-offset test and all-target clippy pass. An earlier broad suite used a
+Tika shard lacking the Annotation fixture required by an existing test; that failure
+is retained, not represented as product success. A new budget test initially assumed
+parent-only tokens charge identical counters; corrected tests compare direct-token
+charges to the original tuple sweep and separately preserve inherited cancellation.
+Production budget logic is unchanged. Independent read-only review found no
+correctness blocker across320–322. Isolated cumulative correctness and measured
+latency/CPU/RSS remain pending; lower allocation alone is not acceptance evidence.
+
+
+### Attempt323 — compact OPTIONAL source/count(target) state (2026-11-11)
+
+**Motivation and hypothesis.**319's first real64 AB20 pilot completed276 responses
+with exact parity, but OPTIONAL P95 only10977.785→10818.636ms(-159.150ms),
+with unrelated cases also improving; this does not isolate a substantial gain.
+Its loadingCPU+0.717%, loadingRSS+0.065%, queryCPU-1.888% and queryRSS-2.491%
+are within5%. Retain the small positive increment, and address remaining generic
+key/value vectors and GroupAcc state for the exact native graphId/source/count(b)
+shape with an ordered NodeRef map. Keep original matcher/null extension, repeated
+seed contribution, zero-degree groups, provenance, DeferredCount finalization and
+budget/unsupported-shape fallback. Other319-admitted shapes retain generic states.
+
+**Protocol.** Parent is322(f9b667c0), cumulative baseline69ba5f30; add one separate
+AB20 incremental pilot under the same declared real64 six-case protocol and limits,
+then include beneficial changes in final BA100 and73-case comparison.461 module
+tests,9 focused tests, explicit real Tika9 focused tests and all-target clippy pass;
+independent source review found no blocker. Performance remains unmeasured.
+The320 pilot has a verified degree benefit6013.233→3888.162ms(-2125.071ms), but
+loadingCPU17.632174→18.609709s(+5.544%) exceeds5%; retain this violation and other
+case increases, not a parent-relative acceptance claim. Final cumulative resource
+and latency acceptance remain pending, with no allowance expansion or offsetting.
+
+
+### Attempt324 — compact fixed two-hop summary aggregation (2026-11-11)
+
+**Hypothesis.** Retain the original two-hop matcher, row construction and trail
+uniqueness, but specialize the exact graphId/count(*)/count(DISTINCT start)/
+count(DISTINCT destination) summary. Cache each source's actual graph-value group
+only after a real path, and use HashSet<NodeRef> rather than large generic Key
+sets. This removes per-path group-key/value vectors and repeated graphId evaluation;
+it does not eliminate path enumeration. Equal external graph IDs share a group,
+while distinct endpoint identity still includes physical source index. Encounter
+order, provenance, empty input, shared deferred overflow, downstream ordering and
+LIMIT stay intact; unsupported/property-graph/budgeted shapes retain generic code.
+
+**Protocol and correctness.** Parent323(c870d700), cumulative baseline69ba5f30.
+Add a separate incremental real64 six-case AB20 pilot before the declared final
+base/cumulative BA100 and73-case regression; same complete-response,CPU/RSS and
+failure-retention rules.465 module/integration tests, four targeted tests including
+real Tika duplicate-ID multi-source parity in both dialects, and all-target clippy
+pass. Candidate binary and matched performance evidence remain pending. No timing
+gain is inferred from the representation change and no traversal semantics are
+weakened to improve timing.
+
+
+**Attempts319–324 incremental results and retained limits.** Six independent real64
+AB20 pairs completed1656 full typed responses with no request failures/OOM and
+independent receipt/sample/resource verification.319 OPTIONAL P95 -159.150ms with
+all resource comparisons within5%; the small change is not strong path attribution.
+320 degree P95 -2125.071ms and pressureCPU -5.265%, but loadingCPU +5.544% fails
+its parent-relative bound and other cases increase.321 two-hop P95 +32.680ms has
+no target latency benefit; pressureCPU -1.243% and queryRSS -1.878% are retained
+mixed observations, not compensation for latency.322 rollup/global P95 improve
+164.073/148.742ms, but loadingCPU +7.072% violates its bound, co-use +16.039ms and
+OPTIONAL +710.830ms remain visible.323 OPTIONAL P95 -3302.127ms, pressureCPU
+-12.617% and queryRSS -17.961% meet its resource bounds, while degree +466.730ms
+is retained.324 two-hop P95 -954.797ms and pressureCPU -4.421%, but queryRSS
++6.613% exceeds its parent-relative bound and OPTIONAL P95 +416.850ms increases.
+
+Retain positive increments for cumulative evaluation; do not call any mixed or
+violating pair universally recovered. No total pipeline E2E or production availability
+recovery is established; first-use/pressure/resource operation boundaries and all
+P50/P95/min/max remain separate. All individual correctness checks passed, with
+final465 module/integration tests and lint. Baseline loading code is unchanged,
+but lack of a source change does not waive observed CPU increases. No synthetic or
+single-graph performance evidence was used.
+
+[Detailed incremental report](seconds-query-p95-2026-11-12.md) and
+[all six audits/raw archives](query-performance-evidence/2026-11-12/seconds-p95/README.md)
+record baseline/candidate values, absolute deltas and independent resource limits.
+The final main69ba5f30→cumulative868158af BA100 confirmation,73-case regression
+and any separately declared loading diagnosis are the
+[cumulative experiment-history appendix](https://github.com/johnsonlee/graphite/releases/download/benchmark-evidence-seconds-p95-final-2026-11-12/final-assessment.md),
+with checksum-pinned raw evidence in its immutable release. This appendix is the
+location of final per-workload correctness/stability/P50/P95/CPU/RSS and E2E-scope
+conclusions; incremental pilots above are not its substitute. Product code is
+frozen while remote CI and this final validation run independently; PR readiness
+requires both, and no data is rewritten to turn an adverse observation into PASS.
+
+### Attempt325 — bound OPTIONAL seed cancellation polling (2026-11-12)
+
+**Review and hypothesis.** PR214 review found direct cancellation/deadline checks
+for every admission row and every OPTIONAL seed. Poll at index0 and every1024
+rows, with completion checks and checks before rejected admission. Keep seed
+polling independently of matcher edge polling so isolated nodes cannot starve
+cancellation. Existing ancestor work-budget rejection and matcher checks remain
+unchanged. The review's small stack sample is a diagnostic, not performance
+acceptance or a promised latency gain.
+
+**Declared validation and feedback.** Parent runtime is Attempt324 (868158af),
+represented by integrated PR head d03ddd5a; accepted baseline69ba5f30 and current
+main3e74abf4 have identical product runtime sources. Run module tests, all-target
+lint and explicit real-fixture parity first; then one cumulative baseline/candidate
+real64 BA100 complex-query pair and the existing73-case AB regression protocol.
+Every request spans all64 physical real graphs, concurrency4, complete response
+consumption; retain every sample and failure, nearest-rank per-case P50/P95, and
+separate load/query CPU and kernel peak RSS with independent+5% limits. No new
+single-graph performance evidence or parent-relative tiny-gain stabilization runs.
+Reuse the unchanged trusted controller, sealed fixture and baseline binary proofs;
+freeze the candidate before measurement and avoid concurrent local builds. Expected
+critical path is a few minutes for correctness/build plus roughly25 minutes for
+complex measurement and a few minutes for regression, parallel with hosted CI.
+
+The separate CI review fix explicitly names the OPTIONAL, two-hop and degree
+real-fixture parity tests in the existing GRAPHITE_INDEX_FIXTURE step; it does not
+change product code. Correctness, stability, latency, CPU/RSS and retention results
+for325 are pending until the frozen candidate is validated. Earlier immutable
+measurements remain historical and do not describe this polling change.
+
+Local correctness:466 module/integration tests pass, including deterministic
+2051-sink-seed compact/streamed/generic parity in both dialects and empty/short
+input cancellation/deadline checks. All three newly wired fixture tests also pass
+with real Tika shard00 loaded explicitly. Format and the CI-profile all-target
+Clippy gate pass. An extra release-profile Clippy invocation failed on two
+unchanged aggregate_state.rs constant assertions; its log is retained separately
+and it is not represented as a passing check. The new polling code does not alter
+those assertions or release overflow behavior.
+
+Frozen source/binary identities, final measured outcomes and exact-head CI will
+be retained in the [review325 evidence appendix](https://github.com/johnsonlee/graphite/releases/tag/benchmark-evidence-seconds-p95-review325-2026-11-12).
+This link is pending publication while validation runs; it is not a declaration
+of acceptance. The appendix will retain failures and separate performance/resource
+conclusions rather than replacing historical measurements.

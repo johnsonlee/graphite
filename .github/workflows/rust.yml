@@ -17,7 +17,9 @@ permissions:
 jobs:
   rust:
     name: rust-build-test
-    runs-on: ubuntu-latest
+    # Keep the native/static interoperability gate on the same LTS generation as
+    # the benchmark gate instead of inheriting an unverified runner-image upgrade.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -27,7 +29,26 @@ jobs:
     # Resolve native build dependencies before spending time compiling and testing.
     - name: Install musl build tools
       run: |
-        apt_options=(-o Acquire::Retries=0 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30)
+        # Fetch through an independent mirror when the default Ubuntu hosts fail DNS.
+        # Keep Ubuntu archive signature verification and leave host repositories intact.
+        ci_ubuntu_apt_dir=$(mktemp -d "${RUNNER_TEMP}/ubuntu-musl-apt.XXXXXX")
+        chmod 755 "$ci_ubuntu_apt_dir"
+        mkdir -p "$ci_ubuntu_apt_dir/empty-sourceparts" "$ci_ubuntu_apt_dir/lists/partial"
+        cat > "$ci_ubuntu_apt_dir/ubuntu.sources" <<'EOF'
+        Types: deb
+        URIs: https://mirrors.edge.kernel.org/ubuntu
+        Suites: noble noble-updates noble-security
+        Components: main universe
+        Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+        EOF
+        apt_options=(
+          -o "Dir::Etc::sourcelist=$ci_ubuntu_apt_dir/ubuntu.sources"
+          -o "Dir::Etc::sourceparts=$ci_ubuntu_apt_dir/empty-sourceparts"
+          -o "Dir::State::lists=$ci_ubuntu_apt_dir/lists"
+          -o Acquire::Retries=0
+          -o Acquire::http::Timeout=30
+          -o Acquire::https::Timeout=30
+        )
         for attempt in 1 2 3; do
           echo "Installing musl build tools (attempt ${attempt}/3)"
           if sudo apt-get "${apt_options[@]}" update --error-on=any &&
@@ -46,7 +67,7 @@ jobs:
         if command -v resolvectl >/dev/null 2>&1; then
           timeout 5s resolvectl status || true
         fi
-        for host in azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
+        for host in mirrors.edge.kernel.org azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
           echo "DNS lookup as runner: ${host}"
           timeout 5s getent ahosts "${host}" || true
           echo "DNS lookup as root: ${host}"
@@ -383,6 +404,9 @@ jobs:
         cargo test --release --locked -p graphite-cypher probed_execution_returns_the_same_rows_and_knows_when_more_exist -- --nocapture
         cargo test --release --locked -p graphite-cypher a_fused_with_prefix_answers_as_the_generic_pipeline_does -- --nocapture
         cargo test --release --locked -p graphite-cypher native_multi_source_pairs_match_retained_pipeline_and_http_probe -- --nocapture
+        cargo test --release --locked -p graphite-cypher native_optional_counts_preserve_multi_source_identity_and_provenance -- --nocapture
+        cargo test --release --locked -p graphite-cypher native_two_hop_compact_counts_match_retained_matcher_for_duplicate_graph_ids -- --nocapture
+        cargo test --release --locked -p graphite-cypher native_multi_source_degree_histogram_matches_retained_streaming -- --nocapture
         cargo test --release --locked -p graphite-cli select_sites_reads_call_site_keys_off_a_real_graph -- --nocapture
         cargo test --release --locked -p graphite-cypher partition::tests -- --nocapture
         cargo test --release --locked -p graphite-cypher scan::descriptor_tests -- --nocapture

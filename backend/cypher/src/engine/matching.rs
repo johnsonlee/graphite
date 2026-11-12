@@ -388,7 +388,7 @@ impl<'a> Matcher<'a> {
                 next,
             );
         }
-        let edges = self.edges_of(cur, rel.direction);
+        let edges = self.edge_iter(cur, rel.direction);
         for e in edges {
             self.ex.tick()?;
             if !self.edge_ok(cur.source, &e, rel, row, state)? {
@@ -512,7 +512,7 @@ impl<'a> Matcher<'a> {
                 return Ok(true);
             }
         }
-        let edges = self.edges_of(cur, rel.direction);
+        let edges = self.edge_iter(cur, rel.direction);
         for e in edges {
             self.ex.tick()?;
             if path.iter().any(|p| p.edge == e) {
@@ -566,6 +566,22 @@ impl<'a> Matcher<'a> {
             }
         }
         Ok(true)
+    }
+
+    // Construct both CSR slices before yielding anything. neighbors() performs
+    // the range access eagerly; Edge construction thereafter is infallible. This
+    // preserves malformed-adjacency visibility even when the consumer stops early.
+    // Keep outgoing-before-incoming order and suppress only incoming self-loops.
+    fn edge_iter(&self, n: NodeRef, dir: Direction) -> impl Iterator<Item = Edge> + '_ {
+        let g = self.ex.graph(n.source);
+        let outgoing = (dir != Direction::Incoming).then(|| g.outgoing(n.id));
+        let incoming = (dir != Direction::Outgoing).then(|| g.incoming(n.id));
+        outgoing.into_iter().flatten().chain(
+            incoming
+                .into_iter()
+                .flatten()
+                .filter(move |e| dir != Direction::Both || e.from != e.to),
+        )
     }
 
     /// Edges of `n` in a direction; BOTH = outgoing then incoming (skipping self-loops on the incoming side).
