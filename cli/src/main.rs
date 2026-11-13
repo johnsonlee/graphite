@@ -64,7 +64,7 @@ enum Command {
     /// Build a JVM, compiled JavaScript, or Apple graph. Run `graphite help build` for shell options
     #[command(
         override_usage = "graphite build [--lang <jvm|js|ts|es|apple>] [FRONTEND_ARGS]...",
-        after_help = "Use --lang js (aliases: ts, es) for compiled JavaScript artifacts. A Swift package, .xcodeproj, or .xcworkspace selects the Apple frontend. Other inputs default to JVM. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
+        after_help = "Use --lang js (aliases: ts, es) for compiled JavaScript artifacts. A Swift package, .xcodeproj, or .xcworkspace selects the Apple frontend. Other inputs default to JVM. Place --lang, --pack and --profile before the -- separator. Arguments after -- are frontend inputs. --pack builds a .graphite archive and its .sha256 sidecar, appending .graphite to -o when needed.\n\n  graphite build --pack app.jar -o app\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
     )]
     Build(BuildArgs),
     /// Import a Graph IR written by a language frontend (.graphite-ir) and save the graph

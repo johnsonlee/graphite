@@ -486,6 +486,14 @@ fn run_apple(env: &Env, choice: &Choice, args: &[OsString]) -> i32 {
 
 /// Run `graphite build` and return the exit code to use.
 pub fn run(env: &Env, args: &[OsString]) -> i32 {
+    let args = match crate::build_args::packed_output_args(args) {
+        Ok(args) => args,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 2;
+        }
+    };
+    let args = args.as_slice();
     // Validate the shell's output before interpreting any flag that follows it
     // or attempting frontend discovery. Joined values can start with a dash.
     let output = match fold::output_of(args) {
