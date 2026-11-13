@@ -1,7 +1,7 @@
 //! Walk a forwarded build command line without confusing frontend option values with shell options.
 use std::ffi::{OsStr, OsString};
 use std::ops::Range;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 // Value-taking options in the JVM BuildCommand, plus the language selector owned by the shell.
 const VALUE_OPTIONS: &[&str] = &[
@@ -90,6 +90,7 @@ fn build_option(value: &OsStr) -> bool {
                 | b"-v"
                 | b"--verbose"
                 | b"--profile"
+                | b"--pack"
                 | b"--fold-strict"
                 | b"--interprocedural"
                 | b"--include-libs"
@@ -162,6 +163,43 @@ pub(crate) fn output_option(args: &[OsString]) -> Result<Option<Arg<'_>>, String
     )
 }
 
+/// Consume the shell's `--pack` flag and select the existing packed-output path.
+pub(crate) fn packed_output_args(args: &[OsString]) -> Result<Vec<OsString>, String> {
+    // Validate first, so `-o --pack` cannot consume a flag as an output path.
+    output_option(args)?;
+    let mut forwarded = Vec::with_capacity(args.len());
+    let mut start = 0;
+    let mut pack = false;
+    for option in walk(args).filter(|option| option.flag("--pack")) {
+        forwarded.extend_from_slice(&args[start..option.range.start]);
+        start = option.range.end;
+        pack = true;
+    }
+    forwarded.extend_from_slice(&args[start..]);
+    if !pack || requests_help_or_version(&forwarded) {
+        return Ok(forwarded);
+    }
+    let output = output_option(&forwarded)?
+        .ok_or("--pack requires an output: -o <name or file.graphite>")?;
+    let path = Path::new(output.value.expect("validated output"));
+    if path
+        .extension()
+        .is_some_and(|ext| ext == graphite_storage::container::EXTENSION)
+    {
+        return Ok(forwarded);
+    }
+    let path = path.components().collect::<PathBuf>();
+    if path.file_name().is_none() {
+        return Err("--pack requires an output filename".into());
+    }
+    let mut packed = path.into_os_string();
+    packed.push(".");
+    packed.push(graphite_storage::container::EXTENSION);
+    let (slot, replacement) = output.replacement(Path::new(&packed));
+    forwarded[slot] = replacement;
+    Ok(forwarded)
+}
+
 pub(crate) fn language_option(args: &[OsString]) -> Result<Option<Arg<'_>>, String> {
     unique(
         args,
@@ -193,6 +231,49 @@ mod tests {
     use super::*;
     fn os(args: &[&str]) -> Vec<OsString> {
         args.iter().map(OsString::from).collect()
+    }
+
+    #[test]
+    fn pack_selects_archive_output_and_preserves_frontend_arguments() {
+        for (output, expected) in [
+            ("app", "app.graphite"),
+            ("app.v1", "app.v1.graphite"),
+            ("nested/app/", "nested/app.graphite"),
+            ("app.graphite", "app.graphite"),
+        ] {
+            for spelling in ["-o", "--output"] {
+                assert_eq!(
+                    packed_output_args(&os(&["--pack", "app.jar", spelling, output])).unwrap(),
+                    os(&["app.jar", spelling, expected])
+                );
+                assert_eq!(
+                    packed_output_args(&os(&[
+                        "app.jar",
+                        &format!("{spelling}={output}"),
+                        "--pack"
+                    ]))
+                    .unwrap(),
+                    os(&["app.jar", &format!("{spelling}={expected}")])
+                );
+            }
+        }
+        for args in [
+            os(&["--include", "--pack", "app.jar", "-o", "app"]),
+            os(&["-o", "app", "--", "--pack"]),
+            os(&["--output=--pack", "app.jar"]),
+        ] {
+            assert_eq!(packed_output_args(&args).unwrap(), args);
+        }
+        assert_eq!(
+            packed_output_args(&os(&["--pack", "--help"])).unwrap(),
+            os(&["--help"])
+        );
+        assert!(packed_output_args(&os(&["--pack", "app.jar"]))
+            .unwrap_err()
+            .contains("--pack requires an output"));
+        assert!(packed_output_args(&os(&["app.jar", "-o", "--pack"]))
+            .unwrap_err()
+            .contains("--output requires a path"));
     }
 
     #[test]

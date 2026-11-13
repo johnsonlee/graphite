@@ -217,6 +217,9 @@ graphite --version
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
 
+# Build and pack into /data/app-graph.graphite (with a .sha256 sidecar)
+graphite build app.jar -o /data/app-graph --include com.example --pack
+
 # Build a graph from an Android APK
 graphite build app.apk \
   -o /data/apk-graph \
@@ -954,6 +957,13 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 `sha256sum -c` format is written next to the container, so a copy or download is checked
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
+
+Use `graphite build app.jar -o app --pack` to automatically pack after a successful
+build. `--pack` appends `.graphite` to the output path unless it already has that
+extension: `-o app.v1 --pack` writes `app.v1.graphite`, while `-o app.graphite --pack`
+writes `app.graphite`. It requires `-o`/`--output`, works with all build frontends,
+and removes the temporary graph directory after packing. Place `--pack` before
+the `--` separator; arguments after the separator are frontend inputs.
 
 A container moved without its sidecar can be rebuilt after its internal manifest and
 entry checksums verify. If a sidecar exists, it must match. For a rebuild both frontends claim
