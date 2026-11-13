@@ -182,16 +182,21 @@ pub(crate) fn packed_output_args(args: &[OsString]) -> Result<Vec<OsString>, Str
     let output = output_option(&forwarded)?
         .ok_or("--pack requires an output: -o <name or file.graphite>")?;
     let path = Path::new(output.value.expect("validated output"));
+    let name = path
+        .file_name()
+        .ok_or("--pack requires an output filename")?
+        .as_encoded_bytes();
+    if name == b".graphite" || name.ends_with(b".") {
+        return Err("--pack output filename must not be .graphite or end with '.'".into());
+    }
     if path
         .extension()
         .is_some_and(|ext| ext == graphite_storage::container::EXTENSION)
     {
+        // Preserve existing explicit archive paths; only normalize when appending a suffix.
         return Ok(forwarded);
     }
     let path = path.components().collect::<PathBuf>();
-    if path.file_name().is_none() {
-        return Err("--pack requires an output filename".into());
-    }
     let mut packed = path.into_os_string();
     packed.push(".");
     packed.push(graphite_storage::container::EXTENSION);
@@ -256,6 +261,12 @@ mod tests {
                     os(&["app.jar", &format!("{spelling}={expected}")])
                 );
             }
+        }
+        for output in [".graphite", "dir/.graphite", "app."] {
+            assert_eq!(
+                packed_output_args(&os(&["app.jar", "--pack", "-o", output])).unwrap_err(),
+                "--pack output filename must not be .graphite or end with '.'"
+            );
         }
         for args in [
             os(&["--include", "--pack", "app.jar", "-o", "app"]),

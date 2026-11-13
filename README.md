@@ -961,9 +961,12 @@ are the bytes that were built.
 Use `graphite build app.jar -o app --pack` to automatically pack after a successful
 build. `--pack` appends `.graphite` to the output path unless it already has that
 extension: `-o app.v1 --pack` writes `app.v1.graphite`, while `-o app.graphite --pack`
-writes `app.graphite`. It requires `-o`/`--output`, works with all build frontends,
-and removes the temporary graph directory after packing. Place `--pack` before
-the `--` separator; arguments after the separator are frontend inputs.
+writes `app.graphite`. It requires `-o`/`--output` and works with all build frontends.
+Like `-o app.graphite`, an existing verified archive and its sidecar are rebuilt
+in place. The build uses a temporary staging directory; no `app/` output directory
+is created. Ambiguous output filenames such as `.graphite` or names ending in `.`
+are rejected. Place `--pack` before the `--` separator; arguments after the separator
+are frontend inputs.
 
 A container moved without its sidecar can be rebuilt after its internal manifest and
 entry checksums verify. If a sidecar exists, it must match. For a rebuild both frontends claim
