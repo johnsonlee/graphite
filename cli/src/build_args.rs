@@ -170,6 +170,7 @@ pub(crate) fn packed_output_args(args: &[OsString]) -> Result<Vec<OsString>, Str
     let mut forwarded = Vec::with_capacity(args.len());
     let mut start = 0;
     let mut pack = false;
+    // Like --profile, repeated --pack flags are intentionally idempotent.
     for option in walk(args).filter(|option| option.flag("--pack")) {
         forwarded.extend_from_slice(&args[start..option.range.start]);
         start = option.range.end;
@@ -262,6 +263,19 @@ mod tests {
                 );
             }
         }
+        assert_eq!(
+            packed_output_args(&os(&[
+                "--pack",
+                "app.jar",
+                "--include",
+                "com.example",
+                "-o",
+                "app",
+                "--pack"
+            ]))
+            .unwrap(),
+            os(&["app.jar", "--include", "com.example", "-o", "app.graphite"])
+        );
         for output in [".graphite", "dir/.graphite", "app."] {
             assert_eq!(
                 packed_output_args(&os(&["app.jar", "--pack", "-o", output])).unwrap_err(),
