@@ -272,18 +272,28 @@ for shell options and `graphite build --help` or `graphite build --lang js --hel
 for frontend options.
 
 When no JVM options are supplied, `graphite build` automatically sizes the JVM
-frontend's maximum heap from the input's class count.
-It uses the larger of 8 GiB and 112 KiB per class,
-rounded up to a multiple of 2 GiB. APK sizing reads DEX headers; JAR/WAR sizing
-uses class entries. Assets such as images do not inflate the estimate. Unreadable
-or unsupported inputs retain the 8 GiB fallback and the frontend reports input
-errors as usual.
+frontend's maximum heap from the input's class count. It budgets 112 KiB per
+class, rounded up to 2 GiB, then clamps the result to **8 GiB through the smaller
+of 31 GiB and physical memory minus 8 GiB**. Container memory limits further
+restrict this budget. This reserves 8 GiB outside the Java heap; it does not set
+`-Xms` or preallocate the maximum heap. Current free memory does not change the
+chosen range. Unknown capacity or less than 16 GiB of physical/container memory
+stops automatic sizing with an explanation; configure Java options explicitly
+on these systems.
 
-This is a conservative heuristic, not a guarantee that every input will fit.
-Dependency libraries and Android platform classes are not included in the estimate.
-Explicit JVM options remain available to adjust it.
-Automatic build sizing may exceed 8 GiB; benchmark workloads keep their explicit
-fixed heap limits.
+APK sizing validates DEX headers and class-table bounds. Malformed or encrypted
+assets do not discard counts from valid DEX entries. JAR/WAR sizing counts class
+entries and, with `--include-libs`, enabled nested library archives. Directory
+inputs include their JARs. Nested archive inspection uses bounded temporary-file
+storage; when a library cannot be inspected, a warning and conservative archive
+bound replace an unbounded extraction. Filters may reduce what is analyzed, so
+library counts are conservative. Android platform classes remain outside the
+estimate.
+
+This is a conservative heuristic, not a guarantee that every input will fit or
+that future system memory pressure cannot occur. Explicit JVM options remain
+available to adjust it. Automatic build sizing may exceed 8 GiB; benchmark
+workloads keep their explicit fixed heap limits.
 
 The CLI checks whether the selected JVM supports this G1 configuration, using
 the estimated heap (shown here for an 8 GiB input):
@@ -299,8 +309,10 @@ Executable frontend launchers manage their own settings.
 Explicit nonempty `JAVA_TOOL_OPTIONS`, `JAVA_OPTS`, `JDK_JAVA_OPTIONS` or
 `_JAVA_OPTIONS` bypass automatic heap sizing and GC tuning. The CLI preserves
 `JAVA_TOOL_OPTIONS` precedence over `JAVA_OPTS`; the JVM handles its own
-`JDK_JAVA_OPTIONS` and `_JAVA_OPTIONS` without an injected default heap when
-neither of the first two is set. For example, use `JAVA_OPTS='-Xmx16g'`
+`JDK_JAVA_OPTIONS` and `_JAVA_OPTIONS`. With either native option variable alone,
+the CLI retains its legacy `-Xmx8g` fallback: a non-heap property does not shrink
+the heap to JVM ergonomics, while an explicit heap setting in either variable
+takes precedence in HotSpot. For example, use `JAVA_OPTS='-Xmx16g'`
 when `JAVA_TOOL_OPTIONS` is unset. These settings do not tune native `query`
 or `serve`. Maximum heap is separate from peak process RSS.
 

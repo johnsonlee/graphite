@@ -519,17 +519,14 @@ pub fn locate_java(env: &Env) -> Result<PathBuf, String> {
 /// The `JAVA_TOOL_OPTIONS` the frontend JVM runs with when the caller set none:
 /// `JAVA_OPTS`, else `-Xmx8g`. This is what the Homebrew wrapper around `graphite.jar`
 /// did, so a build that fit before keeps fitting. Build-specific automatic sizing
-/// supplies JAVA_OPTS before reaching this fallback. JVM-native options alone
-/// must not be shadowed by an injected default heap.
+/// supplies JAVA_OPTS before reaching this fallback. On HotSpot, explicit heaps
+/// in JDK_JAVA_OPTIONS or _JAVA_OPTIONS override this JAVA_TOOL_OPTIONS default.
 pub fn default_java_tool_options(env: &Env) -> Option<OsString> {
     if env.var("JAVA_TOOL_OPTIONS").is_some() {
         return None;
     }
     if let Some(options) = env.var("JAVA_OPTS") {
         return Some(options.clone());
-    }
-    if env.var("JDK_JAVA_OPTIONS").is_some() || env.var("_JAVA_OPTIONS").is_some() {
-        return None;
     }
     Some(OsString::from("-Xmx8g"))
 }
@@ -920,10 +917,26 @@ mod tests {
     }
 
     #[test]
-    fn native_java_options_are_not_shadowed_by_default_heap() {
+    fn native_java_options_keep_the_heap_fallback_and_explicit_option_precedence() {
         for name in ["JDK_JAVA_OPTIONS", "_JAVA_OPTIONS"] {
-            let env = env_with(&[(name, Path::new("-Xmx16g"))]);
-            assert_eq!(default_java_tool_options(&env), None);
+            for options in ["-Dfile.encoding=UTF-8", "-Xmx2g"] {
+                let env = env_with(&[(name, Path::new(options))]);
+                assert_eq!(default_java_tool_options(&env), Some("-Xmx8g".into()));
+                assert_eq!(env.var(name), Some(&OsString::from(options)));
+
+                let env = env_with(&[
+                    (name, Path::new(options)),
+                    ("JAVA_OPTS", Path::new("-Xmx4g")),
+                ]);
+                assert_eq!(default_java_tool_options(&env), Some("-Xmx4g".into()));
+
+                let env = env_with(&[
+                    (name, Path::new(options)),
+                    ("JAVA_OPTS", Path::new("-Xmx4g")),
+                    ("JAVA_TOOL_OPTIONS", Path::new("-Xmx1g")),
+                ]);
+                assert_eq!(default_java_tool_options(&env), None);
+            }
         }
     }
 

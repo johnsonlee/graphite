@@ -2,6 +2,8 @@
 
 #[path = "build_heap.rs"]
 mod heap;
+#[path = "build_memory.rs"]
+mod memory;
 
 use crate::frontend::{self, Env, Frontend, Launch};
 use std::borrow::Cow;
@@ -41,7 +43,7 @@ pub(super) fn build_env<'a>(
     fe: &Frontend,
     args: &[OsString],
 ) -> io::Result<Cow<'a, Env>> {
-    build_env_with(env, fe, args, probe)
+    build_env_with_memory(env, fe, args, memory::effective_memory_bytes, probe)
 }
 
 // Only classify a pure forwarded informational request, not an option value or
@@ -50,10 +52,39 @@ fn informational_request(args: &[OsString]) -> bool {
     matches!(args, [arg] if ["--help", "-h", "--version", "-V"].iter().any(|flag| arg == *flag))
 }
 
+const GIB: u64 = 1024 * 1024 * 1024;
+// User-selected policy: reserve 8 GiB outside the heap, keep the automatic
+// heap at least 8 GiB, and never cross the 31 GiB automatic ceiling.
+const SYSTEM_RESERVE: u64 = 8 * GIB;
+
+fn bounded_heap_gib(estimate: u64, total_bytes: Option<u64>) -> io::Result<u64> {
+    let total = total_bytes.ok_or_else(|| io::Error::other(
+        "could not determine physical/container memory; set JAVA_OPTS explicitly to choose a JVM heap"
+    ))?;
+    let limit = total.saturating_sub(SYSTEM_RESERVE) / GIB;
+    if limit < 8 {
+        return Err(io::Error::other(
+            "automatic JVM heap sizing requires at least 16 GiB of physical/container memory (8 GiB heap plus 8 GiB reserved); set JAVA_OPTS explicitly on smaller systems"
+        ));
+    }
+    Ok(estimate.max(8).min(limit).min(heap::MAX_HEAP_GIB))
+}
+
+#[cfg(test)]
 fn build_env_with<'a>(
     env: &'a Env,
     fe: &Frontend,
     args: &[OsString],
+    check: impl FnOnce(&Path, &Env, u64) -> io::Result<bool>,
+) -> io::Result<Cow<'a, Env>> {
+    build_env_with_memory(env, fe, args, || Some(64 * GIB), check)
+}
+
+fn build_env_with_memory<'a>(
+    env: &'a Env,
+    fe: &Frontend,
+    args: &[OsString],
+    memory: impl FnOnce() -> Option<u64>,
     check: impl FnOnce(&Path, &Env, u64) -> io::Result<bool>,
 ) -> io::Result<Cow<'a, Env>> {
     if informational_request(args)
@@ -66,7 +97,11 @@ fn build_env_with<'a>(
         // The normal invocation reports the original missing-Java error.
         return Ok(Cow::Borrowed(env));
     };
-    let heap_gib = heap::heap_gib(args);
+    let estimate = heap::heap_gib(args);
+    let heap_gib = bounded_heap_gib(estimate, memory())?;
+    if heap_gib < estimate {
+        eprintln!("JVM heap estimate: {estimate} GiB; automatic heap limited to {heap_gib} GiB to reserve 8 GiB of physical/container memory.");
+    }
     let options = if check(&java, env, heap_gib)? {
         profile(heap_gib)
     } else {
@@ -290,6 +325,77 @@ mod tests {
     }
 
     #[test]
+    fn automatic_heap_reserves_eight_gib_and_obeys_the_thirty_one_gib_ceiling() {
+        for (total_gib, estimate, expected) in [
+            (16, 30, 8),
+            (24, 30, 16),
+            (32, 30, 24),
+            (64, u64::MAX, 31),
+            (64, 16, 16),
+            (64, 0, 8),
+        ] {
+            let heap = bounded_heap_gib(estimate, Some(total_gib * GIB)).unwrap();
+            assert_eq!(heap, expected);
+            assert!(heap * GIB <= total_gib * GIB - SYSTEM_RESERVE);
+        }
+        assert_eq!(bounded_heap_gib(30, Some(24 * GIB - 1)).unwrap(), 15);
+        assert!(bounded_heap_gib(16, None).is_err());
+        for total in [0, 8 * GIB, 15 * GIB, 16 * GIB - 1] {
+            assert!(bounded_heap_gib(8, Some(total)).is_err());
+        }
+    }
+
+    #[test]
+    fn explicit_options_bypass_memory_detection_and_small_hosts_do_not_launch_probe() {
+        let input = env();
+        let calls = Cell::new(0);
+        for total in [None, Some(8 * GIB)] {
+            assert!(build_env_with_memory(
+                &input,
+                &jar(),
+                &[],
+                || total,
+                |_, _, _| {
+                    calls.set(calls.get() + 1);
+                    Ok(true)
+                }
+            )
+            .is_err());
+        }
+        assert_eq!(calls.get(), 0);
+        for name in EXPLICIT_OPTIONS {
+            let mut input = env();
+            input
+                .vars
+                .insert(name.into(), "-Dfile.encoding=UTF-8".into());
+            let configured = build_env_with_memory(
+                &input,
+                &jar(),
+                &[],
+                || panic!("explicit options must bypass automatic memory detection"),
+                |_, _, _| panic!("explicit options must bypass the probe"),
+            )
+            .unwrap();
+            assert!(matches!(configured, Cow::Borrowed(_)));
+        }
+        let configured = build_env_with_memory(
+            &input,
+            &jar(),
+            &[],
+            || Some(16 * GIB),
+            |_, _, heap| {
+                assert_eq!(heap, 8);
+                Ok(false)
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            frontend::default_java_tool_options(&configured),
+            Some("-Xmx8g".into())
+        );
+    }
+
+    #[test]
     fn effective_flags_require_every_exact_value_once() {
         assert!(has_effective_profile(FLAGS.as_bytes(), 8));
         assert!(has_effective_profile(
@@ -333,7 +439,11 @@ mod tests {
         let mut zip = zip::ZipWriter::new(File::create(&input_path).unwrap());
         zip.start_file("classes.dex", zip::write::SimpleFileOptions::default())
             .unwrap();
-        let mut header = [0u8; 112];
+        let mut header = vec![0u8; 112 + 132_532 * 32];
+        let dex_size = header.len() as u32;
+        header[32..36].copy_from_slice(&dex_size.to_le_bytes());
+        header[36..40].copy_from_slice(&112u32.to_le_bytes());
+        header[100..104].copy_from_slice(&112u32.to_le_bytes());
         header[..8].copy_from_slice(b"dex\n035\0");
         header[40..44].copy_from_slice(&0x12345678u32.to_le_bytes());
         header[96..100].copy_from_slice(&132_532u32.to_le_bytes());
@@ -558,8 +668,13 @@ mod tests {
     fn build_run_probes_once_then_exports_profile_and_preserves_build_failure() {
         let _spawn_guard = SPAWN_LOCK.lock().unwrap_or_else(|error| error.into_inner());
         let log = Capture::new().unwrap();
+        let gc_flags = FLAGS
+            .lines()
+            .filter(|line| !line.contains("MaxHeapSize"))
+            .collect::<Vec<_>>()
+            .join("\n");
         let fake = fake_java(&format!(
-            "if [ \"$1\" = '-Xmx8g' ]; then\n  printf 'probe\\n' >> '{}'\n  printf '%s' '{FLAGS}'\nelse\n  printf 'build:%s\\n' \"$JAVA_TOOL_OPTIONS\" >> '{}'\n  printf '%s\\n' \"$@\" >> '{}'\n  exit 23\nfi",
+            "case \"$1\" in\n  -Xmx*g)\n    heap=${{1#-Xmx}}\n    heap=${{heap%g}}\n    printf 'probe:%s\\n' \"$heap\" >> '{}'\n    printf '%s\\n' '{gc_flags}'\n    printf 'size_t MaxHeapSize = %s {{product}} {{command line}}\\n' \"$((heap * 1024 * 1024 * 1024))\"\n    ;;\n  *)\n    printf 'build:%s\\n' \"$JAVA_TOOL_OPTIONS\" >> '{}'\n    printf '%s\\n' \"$@\" >> '{}'\n    exit 23\n    ;;\nesac",
             log.path.display(), log.path.display(), log.path.display()
         ));
         let mut input = env();
@@ -573,10 +688,27 @@ mod tests {
         );
         let original = input.vars.clone();
         let args = ["input.jar", "-o", "graph-directory"].map(OsString::from);
+        if memory::effective_memory_bytes().is_none_or(|bytes| bytes < 16 * 1024 * 1024 * 1024) {
+            assert_eq!(crate::build::run(&input, &args), 1);
+            assert_eq!(input.vars, original);
+            assert_eq!(std::fs::read_to_string(&log.path).unwrap(), "");
+            return;
+        }
         assert_eq!(crate::build::run(&input, &args), 23);
         assert_eq!(input.vars, original);
-        assert_eq!(std::fs::read_to_string(&log.path).unwrap(), format!(
-            "probe\nbuild:{PROFILE}\n-jar\n/fixture/graphite.jar\nbuild\ninput.jar\n-o\ngraph-directory\n"
+        let recorded = std::fs::read_to_string(&log.path).unwrap();
+        let heap: u64 = recorded
+            .lines()
+            .next()
+            .unwrap()
+            .strip_prefix("probe:")
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_eq!(heap, 8);
+        assert_eq!(recorded, format!(
+            "probe:{heap}\nbuild:{}\n-jar\n/fixture/graphite.jar\nbuild\ninput.jar\n-o\ngraph-directory\n",
+            profile(heap)
         ));
     }
 
