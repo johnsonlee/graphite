@@ -82,6 +82,7 @@ export async function publish({ github, payload, directory, info = console.log }
   // Both association and comparison base come from GitHub, never PR artifacts.
   const pulls = run.pull_requests?.length ? run.pull_requests : await github.associatedPulls(run.head_sha);
   const artifacts = await github.artifacts(run.id);
+  const reportArtifacts = artifacts.filter(item => item.name.startsWith('benchmark-report-') && !item.expired);
   for (const association of pulls) {
     const pull = await github.pull(association.number);
     if (pull.state !== 'open' || pull.base.repo.id !== payload.repository.id || pull.head.sha !== run.head_sha) continue;
@@ -90,7 +91,13 @@ export async function publish({ github, payload, directory, info = console.log }
     const recordedBaseTip = association.base?.sha;
     let comparisonBase: string | undefined;
     let markdown = `Correctness/OOM execution: **${run.conclusion}**.\n\nNo complete report was produced. See the workflow diagnostics.\n\nTimings are informational and do not decide the gate.\n`;
-    const reportDirectory = path.join(directory, artifactName);
+    const nestedDirectory = path.join(directory, artifactName);
+    // download-artifact v8 extracts a single pattern match directly into `path`.
+    // Only accept that flat layout when GitHub identifies exactly this report;
+    // multiple matches remain isolated in artifact-named directories.
+    const reportDirectory = !fs.existsSync(nestedDirectory) && artifact &&
+      reportArtifacts.length === 1 && reportArtifacts[0]!.id === artifact.id
+      ? directory : nestedDirectory;
     const filename = path.join(reportDirectory, 'summary.md');
     if (recordedBaseTip) {
       try {
