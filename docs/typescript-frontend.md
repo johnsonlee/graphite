@@ -61,26 +61,18 @@ selects the Node.js runtime for the configured script entry point. With Node.js
 and `npm run build --prefix frontend/web`, then set `GRAPHITE_FRONTEND_JS` to
 the absolute path of `frontend/web/dist/cli.js`.
 
-An output without `.graphite` is a saved directory. You can subsequently use
-`graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
-graphs. JS, TS and ES builds can reuse an empty directory or rebuild an existing
-saved graph directory on Linux and macOS filesystems that support atomic directory
-exchange. Rebuilding replaces the whole graph; it does not append or merge it.
-Stop services, other readers and other writers of that directory before rebuilding.
-Directory readers can open some files lazily, so replacing the directory is not an online
-snapshot update. Restart readers after the build succeeds.
+Build outputs are `.graphite` archives. An output without that extension gets
+`.graphite` appended: `-o /tmp/project` writes `/tmp/project.graphite` and its
+SHA-256 sidecar, leaving any existing `/tmp/project` directory untouched.
+An existing verified archive is rebuilt in place; rebuilding replaces the whole
+graph, rather than appending or merging it. A sidecar, when present, must match
+the existing archive before replacement. Analysis, import or publication failure
+preserves the previous graph.
 
-The publisher rejects symlinks, unrelated files and unrecognized subdirectories
-in the destination. The current working directory and its ancestors cannot be
-rebuild destinations; use a separate output directory. A rebuild checks that the
-directory and its saved files have not changed since the build started.
-Analysis, import or publication failure
-leaves the previous graph available. If atomic directory exchange is unsupported,
-the rebuild fails without moving the old graph; choose a new output path instead.
-The replacement retains the old directory's Unix mode bits. If a concurrent change
-makes rollback or cleanup uncertain, the diagnostic identifies retained files in
-the staging directory. Confirm writers have stopped and inspect those files before
-manual recovery or removal; later builds do not automatically sweep them.
+Use `graphite unpack /tmp/project.graphite /tmp/project-files` when a saved graph
+directory is needed. Query and serve accept either the archive or the unpacked
+directory. `graphite pack /tmp/project-files -o /tmp/copy.graphite` packs those
+files again.
 
 Analysis and import use a private sibling directory when the output parent exists.
 For a missing parent, Graphite

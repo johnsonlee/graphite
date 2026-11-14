@@ -105,8 +105,11 @@ def check(root, cli, assets, version, target, source_frontend):
         run(reader, "build", "--lang", "js", "app.mjs", "-o", "reference.graphite",
             extra_env={"GRAPHITE_FRONTEND_JS": str(source_frontend.resolve()), "GRAPHITE_NODE": node})
 
-    saved = work / "saved"
-    saved.mkdir()
+    sibling = work / "saved"
+    sibling.mkdir()
+    (sibling / "keep.txt").write_text("unrelated user data")
+    saved = work / "saved.graphite"
+    saved_digest = work / "saved.graphite.sha256"
     for selector in SELECTORS:
         home = root / selector
         graph = f"{selector}.graphite"
@@ -125,18 +128,25 @@ def check(root, cli, assets, version, target, source_frontend):
         rows = json.loads(run(reader, "query", graph, flow, "--format", "json").stdout)["rows"]
         assert rows == [{"value": "installed", "target": "log"}], rows
         assert not (work / "preload-ran").exists(), "Frontend executed a preload from the analyzed project"
-        # Exercise native publication into an empty directory, then replace it
-        # with different graphs through both aliases, without a runtime on PATH.
+        # Exercise default archive publication and rebuild through every alias,
+        # without a runtime on PATH; the same-named directory is left untouched.
         (work / "rebuild.mjs").write_text(f'console.log("{selector}");\n')
         run(home, "build", "--lang", selector, "rebuild.mjs", "-o", "saved")
-        rows = json.loads(run(reader, "query", "saved", flow, "--format", "json").stdout)["rows"]
+        rows = json.loads(run(reader, "query", "saved.graphite", flow, "--format", "json").stdout)["rows"]
         assert rows == [{"value": selector, "target": "log"}], rows
-        before = {p.name: p.read_bytes() for p in saved.iterdir()}
+        run(reader, "verify", "saved.graphite")
+        assert [p.name for p in sibling.iterdir()] == ["keep.txt"]
+        assert (sibling / "keep.txt").read_text() == "unrelated user data"
+        unpacked = f"saved-{selector}-unpacked"
+        run(reader, "unpack", "saved.graphite", unpacked)
+        directory_rows = json.loads(run(reader, "query", unpacked, flow, "--format", "json").stdout)["rows"]
+        assert directory_rows == rows, directory_rows
+        before = (saved.read_bytes(), saved_digest.read_bytes())
         (work / "rebuild.mjs").write_text('function broken( {')
         failed = run(home, "build", "--lang", selector, "rebuild.mjs", "-o", "saved", success=False)
         assert failed.returncode == 1 and "No parseable JavaScript artifacts remain" in failed.stderr, failed
-        assert {p.name: p.read_bytes() for p in saved.iterdir()} == before
-        rows = json.loads(run(reader, "query", "saved", flow, "--format", "json").stdout)["rows"]
+        assert (saved.read_bytes(), saved_digest.read_bytes()) == before
+        rows = json.loads(run(reader, "query", "saved.graphite", flow, "--format", "json").stdout)["rows"]
         assert rows == [{"value": selector, "target": "log"}], rows
         print(f"Verified clean install {selector}, offline build/rebuild with empty PATH, "
               "failed rebuild preservation, and saved Array.map / Console.log calls")

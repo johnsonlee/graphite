@@ -303,6 +303,10 @@ class Harness:
         direct = self.output / f"{side}-direct.graphite"
         language = "js" if side == "client" else "ts"
         self.run("build", "--lang", language, artifact, "-o", graph)
+        archive = Path(str(graph) + ".graphite")
+        assert not graph.exists(), "bare build output must select an archive"
+        self.run("verify", "--verbose", archive)
+        self.run("unpack", archive, graph)
         checks = []
         for operation in expected:
             # JSON strings also escape quotes/backslashes correctly for Cypher.
@@ -424,6 +428,10 @@ class Harness:
         unpacked = self.output / "defaults-unpacked"
         direct = self.output / "defaults-direct.graphite"
         self.run("build", "--lang", "js", artifact, "-o", graph)
+        archive = Path(str(graph) + ".graphite")
+        assert not graph.exists(), "bare build output must select an archive"
+        self.run("verify", "--verbose", archive)
+        self.run("unpack", archive, graph)
         queries = [
             ("MATCH (cs:CallSiteNode {callee_name: 'identity'}) RETURN cs.line AS line ORDER BY line",
              [{"line": 2}, {"line": 3}, {"line": 4}]),

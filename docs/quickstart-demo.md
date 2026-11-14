@@ -107,7 +107,7 @@ Replace the input and package filter with those for your application:
 
 ```bash
 graphite build app.jar -o app-graph --include com.example
-graphite query --format json app-graph \
+graphite query --format json app-graph.graphite \
   "MATCH (call:CallSiteNode)
    RETURN call.caller_signature, call.callee_class, call.callee_name LIMIT 10"
 ```

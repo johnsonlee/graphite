@@ -163,42 +163,35 @@ pub(crate) fn output_option(args: &[OsString]) -> Result<Option<Arg<'_>>, String
     )
 }
 
-/// Consume the shell's `--pack` flag and select the existing packed-output path.
+/// Select archive output for every shell build; frontends still write staged directories.
 pub(crate) fn packed_output_args(args: &[OsString]) -> Result<Vec<OsString>, String> {
-    // Validate first, so `-o --pack` cannot consume a flag as an output path.
-    output_option(args)?;
-    let mut forwarded = Vec::with_capacity(args.len());
-    let mut start = 0;
-    let mut pack = false;
-    // Like --profile, repeated --pack flags are intentionally idempotent.
-    for option in walk(args).filter(|option| option.flag("--pack")) {
-        forwarded.extend_from_slice(&args[start..option.range.start]);
-        start = option.range.end;
-        pack = true;
+    let output = output_option(args)?;
+    if walk(args).any(|arg| arg.flag("--pack")) {
+        return Err("unknown option --pack: build already writes a .graphite archive".into());
     }
-    forwarded.extend_from_slice(&args[start..]);
-    if !pack || requests_help_or_version(&forwarded) {
+    let mut forwarded = args.to_vec();
+    if requests_help_or_version(args) {
         return Ok(forwarded);
     }
-    let output = output_option(&forwarded)?
-        .ok_or("--pack requires an output: -o <name or file.graphite>")?;
+    let Some(output) = output else {
+        // Preserve frontend-specific missing-output diagnostics.
+        return Ok(forwarded);
+    };
     let path = Path::new(output.value.expect("validated output"));
     let name = path
         .file_name()
-        .ok_or("--pack requires an output filename")?
+        .ok_or("--output requires a filename")?
         .as_encoded_bytes();
     if name == b".graphite" || name.ends_with(b".") {
-        return Err("--pack output filename must not be .graphite or end with '.'".into());
+        return Err("--output filename must not be .graphite or end with '.'".into());
     }
     if path
         .extension()
         .is_some_and(|ext| ext == graphite_storage::container::EXTENSION)
     {
-        // Preserve existing explicit archive paths; only normalize when appending a suffix.
         return Ok(forwarded);
     }
-    let path = path.components().collect::<PathBuf>();
-    let mut packed = path.into_os_string();
+    let mut packed = path.components().collect::<PathBuf>().into_os_string();
     packed.push(".");
     packed.push(graphite_storage::container::EXTENSION);
     let (slot, replacement) = output.replacement(Path::new(&packed));
@@ -240,65 +233,72 @@ mod tests {
     }
 
     #[test]
-    fn pack_selects_archive_output_and_preserves_frontend_arguments() {
-        for (output, expected) in [
-            ("app", "app.graphite"),
-            ("app.v1", "app.v1.graphite"),
-            ("nested/app/", "nested/app.graphite"),
-            ("app.graphite", "app.graphite"),
-        ] {
-            for spelling in ["-o", "--output"] {
-                assert_eq!(
-                    packed_output_args(&os(&["--pack", "app.jar", spelling, output])).unwrap(),
-                    os(&["app.jar", spelling, expected])
-                );
-                assert_eq!(
-                    packed_output_args(&os(&[
-                        "app.jar",
-                        &format!("{spelling}={output}"),
-                        "--pack"
-                    ]))
-                    .unwrap(),
-                    os(&["app.jar", &format!("{spelling}={expected}")])
-                );
+    fn builds_select_archive_output_and_preserve_frontend_arguments() {
+        for lang in ["jvm", "js", "apple"] {
+            for (output, expected) in [
+                ("app", "app.graphite"),
+                ("app.v1", "app.v1.graphite"),
+                ("nested/app/", "nested/app.graphite"),
+                ("app.graphite", "app.graphite"),
+            ] {
+                for spelling in ["-o", "--output"] {
+                    assert_eq!(
+                        packed_output_args(&os(&["--lang", lang, "input", spelling, output]))
+                            .unwrap(),
+                        os(&["--lang", lang, "input", spelling, expected])
+                    );
+                    assert_eq!(
+                        packed_output_args(&os(&["input", &format!("{spelling}={output}")]))
+                            .unwrap(),
+                        os(&["input", &format!("{spelling}={expected}")])
+                    );
+                }
             }
         }
-        assert_eq!(
-            packed_output_args(&os(&[
-                "--pack",
-                "app.jar",
-                "--include",
-                "com.example",
-                "-o",
-                "app",
-                "--pack"
-            ]))
-            .unwrap(),
-            os(&["app.jar", "--include", "com.example", "-o", "app.graphite"])
-        );
         for output in [".graphite", "dir/.graphite", "app."] {
             assert_eq!(
-                packed_output_args(&os(&["app.jar", "--pack", "-o", output])).unwrap_err(),
-                "--pack output filename must not be .graphite or end with '.'"
+                packed_output_args(&os(&["input", "-o", output])).unwrap_err(),
+                "--output filename must not be .graphite or end with '.'"
             );
         }
+        assert_eq!(
+            packed_output_args(&os(&["--include", "--pack", "input", "-o", "app"])).unwrap(),
+            os(&["--include", "--pack", "input", "-o", "app.graphite"])
+        );
+        assert_eq!(
+            packed_output_args(&os(&["-o", "app", "--", "--pack"])).unwrap(),
+            os(&["-o", "app.graphite", "--", "--pack"])
+        );
         for args in [
-            os(&["--include", "--pack", "app.jar", "-o", "app"]),
-            os(&["-o", "app", "--", "--pack"]),
-            os(&["--output=--pack", "app.jar"]),
+            os(&["--help"]),
+            os(&["--version", "-o", "app"]),
+            os(&["input"]),
         ] {
             assert_eq!(packed_output_args(&args).unwrap(), args);
         }
-        assert_eq!(
-            packed_output_args(&os(&["--pack", "--help"])).unwrap(),
-            os(&["--help"])
-        );
-        assert!(packed_output_args(&os(&["--pack", "app.jar"]))
+        assert!(packed_output_args(&os(&["input", "--pack", "-o", "app"]))
             .unwrap_err()
-            .contains("--pack requires an output"));
-        assert!(packed_output_args(&os(&["app.jar", "-o", "--pack"]))
+            .contains("unknown option --pack"));
+        assert!(packed_output_args(&os(&["input", "-o", "--pack"]))
             .unwrap_err()
             .contains("--output requires a path"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn archive_output_preserves_non_unicode_paths() {
+        use std::os::unix::ffi::OsStringExt;
+        let args = vec![
+            "input".into(),
+            OsString::from_vec(b"--output=app-\xff".to_vec()),
+        ];
+        assert_eq!(
+            packed_output_args(&args).unwrap(),
+            vec![
+                OsString::from("input"),
+                OsString::from_vec(b"--output=app-\xff.graphite".to_vec())
+            ]
+        );
     }
 
     #[test]

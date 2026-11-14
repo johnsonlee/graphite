@@ -445,10 +445,13 @@ or the property that did not match), and the Cypher query that previews the rule
 built without it. When no rule folded anything the build says that the graph is the same as
 one built without `--fold`; `--fold-strict` makes a rule that matched no call a failure.
 
-A build without `--fold` deletes a `graph.folds.json` an earlier build left in the output
-directory: the report describes the build that wrote it.
+A build without `--fold` leaves no `graph.folds.json` from an earlier build: the report
+describes the build that wrote it. The native CLI writes a `.graphite` archive, appending
+that extension to `-o` when needed. The report is an entry in that archive; use
+`graphite unpack app.graphite app-files` to read or reuse `app-files/graph.folds.json`.
+The JVM frontend and Kotlin API still save graph files into a directory.
 
-The report `graph.folds.json` in the output directory repeats each rule (`match`, `args`, or
+The report `graph.folds.json` in the saved graph repeats each rule (`match`, `args`, or
 `select` and `selected`; `value`, `frontend`) and adds `cypher`, the preview query (for a
 `match`, an approximation of the rule: an argument pattern walks one or two `DATAFLOW` hops
 into the call, the shapes the fold pass accepts, a constant passed directly and a constant

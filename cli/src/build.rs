@@ -4,10 +4,9 @@
 //! and Swift packages or Xcode apps. An app directory resolves to its workspace or project.
 //! Apple frontends write protobuf IR, which the JVM importer persists.
 //!
-//! One output form is the shell's too: when `-o` names a `.graphite` file, the frontend
-//! writes a staging directory next to it (the frontend only ever writes directories) and
-//! the shell packs that into the file afterwards, so every frontend produces the single
-//! file without knowing about it.
+//! Build output is a `.graphite` archive: the shell appends the extension when needed,
+//! directs the frontend into a staging directory, then packs it after a successful build.
+//! Import retains directory output unless `-o` explicitly names a `.graphite` file.
 //!
 //! A `--fold` file is the shell's to read as well: when it holds `select` rules, the shell
 //! builds once without rules, resolves every query on that graph, and builds again with
@@ -322,9 +321,7 @@ pub fn split_apple_args(args: &[OsString]) -> Result<AppleBuild, String> {
         input,
         output: PathBuf::from(
             output
-                .ok_or(
-                    "the Apple frontend needs an output: -o <graph directory or .graphite file>",
-                )?
+                .ok_or("the Apple frontend needs an output: -o <OUTPUT> (a .graphite archive)")?
                 .value
                 .expect("validated output"),
         ),
@@ -493,7 +490,11 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
             return 2;
         }
     };
-    let args = args.as_slice();
+    run_selected(env, &args)
+}
+
+// Keep frontend routing separate from the shell's archive-output policy.
+fn run_selected(env: &Env, args: &[OsString]) -> i32 {
     // Validate the shell's output before interpreting any flag that follows it
     // or attempting frontend discovery. Joined values can start with a dash.
     let output = match fold::output_of(args) {
@@ -1418,7 +1419,7 @@ mod tests {
         for selectors in [os(&["--lang", "jvm"]), os(&["--lang=java"])] {
             let mut args = selectors;
             args.extend(forwarded.clone());
-            assert_eq!(run(&env, &args), 0);
+            assert_eq!(run_selected(&env, &args), 0);
             let expected = std::iter::once("build".to_string())
                 .chain(
                     forwarded
@@ -1452,7 +1453,7 @@ mod tests {
                 let mut args = os(&["--lang=kotlin"]);
                 args.extend(selector);
                 args.extend(forwarded.clone());
-                assert_eq!(run(&pinned, &args), 0);
+                assert_eq!(run_selected(&pinned, &args), 0);
                 let (log, mut expected) = if path == &jar {
                     (
                         root.join("java.log"),
@@ -1532,7 +1533,7 @@ mod tests {
         let args =
             |output: &Path| os(&["--lang", "apple", "MyApp", "-o", output.to_str().unwrap()]);
         assert!(!output.parent().unwrap().exists());
-        assert_eq!(run(&env, &args(&output)), 0);
+        assert_eq!(run_selected(&env, &args(&output)), 0);
         assert_eq!(
             std::fs::read_to_string(output.join("result")).unwrap(),
             "IR payload\n"
@@ -1541,7 +1542,7 @@ mod tests {
         assert!(!Path::new(ir.trim()).exists());
 
         std::fs::remove_file(root.join("apple.log")).unwrap();
-        assert_eq!(run(&env, &args(&output)), 1);
+        assert_eq!(run_selected(&env, &args(&output)), 1);
         assert!(!root.join("apple.log").exists());
         assert_eq!(
             std::fs::read_to_string(output.join("result")).unwrap(),
@@ -1549,17 +1550,20 @@ mod tests {
         );
         let alias = root.join("alias");
         std::os::unix::fs::symlink(&output, &alias).unwrap();
-        assert_eq!(run(&env, &args(&alias)), 1);
+        assert_eq!(run_selected(&env, &args(&alias)), 1);
         assert!(!root.join("apple.log").exists());
         let dangling = root.join("dangling");
         let missing = root.join("missing-target");
         std::os::unix::fs::symlink(&missing, &dangling).unwrap();
-        assert_eq!(run(&env, &args(&dangling)), 1);
+        assert_eq!(run_selected(&env, &args(&dangling)), 1);
         assert!(!missing.exists());
         assert!(!root.join("apple.log").exists());
         let blocked = root.join("blocked");
         std::fs::write(&blocked, "file").unwrap();
-        assert_eq!(run(&env, &args(&blocked.join("graph.graphite"))), 1);
+        assert_eq!(
+            run_selected(&env, &args(&blocked.join("graph.graphite"))),
+            1
+        );
         assert!(!root.join("apple.log").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -1610,7 +1614,7 @@ mod tests {
             "--skip-build",
         ]);
 
-        assert_eq!(run(&env, &args), 0);
+        assert_eq!(run_selected(&env, &args), 0);
         let logged = std::fs::read_to_string(&log).unwrap();
         assert!(logged.contains("import"), "{logged}");
         assert!(logged.contains(".graphite-ir -o"), "{logged}");
@@ -1627,27 +1631,30 @@ mod tests {
 
         // Exit codes: unsupported input, partial without and with --allow-partial.
         std::env::set_var("GRAPHITE_STUB_EXIT", "2");
-        assert_eq!(run(&env, &args), 2);
+        assert_eq!(run_selected(&env, &args), 2);
         std::env::set_var("GRAPHITE_STUB_EXIT", "3");
-        assert_eq!(run(&env, &args), 3);
+        assert_eq!(run_selected(&env, &args), 3);
         let mut partial = args.clone();
         partial.push(OsString::from("--allow-partial"));
-        assert_eq!(run(&env, &partial), 0);
+        assert_eq!(run_selected(&env, &partial), 0);
         std::env::set_var("GRAPHITE_STUB_EXIT", "0");
         // A schema this CLI does not read is refused before building.
         std::env::set_var("GRAPHITE_STUB_SCHEMA", "7");
-        assert_eq!(run(&env, &args), 2);
+        assert_eq!(run_selected(&env, &args), 2);
         std::env::remove_var("GRAPHITE_STUB_SCHEMA");
         std::env::remove_var("GRAPHITE_STUB_EXIT");
         // No output, no frontend, an explicit --frontend that cannot run.
-        assert_eq!(run(&env, &os(&["--lang", "apple", "MyApp"])), 1);
+        assert_eq!(run_selected(&env, &os(&["--lang", "apple", "MyApp"])), 1);
         let no_fe = env_with(&[("GRAPHITE_JAVA", java.to_str().unwrap())]);
-        assert_eq!(run(&no_fe, &os(&["--lang", "apple", "-o", "g"])), 2);
         assert_eq!(
-            run(&env, &os(&["--frontend", "/nonexistent/fe", "-o", "g"])),
+            run_selected(&no_fe, &os(&["--lang", "apple", "-o", "g"])),
             2
         );
-        assert_eq!(run(&env, &os(&["--lang", "web"])), 2);
+        assert_eq!(
+            run_selected(&env, &os(&["--frontend", "/nonexistent/fe", "-o", "g"])),
+            2
+        );
+        assert_eq!(run_selected(&env, &os(&["--lang", "web"])), 2);
         std::fs::remove_dir_all(root).unwrap();
     }
 }

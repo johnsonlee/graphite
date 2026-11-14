@@ -217,11 +217,8 @@ brew tap johnsonlee/tap
 brew install johnsonlee/tap/graphite
 graphite --version
 
-# Build a graph from your JAR
+# Build app-graph.graphite and its .sha256 sidecar from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
-
-# Build and pack into /data/app-graph.graphite (with a .sha256 sidecar)
-graphite build app.jar -o /data/app-graph --include com.example --pack
 
 # Build a graph from an Android APK
 graphite build app.apk \
@@ -229,17 +226,17 @@ graphite build app.apk \
   --include com.example
 
 # Query with Cypher
-graphite query /data/app-graph \
+graphite query /data/app-graph.graphite \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
    WHERE cs.callee_class =~ 'com.example.*'
    RETURN c.value, cs.callee_name"
 
 # JSON output (for LLM consumption)
-graphite query --format json /data/app-graph \
+graphite query --format json /data/app-graph.graphite \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
 
-# Launch the web UI
-graphite serve --id app /data/app-graph --port 8080
+# Launch the web UI (graph id defaults to app-graph)
+graphite serve /data/app-graph.graphite --port 8080
 
 # Serve every .graphite file in a directory, each under its file name
 # (/data/graphs/orders.graphite is served as `orders`).
@@ -260,6 +257,12 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
+
+`graphite serve [OPTIONS] [GRAPH]` accepts a graph directory or a `.graphite` file.
+For a positional graph, `--id` defaults to the directory's basename or the archive's
+basename without `.graphite`: `graphite serve app.graphite` serves it as `app`.
+Use `--id` to override the inferred name, including when the basename is not a valid
+graph ID. The same positional-graph default applies to `graphite mcp`.
 
 ### What the formula installs
 
@@ -644,7 +647,7 @@ Warning: no fold rule folded any call; the graph is the same as a build without 
 ```
 
 `--fold-strict` turns a rule that matched no call into a build failure. `graph.folds.json` in
-the output directory repeats every rule in the file's own shape and adds, per rule, the
+the output archive (extract it with `graphite unpack`) repeats every rule in the file's own shape and adds, per rule, the
 preview query, the calls folded, the calling methods with their statement counts before and
 after, the calls it matched but could not fold with the reason, and the near misses; it is
 itself a fold file (`--fold graph.folds.json` reads the rules and drops the rest). Methods
@@ -1001,15 +1004,15 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
 
-Use `graphite build app.jar -o app --pack` to automatically pack after a successful
-build. `--pack` appends `.graphite` to the output path unless it already has that
-extension: `-o app.v1 --pack` writes `app.v1.graphite`, while `-o app.graphite --pack`
-writes `app.graphite`. It requires `-o`/`--output` and works with all build frontends.
-Like `-o app.graphite`, an existing verified archive and its sidecar are rebuilt
+`graphite build` always produces a `.graphite` archive after a successful build.
+The output path gains `.graphite` unless it already has that extension:
+`-o app` writes `app.graphite`, `-o app.v1` writes `app.v1.graphite`, and
+`-o app.graphite` writes `app.graphite`. This applies to all build frontends;
+no packing flag is needed. An existing verified archive and its sidecar are rebuilt
 in place. The build uses a temporary staging directory; no `app/` output directory
 is created. Ambiguous output filenames such as `.graphite` or names ending in `.`
-are rejected. Place `--pack` before the `--` separator; arguments after the separator
-are frontend inputs.
+are rejected. To obtain a graph directory, run `graphite unpack app.graphite app/`.
+Direct frontend commands and `graphite import` retain their existing output behavior.
 
 A container moved without its sidecar can be rebuilt after its internal manifest and
 entry checksums verify. If a sidecar exists, it must match. For a rebuild both frontends claim
@@ -1117,6 +1120,17 @@ repositories {
 
 ## MCP Integration
 
+Choose the command by how the client connects:
+
+| Command | How it runs | Interfaces |
+|---|---|---|
+| `graphite serve app.graphite` | Start a persistent HTTP server; clients connect by URL | Web UI at `/`, REST at `/api`, MCP at `/mcp` (default port 8080) |
+| `graphite mcp app.graphite` | An MCP client launches it as a subprocess and exchanges messages over stdin/stdout | MCP over stdio; no HTTP listener or web UI |
+
+Both commands load the graphs themselves. Configure a client for either stdio or
+HTTP; a stdio client does not need a separate `serve` process. Both accept graph
+directories and `.graphite` files, and default the positional graph's ID to its basename.
+
 The `graphite` binary is a [Model Context Protocol](https://modelcontextprotocol.io)
 server: the thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
 `cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
@@ -1128,19 +1142,14 @@ patterns -- in milliseconds, so an agent reads it before writing Cypher instead 
 discovering the graph with `MATCH (n) RETURN labels(n), keys(n), count(*)` probes. Those
 probes are answered per type as well (see the partitioned evaluation in
 `backend/cypher/src/engine/partition.rs`), but one call is cheaper than a conversation.
-Two ways to connect:
-
-- **stdio**, for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
-  opens the graphs itself; no server to start first.
-- **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
-  `POST /mcp` (Streamable HTTP).
+HTTP clients use `POST /mcp` (Streamable HTTP).
 
 For **Claude Code**, run this from your project directory after building a graph.
-Replace `/data/app-graph` with the absolute path to your saved graph:
+Replace `/data/app-graph.graphite` with the absolute path to your saved graph:
 
 ```bash
 claude mcp add --transport stdio --scope project graphite -- \
-  graphite mcp --graph app:/data/app-graph
+  graphite mcp --graph app:/data/app-graph.graphite
 ```
 
 This creates or updates `.mcp.json` at the project root. Open Claude Code, approve
@@ -1157,13 +1166,13 @@ entry in the client's MCP configuration file. Repeat `--graph` to load more grap
   "mcpServers": {
     "graphite": {
       "command": "graphite",
-      "args": ["mcp", "--graph", "app:/data/app-graph", "--graph", "billing:/data/billing-graph"]
+      "args": ["mcp", "--graph", "app:/data/app-graph.graphite", "--graph", "billing:/data/billing-graph.graphite"]
     }
   }
 }
 ```
 
-Alternatively, start `graphite serve --id app /data/app-graph` and connect Claude
+Alternatively, start `graphite serve --id app /data/app-graph.graphite` and connect Claude
 Code over HTTP:
 
 ```bash

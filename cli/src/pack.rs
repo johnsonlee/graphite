@@ -12,26 +12,29 @@ use std::path::{Path, PathBuf};
 
 #[derive(clap::Args, Debug)]
 pub struct PackArgs {
-    /// A saved graph directory (what `graphite build -o <dir>` writes), or the files
+    /// A saved graph directory (for example, from `graphite unpack`), or the files
     /// to pack, each stored under its file name
-    #[arg(required = true)]
+    #[arg(required = true, value_name = "GRAPH_DIR_OR_FILE")]
     inputs: Vec<PathBuf>,
-    /// The .graphite file to write; complete or absent, with a .sha256 file beside it
-    #[arg(long, short = 'o')]
+    /// Archive path (used exactly as given), with a .sha256 sidecar; existing outputs are refused
+    #[arg(long, short = 'o', value_name = "ARCHIVE")]
     output: PathBuf,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct UnpackArgs {
     /// A .graphite file
+    #[arg(value_name = "ARCHIVE")]
     input: PathBuf,
-    /// Directory to unpack into, created if absent (default: the current directory)
+    /// Directory to unpack into (default: current directory); created if absent, same-named files overwritten
+    #[arg(value_name = "DIRECTORY")]
     output: Option<PathBuf>,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct VerifyArgs {
     /// A .graphite file
+    #[arg(value_name = "ARCHIVE")]
     input: PathBuf,
     /// Print one line per entry
     #[arg(long, short = 'v')]
@@ -41,6 +44,7 @@ pub struct VerifyArgs {
 #[derive(clap::Args, Debug)]
 pub struct InfoArgs {
     /// A .graphite file
+    #[arg(value_name = "ARCHIVE")]
     input: PathBuf,
 }
 

@@ -49,14 +49,34 @@ public class FixtureFrontend {
   const cli = join(root, 'cli with spaces');
   writeFileSync(cli, `#!${process.execPath}
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 const profile=${JSON.stringify(PROFILE)};
 if(process.env.JAVA_TOOL_OPTIONS || process.env.JDK_JAVA_OPTIONS || process.env._JAVA_OPTIONS)throw new Error('inherited options leaked into CLI');
 if(process.env.JAVA_OPTS && process.env.JAVA_OPTS !== '-Xmx2g')throw new Error('inherited JAVA_OPTS leaked');
+const args=process.argv.slice(2);
+if(args[0]==='verify') {
+  const digest=createHash('sha256').update(readFileSync(args[1])).digest('hex');
+  if(readFileSync(args[1]+'.sha256','utf8')!==digest)throw new Error('archive digest mismatch');
+  writeFileSync(args[1]+'.verified','ok');
+  console.log('verified archive');
+  process.exit(0);
+}
+if(args[0]==='unpack') {
+  if(!existsSync(args[1]+'.verified'))throw new Error('verify must precede unpack');
+  for(const [name,bytes] of Object.entries(JSON.parse(readFileSync(args[1],'utf8')))) {
+    const path=join(args[2],name);mkdirSync(dirname(path),{recursive:true});writeFileSync(path,Buffer.from(bytes,'base64'));
+  }
+  process.exit(0);
+}
+if(args[0]!=='build')throw new Error('unexpected command');
 const launch=(args,env)=>{const result=spawnSync(process.env.GRAPHITE_JAVA,args,{env,stdio:'inherit'});if(result.error)throw result.error;if(result.status!==0)process.exit(result.status ?? 1);};
 if(process.env.LOW_CAPACITY && (!process.env.JAVA_OPTS || process.env.REJECT_OVERRIDE)) {
   if(process.env.FALSE_RECEIPT)writeFileSync(process.env.BUILD_JVM_DEFAULTS_RECEIPT,'{}');
   if(process.env.FALSE_GRAPH)mkdirSync(process.argv[process.argv.indexOf('-o')+1]);
+  if(process.env.FALSE_ARCHIVE)writeFileSync(process.argv[process.argv.indexOf('-o')+1]+'.graphite','bad');
+  if(process.env.FALSE_DIGEST)writeFileSync(process.argv[process.argv.indexOf('-o')+1]+'.graphite.sha256','bad');
   console.error(process.env.UNKNOWN_CAPACITY ? 'Error: could not configure the JVM build: could not determine physical/container memory; set JAVA_OPTS explicitly to choose a JVM heap' : ${JSON.stringify(LOW_CAPACITY_ERROR)});
   process.exit(1);
 }
@@ -66,7 +86,18 @@ let options=process.env.JAVA_OPTS || profile;
 if(process.env.WRONG_HEAP)options+=' -Xmx1g';
 if(process.env.WRONG_GC)options+=' -XX:GCTimeRatio=99';
 if(process.env.MIX_PROFILE && process.env.JAVA_OPTS)options=profile+' '+process.env.JAVA_OPTS;
-launch(['-jar',frontend,...process.argv.slice(2)],{...process.env,JAVA_TOOL_OPTIONS:options});
+const output=args[args.indexOf('-o')+1];
+const stage=output+'.staging';
+args[args.indexOf('-o')+1]=stage;
+launch(['-jar',frontend,...args],{...process.env,JAVA_TOOL_OPTIONS:options});
+const files=Object.fromEntries(readdirSync(stage).map(name=>[name,readFileSync(join(stage,name)).toString('base64')]));
+files['META-INF/graphite.manifest']=Buffer.from('fixture container metadata').toString('base64');
+if(process.env.EXTRA_ARCHIVE_FILE)files['META-INF/unexpected']=Buffer.from('unexpected').toString('base64');
+const archive=output+'.graphite';
+const bytes=Buffer.from(JSON.stringify(files));
+writeFileSync(archive,bytes);
+writeFileSync(archive+'.sha256',process.env.BAD_DIGEST?'bad':createHash('sha256').update(bytes).digest('hex'));
+rmSync(stage,{recursive:true});
 `, { mode: 0o700 });
   const java = spawnSync('which', ['java'], { encoding: 'utf8' });
   assert.equal(java.status, 0, java.stderr);
@@ -107,6 +138,10 @@ test('JAR agent checks the real build JVM defaults and override after environmen
   const override = JSON.parse(readFileSync(join(setup.output, 'explicit-small-heap.json'), 'utf8'));
   assert.equal(override.maxHeapBytes, 2 * 1024 ** 3);
   assert.match(readFileSync(join(setup.output, 'default.stdout'), 'utf8'), /actual JVM fixture build/);
+  assert.match(readFileSync(join(setup.output, 'default.verify.stdout'), 'utf8'), /verified archive/);
+  assert.ok(existsSync(join(setup.output, 'default.graphite')));
+  assert.ok(existsSync(join(setup.output, 'default.graphite.sha256')));
+  comparePersisted(join(root, 'reference'), join(setup.output, 'default'));
   assert.ok(!existsSync(join(setup.output, 'java-observer.ts')));
   const repeated = spawnSync(process.execPath, setup.args, { env: setup.env, encoding: 'utf8' });
   assert.notEqual(repeated.status, 0, 'existing evidence must not be reused');
@@ -122,12 +157,14 @@ test('low-capacity default refusal still requires an explicit-heap build and com
   assert.deepEqual(refusal, { case: 'default', outcome: 'expected-low-capacity-refusal', totalMemoryBytes: 8 * 1024 ** 3, diagnostic: LOW_CAPACITY_ERROR });
   assert.ok(!existsSync(join(setup.output, 'default.json')));
   assert.ok(!existsSync(join(setup.output, 'default')));
+  assert.ok(!existsSync(join(setup.output, 'default.graphite')));
+  assert.ok(!existsSync(join(setup.output, 'default.graphite.sha256')));
   const override = JSON.parse(readFileSync(join(setup.output, 'explicit-small-heap.json'), 'utf8'));
   assert.equal(override.maxHeapBytes, 2 * 1024 ** 3);
   assert.match(result.stdout, /PASS explicit-small-heap:/);
 });
 
-for (const variable of ['UNKNOWN_CAPACITY', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 'FALSE_GRAPH', 'FALSE_CAPACITY']) {
+for (const variable of ['UNKNOWN_CAPACITY', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 'FALSE_GRAPH', 'FALSE_ARCHIVE', 'FALSE_DIGEST', 'FALSE_CAPACITY']) {
   test(`low-capacity handling rejects ${variable}`, t => {
     const root = mkdtempSync(join(tmpdir(), 'build-defaults-low-invalid-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -146,6 +183,8 @@ for (const [variable, expected] of [
   ['MIX_PROFILE', /Explicit override must contain only -Xmx2g/],
   ['SKIP_AGENT', /ENOENT/],
   ['CORRUPT_GRAPH', /Persisted file differs/],
+  ['BAD_DIGEST', /archive digest mismatch/],
+  ['EXTRA_ARCHIVE_FILE', /Persisted entries differ/],
 ] as const) {
   test(`executable JVM check rejects ${variable}`, t => {
     const root = mkdtempSync(join(tmpdir(), 'build-defaults-reject-'));

@@ -21,7 +21,7 @@ pub fn select_language(args: &[OsString]) -> Result<(Lang, Vec<OsString>), Strin
 /// Remove the persisted output option; the frontend receives an interchange path.
 fn output_args(args: &[OsString]) -> Result<(PathBuf, Vec<OsString>), String> {
     let opt = crate::build_args::output_option(args)?
-        .ok_or("JavaScript artifact builds require -o <directory-or-file.graphite>")?;
+        .ok_or("JavaScript artifact builds require -o <OUTPUT> (a .graphite archive)")?;
     Ok((
         PathBuf::from(opt.value.expect("validated output")),
         opt.without(args),

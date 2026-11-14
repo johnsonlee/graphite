@@ -1,7 +1,7 @@
 // Real CLI/JVM launcher correctness, not a performance benchmark.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { accessSync, closeSync, constants, copyFileSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, closeSync, constants, copyFileSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, rmdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -143,6 +143,7 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
     const caseEnv: NodeJS.ProcessEnv = { ...env, BUILD_JVM_DEFAULTS_CASE: name, BUILD_JVM_DEFAULTS_RECEIPT: log };
     if (override !== undefined) caseEnv.JAVA_OPTS = override;
     const graph = join(root, name);
+    const archive = `${graph}.graphite`;
     const buildArgs = ['build', input, '-o', graph, '--include', values.include!];
     if (values['android-sdk']) buildArgs.push('--android-sdk', resolve(values['android-sdk']));
     const stderr = join(root, `${name}.stderr`);
@@ -159,6 +160,8 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
         `CLI refused automatic heap despite independently observed capacity ${capacity.totalMemoryBytes}`);
       assert.ok(!existsSync(log), 'capacity refusal must not start the frontend JVM');
       assert.ok(!existsSync(graph), 'capacity refusal must not produce a graph');
+      assert.ok(!existsSync(archive), 'capacity refusal must not produce an archive');
+      assert.ok(!existsSync(`${archive}.sha256`), 'capacity refusal must not produce a digest');
       writeFileSync(join(root, 'default-refusal.json'), JSON.stringify({
         case: name, outcome: 'expected-low-capacity-refusal', totalMemoryBytes: capacity.totalMemoryBytes, diagnostic: LOW_CAPACITY_ERROR,
       }, null, 2) + '\n');
@@ -167,6 +170,17 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
     }
     const receipt = JSON.parse(readFileSync(log, 'utf8'));
     assert.equal(receipt.case, name, 'Missing effective JVM configuration receipt');
+    assert.ok(!existsSync(graph), 'build must produce an archive, not an output directory');
+    assert.ok(statSync(archive).isFile(), 'build must produce a graph archive');
+    assert.ok(statSync(`${archive}.sha256`).isFile(), 'build must produce an archive digest');
+    await runWithDeadline(cli, ['verify', archive], caseEnv,
+      join(root, `${name}.verify.stdout`), join(root, `${name}.verify.stderr`), BUILD_TIMEOUT_MS);
+    await runWithDeadline(cli, ['unpack', archive, graph], caseEnv,
+      join(root, `${name}.unpack.stdout`), join(root, `${name}.unpack.stderr`), BUILD_TIMEOUT_MS);
+    // Packing adds this verified container metadata; every frontend file must still match.
+    assert.ok(!existsSync(join(reference, 'META-INF', 'graphite.manifest')), 'reference must be a frontend directory');
+    unlinkSync(join(graph, 'META-INF', 'graphite.manifest'));
+    if (readdirSync(join(graph, 'META-INF')).length === 0) rmdirSync(join(graph, 'META-INF'));
     comparePersisted(reference, graph);
     console.log(`PASS ${name}: effective JVM configuration and persisted graph match`);
   }
