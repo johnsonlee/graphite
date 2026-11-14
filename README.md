@@ -271,24 +271,38 @@ arguments after `--` to the frontend as positional inputs. Run `graphite help bu
 for shell options and `graphite build --help` or `graphite build --lang js --help`
 for frontend options.
 
-When no JVM options are supplied, `graphite build` checks whether the selected
-JVM supports the following G1 configuration and uses it for the JAR frontend,
-including JAR and APK inputs. The maximum heap remains 8 GiB:
+When no JVM options are supplied, `graphite build` automatically sizes the JVM
+frontend's maximum heap from the input's class count.
+It uses the larger of 8 GiB and 112 KiB per class,
+rounded up to a multiple of 2 GiB. APK sizing reads DEX headers; JAR/WAR sizing
+uses class entries. Assets such as images do not inflate the estimate. Unreadable
+or unsupported inputs retain the 8 GiB fallback and the frontend reports input
+errors as usual.
+
+This is a conservative heuristic, not a guarantee that every input will fit.
+Dependency libraries and Android platform classes are not included in the estimate.
+Explicit JVM options remain available to adjust it.
+Automatic build sizing may exceed 8 GiB; benchmark workloads keep their explicit
+fixed heap limits.
+
+The CLI checks whether the selected JVM supports this G1 configuration, using
+the estimated heap (shown here for an 8 GiB input):
 
 ```text
 -Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4
 ```
 
 The check runs once per build command, including a two-pass fold build. A JVM
-that does not confirm support keeps the previous `-Xmx8g` fallback. Executable
-frontend launchers manage their own settings.
+that does not confirm G1 support receives only the estimated `-Xmx` option.
+Executable frontend launchers manage their own settings.
 
 Explicit nonempty `JAVA_TOOL_OPTIONS`, `JAVA_OPTS`, `JDK_JAVA_OPTIONS` or
-`_JAVA_OPTIONS` bypass this check and automatic GC tuning. The CLI preserves
+`_JAVA_OPTIONS` bypass automatic heap sizing and GC tuning. The CLI preserves
 `JAVA_TOOL_OPTIONS` precedence over `JAVA_OPTS`; the JVM handles its own
-`JDK_JAVA_OPTIONS` and `_JAVA_OPTIONS`. For example, use `JAVA_OPTS='-Xmx2g'`
-for a smaller heap when `JAVA_TOOL_OPTIONS` is unset. These settings do not tune
-native `query` or `serve`. Maximum heap is separate from peak process RSS.
+`JDK_JAVA_OPTIONS` and `_JAVA_OPTIONS` without an injected default heap when
+neither of the first two is set. For example, use `JAVA_OPTS='-Xmx16g'`
+when `JAVA_TOOL_OPTIONS` is unset. These settings do not tune native `query`
+or `serve`. Maximum heap is separate from peak process RSS.
 
 The matched performance evidence for this G1 configuration uses HotSpot 17 on
 macOS ARM64 with Kotlin compiler 2.0.21 and Tika 2.9.2 JARs. See the

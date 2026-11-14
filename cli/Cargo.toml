@@ -18,6 +18,7 @@ sha2.workspace = true
 same-file = "1.0"
 tempfile = { version = "3.27", default-features = false }
 semver = "1"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 # jemalloc has no MSVC build; those targets keep the system allocator.
 [target.'cfg(not(target_env = "msvc"))'.dependencies]

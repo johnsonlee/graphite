@@ -1,5 +1,8 @@
 //! Capability-gated defaults for one native CLI build, without changing user overrides.
 
+#[path = "build_heap.rs"]
+mod heap;
+
 use crate::frontend::{self, Env, Frontend, Launch};
 use std::borrow::Cow;
 use std::ffi::OsString;
@@ -10,7 +13,14 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
+const GC_OPTIONS: &str = "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4";
+fn profile(heap_gib: u64) -> String {
+    format!("-Xmx{heap_gib}g {GC_OPTIONS}")
+}
+
+#[cfg(test)]
 const PROFILE: &str = "-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4";
+
 const EXPLICIT_OPTIONS: [&str; 4] = [
     "JAVA_TOOL_OPTIONS",
     "JAVA_OPTS",
@@ -44,7 +54,7 @@ fn build_env_with<'a>(
     env: &'a Env,
     fe: &Frontend,
     args: &[OsString],
-    check: impl FnOnce(&Path, &Env) -> io::Result<bool>,
+    check: impl FnOnce(&Path, &Env, u64) -> io::Result<bool>,
 ) -> io::Result<Cow<'a, Env>> {
     if informational_request(args)
         || !matches!(fe.launch, Launch::Jar(_))
@@ -56,20 +66,24 @@ fn build_env_with<'a>(
         // The normal invocation reports the original missing-Java error.
         return Ok(Cow::Borrowed(env));
     };
-    if !check(&java, env)? {
-        return Ok(Cow::Borrowed(env));
-    }
+    let heap_gib = heap::heap_gib(args);
+    let options = if check(&java, env, heap_gib)? {
+        profile(heap_gib)
+    } else {
+        format!("-Xmx{heap_gib}g")
+    };
     let mut configured = env.clone();
     // Invocation exports this as JAVA_TOOL_OPTIONS. Setting TOOL_OPTIONS here would
     // suppress that export: Env is a snapshot, not a mutation of the process env.
-    configured.vars.insert("JAVA_OPTS".into(), PROFILE.into());
+    configured.vars.insert("JAVA_OPTS".into(), options.into());
     configured
         .vars
         .insert(frontend::JAVA_VAR.into(), java.into_os_string());
     Ok(Cow::Owned(configured))
 }
 
-fn has_effective_profile(output: &[u8]) -> bool {
+fn has_effective_profile(output: &[u8], heap_gib: u64) -> bool {
+    let heap_bytes = heap_gib.saturating_mul(1024 * 1024 * 1024).to_string();
     let Ok(text) = std::str::from_utf8(output) else {
         return false;
     };
@@ -80,7 +94,12 @@ fn has_effective_profile(output: &[u8]) -> bool {
         let Some(index) = REQUIRED_FLAGS.iter().position(|(_, flag, _)| flag == name) else {
             continue;
         };
-        let (kind, _, value) = REQUIRED_FLAGS[index];
+        let (kind, flag, value) = REQUIRED_FLAGS[index];
+        let value = if flag == "MaxHeapSize" {
+            heap_bytes.as_str()
+        } else {
+            value
+        };
         if found[index]
             || fields.first() != Some(&kind)
             || !matches!(fields.get(2), Some(&"=") | Some(&":="))
@@ -170,11 +189,17 @@ fn stop_probe(child: &mut Child) -> io::Result<()> {
     child.wait().map(|_| ())
 }
 
-fn probe(java: &Path, env: &Env) -> io::Result<bool> {
-    probe_with_limits(java, env, PROBE_TIMEOUT, MAX_OUTPUT)
+fn probe(java: &Path, env: &Env, heap_gib: u64) -> io::Result<bool> {
+    probe_with_limits(java, env, PROBE_TIMEOUT, MAX_OUTPUT, heap_gib)
 }
 
-fn probe_with_limits(java: &Path, env: &Env, timeout: Duration, limit: u64) -> io::Result<bool> {
+fn probe_with_limits(
+    java: &Path,
+    env: &Env,
+    timeout: Duration,
+    limit: u64,
+    heap_gib: u64,
+) -> io::Result<bool> {
     let Ok(mut capture) = Capture::new() else {
         return Ok(false);
     };
@@ -183,7 +208,7 @@ fn probe_with_limits(java: &Path, env: &Env, timeout: Duration, limit: u64) -> i
     };
     let mut command = Command::new(java);
     command
-        .args(PROFILE.split_ascii_whitespace())
+        .args(profile(heap_gib).split_ascii_whitespace())
         .args(["-XX:+PrintFlagsFinal", "-version"])
         .env_clear()
         .envs(&env.vars)
@@ -216,7 +241,7 @@ fn probe_with_limits(java: &Path, env: &Env, timeout: Duration, limit: u64) -> i
                 {
                     return Ok(false);
                 }
-                return Ok(has_effective_profile(&output));
+                return Ok(has_effective_profile(&output, heap_gib));
             }
             Ok(None) => std::thread::sleep(PROBE_POLL.min(timeout.saturating_sub(start.elapsed()))),
             Err(_) => {
@@ -266,9 +291,10 @@ mod tests {
 
     #[test]
     fn effective_flags_require_every_exact_value_once() {
-        assert!(has_effective_profile(FLAGS.as_bytes()));
+        assert!(has_effective_profile(FLAGS.as_bytes(), 8));
         assert!(has_effective_profile(
-            FLAGS.replace(" = ", " := ").as_bytes()
+            FLAGS.replace(" = ", " := ").as_bytes(),
+            8
         ));
         for (before, after) in [
             ("UseG1GC = true", "UseG1GC = false"),
@@ -284,15 +310,58 @@ mod tests {
             ("UseG1GC = true", "UseG1GC true"),
         ] {
             assert!(
-                !has_effective_profile(FLAGS.replace(before, after).as_bytes()),
+                !has_effective_profile(FLAGS.replace(before, after).as_bytes(), 8),
                 "{before}"
             );
         }
-        assert!(!has_effective_profile(format!("{FLAGS}{FLAGS}").as_bytes()));
         assert!(!has_effective_profile(
-            b"OpenJDK version 17; unknown flags ignored"
+            format!("{FLAGS}{FLAGS}").as_bytes(),
+            8
         ));
-        assert!(!has_effective_profile(&[0xff]));
+        assert!(!has_effective_profile(
+            b"OpenJDK version 17; unknown flags ignored",
+            8
+        ));
+        assert!(!has_effective_profile(&[0xff], 8));
+    }
+
+    #[test]
+    fn sized_heap_reaches_probe_and_build_even_without_g1_support() {
+        use std::io::Write;
+        let temp = tempfile::tempdir().unwrap();
+        let input_path = temp.path().join("large.apk");
+        let mut zip = zip::ZipWriter::new(File::create(&input_path).unwrap());
+        zip.start_file("classes.dex", zip::write::SimpleFileOptions::default())
+            .unwrap();
+        let mut header = [0u8; 112];
+        header[..8].copy_from_slice(b"dex\n035\0");
+        header[40..44].copy_from_slice(&0x12345678u32.to_le_bytes());
+        header[96..100].copy_from_slice(&132_532u32.to_le_bytes());
+        zip.write_all(&header).unwrap();
+        zip.finish().unwrap();
+        let args = [input_path.into_os_string()];
+        let input = env();
+        for supported in [true, false] {
+            let configured = build_env_with(&input, &jar(), &args, |_, _, heap| {
+                assert_eq!(heap, 16);
+                Ok(supported)
+            })
+            .unwrap();
+            let invocation =
+                crate::build::invocation_for(&configured, &jar(), "build", &args).unwrap();
+            let expected = if supported {
+                profile(16)
+            } else {
+                "-Xmx16g".into()
+            };
+            assert_eq!(
+                invocation.env,
+                vec![("JAVA_TOOL_OPTIONS".into(), expected.into())]
+            );
+        }
+        let flags = FLAGS.replace("8589934592", "17179869184");
+        assert!(has_effective_profile(flags.as_bytes(), 16));
+        assert!(!has_effective_profile(FLAGS.as_bytes(), 16));
     }
 
     #[test]
@@ -310,7 +379,8 @@ mod tests {
             .insert("JAVA_HOME".into(), home.clone().into_os_string());
         let before = input.vars.clone();
         let calls = Cell::new(0);
-        let configured = build_env_with(&input, &jar(), &[], |java, seen| {
+        let configured = build_env_with(&input, &jar(), &[], |java, seen, heap_gib| {
+            assert_eq!(heap_gib, 8);
             assert_eq!(java, frontend::locate_java(&input).unwrap());
             assert_eq!(seen.vars, before);
             calls.set(calls.get() + 1);
@@ -342,7 +412,7 @@ mod tests {
         let input = env();
         for flag in ["--help", "-h", "--version", "-V"] {
             let args = [OsString::from(flag)];
-            let configured = build_env_with(&input, &jar(), &args, |_, _| {
+            let configured = build_env_with(&input, &jar(), &args, |_, _, _| {
                 panic!("informational request")
             })
             .unwrap();
@@ -361,7 +431,7 @@ mod tests {
         ] {
             let args: Vec<_> = args.into_iter().map(OsString::from).collect();
             let called = Cell::new(false);
-            build_env_with(&input, &jar(), &args, |_, _| {
+            build_env_with(&input, &jar(), &args, |_, _, _| {
                 called.set(true);
                 Ok(false)
             })
@@ -379,7 +449,7 @@ mod tests {
                 .insert(name.into(), " -Xmx2g -XX:+UseSerialGC ".into());
             let before = input.vars.clone();
             let configured =
-                build_env_with(&input, &jar(), &[], |_, _| panic!("explicit {name}")).unwrap();
+                build_env_with(&input, &jar(), &[], |_, _, _| panic!("explicit {name}")).unwrap();
             assert!(matches!(configured, Cow::Borrowed(_)));
             assert_eq!(configured.vars, before);
         }
@@ -387,7 +457,7 @@ mod tests {
         for name in EXPLICIT_OPTIONS {
             input.vars.insert(name.into(), OsString::new());
         }
-        let configured = build_env_with(&input, &jar(), &[], |_, _| Ok(true)).unwrap();
+        let configured = build_env_with(&input, &jar(), &[], |_, _, _| Ok(true)).unwrap();
         assert_eq!(
             frontend::default_java_tool_options(&configured),
             Some(PROFILE.into())
@@ -398,15 +468,15 @@ mod tests {
     #[test]
     fn unsupported_missing_java_and_executable_frontends_keep_the_old_path() {
         let input = env();
-        let configured = build_env_with(&input, &jar(), &[], |_, _| Ok(false)).unwrap();
-        assert!(matches!(&configured, Cow::Borrowed(_)));
+        let configured = build_env_with(&input, &jar(), &[], |_, _, _| Ok(false)).unwrap();
+        assert!(matches!(&configured, Cow::Owned(_)));
         assert_eq!(
             frontend::default_java_tool_options(&configured),
             Some("-Xmx8g".into())
         );
         let missing = Env::default();
         assert!(matches!(
-            build_env_with(&missing, &jar(), &[], |_, _| panic!("missing Java")).unwrap(),
+            build_env_with(&missing, &jar(), &[], |_, _, _| panic!("missing Java")).unwrap(),
             Cow::Borrowed(_)
         ));
         let launcher = Frontend {
@@ -414,11 +484,11 @@ mod tests {
             ..jar()
         };
         assert!(matches!(
-            build_env_with(&input, &launcher, &[], |_, _| panic!("launcher")).unwrap(),
+            build_env_with(&input, &launcher, &[], |_, _, _| panic!("launcher")).unwrap(),
             Cow::Borrowed(_)
         ));
         assert!(
-            build_env_with(&input, &jar(), &[], |_, _| Err(io::Error::other(
+            build_env_with(&input, &jar(), &[], |_, _, _| Err(io::Error::other(
                 "cleanup failed"
             )))
             .is_err()
@@ -450,7 +520,9 @@ mod tests {
         let fake = fake_java(&format!(
             "printf '%s\\n' \"$@\" > \"$ARGS_LOG\"\nprintf '%s' '{FLAGS}'"
         ));
-        assert!(probe_with_limits(&fake.path, &input, Duration::from_secs(2), MAX_OUTPUT).unwrap());
+        assert!(
+            probe_with_limits(&fake.path, &input, Duration::from_secs(2), MAX_OUTPUT, 8).unwrap()
+        );
         let args = std::fs::read_to_string(&args_log.path).unwrap();
         let expected: Vec<_> = PROFILE
             .split_ascii_whitespace()
@@ -458,18 +530,25 @@ mod tests {
             .collect();
         assert_eq!(args.lines().collect::<Vec<_>>(), expected);
         let rejected = fake_java(&format!("printf '%s' '{FLAGS}'; exit 1"));
-        assert!(
-            !probe_with_limits(&rejected.path, &input, Duration::from_secs(2), MAX_OUTPUT).unwrap()
-        );
+        assert!(!probe_with_limits(
+            &rejected.path,
+            &input,
+            Duration::from_secs(2),
+            MAX_OUTPUT,
+            8
+        )
+        .unwrap());
         let ignored = fake_java("printf '%s' 'OpenJ9 ignored unsupported options'; exit 0");
         assert!(
-            !probe_with_limits(&ignored.path, &input, Duration::from_secs(2), MAX_OUTPUT).unwrap()
+            !probe_with_limits(&ignored.path, &input, Duration::from_secs(2), MAX_OUTPUT, 8)
+                .unwrap()
         );
         assert!(!probe_with_limits(
             Path::new("/no/such/java"),
             &input,
             Duration::from_secs(2),
-            MAX_OUTPUT
+            MAX_OUTPUT,
+            8
         )
         .unwrap());
     }
@@ -512,7 +591,7 @@ mod tests {
             .insert("PID_LOG".into(), pid_log.path.clone().into_os_string());
         // exec ensures the sleeper is the owned child, not an orphaned shell child.
         let sleeper = fake_java("printf '%s' \"$$\" > \"$PID_LOG\"; exec /bin/sleep 30");
-        assert!(!probe_with_limits(&sleeper.path, &input, PROBE_TIMEOUT, MAX_OUTPUT).unwrap());
+        assert!(!probe_with_limits(&sleeper.path, &input, PROBE_TIMEOUT, MAX_OUTPUT, 8).unwrap());
         let pid = std::fs::read_to_string(&pid_log.path).unwrap();
         assert!(
             pid.parse::<u32>().is_ok(),
@@ -530,7 +609,7 @@ mod tests {
         let excessive = fake_java(
             "printf '%s' \"$$\" > \"$PID_LOG\"; while :; do printf '0123456789abcdef'; done",
         );
-        assert!(!probe_with_limits(&excessive.path, &input, PROBE_TIMEOUT, 128).unwrap());
+        assert!(!probe_with_limits(&excessive.path, &input, PROBE_TIMEOUT, 128, 8).unwrap());
         let pid = std::fs::read_to_string(&pid_log.path).unwrap();
         assert!(
             pid.parse::<u32>().is_ok(),
@@ -564,7 +643,7 @@ mod tests {
             .vars
             .insert("JAVA_OPTS".into(), OsString::from_vec(vec![0xff]));
         let configured =
-            build_env_with(&input, &jar(), &[], |_, _| panic!("explicit non-UTF8")).unwrap();
+            build_env_with(&input, &jar(), &[], |_, _, _| panic!("explicit non-UTF8")).unwrap();
         assert_eq!(
             frontend::default_java_tool_options(&configured),
             Some(OsString::from_vec(vec![0xff]))
