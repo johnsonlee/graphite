@@ -8,6 +8,18 @@ import java.util.List;
 
 /** Checks the effective configuration of the JVM that executes the frontend main. */
 public final class BuildJvmDefaults {
+    /** Independent capacity observation for the CLI's low-memory refusal check. */
+    public static void main(String[] args) {
+        if (args.length != 1 || !"memory-capacity".equals(args[0])) {
+            throw new IllegalArgumentException("Expected memory-capacity");
+        }
+        com.sun.management.OperatingSystemMXBean os = ManagementFactory.getPlatformMXBean(
+                com.sun.management.OperatingSystemMXBean.class);
+        long bytes = os.getTotalMemorySize();
+        if (bytes <= 0) throw new IllegalStateException("JVM could not determine memory capacity");
+        System.out.println("{\"totalMemoryBytes\":" + bytes + "}");
+    }
+
     public static void agentmain(String ignored, Instrumentation instrumentation) throws Exception {
         String mode = System.getenv("BUILD_JVM_DEFAULTS_CASE");
         long expectedHeap;

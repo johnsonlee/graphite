@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { comparePersisted, runWithDeadline } from './build-jvm-defaults.ts';
 
 const PROFILE = '-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4';
+const LOW_CAPACITY_ERROR = 'Error: could not configure the JVM build: automatic JVM heap sizing requires at least 16 GiB of physical/container memory (8 GiB heap plus 8 GiB reserved); set JAVA_OPTS explicitly on smaller systems';
 const script = fileURLToPath(new URL('./build-jvm-defaults.ts', import.meta.url));
 
 function fixture(root: string): { args: string[]; env: NodeJS.ProcessEnv; output: string } {
@@ -48,10 +49,17 @@ public class FixtureFrontend {
   const cli = join(root, 'cli with spaces');
   writeFileSync(cli, `#!${process.execPath}
 import { spawnSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
 const profile=${JSON.stringify(PROFILE)};
 if(process.env.JAVA_TOOL_OPTIONS || process.env.JDK_JAVA_OPTIONS || process.env._JAVA_OPTIONS)throw new Error('inherited options leaked into CLI');
 if(process.env.JAVA_OPTS && process.env.JAVA_OPTS !== '-Xmx2g')throw new Error('inherited JAVA_OPTS leaked');
 const launch=(args,env)=>{const result=spawnSync(process.env.GRAPHITE_JAVA,args,{env,stdio:'inherit'});if(result.error)throw result.error;if(result.status!==0)process.exit(result.status ?? 1);};
+if(process.env.LOW_CAPACITY && (!process.env.JAVA_OPTS || process.env.REJECT_OVERRIDE)) {
+  if(process.env.FALSE_RECEIPT)writeFileSync(process.env.BUILD_JVM_DEFAULTS_RECEIPT,'{}');
+  if(process.env.FALSE_GRAPH)mkdirSync(process.argv[process.argv.indexOf('-o')+1]);
+  console.error(process.env.UNKNOWN_CAPACITY ? 'Error: could not configure the JVM build: could not determine physical/container memory; set JAVA_OPTS explicitly to choose a JVM heap' : ${JSON.stringify(LOW_CAPACITY_ERROR)});
+  process.exit(1);
+}
 if(!process.env.JAVA_OPTS)launch([...profile.split(' '),'-XX:+PrintFlagsFinal','-version'],process.env);
 const frontend=process.env.SKIP_AGENT ? process.env.FIXTURE_ORIGINAL_FRONTEND : process.env.GRAPHITE_FRONTEND_JVM;
 let options=process.env.JAVA_OPTS || profile;
@@ -60,10 +68,24 @@ if(process.env.WRONG_GC)options+=' -XX:GCTimeRatio=99';
 if(process.env.MIX_PROFILE && process.env.JAVA_OPTS)options=profile+' '+process.env.JAVA_OPTS;
 launch(['-jar',frontend,...process.argv.slice(2)],{...process.env,JAVA_TOOL_OPTIONS:options});
 `, { mode: 0o700 });
+  const java = spawnSync('which', ['java'], { encoding: 'utf8' });
+  assert.equal(java.status, 0, java.stderr);
+  const tools = join(root, 'tools');
+  mkdirSync(tools);
+  writeFileSync(join(tools, 'java'), `#!${process.execPath}
+import { spawnSync } from 'node:child_process';
+if(process.env.LOW_CAPACITY && process.argv.at(-1)==='memory-capacity') {
+  console.log(JSON.stringify({totalMemoryBytes:(process.env.FALSE_CAPACITY?64:8)*1024**3}));
+} else {
+  const result=spawnSync(${JSON.stringify(java.stdout.trim())},process.argv.slice(2),{env:process.env,stdio:'inherit'});
+  if(result.error)throw result.error;
+  process.exit(result.status ?? 1);
+}
+`, { mode: 0o700 });
   const output = join(root, 'evidence');
   return {
     args: [script, '--cli', cli, '--frontend', frontend, '--input', input, '--reference', reference, '--output', output, '--include', 'com.acme', '--android-sdk', join(root, 'sdk with spaces')],
-    env: { ...process.env, FIXTURE_REFERENCE: reference, FIXTURE_ORIGINAL_FRONTEND: frontend,
+    env: { ...process.env, PATH: tools + delimiter + process.env.PATH, FIXTURE_REFERENCE: reference, FIXTURE_ORIGINAL_FRONTEND: frontend,
       JAVA_TOOL_OPTIONS: '-Xmx99g', JAVA_OPTS: '-Xmx100g', JDK_JAVA_OPTIONS: '-Xmx101g', _JAVA_OPTIONS: '-Xmx102g' },
     output,
   };
@@ -89,6 +111,34 @@ test('JAR agent checks the real build JVM defaults and override after environmen
   const repeated = spawnSync(process.execPath, setup.args, { env: setup.env, encoding: 'utf8' });
   assert.notEqual(repeated.status, 0, 'existing evidence must not be reused');
 });
+
+test('low-capacity default refusal still requires an explicit-heap build and complete graph comparison', t => {
+  const root = mkdtempSync(join(tmpdir(), 'build-defaults-low-capacity-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const setup = fixture(root);
+  const result = spawnSync(process.execPath, setup.args, { env: { ...setup.env, LOW_CAPACITY: '1' }, encoding: 'utf8', timeout: 30_000 });
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  const refusal = JSON.parse(readFileSync(join(setup.output, 'default-refusal.json'), 'utf8'));
+  assert.deepEqual(refusal, { case: 'default', outcome: 'expected-low-capacity-refusal', totalMemoryBytes: 8 * 1024 ** 3, diagnostic: LOW_CAPACITY_ERROR });
+  assert.ok(!existsSync(join(setup.output, 'default.json')));
+  assert.ok(!existsSync(join(setup.output, 'default')));
+  const override = JSON.parse(readFileSync(join(setup.output, 'explicit-small-heap.json'), 'utf8'));
+  assert.equal(override.maxHeapBytes, 2 * 1024 ** 3);
+  assert.match(result.stdout, /PASS explicit-small-heap:/);
+});
+
+for (const variable of ['UNKNOWN_CAPACITY', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 'FALSE_GRAPH', 'FALSE_CAPACITY']) {
+  test(`low-capacity handling rejects ${variable}`, t => {
+    const root = mkdtempSync(join(tmpdir(), 'build-defaults-low-invalid-'));
+    t.after(() => rmSync(root, { recursive: true, force: true }));
+    const setup = fixture(root);
+    const result = spawnSync(process.execPath, setup.args, {
+      env: { ...setup.env, LOW_CAPACITY: '1', [variable]: '1' }, encoding: 'utf8', timeout: 30_000,
+    });
+    assert.notEqual(result.status, 0, result.stdout);
+    if (variable === 'UNKNOWN_CAPACITY') assert.match(result.stderr, /could not determine physical\/container memory/);
+  });
+}
 
 for (const [variable, expected] of [
   ['WRONG_HEAP', /Effective JVM MaxHeapSize/],

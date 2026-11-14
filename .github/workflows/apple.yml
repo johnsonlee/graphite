@@ -189,6 +189,9 @@ jobs:
       shell: bash
       env:
         GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+        # This small correctness fixture fits the runner's explicit CI budget;
+        # production auto-sizing reserves 8 GiB outside its minimum 8 GiB heap.
+        JAVA_TOOL_OPTIONS: -Xmx4g -XX:+ExitOnOutOfMemoryError
       run: |
         set -euo pipefail
         mkdir -p "${RUNNER_TEMP}/payment-service-classes"

@@ -478,6 +478,17 @@ jobs:
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
 
+    - name: Retain JVM default-policy smoke evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: rust-build-jvm-defaults-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/build-jvm-defaults
+          !${{ runner.temp }}/build-jvm-defaults/frontend.jar
+        if-no-files-found: ignore
+        retention-days: 7
+
   windows-check:
     name: rust-check-windows
     runs-on: windows-latest
