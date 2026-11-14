@@ -141,7 +141,7 @@ graphite query /tmp/project.graphite \
 
 分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 和 `graphite frontend install es` 安装同一个可执行文件，其中包含 Bun 运行时、TypeScript 解析器及其标准库声明。
 
-**开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
+**Apple 前端已支持 Swift 包和 Xcode 项目／工作区**，包括 Swift 与 Objective-C 混合应用。它读取编译器索引和源码声明，通过 Graph IR 导入程序图，随后使用相同的原生查询和服务命令。Swift 包可使用兼容的 Swift 工具链在 macOS 或 Linux 上构建；Xcode 项目和 iOS 应用需要 macOS 及应用要求的 Xcode 工具链。用法见下方的 [Apple 前端](#apple-前端swift-与-objective-c)及 [iOS 应用建图指南](docs/ios-app-build.md)。
 
 ## 快速开始
 
@@ -194,27 +194,66 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 ### Homebrew formula 安装的内容
 
-`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。运行 `graphite build --help` 或 `graphite build --lang js --help` 可查看对应前端的选项。
+`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过语言前端执行 `build`。Homebrew formula 会安装 JVM 前端 `graphite.jar` 和 `openjdk@17`，并在 macOS 和 Linux x86_64 上安装 `graphite-frontend-apple`。JavaScript 前端可通过 `graphite frontend install js` 安装。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。运行 `graphite build --help` 或 `graphite build --lang js --help` 可查看对应前端的选项。
 
-未指定 JVM 参数时，`graphite build` 会检查所选 JVM 是否支持以下 G1 配置，并将其用于 jar 形式的 JVM 前端，包括 JAR 和 APK 输入。最大堆仍为 8 GiB：
+未指定 JVM 参数时，`graphite build` 按输入的 class 数量自动估算 JVM 最大堆：每个 class 按 112 KiB 计，向上取整到 2 GiB 的倍数，再限制在 **8 GiB 到「31 GiB 与物理内存减去 8 GiB 中较小者」之间**。容器内存限制会进一步缩小这个范围。该规则为 Java 堆之外保留 8 GiB，不设置 `-Xms`，也不预先分配最大堆。当前空闲内存不会改变估算范围。无法确定容量，或物理／容器内存不足 16 GiB 时，自动配置会停止并说明原因；这些系统需显式配置 Java 参数。
+
+APK 估算会验证 DEX 头和 class 表边界，不会因无效或加密资源而丢弃其他有效 DEX 的计数。JAR/WAR 会统计 class 条目；设置 `--include-libs` 时还统计启用的内嵌库，目录输入也会统计其中的 JAR。内嵌库使用有上限的临时文件进行检查；无法检查时会警告并采用保守估计。包过滤和依赖范围可能减少实际分析的 class 数，因此库的计数偏保守。Android 平台 class 不计入估算。
+
+这是一条保守的默认配置规则，不保证所有输入都能完成建图，也不保证系统之后不会出现内存压力。可以通过显式 Java 参数调整。自动建图堆可以超过 8 GiB；基准测试仍使用其明确规定的固定堆限制。
+
+CLI 会检查所选 JVM 是否支持以下 G1 配置，并使用估算出的堆大小；以下以 8 GiB 为例：
 
 ```text
 -Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4
 ```
 
-每条 build 命令只检查一次，包括需要两次构建的 fold 命令。无法确认支持时，保留原来的 `-Xmx8g` 配置。可执行形式的前端启动器自行管理参数。
+每条 build 命令只检查一次，包括需要两次构建的 fold 命令。无法确认 G1 支持时，仅传入估算的 `-Xmx`。可执行形式的前端启动器自行管理参数。
 
-显式设置非空的 `JAVA_TOOL_OPTIONS`、`JAVA_OPTS`、`JDK_JAVA_OPTIONS` 或 `_JAVA_OPTIONS` 会跳过检查和自动 GC 调整。CLI 仍优先使用 `JAVA_TOOL_OPTIONS`，其次是 `JAVA_OPTS`；`JDK_JAVA_OPTIONS` 和 `_JAVA_OPTIONS` 由 JVM 自行处理。例如，未设置 `JAVA_TOOL_OPTIONS` 时，可使用 `JAVA_OPTS='-Xmx2g'` 指定较小的堆。这些参数不用于调节原生 `query` 或 `serve`，最大堆也不等于进程峰值 RSS。
+显式设置非空的 `JAVA_TOOL_OPTIONS`、`JAVA_OPTS`、`JDK_JAVA_OPTIONS` 或 `_JAVA_OPTIONS` 会跳过自动堆估算和 GC 调整。CLI 优先使用 `JAVA_TOOL_OPTIONS`，其次是 `JAVA_OPTS`；后两项由 JVM 自行处理。仅设置 `JDK_JAVA_OPTIONS` 或 `_JAVA_OPTIONS` 时，CLI 保留原来的 `-Xmx8g` 默认值：非堆属性不会让最大堆降为 JVM 自行决定的大小，而 HotSpot 会优先采用这两个变量中显式设置的堆。例如，未设置 `JAVA_TOOL_OPTIONS` 时，可使用 `JAVA_OPTS='-Xmx16g'`。这些参数不调节原生 `query` 或 `serve`；最大堆也不等于进程峰值 RSS。
 
 这组 G1 配置的匹配性能对照使用 macOS ARM64 上的 HotSpot 17，输入为 Kotlin compiler 2.0.21 和 Tika 2.9.2 JAR。结果、测量边界和限制见[实验记录](docs/webgraph-optimization-attempts.md)；通过能力检查不代表所有 JVM 或工作负载都有相同的性能。
 
 ```bash
-graphite frontend list           # which frontend `build` will run, and where it came from
-graphite frontend describe jvm   # JSON: version, accepted inputs
-graphite frontend install jvm    # fetch the jar for this CLI's version into ~/.graphite/frontends
+graphite frontend list           # 列出前端、版本和发现位置
+graphite frontend describe jvm   # JSON：版本和支持的输入；也可查询 apple
+graphite frontend install jvm    # 安装与 CLI 版本匹配的 JVM 前端
+graphite frontend install apple  # 安装本机的 Swift 前端并校验 checksum
 ```
 
 不使用 Homebrew 时，`graphite build` 会依次通过以下位置查找前端：`GRAPHITE_FRONTEND_JVM`（jar 或启动器）、二进制程序旁边或同级 `libexec/` 目录中的 `graphite.jar`、`PATH` 中的 `graphite-frontend-jvm`，最后是 `~/.graphite/frontends/jvm/`。查找 `java` 的顺序为 `GRAPHITE_JAVA`、`JAVA_HOME`，然后是 `PATH`。发布包也单独提供 `graphite.jar`；`java -jar graphite.jar build|query|serve` 仍然可用。
+
+### Apple 前端：Swift 与 Objective-C
+
+`graphite build` 会自动识别 Swift 包和 Xcode 项目／工作区；其余输入默认交给 JVM 前端。`--lang jvm|apple|js` 可显式选择；`swift`、`ios`、`macos` 是 `apple` 的别名，`ts`、`es` 是 `js` 的别名。只提供已有 `--index-store`、不提供项目时，请加上 `--lang apple`；JavaScript 产物需要 `--lang js`。
+
+Apple 前端需要能构建目标项目的 Swift 工具链，持久化图还需要 JVM 前端和 Java。使用 Homebrew 时，macOS 和 Linux x86_64 已安装 Apple 前端；其他安装方式可运行 `graphite frontend install apple`。从源码编译前端需要 Swift 6.1+。Xcode 项目需要先准备应用自身的依赖。
+
+```bash
+graphite frontend install apple
+graphite frontend list
+
+# Swift 包，或包含唯一 Xcode 工作区／项目的应用目录
+graphite build ~/src/MyApp -o myapp.graphite
+
+# 显式选择 Xcode 工作区及 scheme
+graphite build ~/src/MyApp/MyApp.xcworkspace -o myapp.graphite --scheme MyApp \
+  --destination 'generic/platform=iOS Simulator' --configuration Release
+
+# 重用同一源码版本和构建配置的 DerivedData
+graphite build ~/src/MyApp/MyApp.xcworkspace -o myapp.graphite \
+  --skip-build --derived-data ~/graphs/MyApp-DerivedData
+
+graphite verify myapp.graphite
+graphite query myapp.graphite "MATCH (m:Method) RETURN m.class, m.name LIMIT 20" --format json
+graphite serve --graph myapp:myapp.graphite
+```
+
+目录中存在 `Package.swift` 时优先按 Swift 包处理；否则选择唯一的直接子目录 `.xcworkspace`，没有工作区时再选择唯一的 `.xcodeproj`。有多个候选时须显式指定。Xcode 项目只有一个共享 scheme 时自动选择，否则须提供 `--scheme`。构建会启用编译器索引并关闭代码签名。CLI 自动完成 Apple 前端的 Graph IR 生成和 JVM 导入；显式复用索引的方式见 [iOS 应用建图指南](docs/ios-app-build.md)。
+
+图包含类型、继承／协议关系、方法签名、属性、枚举、调用点，以及支持的 Swift 字面量参数。Objective-C 的类型、方法、属性和跨语言调用也会进入图。对于支持的 Swift 函数体，直接作为调用参数使用的、词法绑定明确的形参会产生 `ASSIGN` 和 `PARAMETER_PASS` 边；显式返回直接调用且双方签名确认有返回值时，会产生 `RETURN_VALUE` 边。局部变量赋值、字段流、完整的跨过程传播和 Objective-C 表达式字面量仍不支持。类型补全使用轻量源码解析器，不是完整预处理器；依赖宏或分散在条件分支中的签名仍可能未知。
+
+可通过 `--resource-bundle` 显式选择已构建的 `.app`／`.appex`，提取支持的 `Info.plist` 和本地化 `.strings` 值。不支持的值会产生部分图状态，不会推断资源到代码的查找边。详情见 [资源清单及限制](docs/ios-app-build.md#inventory-a-selected-built-applications-resources)和 [Apple 前端验证报告](docs/apple-frontend-validation.md)。
 
 ### 升级旧版安装
 

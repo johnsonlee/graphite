@@ -1,13 +1,30 @@
 // Real CLI/JVM launcher correctness, not a performance benchmark.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { accessSync, closeSync, constants, copyFileSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, closeSync, constants, copyFileSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 const OPTIONS = ['JAVA_TOOL_OPTIONS', 'JAVA_OPTS', 'JDK_JAVA_OPTIONS', '_JAVA_OPTIONS'];
 const BUILD_TIMEOUT_MS = 120_000;
+const LOW_CAPACITY_ERROR = 'Error: could not configure the JVM build: automatic JVM heap sizing requires at least 16 GiB of physical/container memory (8 GiB heap plus 8 GiB reserved); set JAVA_OPTS explicitly on smaller systems';
+
+class BuildFailed extends Error {
+  readonly exitCode: number | null;
+  constructor(exitCode: number | null, signal: NodeJS.Signals | null, stderr: string) {
+    const file = openSync(stderr, 'r');
+    let diagnostic: string;
+    try {
+      const size = fstatSync(file).size;
+      const bytes = Buffer.alloc(Math.min(size, 32_768));
+      const count = readSync(file, bytes, 0, bytes.length, size - bytes.length);
+      diagnostic = bytes.subarray(0, count).toString('utf8').trimEnd();
+    } finally { closeSync(file); }
+    super(`Build failed (${signal ?? exitCode}); see ${stderr}${diagnostic ? `\n${diagnostic}` : ''}`);
+    this.exitCode = exitCode;
+  }
+}
 
 function findTool(name: string, env: NodeJS.ProcessEnv): string {
   for (const directory of (env.PATH ?? '').split(delimiter)) {
@@ -42,7 +59,7 @@ export async function runWithDeadline(command: string, args: string[], env: Node
     });
     if (timedOut) throw new Error(`Build timed out after ${timeoutMs}ms; process group terminated`);
     if (cancelled) throw new Error(`Build cancelled by ${cancelled}; process group terminated`);
-    if (result.code !== 0) throw new Error(`Build failed (${result.signal ?? result.code}); see ${stderr}`);
+    if (result.code !== 0) throw new BuildFailed(result.code, result.signal, stderr);
   } finally {
     clearTimeout(timer);
     process.off('SIGINT', interrupt);
@@ -105,6 +122,14 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
   const source = fileURLToPath(new URL('../../../benchmark/jvm/src/main/java/BuildJvmDefaults.java', import.meta.url));
   await runWithDeadline(findTool('javac', env), ['--release', '17', '-d', classes, source], env,
     join(root, 'javac.stdout'), join(root, 'javac.stderr'), BUILD_TIMEOUT_MS);
+  // HotSpot's OS bean detects container-aware capacity independently of the
+  // native CLI's procfs/cgroup parser. Do not accept an arbitrary exit-1 refusal.
+  const capacityLog = join(root, 'memory-capacity.json');
+  await runWithDeadline(java, ['-cp', classes, 'BuildJvmDefaults', 'memory-capacity'], env,
+    capacityLog, join(root, 'memory-capacity.stderr'), BUILD_TIMEOUT_MS);
+  const capacity = JSON.parse(readFileSync(capacityLog, 'utf8'));
+  assert.ok(Number.isSafeInteger(capacity.totalMemoryBytes) && capacity.totalMemoryBytes > 0,
+    'Missing independently observed JVM memory capacity');
   const checkedFrontend = join(root, 'frontend.jar');
   copyFileSync(frontend, checkedFrontend);
   const manifest = join(root, 'agent.mf');
@@ -120,7 +145,26 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
     const graph = join(root, name);
     const buildArgs = ['build', input, '-o', graph, '--include', values.include!];
     if (values['android-sdk']) buildArgs.push('--android-sdk', resolve(values['android-sdk']));
-    await runWithDeadline(cli, buildArgs, caseEnv, join(root, `${name}.stdout`), join(root, `${name}.stderr`), BUILD_TIMEOUT_MS);
+    const stderr = join(root, `${name}.stderr`);
+    try {
+      await runWithDeadline(cli, buildArgs, caseEnv, join(root, `${name}.stdout`), stderr, BUILD_TIMEOUT_MS);
+    } catch (error) {
+      // Hosted runners can advertise 16 GB while MemTotal is below 16 GiB.
+      // The automatic policy must refuse those hosts rather than violate its
+      // reserve. Verify that exact refusal, then still build with the override.
+      // Unknown memory/cgroup detection, timeout and JVM failures remain errors.
+      if (name !== 'default' || !(error instanceof BuildFailed) || error.exitCode !== 1
+          || readFileSync(stderr, 'utf8').trim() !== LOW_CAPACITY_ERROR) throw error;
+      assert.ok(capacity.totalMemoryBytes < 16 * 1024 ** 3,
+        `CLI refused automatic heap despite independently observed capacity ${capacity.totalMemoryBytes}`);
+      assert.ok(!existsSync(log), 'capacity refusal must not start the frontend JVM');
+      assert.ok(!existsSync(graph), 'capacity refusal must not produce a graph');
+      writeFileSync(join(root, 'default-refusal.json'), JSON.stringify({
+        case: name, outcome: 'expected-low-capacity-refusal', totalMemoryBytes: capacity.totalMemoryBytes, diagnostic: LOW_CAPACITY_ERROR,
+      }, null, 2) + '\n');
+      console.log('PASS default: low-capacity policy refused automatic heap before frontend launch');
+      continue;
+    }
     const receipt = JSON.parse(readFileSync(log, 'utf8'));
     assert.equal(receipt.case, name, 'Missing effective JVM configuration receipt');
     comparePersisted(reference, graph);

@@ -550,7 +550,7 @@ fn run_subcommand(env: &Env, subcommand: &str, args: &[OsString], output: Option
         match jvm_options::build_env(env, &fe, args) {
             Ok(env) => env,
             Err(error) => {
-                eprintln!("Error: could not finish the JVM capability check: {error}");
+                eprintln!("Error: could not configure the JVM build: {error}");
                 return 1;
             }
         }

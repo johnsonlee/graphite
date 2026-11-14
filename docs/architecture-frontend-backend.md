@@ -408,8 +408,11 @@ A frontend is an executable named `graphite-frontend-<lang>` found on `PATH`, in
 - `version`.
 
 The JVM frontend is a jar plus a tiny launcher script; the CLI locates `java`
-(`GRAPHITE_JAVA`, `JAVA_HOME`, `PATH`) and runs it with the heap the Homebrew wrapper used
-(`JAVA_TOOL_OPTIONS`, else `JAVA_OPTS`, else `-Xmx8g`). The Web frontend is an npm package
+(`GRAPHITE_JAVA`, `JAVA_HOME`, `PATH`). Explicit Java option environment variables
+control the JVM; otherwise, build heap sizing uses the input's class count
+with an 8 GiB floor, 31 GiB ceiling, and 8 GiB reserved from physical/container
+memory (see the README's JVM configuration section). Other JVM
+invocations retain the 8 GiB fallback. The Web frontend is an npm package
 with a `bin`; the Apple frontend is a Swift package binary. Each has its own release
 cadence and version; the CLI records the frontend name and version in the manifest.
 
