@@ -126,3 +126,88 @@ fn archive_help_explains_exact_paths_overwrite_and_optional_checksums() {
     assert!(verify.contains("Mismatching available checksums fail verification"));
     assert!(help(&["info", "--help"]).contains("Usage: graphite info <ARCHIVE>"));
 }
+
+#[cfg(unix)]
+fn delegated_help(args: &[&str]) -> std::process::Output {
+    use std::os::unix::fs::PermissionsExt;
+
+    let home = tempfile::tempdir().unwrap();
+    let frontend = home.path().join("frontend");
+    std::fs::write(
+        &frontend,
+        "#!/bin/sh\nprintf 'Frontend output directory help\\n'\nprintf '<%s>\\n' \"$@\"\nexit 7\n",
+    )
+    .unwrap();
+    std::fs::set_permissions(&frontend, std::fs::Permissions::from_mode(0o755)).unwrap();
+    Command::new(env!("CARGO_BIN_EXE_graphite"))
+        .args(args)
+        .env_clear()
+        .env("HOME", home.path())
+        .env("PATH", home.path())
+        .env("GRAPHITE_FRONTEND_JVM", frontend)
+        .output()
+        .unwrap()
+}
+
+#[cfg(unix)]
+#[test]
+fn delegated_help_explains_shell_output_before_frontend_help_and_preserves_forwarding() {
+    for command in ["build", "import"] {
+        for flag in ["--help", "-h"] {
+            let args = [command, flag, "-o", "app"];
+            let output = delegated_help(&args);
+            assert_eq!(output.status.code(), Some(7));
+            assert!(output.stderr.is_empty(), "{output:?}");
+            let stdout = String::from_utf8(output.stdout).unwrap();
+            let policy = if command == "build" {
+                "Graphite CLI output: -o app writes app.graphite; -o app.graphite keeps that archive name.\nFrontend directory output is staged and packed automatically."
+            } else {
+                "Graphite CLI output: -o app writes a graph directory; -o app.graphite writes an archive."
+            };
+            assert_eq!(
+                stdout,
+                format!("{policy}\n\nFrontend-specific help follows:\nFrontend output directory help\n<{command}>\n<{flag}>\n<-o>\n<app>\n")
+            );
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn versions_and_help_shaped_values_do_not_print_shell_help_notice() {
+    for command in ["build", "import"] {
+        for tail in [
+            vec!["--version"],
+            vec!["-V"],
+            vec!["--include", "--help"],
+            vec!["--include=-h"],
+            vec!["--", "--help"],
+            vec!["--", "-h"],
+        ] {
+            let args = [&[command][..], tail.as_slice()].concat();
+            let output = delegated_help(&args);
+            assert_eq!(output.status.code(), Some(7));
+            assert!(output.stderr.is_empty(), "{output:?}");
+            let expected_args: String = args.iter().map(|arg| format!("<{arg}>\n")).collect();
+            assert_eq!(
+                String::from_utf8(output.stdout).unwrap(),
+                format!("Frontend output directory help\n{expected_args}")
+            );
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn invalid_shell_options_fail_before_help_notice_or_frontend_execution() {
+    for args in [
+        vec!["build", "-o", "--help"],
+        vec!["import", "-o", "--help"],
+        vec!["build", "--lang", "unknown", "--help"],
+    ] {
+        let output = delegated_help(&args);
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty(), "{output:?}");
+        assert!(String::from_utf8_lossy(&output.stderr).contains("Error:"));
+    }
+}

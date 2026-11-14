@@ -511,6 +511,7 @@ fn run_selected(env: &Env, args: &[OsString]) -> i32 {
             return code;
         }
     };
+    print_frontend_help_notice("build", &args);
     match choice.lang {
         "js" => crate::build_ts::run(env, &args),
         "apple" => run_apple(env, &choice, &args),
@@ -529,12 +530,28 @@ fn run_selected(env: &Env, args: &[OsString]) -> i32 {
 
 pub fn run_import(env: &Env, args: &[OsString]) -> i32 {
     match fold::output_of(args) {
-        Ok(output) => run_subcommand(env, "import", args, output),
+        Ok(output) => {
+            print_frontend_help_notice("import", args);
+            run_subcommand(env, "import", args, output)
+        }
         Err(message) => {
             eprintln!("Error: {message}");
             2
         }
     }
+}
+
+fn print_frontend_help_notice(subcommand: &str, args: &[OsString]) {
+    if !crate::build_args::walk(args).any(|arg| arg.flag("--help") || arg.flag("-h")) {
+        return;
+    }
+    if subcommand == "build" {
+        println!("Graphite CLI output: -o app writes app.graphite; -o app.graphite keeps that archive name.");
+        println!("Frontend directory output is staged and packed automatically.");
+    } else {
+        println!("Graphite CLI output: -o app writes a graph directory; -o app.graphite writes an archive.");
+    }
+    println!("\nFrontend-specific help follows:");
 }
 
 fn run_subcommand(env: &Env, subcommand: &str, args: &[OsString], output: Option<PathBuf>) -> i32 {
