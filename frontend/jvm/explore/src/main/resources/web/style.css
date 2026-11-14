@@ -326,3 +326,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+#topology-hint { color: var(--text-secondary); font-size: 11px; margin-right: auto; }
+#topology-hint[hidden], #btn-clear-focus[hidden] { display: none; }
+@media (max-width: 900px) { #topology-hint { display: none; } }

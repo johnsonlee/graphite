@@ -45,6 +45,7 @@ test('a completed old head never posts or overwrites a report', async t => {
 interface Options {
   run?: Partial<Run>;
   report?: boolean;
+  flatReport?: boolean;
   markdown?: string;
   identity?: { schema?: string; baseSha?: string; headSha?: string };
   latestPull?: Pull;
@@ -67,9 +68,9 @@ function harness(t: TestContext, options: Options = {}) {
     number: 9, state: 'open', base: { sha: baseSha, repo: { id: 1 } }, head: { sha: run.head_sha },
   };
   const artifactName = `benchmark-report-9-${current.run_attempt}`;
-  const reportDirectory = path.join(directory, artifactName);
+  const reportDirectory = options.flatReport ? directory : path.join(directory, artifactName);
   if (options.report !== false) {
-    fs.mkdirSync(reportDirectory);
+    fs.mkdirSync(reportDirectory, { recursive: true });
     fs.writeFileSync(path.join(reportDirectory, 'summary.md'), options.markdown || 'Measured base/head timings; report only.');
     fs.writeFileSync(path.join(reportDirectory, 'report.json'), JSON.stringify({
       schema: 'graphite-benchmark-report-v1', baseSha, headSha: run.head_sha, ...options.identity,
@@ -129,6 +130,41 @@ test('first report creates one comment with actual revisions and artifact proven
   assert.ok(request.body.includes(h.baseSha));
   assert.ok(request.body.includes(`${run.html_url}/artifacts/50`));
   assert.ok(request.body.includes('Measured base/head timings; report only.'));
+});
+
+test('a single report flattened by download-artifact v8 publishes its actual measurements', async t => {
+  const h = harness(t, { flatReport: true, artifacts: [
+    { id: 50, name: 'benchmark-report-9-2', expired: false },
+    { id: 51, name: 'benchmark-checkpoint-9-2', expired: false },
+  ] });
+  await h.invoke();
+  assert.equal(h.calls.creates.length, 1);
+  assert.match(h.calls.creates[0]!.body, /Measured base\/head timings; report only/);
+  assert.ok(!h.calls.creates[0]!.body.includes('No complete report'));
+  assert.ok(h.calls.creates[0]!.body.includes(`${run.html_url}/artifacts/50`));
+});
+
+test('a flattened report still requires matching head and comparison base', async t => {
+  for (const identity of [{ headSha: 'c'.repeat(40) }, { baseSha: 'c'.repeat(40) }]) {
+    const h = harness(t, { flatReport: true, identity });
+    await assert.rejects(h.invoke, /Report does not describe this workflow run/);
+    assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+  }
+});
+
+test('a flattened report is not attributed to an absent or ambiguous artifact', async t => {
+  for (const artifacts of [[],
+    [{ id: 50, name: 'benchmark-report-9-1', expired: false }],
+    [{ id: 50, name: 'benchmark-report-9-2', expired: true }],
+    [{ id: 50, name: 'benchmark-report-9-2', expired: false },
+      { id: 51, name: 'benchmark-report-9-1', expired: false }],
+  ]) {
+    const h = harness(t, { flatReport: true, artifacts });
+    await h.invoke();
+    assert.equal(h.calls.creates.length, 1);
+    assert.match(h.calls.creates[0]!.body, /No complete report was produced/);
+    assert.ok(!h.calls.creates[0]!.body.includes('Measured base/head timings'));
+  }
 });
 
 test('existing bot marker is updated in place and does not create another comment', async t => {
