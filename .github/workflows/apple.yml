@@ -156,6 +156,9 @@ jobs:
         # An explicit language and an index store input, without a package build.
         ./target/release/graphite build --lang swift --index-store frontend/apple/Fixtures/AcmeShop/.build/debug/index/store \
           --sources frontend/apple/Fixtures/AcmeShop/Sources -o "${RUNNER_TEMP}/via-store"
+        test ! -e "${RUNNER_TEMP}/via-store"
+        ./target/release/graphite verify "${RUNNER_TEMP}/via-store.graphite"
+        ./target/release/graphite unpack "${RUNNER_TEMP}/via-store.graphite" "${RUNNER_TEMP}/via-store"
         test -f "${RUNNER_TEMP}/via-store/graph.metadata"
         # An .xcodeproj input goes to the Apple frontend as --project; with --skip-build and a
         # derived data directory that already holds an index store (the package's, under

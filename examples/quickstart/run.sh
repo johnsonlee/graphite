@@ -12,17 +12,17 @@ jar --create --file "$demo_dir/checkout.jar" -C "$demo_dir/classes" .
 "$graphite_bin" build "$demo_dir/checkout.jar" -o "$demo_dir/checkout-graph" --include demo
 
 printf '\nWhich constant reaches enableFeature?\n'
-"$graphite_bin" query --format json "$demo_dir/checkout-graph" \
+"$graphite_bin" query --format json "$demo_dir/checkout-graph.graphite" \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(call:CallSiteNode)
    WHERE call.callee_class = 'demo.Checkout' AND call.callee_name = 'enableFeature'
    RETURN DISTINCT c.value AS flag, call.callee_name AS method"
 
 printf '\nWho calls enableFeature?\n'
-"$graphite_bin" query --format json "$demo_dir/checkout-graph" \
+"$graphite_bin" query --format json "$demo_dir/checkout-graph.graphite" \
   "MATCH (call:CallSiteNode)
    WHERE call.callee_class = 'demo.Checkout' AND call.callee_name = 'enableFeature'
    RETURN call.caller_signature AS caller"
 
 printf '\nExplore the saved graph:\n  %q serve --id demo %q --port 8080\n' \
-  "$graphite_bin" "$demo_dir/checkout-graph"
+  "$graphite_bin" "$demo_dir/checkout-graph.graphite"
 printf '\nDemo files are kept in %s for inspection.\n' "$demo_dir"

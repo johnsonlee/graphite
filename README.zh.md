@@ -4,7 +4,7 @@
 
 [English](README.md) · 简体中文
 
-**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码和 JavaScript/TypeScript 项目编译后的 JavaScript 产物转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+**为 LLM 提供结构化的代码库上下文。** Graphite 从 JVM 字节码、JavaScript/TypeScript 项目编译后的 JavaScript 产物，以及 Swift/Objective-C 项目构建可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
@@ -151,7 +151,7 @@ brew tap johnsonlee/tap
 brew install johnsonlee/tap/graphite
 graphite --version
 
-# Build a graph from your JAR
+# 构建 app-graph.graphite 及其 .sha256 校验文件
 graphite build app.jar -o /data/app-graph --include com.example
 
 # Build a graph from an Android APK
@@ -160,17 +160,17 @@ graphite build app.apk \
   --include com.example
 
 # Query with Cypher
-graphite query /data/app-graph \
+graphite query /data/app-graph.graphite \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
    WHERE cs.callee_class =~ 'com.example.*'
    RETURN c.value, cs.callee_name"
 
 # JSON output (for LLM consumption)
-graphite query --format json /data/app-graph \
+graphite query --format json /data/app-graph.graphite \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
 
-# Launch the web UI
-graphite serve --id app /data/app-graph --port 8080
+# 启动 Web UI（默认 graph id 为 app-graph）
+graphite serve /data/app-graph.graphite --port 8080
 
 # Serve every .graphite file in a directory, each under its file name
 # (/data/graphs/orders.graphite is served as `orders`).
@@ -191,6 +191,11 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
+
+`graphite serve [OPTIONS] [GRAPH]` 可直接加载图目录或 `.graphite` 文件。未指定
+`--id` 时，位置参数的目录名或去掉 `.graphite` 后缀的文件名就是 graph ID：
+例如 `graphite serve app.graphite` 的 ID 为 `app`。可用 `--id` 覆盖默认名称；
+若文件名不符合 graph ID 规则，也需要显式指定。`graphite mcp` 的位置参数同样遵循此规则。
 
 ### Homebrew formula 安装的内容
 
@@ -370,7 +375,7 @@ folds:
     value: { EnumConstant: { enum_type: com.example.ABTestOption, name: CONTROL } }
 ```
 
-查询中的字符串遵循 Cypher 语法，需要加引号，与 `match` 中可以不加引号的标量不同。`graphite build` 负责解析这类规则：先在输出目录旁的临时目录中构建未应用规则的图，用 Rust 引擎执行每条 `select`，读取各 `CallSite` 行的稳定键（`caller_signature`、`callee_signature`、`ordinal`），再折叠这些调用点并重新构图。查询必须只返回一列 `CallSite` 节点（`RETURN cs`）；返回属性、多列或其他节点的查询会被拒绝，并显示出错的行及其内容。查询未选中任何调用的规则，与未匹配到任何调用的 `match` 一样会被记录；启用 `--fold-strict` 时构建会失败。
+查询中的字符串遵循 Cypher 语法，需要加引号，与 `match` 中可以不加引号的标量不同。`graphite build` 负责解析这类规则：先在输出文件旁的临时目录中构建未应用规则的图，用 Rust 引擎执行每条 `select`，读取各 `CallSite` 行的稳定键（`caller_signature`、`callee_signature`、`ordinal`），再折叠这些调用点并重新构图。查询必须只返回一列 `CallSite` 节点（`RETURN cs`）；返回属性、多列或其他节点的查询会被拒绝，并显示出错的行及其内容。查询未选中任何调用的规则，与未匹配到任何调用的 `match` 一样会被记录；启用 `--fold-strict` 时构建会失败。
 
 报告在 `select` 下保留查询，在 `selected` 下列出选中的键。对于已填好 `selected` 的文件（报告自身的 `folds`，或根据 `RETURN cs.caller_signature, cs.callee_signature, cs.ordinal` 手工填写的键），CLI 和 `graphite.jar build` 都只需一遍构建。单独运行 `graphite.jar build` 时，没有可执行查询的图，因此会拒绝尚未解析的 `select`。
 
@@ -397,7 +402,7 @@ fold CallSite {callee_class: com.example.Flags, callee_name: isEnabled} [0: "new
 Warning: no fold rule folded any call; the graph is the same as a build without --fold
 ```
 
-`--fold-strict` 会使未匹配到任何调用的规则导致构建失败。输出目录中的 `graph.folds.json` 按原文件的结构保留所有规则，并为每条规则补充预览查询、已折叠的调用、调用方方法及其折叠前后的语句数、匹配到但无法折叠的调用及其原因，以及接近但未匹配的调用。它本身也可以作为折叠规则文件使用：`--fold graph.folds.json` 读取其中的规则，忽略附加信息。没有被规则触及的方法仍按前端默认流程处理，因此折叠只会改变调用了被折叠方法的那些方法。各处理阶段的详细行为见 `docs/constant-folding.md`。
+`--fold-strict` 会使未匹配到任何调用的规则导致构建失败。输出归档中的 `graph.folds.json`（可通过 `graphite unpack` 提取） 按原文件的结构保留所有规则，并为每条规则补充预览查询、已折叠的调用、调用方方法及其折叠前后的语句数、匹配到但无法折叠的调用及其原因，以及接近但未匹配的调用。它本身也可以作为折叠规则文件使用：`--fold graph.folds.json` 读取其中的规则，忽略附加信息。没有被规则触及的方法仍按前端默认流程处理，因此折叠只会改变调用了被折叠方法的那些方法。各处理阶段的详细行为见 `docs/constant-folding.md`。
 
 `--dependency-artifacts` 与 `--dependency-packages`（需配合 `--include-libs`）指定哪些依赖 jar 和包的方法体也要进入图中，同时不把它们当作应用代码：被指定的嵌套 jar 即使不含应用包也会被加载。`--dependency-reachable N` 则加载全部依赖，只读取应用调用可达的类以及这些类再可达的类，最多 N 个；超出预算的类标为 `NOT_EXPANDED`。每次构建都会把每个类和方法的处理结果记录为 `graph.completeness`，通过 `Graph.analysisCompleteness()` 和 `Graph.analysisStatus(callee)` 读回：被调用方法的状态是 `ANALYZED`、`ABSTRACT`、`NATIVE`、`INCOMPLETE`、`EXCLUDED_BY_SCOPE`、`EXTERNAL` 等，因此基于图的证明可以区分“方法体没有副作用”和“方法体根本没被读取”。详见 [docs/analysis-completeness.md](docs/analysis-completeness.md)。
 
@@ -617,23 +622,27 @@ Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI
 
 ```
 graphite/
+├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
 ├── frontend/
-│   ├── web/                # JavaScript 编译产物前端（发布为独立可执行文件）
-│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
-│       ├── core/           # Graph interface, nodes, edges, analysis
-│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
-│       ├── sootup/         # SootUp bytecode → graph builder
-│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
-│       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
-│       └── explore/        # Legacy Kotlin Explorer server
+│   ├── web/                # JavaScript artifact frontend (standalone release binary)
+│   ├── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│   │   ├── core/           # Graph interface, nodes, edges, analysis
+│   │   ├── ir/             # Graph IR reader (protobuf bindings + DefaultGraph builder)
+│   │   ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│   │   ├── sootup/         # SootUp bytecode → graph builder
+│   │   ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│   │   ├── query/          # `graphite.jar`: build and import, plus legacy query/serve
+│   │   └── explore/        # Legacy Kotlin Explorer server
+│   └── apple/              # Swift/Objective-C frontend: compiler index store + source analysis → Graph IR
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
-├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
+├── cli/                    # `graphite` CLI (Rust): build, import, query, serve, mcp, frontend
 ├── benchmark/              # Rust benchmark runner and shared JVM validation
-├── Cargo.toml              # Cargo workspace: backend/*, cli and benchmark
+├── tck/                    # openCypher compatibility test runner
+├── Cargo.toml              # Cargo workspace: storage, cypher, explore, cli, benchmark, tck
 └── docs/
 ```
 
@@ -650,6 +659,8 @@ graphite/
 | 元数据 | 使用字符串表索引的紧凑二进制格式 |
 
 保存的图可以是包含这些文件的目录，也可以将同一组文件打包为**一个 `.graphite` 文件**：`graphite build app.jar -o app.graphite` 写入该文件，`graphite query`、`serve` 和 `mcp` 均可打开这两种形式。该文件是普通的无压缩（STORED）zip，可通过 `unzip -l` 和 `jar tf` 列出内容。每个条目都按内存页对齐，因此服务端可以通过一次内存映射提供服务，方式与目录形式完全相同。`META-INF/graphite.manifest` 条目记录每个文件的大小和 SHA-256；`pack` 会拒绝不构成完整图的文件集合，`verify` 则会报告缺失的必需条目。由于中央目录在最后写入，截断的文件无法打开。打包结果是确定的：清单的 SHA-256 即为图的指纹。容器旁会生成一个采用 `sha256sum -c` 格式的 `.sha256` 文件，方便使用标准工具校验复制或下载后的文件。指纹标识图本身，文件摘要则用于确认字节内容是否与构建产物一致。
+
+`graphite build` 在构建成功后自动生成 `.graphite` 归档。`-o app` 输出 `app.graphite`，`-o app.v1` 输出 `app.v1.graphite`，`-o app.graphite` 保持原名，无需打包开关；该行为适用于所有 build 前端。已有且通过验证的归档及其校验文件会被原位重建。构建使用临时目录，不会创建 `app/` 输出目录。`.graphite`、以 `.` 结尾的文件名和以目录分隔符结尾的路径会被拒绝。自动补后缀时会打印归档路径；如果原输出路径已有目录，会明确警告该目录不再更新。请将 query、serve 和 MCP 的读取路径改为新的归档。需要目录形式时，可运行 `graphite unpack app.graphite app/`。直接调用前端和 `graphite import` 的输出行为保持不变。
 
 ```bash
 graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256
@@ -738,18 +749,26 @@ repositories {
 
 ## MCP 集成
 
+根据客户端的连接方式选择命令：
+
+| 命令 | 启动和连接方式 | 提供的接口 |
+|---|---|---|
+| `graphite serve app.graphite` | 启动常驻 HTTP 服务，客户端通过 URL 连接 | 网页 `/`、REST `/api`、HTTP MCP `/mcp`，默认端口 8080 |
+| `graphite mcp app.graphite` | 由 MCP 客户端作为子进程启动，通过标准输入/输出通信 | stdio MCP，不监听 HTTP 端口，也不提供网页 |
+
+两个命令都会自行加载图。客户端选择 stdio 或 HTTP 中的一种连接方式即可；
+stdio 客户端无需另外启动 `serve`。两者都接受图目录和 `.graphite` 文件，
+位置参数的 graph ID 默认由 basename 推导。
+
 `graphite` 可执行文件也是一个 [Model Context Protocol](https://modelcontextprotocol.io) 服务端。它提供原先由 `graphite-mcp` npm 包暴露的十三个工具（`graphs`、`cypher`、`node`、`outgoing`、`incoming`、`annotations`、`endpoints`、`resources`、`resource`、`subgraph`、`overview`、`c4`、`openapi`），以及新增的 `schema`，均在进程内通过与 REST API 相同的代码提供服务。
 `schema`（`GET /api/schema`、`GET /api/graphs/{id}/schema`）可在毫秒级描述图中的内容：各标签组合的节点数量和属性键、各关系类型的数量，以及最常见的 `(labels)-[type]->(labels)` 模式。智能体可以先读取这些信息再编写 Cypher，无需通过 `MATCH (n) RETURN labels(n), keys(n), count(*)` 之类的探测查询了解图结构。这些探测查询同样会按类型处理（参见 `backend/cypher/src/engine/partition.rs` 中的分区求值），但一次调用比多轮交互成本更低。
-有两种连接方式：
+HTTP 客户端使用 `POST /mcp`（Streamable HTTP）。
 
-- **stdio**，适用于本地客户端（Claude Code、Claude Desktop、Cursor）：`graphite mcp` 自行打开图，无需预先启动服务端。
-- **HTTP**，适用于远程或共享环境：每个 `graphite serve` 都会通过 `POST /mcp` 提供 MCP 服务（Streamable HTTP）。
-
-对于 **Claude Code**，构建图后在项目目录中运行以下命令。将 `/data/app-graph` 替换为已保存图的绝对路径：
+对于 **Claude Code**，构建图后在项目目录中运行以下命令。将 `/data/app-graph.graphite` 替换为已保存图的绝对路径：
 
 ```bash
 claude mcp add --transport stdio --scope project graphite -- \
-  graphite mcp --graph app:/data/app-graph
+  graphite mcp --graph app:/data/app-graph.graphite
 ```
 
 该命令会在项目根目录创建或更新 `.mcp.json`。打开 Claude Code，按提示批准项目服务端，然后通过 `/mcp` 检查连接。配置作用域详见 [Claude Code MCP 文档](https://code.claude.com/docs/en/mcp#project-scope)。`graphite` 可执行文件必须位于客户端的 `PATH` 中；否则，请使用其绝对路径作为命令。
@@ -761,13 +780,13 @@ claude mcp add --transport stdio --scope project graphite -- \
   "mcpServers": {
     "graphite": {
       "command": "graphite",
-      "args": ["mcp", "--graph", "app:/data/app-graph", "--graph", "billing:/data/billing-graph"]
+      "args": ["mcp", "--graph", "app:/data/app-graph.graphite", "--graph", "billing:/data/billing-graph.graphite"]
     }
   }
 }
 ```
 
-也可以先启动 `graphite serve --id app /data/app-graph`，再通过 HTTP 连接 Claude Code：
+也可以先启动 `graphite serve --id app /data/app-graph.graphite`，再通过 HTTP 连接 Claude Code：
 
 ```bash
 claude mcp add --transport http --scope project graphite http://localhost:8080/mcp
@@ -786,7 +805,7 @@ claude mcp add --transport http --scope project graphite http://localhost:8080/m
 # Start Explorer
 graphite serve --id app /path/to/saved-graph
 
-# The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
+# --load-mode 是兼容标签；所有值均使用相同的原生文件读取路径。
 ```
 
 也可以启动时不加载任何图，稍后再热加载服务图（在下次启动前放入 `--data` 目录的 `.graphite` 文件会被自动发现）：

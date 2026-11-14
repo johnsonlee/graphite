@@ -146,12 +146,24 @@ jobs:
         JAVA_TOOL_OPTIONS: -Xmx4g
       run: |
         ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
+        # Exercise the documented producer and both archive consumers before larger fixtures.
+        bun .github/scripts/checks/quickstart.ts ./target/release/graphite
         ./target/release/graphite frontend list
         ./target/release/graphite frontend describe jvm | tee "${RUNNER_TEMP}/frontend.json"
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["name"]=="jvm" and d["version"], d' "${RUNNER_TEMP}/frontend.json"
+        # Build defaults to a container; unpack fixtures used by directory-reader checks.
+        unpack_built_graph() {
+          ./target/release/graphite verify "$1.graphite"
+          test ! -e "$1"
+          ./target/release/graphite unpack "$1.graphite" "$1"
+          # Compare frontend files exactly, excluding only generated container metadata.
+          rm "$1/META-INF/graphite.manifest"
+          rmdir "$1/META-INF"
+        }
         CORE_JAR=$(ls frontend/jvm/core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
         ./target/release/graphite build "${CORE_JAR}" \
           -o "${RUNNER_TEMP}/fixture-graph" --include io.johnsonlee.graphite
+        unpack_built_graph "${RUNNER_TEMP}/fixture-graph"
         test -f "${RUNNER_TEMP}/fixture-graph/graph.callsite-string-index"
         ls -la "${RUNNER_TEMP}/fixture-graph"
         # A small application with several capabilities calling each other, so the
@@ -162,6 +174,7 @@ jobs:
         (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph" --include com.acme
+        unpack_built_graph "${RUNNER_TEMP}/acme-graph"
         test -f "${RUNNER_TEMP}/acme-graph/graph.metadata"
         # The jar's own build of the same input is identical apart from the timestamp
         # comment in forward.properties: the CLI is a shell.
@@ -191,6 +204,7 @@ jobs:
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-folded" --include com.acme --fold "${RUNNER_TEMP}/folds.yml" --fold-strict \
           2> "${RUNNER_TEMP}/fold.log"
+        unpack_built_graph "${RUNNER_TEMP}/acme-folded"
         cat "${RUNNER_TEMP}/fold.log"
         grep -F 'select rule 0: 1 call site(s) selected' "${RUNNER_TEMP}/fold.log"
         test ! -e "${RUNNER_TEMP}"/acme-folded.unfolded-*
@@ -212,6 +226,7 @@ jobs:
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-refolded" --include com.acme --fold "${RUNNER_TEMP}/acme-folded/graph.folds.json" \
           --fold-strict 2> "${RUNNER_TEMP}/refold.log"
+        unpack_built_graph "${RUNNER_TEMP}/acme-refolded"
         cat "${RUNNER_TEMP}/refold.log"
         if grep -F 'Building the graph without rules' "${RUNNER_TEMP}/refold.log"; then exit 1; fi
         test "$(./target/release/graphite query "${RUNNER_TEMP}/acme-refolded" \
@@ -245,6 +260,7 @@ jobs:
         EOF
         ./target/release/graphite build "${RUNNER_TEMP}/lambdas.jar" \
           -o "${RUNNER_TEMP}/lambdas-graph" --include fx
+        unpack_built_graph "${RUNNER_TEMP}/lambdas-graph"
         ./target/release/graphite query "${RUNNER_TEMP}/lambdas-graph" \
           "MATCH (cs:CallSite {caller_name: 'run'}) WHERE cs.ordinal < 0 RETURN cs.callee_name AS n ORDER BY n" -f csv
         set +e
@@ -255,12 +271,14 @@ jobs:
         cat "${RUNNER_TEMP}/one-lambda.log"
         test "${STATUS}" -eq 1
         grep -F "select rule 0: the query selected 1 of the 2 function values that the call fx.Lambdas.run(java.util.function.Supplier) -> java.util.function.Supplier.get() #0 runs" "${RUNNER_TEMP}/one-lambda.log"
-        test ! -e "${RUNNER_TEMP}/lambdas-one/graph.metadata"
+        test ! -e "${RUNNER_TEMP}/lambdas-one.graphite"
+        test ! -e "${RUNNER_TEMP}/lambdas-one.graphite.sha256"
         # Both bodies: the shared call folds, boxed as the lambdas' Boolean, and the derived
         # call sites go with it (the callers' branches test run()'s result, which stays a call).
         sed -i "s/(inner:CallSite {callee_name: 'checkoutEnabled'})/(inner:CallSite) WHERE inner.callee_name IN ['checkoutEnabled', 'darkModeEnabled']/; s/WHERE cs.ordinal < 0 AND/AND cs.ordinal < 0 AND/" "${RUNNER_TEMP}/one-lambda.yml"
         ./target/release/graphite build "${RUNNER_TEMP}/lambdas.jar" \
           -o "${RUNNER_TEMP}/lambdas-both" --include fx --fold "${RUNNER_TEMP}/one-lambda.yml" --fold-strict 2> "${RUNNER_TEMP}/both.log"
+        unpack_built_graph "${RUNNER_TEMP}/lambdas-both"
         cat "${RUNNER_TEMP}/both.log"
         grep -F "1 selected call site(s) = false: 1 call(s) in 1 method(s)" "${RUNNER_TEMP}/both.log"
         test "$(./target/release/graphite query "${RUNNER_TEMP}/lambdas-both" \
@@ -282,6 +300,7 @@ jobs:
         EOF
         ./target/release/graphite build "${RUNNER_TEMP}/unbound.jar" \
           -o "${RUNNER_TEMP}/unbound-folded" --include fx --fold "${RUNNER_TEMP}/unbound.yml" --fold-strict 2> "${RUNNER_TEMP}/unbound.log"
+        unpack_built_graph "${RUNNER_TEMP}/unbound-folded"
         cat "${RUNNER_TEMP}/unbound.log"
         grep -F '1 selected call site(s) = "stub": 1 call(s) in 1 method(s)' "${RUNNER_TEMP}/unbound.log"
         python3 - "${RUNNER_TEMP}/unbound-folded/graph.folds.json" <<'EOF'
@@ -295,8 +314,9 @@ jobs:
         EOF
         test "$(./target/release/graphite query "${RUNNER_TEMP}/unbound-folded" \
           "MATCH (cs:CallSite {caller_name: 'use', callee_class: 'java.util.function.BiFunction'}) RETURN count(cs) AS c" -f csv | tail -1)" = "0"
-        test ! -e "${RUNNER_TEMP}/acme-refused"
-        # The single-file form: packed by the shell when -o names a .graphite file,
+        test ! -e "${RUNNER_TEMP}/acme-refused.graphite"
+        test ! -e "${RUNNER_TEMP}/acme-refused.graphite.sha256"
+        # An explicit .graphite output keeps the same filename and is packed by the shell,
         # readable by standard zip tools, and the same graph as the directory.
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme.graphite" --include com.acme
