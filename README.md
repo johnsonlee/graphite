@@ -274,7 +274,12 @@ graphite serve --bind-address 0.0.0.0 --id app /data/app-graph --port 8080
 
 Use a specific local interface IP to limit listening to that interface, or `::1`
 for IPv6 loopback. Binding to `0.0.0.0` permits connections on all IPv4 interfaces;
-it does not authenticate clients. Remote HTTP access requires external access
+it does not authenticate clients. `::` listens on all IPv6 interfaces and may also
+accept IPv4 connections, depending on the operating system's dual-stack settings.
+The Docker image explicitly binds `0.0.0.0` inside the container; publish with
+`-p 127.0.0.1:8080:8080` for host-local access. This default change applies to the
+native CLI; legacy `graphite.jar serve` still listens on all interfaces.
+Remote HTTP access requires external access
 controls, such as a firewall restricting trusted clients or an authenticated reverse
 proxy with direct access to Graphite blocked. For local MCP clients, prefer
 `graphite mcp` over stdio, which opens no HTTP listener.

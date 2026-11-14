@@ -4,7 +4,7 @@ use crate::guard::*;
 use crate::registry::{GraphRegistry, LoadMode};
 use crate::routes::{router, AppState};
 use clap::Args;
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -434,6 +434,14 @@ async fn bind_listener(cli: &ServeArgs) -> std::io::Result<tokio::net::TcpListen
     tokio::net::TcpListener::bind((cli.bind_address, cli.port)).await
 }
 
+fn local_http_url(address: SocketAddr) -> String {
+    if address.ip().is_unspecified() {
+        format!("http://localhost:{}", address.port())
+    } else {
+        format!("http://{address}")
+    }
+}
+
 /// Serve the graphs described by `cli`, blocking until the server stops. The HTTP API
 /// also carries the MCP server at `/mcp` (see `crate::mcp`).
 pub fn serve(cli: ServeArgs) -> Result<(), String> {
@@ -443,10 +451,12 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
     runtime.block_on(async move {
         let listener = bind_listener(&cli).await.map_err(|e| e.to_string())?;
         let actual = listener.local_addr().map_err(|e| e.to_string())?;
-        eprintln!("Web UI: http://{actual}");
-        eprintln!("MCP: http://{actual}/mcp");
+        let local_url = local_http_url(actual);
+        eprintln!("Listening on {actual}");
+        eprintln!("Web UI: {local_url}");
+        eprintln!("MCP: {local_url}/mcp");
         if cli.metrics {
-            eprintln!("Metrics: http://{actual}/metrics");
+            eprintln!("Metrics: {local_url}/metrics");
         }
         report_loaded(&opened, &cli.graphs);
         report_c4_warmup(opened.state.warm_c4());
@@ -501,14 +511,41 @@ mod tests {
         }
     }
 
+    #[test]
+    fn listener_urls_use_connectable_hosts_and_preserve_ports() {
+        for (address, expected) in [
+            ("0.0.0.0:49152", "http://localhost:49152"),
+            ("[::]:49153", "http://localhost:49153"),
+            ("127.0.0.1:49154", "http://127.0.0.1:49154"),
+            ("192.0.2.1:8080", "http://192.0.2.1:8080"),
+            ("[::1]:49155", "http://[::1]:49155"),
+            ("[2001:db8::1]:8080", "http://[2001:db8::1]:8080"),
+        ] {
+            assert_eq!(local_http_url(address.parse().unwrap()), expected);
+        }
+    }
+
     #[tokio::test]
-    async fn listener_binds_default_loopback_and_explicit_wildcard() {
+    async fn listener_binds_default_ipv4_and_explicit_ipv6_loopback() {
         for arguments in [
             vec!["serve", "--port", "0"],
-            vec!["serve", "--port", "0", "--bind-address", "0.0.0.0"],
+            vec!["serve", "--port", "0", "--bind-address", "::1"],
         ] {
             let cli = ServeCli::try_parse_from(arguments).unwrap();
-            let listener = bind_listener(&cli.serve).await.unwrap();
+            let listener = match bind_listener(&cli.serve).await {
+                Ok(listener) => listener,
+                Err(error)
+                    if cli.serve.bind_address.is_ipv6()
+                        && matches!(
+                            error.kind(),
+                            std::io::ErrorKind::AddrNotAvailable | std::io::ErrorKind::Unsupported
+                        ) =>
+                {
+                    eprintln!("IPv6 loopback unavailable; skipping IPv6 binding: {error}");
+                    continue;
+                }
+                Err(error) => panic!("cannot bind {}: {error}", cli.serve.bind_address),
+            };
             let address = listener.local_addr().unwrap();
             assert_eq!(address.ip(), cli.serve.bind_address);
             assert_ne!(address.port(), 0);

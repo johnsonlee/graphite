@@ -8,12 +8,11 @@
 # Usage:
 #   # release-assets/linux/<amd64|arm64>/graphite are the extracted release binaries
 #   docker build -f backend/explore/Dockerfile -t graphite-explore .
-#   docker run --rm -p 127.0.0.1:8080:8080 -v /path/to/graph:/data graphite-explore \
-#     --bind-address 0.0.0.0 --id app /data
+#   docker run --rm -p 127.0.0.1:8080:8080 -v /path/to/graph:/data graphite-explore
 #
-# The entrypoint is `graphite serve`, so every `graphite-explore` / `graphite.jar serve`
-# argument can be passed after the image name. For port publishing, explicitly bind
-# to 0.0.0.0 inside the container; the default is container-local 127.0.0.1.
+# The default CMD binds all IPv4 interfaces inside the container so port publishing
+# works. Host exposure is controlled by Docker's -p address. Custom arguments replace
+# CMD: include --bind-address 0.0.0.0 when publishing ports.
 # Publishing on a non-loopback host address requires external access controls.
 
 FROM gcr.io/distroless/static-debian12:nonroot
@@ -35,4 +34,4 @@ EXPOSE 8080
 VOLUME ["/data"]
 
 ENTRYPOINT ["/app/graphite", "serve"]
-CMD ["--id", "app", "/data"]
+CMD ["--bind-address", "0.0.0.0", "--id", "app", "/data"]
