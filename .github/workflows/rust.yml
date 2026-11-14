@@ -146,6 +146,8 @@ jobs:
         JAVA_TOOL_OPTIONS: -Xmx4g
       run: |
         ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
+        # Exercise the documented producer and both archive consumers before larger fixtures.
+        bun .github/scripts/checks/quickstart.ts ./target/release/graphite
         ./target/release/graphite frontend list
         ./target/release/graphite frontend describe jvm | tee "${RUNNER_TEMP}/frontend.json"
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["name"]=="jvm" and d["version"], d' "${RUNNER_TEMP}/frontend.json"

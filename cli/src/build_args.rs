@@ -178,6 +178,14 @@ pub(crate) fn packed_output_args(args: &[OsString]) -> Result<Vec<OsString>, Str
         return Ok(forwarded);
     };
     let path = Path::new(output.value.expect("validated output"));
+    if path
+        .as_os_str()
+        .as_encoded_bytes()
+        .last()
+        .is_some_and(|&byte| byte == b'/' || (cfg!(windows) && byte == b'\\'))
+    {
+        return Err("--output must name an archive, not end with a directory separator; use graphite unpack to obtain a graph directory".into());
+    }
     let name = path
         .file_name()
         .ok_or("--output requires a filename")?
@@ -238,7 +246,7 @@ mod tests {
             for (output, expected) in [
                 ("app", "app.graphite"),
                 ("app.v1", "app.v1.graphite"),
-                ("nested/app/", "nested/app.graphite"),
+                ("nested/app", "nested/app.graphite"),
                 ("app.graphite", "app.graphite"),
             ] {
                 for spelling in ["-o", "--output"] {
@@ -282,6 +290,24 @@ mod tests {
         assert!(packed_output_args(&os(&["input", "-o", "--pack"]))
             .unwrap_err()
             .contains("--output requires a path"));
+    }
+
+    #[test]
+    fn trailing_directory_separators_are_rejected() {
+        let mut paths = vec!["out/", "nested/app/", "app.graphite/", "/"];
+        if cfg!(windows) {
+            paths.extend([r"out\", r"nested\app\"]);
+        }
+        for path in paths {
+            for args in [
+                os(&["input", "-o", path]),
+                os(&["input", &format!("--output={path}")]),
+            ] {
+                let error = packed_output_args(&args).unwrap_err();
+                assert!(error.contains("directory separator"), "{error}");
+                assert!(error.contains("graphite unpack"), "{error}");
+            }
+        }
     }
 
     #[cfg(unix)]

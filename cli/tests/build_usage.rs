@@ -115,6 +115,13 @@ exit "$BUILD_EXIT"
             .replace("packed", &expected);
         graphite_storage::interchange::import_json(json.as_bytes(), &fixture).unwrap();
         let output = root.path().join(name);
+        if iteration == 1 {
+            graphite_storage::interchange::import_json(
+                json.replace(&expected, "old-directory").as_bytes(),
+                &output,
+            )
+            .unwrap();
+        }
         let result = Command::new(env!("CARGO_BIN_EXE_graphite"))
             .args(["build", "app.jar", "-o"])
             .arg(&output)
@@ -129,7 +136,26 @@ exit "$BUILD_EXIT"
             "{}",
             String::from_utf8_lossy(&result.stderr)
         );
-        assert!(!output.exists());
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        assert!(
+            stderr.contains("appended .graphite to --output"),
+            "{stderr}"
+        );
+        if iteration == 1 {
+            assert!(stderr.contains("existing directory"), "{stderr}");
+            assert!(stderr.contains("is no longer updated"), "{stderr}");
+            assert!(stderr.contains("graphite unpack"), "{stderr}");
+            assert!(output.is_dir());
+            let old = graphite_storage::Graph::load(&output).unwrap();
+            let graphite_storage::NodeKind::StringConstant(value) = old.node(0).unwrap().kind
+            else {
+                panic!("expected old string")
+            };
+            assert_eq!(old.str(value), "old-directory");
+        } else {
+            assert!(!stderr.contains("is no longer updated"), "{stderr}");
+            assert!(!output.exists());
+        }
         let archive = root.path().join(format!("{name}.graphite"));
         if code == 0 {
             let verified = graphite_storage::Container::open(&archive)
@@ -295,4 +321,21 @@ fn query_help_names_the_graph_argument() {
     let help = String::from_utf8(result.stdout).unwrap();
     assert!(help.contains("<GRAPH>"), "{help}");
     assert!(!help.contains("GRAPH_DIR"), "{help}");
+}
+
+#[test]
+fn trailing_output_separator_fails_before_frontend_discovery() {
+    let root = tempfile::tempdir().unwrap();
+    let output = format!("{}/out/", root.path().display());
+    for lang in ["jvm", "js", "apple"] {
+        let result = Command::new(env!("CARGO_BIN_EXE_graphite"))
+            .args(["build", "--lang", lang, "input", "-o", &output])
+            .output()
+            .unwrap();
+        assert_eq!(result.status.code(), Some(2));
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        assert!(stderr.contains("directory separator"), "{stderr}");
+        assert!(stderr.contains("graphite unpack"), "{stderr}");
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+    }
 }

@@ -116,13 +116,13 @@ Then target a class or method from those results.
 
 ## Give an agent the same context
 
-Keep the demo files and use the absolute `checkout-graph` path printed by the
+Keep the demo files and use the absolute `checkout-graph.graphite` path printed by the
 script. For Claude Code, run this in the project where you want to use the agent,
-replacing `/absolute/path/to/checkout-graph` with that path:
+replacing `/absolute/path/to/checkout-graph.graphite` with that path:
 
 ```bash
 claude mcp add --transport stdio --scope project graphite -- \
-  graphite mcp --graph demo:/absolute/path/to/checkout-graph
+  graphite mcp --graph demo:/absolute/path/to/checkout-graph.graphite
 ```
 
 Open Claude Code, approve the project MCP server when prompted, and check `/mcp`.

@@ -160,7 +160,7 @@ fn delegated_help_explains_shell_output_before_frontend_help_and_preserves_forwa
             assert!(output.stderr.is_empty(), "{output:?}");
             let stdout = String::from_utf8(output.stdout).unwrap();
             let policy = if command == "build" {
-                "Graphite CLI output: -o app writes app.graphite; -o app.graphite keeps that archive name.\nFrontend directory output is staged and packed automatically."
+                "Graphite CLI output: -o app writes app.graphite; -o app.graphite keeps that archive name.\nTrailing directory separators are rejected; use graphite unpack for directory output. Existing directories are not updated; build warns when one remains at the original output path.\nFrontend directory output is staged and packed automatically."
             } else {
                 "Graphite CLI output: -o app writes a graph directory; -o app.graphite writes an archive."
             };

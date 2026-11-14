@@ -336,7 +336,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
                 &resolved
             })?,
         };
-        let served = registry.load(&id, &resolved, Some(load_mode))?;
+        let served = registry.load(&id, &lexical, Some(load_mode))?;
         tables.queue(&served.graph);
         eprintln!(
             "Loaded graph '{}' from {} using {} mode",
@@ -459,6 +459,14 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
 mod tests {
     use super::*;
 
+    struct RemoveDirectoryOnDrop(PathBuf);
+
+    impl Drop for RemoveDirectoryOnDrop {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
     fn args(path: PathBuf) -> GraphArgs {
         GraphArgs {
             graph_dir: Some(path),
@@ -491,8 +499,10 @@ mod tests {
     #[test]
     fn positional_graph_defaults_use_resolved_basename_and_explicit_ids_win() {
         // A nested cwd-relative path exposes accidental root/path double joining.
-        let relative = PathBuf::from(format!(".graphite-serve-defaults-{}", std::process::id()));
+        let relative = PathBuf::from(format!(".graphite-serve-defaults-{}", uuid::Uuid::new_v4()));
         let root = std::env::current_dir().unwrap().join(&relative);
+        std::fs::create_dir(&root).unwrap();
+        let _cleanup = RemoveDirectoryOnDrop(root.clone());
         let source = root.join("graphs/app.v1");
         write_graph(&source);
         let archive = root.join("graphs/app.graphite");
@@ -516,7 +526,6 @@ mod tests {
         options.graphs.push(format!("app:{}", source.display()));
         let error = open(&options, false).err().unwrap();
         assert_eq!(error, "Duplicate initial graph id: app");
-        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(unix)]
@@ -537,7 +546,10 @@ mod tests {
         ] {
             let alias = root.join(alias);
             std::os::unix::fs::symlink(target, &alias).unwrap();
-            assert_served(&open(&args(alias), false).unwrap(), id);
+            let opened = open(&args(alias.clone()), false).unwrap();
+            assert_served(&opened, id);
+            let registered = opened.registry.describe(id).unwrap().unwrap();
+            assert_eq!(registered.path, std::path::absolute(&alias).unwrap());
         }
         write_graph(&root.join("other"));
         let mut options = args(root.join("app.graphite"));

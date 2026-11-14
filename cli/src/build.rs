@@ -483,14 +483,34 @@ fn run_apple(env: &Env, choice: &Choice, args: &[OsString]) -> i32 {
 
 /// Run `graphite build` and return the exit code to use.
 pub fn run(env: &Env, args: &[OsString]) -> i32 {
-    let args = match crate::build_args::packed_output_args(args) {
+    let forwarded = match crate::build_args::packed_output_args(args) {
         Ok(args) => args,
         Err(message) => {
             eprintln!("Error: {message}");
             return 2;
         }
     };
-    run_selected(env, &args)
+    if forwarded != args {
+        // Normalization succeeded and changed only the output filename. Make the
+        // migration visible to callers still consuming an older directory graph.
+        let original = crate::build_args::output_option(args).unwrap().unwrap();
+        let normalized = crate::build_args::output_option(&forwarded)
+            .unwrap()
+            .unwrap();
+        let original = Path::new(original.value.unwrap());
+        let normalized = Path::new(normalized.value.unwrap());
+        eprintln!(
+            "Writing {} (appended .graphite to --output)",
+            normalized.display()
+        );
+        if original.is_dir() {
+            eprintln!(
+                "Warning: the existing directory {} is no longer updated; point readers at {} or use graphite unpack to obtain an updated graph directory",
+                original.display(), normalized.display()
+            );
+        }
+    }
+    run_selected(env, &forwarded)
 }
 
 // Keep frontend routing separate from the shell's archive-output policy.
@@ -547,6 +567,7 @@ fn print_frontend_help_notice(subcommand: &str, args: &[OsString]) {
     }
     if subcommand == "build" {
         println!("Graphite CLI output: -o app writes app.graphite; -o app.graphite keeps that archive name.");
+        println!("Trailing directory separators are rejected; use graphite unpack for directory output. Existing directories are not updated; build warns when one remains at the original output path.");
         println!("Frontend directory output is staged and packed automatically.");
     } else {
         println!("Graphite CLI output: -o app writes a graph directory; -o app.graphite writes an archive.");

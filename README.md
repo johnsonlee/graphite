@@ -1011,7 +1011,10 @@ The output path gains `.graphite` unless it already has that extension:
 no packing flag is needed. An existing verified archive and its sidecar are rebuilt
 in place. The build uses a temporary staging directory; no `app/` output directory
 is created. Ambiguous output filenames such as `.graphite` or names ending in `.`
-are rejected. To obtain a graph directory, run `graphite unpack app.graphite app/`.
+and paths ending in a directory separator are rejected. When the suffix is appended,
+build prints the archive path and warns if a directory still exists at the original
+path: that directory is no longer updated. Point query, serve and MCP readers at
+the new archive. To obtain a graph directory, run `graphite unpack app.graphite app/`.
 Direct frontend commands and `graphite import` retain their existing output behavior.
 
 A container moved without its sidecar can be rebuilt after its internal manifest and

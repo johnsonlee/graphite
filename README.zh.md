@@ -656,7 +656,7 @@ graphite/
 
 保存的图可以是包含这些文件的目录，也可以将同一组文件打包为**一个 `.graphite` 文件**：`graphite build app.jar -o app.graphite` 写入该文件，`graphite query`、`serve` 和 `mcp` 均可打开这两种形式。该文件是普通的无压缩（STORED）zip，可通过 `unzip -l` 和 `jar tf` 列出内容。每个条目都按内存页对齐，因此服务端可以通过一次内存映射提供服务，方式与目录形式完全相同。`META-INF/graphite.manifest` 条目记录每个文件的大小和 SHA-256；`pack` 会拒绝不构成完整图的文件集合，`verify` 则会报告缺失的必需条目。由于中央目录在最后写入，截断的文件无法打开。打包结果是确定的：清单的 SHA-256 即为图的指纹。容器旁会生成一个采用 `sha256sum -c` 格式的 `.sha256` 文件，方便使用标准工具校验复制或下载后的文件。指纹标识图本身，文件摘要则用于确认字节内容是否与构建产物一致。
 
-`graphite build` 在构建成功后自动生成 `.graphite` 归档。`-o app` 输出 `app.graphite`，`-o app.v1` 输出 `app.v1.graphite`，`-o app.graphite` 保持原名，无需打包开关；该行为适用于所有 build 前端。已有且通过验证的归档及其校验文件会被原位重建。构建使用临时目录，不会创建 `app/` 输出目录。`.graphite` 或以 `.` 结尾等含糊的输出文件名会被拒绝。需要目录形式时，可运行 `graphite unpack app.graphite app/`。直接调用前端和 `graphite import` 的输出行为保持不变。
+`graphite build` 在构建成功后自动生成 `.graphite` 归档。`-o app` 输出 `app.graphite`，`-o app.v1` 输出 `app.v1.graphite`，`-o app.graphite` 保持原名，无需打包开关；该行为适用于所有 build 前端。已有且通过验证的归档及其校验文件会被原位重建。构建使用临时目录，不会创建 `app/` 输出目录。`.graphite`、以 `.` 结尾的文件名和以目录分隔符结尾的路径会被拒绝。自动补后缀时会打印归档路径；如果原输出路径已有目录，会明确警告该目录不再更新。请将 query、serve 和 MCP 的读取路径改为新的归档。需要目录形式时，可运行 `graphite unpack app.graphite app/`。直接调用前端和 `graphite import` 的输出行为保持不变。
 
 ```bash
 graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256
