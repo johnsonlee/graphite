@@ -4,7 +4,7 @@
 
 [English](README.md) · 简体中文
 
-**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码和 JavaScript/TypeScript 项目编译后的 JavaScript 产物转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+**为 LLM 提供结构化的代码库上下文。** Graphite 从 JVM 字节码、JavaScript/TypeScript 项目编译后的 JavaScript 产物，以及 Swift/Objective-C 项目构建可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
@@ -622,23 +622,27 @@ Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI
 
 ```
 graphite/
+├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
 ├── frontend/
-│   ├── web/                # JavaScript 编译产物前端（发布为独立可执行文件）
-│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
-│       ├── core/           # Graph interface, nodes, edges, analysis
-│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
-│       ├── sootup/         # SootUp bytecode → graph builder
-│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
-│       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
-│       └── explore/        # Legacy Kotlin Explorer server
+│   ├── web/                # JavaScript artifact frontend (standalone release binary)
+│   ├── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│   │   ├── core/           # Graph interface, nodes, edges, analysis
+│   │   ├── ir/             # Graph IR reader (protobuf bindings + DefaultGraph builder)
+│   │   ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│   │   ├── sootup/         # SootUp bytecode → graph builder
+│   │   ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│   │   ├── query/          # `graphite.jar`: build and import, plus legacy query/serve
+│   │   └── explore/        # Legacy Kotlin Explorer server
+│   └── apple/              # Swift/Objective-C frontend: compiler index store + source analysis → Graph IR
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
-├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
+├── cli/                    # `graphite` CLI (Rust): build, import, query, serve, mcp, frontend
 ├── benchmark/              # Rust benchmark runner and shared JVM validation
-├── Cargo.toml              # Cargo workspace: backend/*, cli and benchmark
+├── tck/                    # openCypher compatibility test runner
+├── Cargo.toml              # Cargo workspace: storage, cypher, explore, cli, benchmark, tck
 └── docs/
 ```
 

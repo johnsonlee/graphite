@@ -4,7 +4,7 @@
 
 English · [简体中文](README.zh.md)
 
-**Structured codebase context for LLMs.** Graphite turns JVM bytecode and compiled JavaScript artifacts into a queryable program graph — so AI agents can understand your codebase without reading every file.
+**Structured codebase context for LLMs.** Graphite builds queryable program graphs from JVM bytecode, compiled JavaScript artifacts, and Swift/Objective-C projects — so AI agents can understand your codebase without reading every file.
 
 [Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
@@ -967,7 +967,7 @@ graphite/
 │   │   ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
 │   │   ├── query/          # `graphite.jar`: build and import, plus legacy query/serve
 │   │   └── explore/        # Legacy Kotlin Explorer server
-│   └── apple/              # Swift frontend: index store + SwiftSyntax → Graph IR
+│   └── apple/              # Swift/Objective-C frontend: compiler index store + source analysis → Graph IR
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
@@ -975,7 +975,8 @@ graphite/
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 ├── cli/                    # `graphite` CLI (Rust): build, import, query, serve, mcp, frontend
 ├── benchmark/              # Rust benchmark runner and shared JVM validation
-├── Cargo.toml              # Cargo workspace: backend/*, cli and benchmark
+├── tck/                    # openCypher compatibility test runner
+├── Cargo.toml              # Cargo workspace: storage, cypher, explore, cli, benchmark, tck
 └── docs/
 ```
 
