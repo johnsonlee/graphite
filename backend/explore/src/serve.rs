@@ -23,11 +23,12 @@ pub const COMMIT: &str = match option_env!("GRAPHITE_COMMIT") {
 pub const DEFAULT_PORT: u16 = 8080;
 
 /// Which graphs to open and how to run Cypher over them: the part of the `serve`
-/// command line that `graphite mcp` shares. Names, defaults and help text match the
-/// Kotlin `graphite.jar serve` so that an existing command line keeps working unchanged.
+/// command line that `graphite mcp` shares. A positional graph defaults to its basename;
+/// callers can supply --id to select a different registry name.
 #[derive(Args, Debug, Clone)]
 pub struct GraphArgs {
     /// Optional saved graph (directory or .graphite file) for single-graph startup
+    #[arg(value_name = "GRAPH")]
     pub graph_dir: Option<PathBuf>,
 
     /// Data directory: relative graph paths resolve under it, an empty startup is
@@ -36,15 +37,16 @@ pub struct GraphArgs {
     #[arg(long)]
     pub data: Option<PathBuf>,
 
-    /// Initial graph mapping id:path. Repeat for multiple graphs.
-    #[arg(long = "graph")]
+    /// Initial graph mapping id:path (directory or .graphite file). Repeat for multiple graphs.
+    #[arg(long = "graph", value_name = "ID:PATH")]
     pub graphs: Vec<String>,
 
-    /// Required graph id for the optional positional graph
+    /// Graph id for the positional graph (defaults to its basename, without .graphite for archives)
     #[arg(long)]
     pub id: Option<String>,
 
-    /// Graph load mode: EAGER, MAPPED, AUTO. Defaults to MAPPED for multi-graph heap stability.
+    /// Compatibility label reported as loadMode: EAGER, MAPPED, AUTO.
+    /// Native loading uses the same memory-mapped file reader for all values.
     #[arg(long = "load-mode", default_value = "MAPPED")]
     pub load_mode: String,
 
@@ -57,11 +59,6 @@ pub struct GraphArgs {
     pub max_concurrent_cypher: usize,
 
     /// Deprecated and ignored; Cypher execution is limited by timeout instead
-    ///
-    /// Kept because the Kotlin binary still accepts it: a deployment that passes it
-    /// today must keep starting after the swap. The value is parsed — so a malformed
-    /// one is still rejected, as it is there — and then discarded. No default is
-    /// declared, so `--help` does not advertise one for a setting that does nothing.
     #[arg(long = "cypher-work-budget")]
     #[allow(dead_code)]
     pub cypher_work_budget: Option<i64>,
@@ -271,6 +268,25 @@ pub fn discover_graphs(data: &Path) -> Result<Vec<(String, PathBuf)>, String> {
     Ok(found)
 }
 
+fn positional_graph_id(path: &Path) -> Result<String, String> {
+    let name = if path.is_file()
+        && path
+            .extension()
+            .is_some_and(|ext| ext == graphite_storage::container::EXTENSION)
+    {
+        path.file_stem()
+    } else {
+        path.file_name()
+    };
+    let raw = name.and_then(|name| name.to_str()).unwrap_or_default();
+    crate::registry::validate_graph_id(raw).map_err(|why| {
+        format!(
+            "{}: cannot infer a graph id from the basename: {why}; pass --id explicitly",
+            path.display()
+        )
+    })
+}
+
 /// Open the graphs `cli` names and build the shared state, as the server does at
 /// startup: every graph loaded, the topology rules validated and the topology built.
 pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
@@ -282,11 +298,25 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
         return Err("--data is required when starting without an initial graph".into());
     }
     let load_mode = LoadMode::parse(&cli.load_mode)?;
+    // Resolve a positional path from cwd before deriving its registry root. Passing a
+    // relative path again to registry.load would otherwise prepend its parent twice.
+    let positional = cli
+        .graph_dir
+        .as_ref()
+        .map(|path| {
+            if cli.data.is_none() {
+                std::path::absolute(path)
+                    .map_err(|e| format!("Cannot resolve graph {}: {e}", path.display()))
+            } else {
+                Ok(path.clone())
+            }
+        })
+        .transpose()?;
     let root = cli
         .data
         .clone()
         .or_else(|| {
-            cli.graph_dir
+            positional
                 .as_ref()
                 .and_then(|d| d.parent().map(|p| p.to_path_buf()))
         })
@@ -297,12 +327,21 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
     let registry = Arc::new(GraphRegistry::new(root.clone(), load_mode));
     let tables = DeclaredTableReader::start();
     let mut ids: Vec<String> = Vec::new();
-    if let Some(dir) = &cli.graph_dir {
-        let id = cli
-            .id
-            .clone()
-            .ok_or("--id is required when a positional graph is provided")?;
-        let served = registry.load(&id, dir, Some(load_mode))?;
+    if let Some(dir) = &positional {
+        let lexical = registry.resolve_path(dir);
+        let resolved = std::fs::canonicalize(&lexical)
+            .map_err(|e| format!("Cannot open graph {}: {e}", dir.display()))?;
+        let id = match &cli.id {
+            Some(id) => id.clone(),
+            // Keep a symlink's chosen basename. Paths such as `..` have no basename
+            // until resolved to the directory they identify.
+            None => positional_graph_id(if lexical.file_name().is_some() {
+                &lexical
+            } else {
+                &resolved
+            })?,
+        };
+        let served = registry.load(&id, &lexical, Some(load_mode))?;
         tables.queue(&served.graph);
         eprintln!(
             "Loaded graph '{}' from {} using {} mode",
@@ -474,6 +513,163 @@ mod tests {
             assert_eq!(address.ip(), cli.serve.bind_address);
             assert_ne!(address.port(), 0);
         }
+    }
+
+    struct RemoveDirectoryOnDrop(PathBuf);
+
+    impl Drop for RemoveDirectoryOnDrop {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn args(path: PathBuf) -> GraphArgs {
+        GraphArgs {
+            graph_dir: Some(path),
+            data: None,
+            graphs: vec![],
+            id: None,
+            load_mode: "MAPPED".into(),
+            topology: None,
+            max_concurrent_cypher: 2,
+            cypher_work_budget: None,
+            cypher_max_timeout_ms: 1_000,
+        }
+    }
+
+    fn write_graph(path: &Path) {
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let json = br#"{"version":1,"methods":[],"nodes":[{"id":0,"kind":"StringConstant","value":"served"}],"edges":[]}"#;
+        graphite_storage::interchange::import_json(json.as_slice(), path).unwrap();
+    }
+
+    fn assert_served(opened: &Opened, id: &str) {
+        assert_eq!(opened.registry.ids(), vec![id.to_owned()]);
+        let graph = opened.registry.acquire(id).unwrap().unwrap().graph;
+        let graphite_storage::NodeKind::StringConstant(value) = graph.node(0).unwrap().kind else {
+            panic!("expected string")
+        };
+        assert_eq!(graph.str(value), "served");
+    }
+
+    #[test]
+    fn positional_graph_defaults_use_resolved_basename_and_explicit_ids_win() {
+        // A nested cwd-relative path exposes accidental root/path double joining.
+        let relative = PathBuf::from(format!(".graphite-serve-defaults-{}", uuid::Uuid::new_v4()));
+        let root = std::env::current_dir().unwrap().join(&relative);
+        std::fs::create_dir(&root).unwrap();
+        let _cleanup = RemoveDirectoryOnDrop(root.clone());
+        let source = root.join("graphs/app.v1");
+        write_graph(&source);
+        let archive = root.join("graphs/app.graphite");
+        graphite_storage::container::pack(&source, &archive).unwrap();
+        let named_directory = root.join("graphs/directory.graphite");
+        write_graph(&named_directory);
+        for (path, id) in [
+            (relative.join("graphs/app.graphite"), "app"),
+            (source.clone(), "app.v1"),
+            (source.join("."), "app.v1"),
+            (named_directory, "directory.graphite"),
+        ] {
+            let mut options = args(path);
+            assert_served(&open(&options, false).unwrap(), id);
+            options.id = Some("explicit".into());
+            assert_served(&open(&options, false).unwrap(), "explicit");
+        }
+        let mut options = args(PathBuf::from("graphs/app.graphite"));
+        options.data = Some(root.clone());
+        assert_served(&open(&options, false).unwrap(), "app");
+        options.graphs.push(format!("app:{}", source.display()));
+        let error = open(&options, false).err().unwrap();
+        assert_eq!(error, "Duplicate initial graph id: app");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn positional_symlink_ids_use_alias_names_instead_of_targets() {
+        let root = tempdir("positional-alias");
+        let target = root.join("store/bad target name");
+        write_graph(&target);
+        let archive_target = root.join("store/revision-123.graphite");
+        graphite_storage::container::pack(&target, &archive_target).unwrap();
+        let bad_archive_target = root.join("store/bad archive.graphite");
+        graphite_storage::container::pack(&target, &bad_archive_target).unwrap();
+        for (alias, target, id) in [
+            ("app.graphite", archive_target, "app"),
+            ("valid.graphite", bad_archive_target, "valid"),
+            ("directory.v1", target.clone(), "directory.v1"),
+            ("directory.graphite", target, "directory.graphite"),
+        ] {
+            let alias = root.join(alias);
+            std::os::unix::fs::symlink(target, &alias).unwrap();
+            let opened = open(&args(alias.clone()), false).unwrap();
+            assert_served(&opened, id);
+            let registered = opened.registry.describe(id).unwrap().unwrap();
+            assert_eq!(registered.path, std::path::absolute(&alias).unwrap());
+        }
+        write_graph(&root.join("other"));
+        let mut options = args(root.join("app.graphite"));
+        options.id = Some("app".into());
+        options.graphs.push("other:other".into());
+        let opened = open(&options, false).unwrap();
+        assert_eq!(opened.registry.ids(), vec!["app", "other"]);
+        let other = opened.registry.acquire("other").unwrap().unwrap();
+        let registered = opened.registry.list();
+        let other_path = &registered
+            .iter()
+            .find(|graph| graph.id == "other")
+            .unwrap()
+            .path;
+        assert_eq!(other_path, &root.join("other").canonicalize().unwrap());
+        let graphite_storage::NodeKind::StringConstant(value) = other.graph.node(0).unwrap().kind
+        else {
+            panic!("expected string")
+        };
+        assert_eq!(other.graph.str(value), "served");
+        drop(opened);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn positional_invalid_basename_requires_explicit_id() {
+        let root = tempdir("positional-badname");
+        let path = root.join("bad name");
+        write_graph(&path);
+        let mut options = args(path);
+        assert!(open(&options, false)
+            .err()
+            .unwrap()
+            .contains("pass --id explicitly"));
+        options.id = Some("valid".into());
+        assert_served(&open(&options, false).unwrap(), "valid");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn positional_id_does_not_lossily_decode_non_unicode_basename() {
+        use std::os::unix::ffi::OsStringExt;
+        let path = PathBuf::from(std::ffi::OsString::from_vec(b"app-\xff".to_vec()));
+        assert!(positional_graph_id(&path)
+            .unwrap_err()
+            .contains("pass --id explicitly"));
+    }
+
+    #[cfg(all(unix, not(target_vendor = "apple")))]
+    #[test]
+    fn positional_non_unicode_basename_requires_explicit_id() {
+        use std::os::unix::ffi::OsStringExt;
+        let root = tempdir("positional-nonunicode");
+        let path = root.join(std::ffi::OsString::from_vec(b"app-\xff".to_vec()));
+        write_graph(&path);
+        let mut options = args(path);
+        assert!(open(&options, false)
+            .err()
+            .unwrap()
+            .contains("pass --id explicitly"));
+        options.id = Some("valid".into());
+        assert_served(&open(&options, false).unwrap(), "valid");
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the server is ready with its declared

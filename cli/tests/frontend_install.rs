@@ -115,7 +115,7 @@ fn js_install_requires_a_sha256_checksum() {
     assert!(!out.status.success());
     assert!(String::from_utf8(out.stderr)
         .unwrap()
-        .contains("--skip-checksum is only supported for legacy JVM releases"));
+        .contains("--skip-checksum is only supported for legacy JVM or Apple releases"));
     assert!(!home.path().join(".graphite").exists());
 }
 

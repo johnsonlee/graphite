@@ -8,7 +8,7 @@ Follow these steps in order when working on a task:
 
 1. **Design** — Explore the codebase, understand the problem, and plan the implementation approach. Use plan mode for non-trivial tasks.
 2. **Implement** — Write the code changes. Keep changes focused and avoid over-engineering.
-3. **Run tests** — Run `./gradlew check` to verify all tests pass. *(Optional when running as Claude Code on web, since CI will catch failures.)*
+3. **Run tests** — Run the affected Rust, JVM, JavaScript or Apple checks listed below; `./gradlew check` covers only the JVM projects. Verify producer/consumer boundaries when a frontend or persisted format changes, and complete the required CI gates in `CONVENTIONS.md`. Report unavailable checks explicitly.
 4. **Commit** — Always show a summary of changes and wait for explicit user confirmation before committing.
 5. **Squash commits and submit PR** — Squash all commits on the branch into a single commit, push, and create a PR via `gh pr create`.
 6. **Watch CI build result** — CI posts build results as PR comments on failure. If the build fails, read the failure comment, fix the issue, and repeat from step 3.
@@ -57,33 +57,79 @@ If no candidate meets these constraints, report the remaining regression and con
 
 ## Project Overview
 
-Graphite is a graph-based static analysis framework for JVM bytecode. It provides a clean abstraction layer over [SootUp](https://github.com/soot-oss/SootUp) for building custom program analyses.
+Graphite analyzes program artifacts from multiple language ecosystems and exposes their
+saved graphs through one Rust CLI, Cypher engine, HTTP server and MCP tools.
+
+- **JVM:** the Kotlin/SootUp frontend analyzes JVM bytecode (including JAR/WAR and
+  Android APK/AAR/DEX inputs) and writes persisted graphs through the JVM writer.
+- **JavaScript:** `frontend/web` analyzes compiled `.js`, `.mjs` and `.cjs` artifacts,
+  including output from TypeScript projects. It emits JSON interchange that the Rust
+  storage importer persists. The `js`, `ts` and `es` selectors share this frontend;
+  TypeScript source and `tsconfig.json` are not build inputs.
+- **Apple:** the Swift frontend analyzes Swift/Objective-C using compiler index data
+  and SwiftSyntax, emits protobuf Graph IR, and currently uses the JVM importer to
+  persist it. Apple builds therefore still need the JVM frontend as well as the Apple
+  toolchain appropriate to the input.
+
+`graphite build` dispatches analysis and publishes a `.graphite` archive; `query`,
+`serve` and `mcp` read archives or graph directories through the shared Rust backend.
+The Kotlin query/server implementations remain for compatibility and differential
+validation. The full language-neutral Graph IR migration described in
+`docs/architecture-frontend-backend.md` is a proposal, not the current implementation.
 
 ## Test Coverage Requirements
 
 **Each of the seven JVM modules (`core`, `ir`, `sootup`, `cypher`, `webgraph`, `query`, and `explore`) MUST have exactly 100% line coverage.** The gate uses each report-wide Kover `LINE` counter and exact integer comparison: any missed line fails, even when a rounded percentage displays `100.00%`. Add meaningful tests when changing code; do not add exclusions to meet the gate.
 
-## Build Commands
+## Build and Test Commands
+
+Run these from the repository root, selecting checks for the changed components.
+Use `CONVENTIONS.md` and the workflows for required fixture and interoperability
+checks; passing one language's suite does not validate the others.
 
 ```bash
-# Build all modules
+# Rust CLI and shared backend
+cargo build --locked -p graphite-cli
+cargo test --locked
+cargo fmt --all -- --check
+cargo clippy --locked --workspace --all-targets -- -D warnings
+
+# JVM projects only (Gradle names map to frontend/jvm/<name>)
 ./gradlew build
-
-# Build specific module
 ./gradlew :core:build
-
-# Run tests
 ./gradlew check
-
-# Run a specific test class
 ./gradlew :sootup:test --tests "io.johnsonlee.graphite.sootup.UseCaseValidationTest"
+# Runnable JVM frontend for local CLI integration
+./gradlew :query:shadowJar
+# JVM line-coverage gate, also enforced by CI
+./gradlew koverXmlReport
+python3 .github/scripts/check-coverage.py
+
+# JavaScript artifact frontend (Node.js 20+; npm test also builds and checks types)
+npm ci --prefix frontend/web
+npm test --prefix frontend/web
+
+# Apple frontend (requires the matching Swift toolchain; Xcode cases need macOS)
+frontend/apple/swift.sh build -c release
+frontend/apple/swift.sh test
+
+# CI TypeScript helpers (Bun version is pinned in .github/scripts/package.json)
+(cd .github/scripts && bun install --frozen-lockfile && bun run check && bun test)
 ```
+
+For local JVM builds, set `GRAPHITE_FRONTEND_JVM` to the absolute path of
+`frontend/jvm/query/build/libs/graphite.jar`. For a local JavaScript frontend, set
+`GRAPHITE_FRONTEND_JS` to the absolute path of `frontend/web/dist/cli.js` after
+building it. Managed release frontends are installed with `graphite frontend install`.
+See `.github/workflows/rust.yml`, `build.yml`, `typescript.yml`, `apple.yml` and
+`cypher-tck.yml` for the corresponding CI checks. Every PR must also pass the
+benchmark correctness/OOM gate; hosted timing observations are report-only.
 
 ## Module Structure
 
 ```
 graphite/
-├── ir/                     # graphite_ir.proto: the protobuf Graph IR non-JVM frontends write
+├── ir/                     # graphite_ir.proto: protobuf Graph IR used by the Apple import path
 ├── frontend/
 │   ├── jvm/                # JVM frontend: Kotlin Gradle projects (project names have no prefix)
 │   │   ├── core/           # Core framework (zero external dependencies except fastutil)
@@ -98,16 +144,19 @@ graphite/
 │   │   ├── webgraph/       # Persisted graph writer/reader (WebGraph)
 │   │   ├── query/          # `graphite.jar`: build, import, query, serve
 │   │   └── explore/        # Legacy Kotlin Explorer server
+│   ├── web/                # TypeScript implementation: compiled JS artifacts → JSON interchange
 │   └── apple/              # Swift frontend (SwiftPM): IndexStoreDB + SwiftSyntax → Graph IR; swift.sh build|test
 │
 ├── backend/                # Rust backend: serves and queries persisted graphs
-│   ├── storage/            # mmap reader of the persisted graph, indexes, columns
+│   ├── storage/            # Shared graph readers, JSON importer/writer, containers, indexes and columns
 │   ├── cypher/             # Cypher parser, planner, executor
-│   ├── explore/            # HTTP server, UI, C4, topology
+│   ├── explore/            # HTTP/stdio MCP, REST server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
-├── cli/                    # `graphite` CLI (Rust): build (dispatches to the JVM or Apple frontend), import, query, serve, frontend list/describe/install
-└── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
+├── cli/                    # Rust CLI: JVM/JS/Apple build, import, query, serve, mcp, frontend and archive commands
+├── benchmark/              # Rust controller and JVM harness for correctness/OOM and benchmark evidence
+├── tck/                    # Cypher compatibility test kit
+└── Cargo.toml              # Workspace: backend/storage, backend/cypher, backend/explore, cli, benchmark, tck
 ```
 
 Gradle project paths are `:core`, `:ir`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`
@@ -115,9 +164,9 @@ Gradle project paths are `:core`, `:ir`, `:sootup`, `:cypher`, `:webgraph`, `:qu
 `graphite-` prefix (`graphite-storage`, ...) while their directories do not. Rust commands
 (`cargo build`, `cargo test`) run from the repository root. See
 `docs/architecture-frontend-backend.md` for the frontend/backend split, the Graph IR, and
-the migration plan.
+the proposed migration plan; consult the README and current frontend guides for shipped behavior.
 
-## Key Abstractions
+## JVM Library Abstractions
 
 | Abstraction | Description |
 |-------------|-------------|
@@ -128,7 +177,33 @@ the migration plan.
 | `DataFlowAnalysis` | Backward/forward slice analysis |
 | `GraphiteQuery` | Declarative query DSL |
 
-## Usage
+## CLI Usage
+
+```bash
+graphite build app.jar -o app                 # writes app.graphite and its SHA-256 sidecar
+graphite build --lang js ./dist -o web       # analyze compiled JS; writes web.graphite
+graphite build --lang apple ./MyPackage -o apple
+graphite query app.graphite "MATCH (n) RETURN n LIMIT 10"
+graphite serve app.graphite                  # HTTP web UI, REST and MCP; default graph ID: app
+graphite mcp app.graphite                    # independent stdio subprocess for an MCP client
+graphite verify app.graphite
+graphite unpack app.graphite app-files       # obtain a graph directory when needed
+```
+
+`build -o app.graphite` keeps the explicit archive name; `build -o app` appends the
+suffix and reports the destination, warning if an old `app/` directory remains.
+Trailing directory separators are rejected. There is no `--pack` flag. `import`
+retains its output contract: a bare output names a directory, while `.graphite`
+selects an archive. Direct frontend commands retain their own output formats.
+
+`serve` listens on HTTP (default port 8080), including MCP at `/mcp`. `mcp` loads its
+own graphs and exchanges MCP messages on stdin/stdout; it opens no HTTP listener
+and does not need a running `serve`. Both accept graph directories and archives,
+use the positional graph's basename as its default ID, and allow `--id` to override
+it. `--graph id:path` supports multiple explicitly named graphs. See each command's
+`--help` and `docs/quickstart-demo.md` for complete examples.
+
+## JVM Library Usage
 
 ```kotlin
 // Load bytecode
@@ -156,7 +231,12 @@ result.constants()  // all constant values that flow to this node
 
 ## Dependency Management
 
-Dependencies are managed via version catalog (`gradle/libs.versions.toml`).
+JVM dependencies use `gradle/libs.versions.toml` and Gradle build files. Rust uses
+workspace/crate `Cargo.toml` files with `Cargo.lock`; the JavaScript frontend uses
+`frontend/web/package.json` and `package-lock.json`; Apple uses
+`frontend/apple/Package.swift` and `Package.resolved`. CI TypeScript helpers have a
+separate Bun package and lockfile under `.github/scripts`. Preserve the matching
+lockfiles when changing dependencies.
 
 ## Publishing
 
@@ -240,6 +320,11 @@ Example version progression:
 ```
 
 ## Implementation Learnings
+
+The following records describe specific JVM implementation and benchmark work.
+Historical measurements and rejected experiments are retained as evidence, not as
+a current feature inventory or a substitute for the performance acceptance rules
+in `AGENTS.md` and `CONVENTIONS.md`.
 
 ### Type Hierarchy Analysis & Generic Type Tracking
 

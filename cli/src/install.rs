@@ -27,7 +27,7 @@ pub fn install(
     match lang {
         Lang::Apple => install_apple(env, version, skip_checksum),
         Lang::Jvm => install_jvm(env, version, skip_checksum),
-        Lang::Js if skip_checksum => Err("--skip-checksum is only supported for legacy JVM releases; install the JS frontend without this flag".into()),
+        Lang::Js if skip_checksum => Err("--skip-checksum is only supported for legacy JVM or Apple releases; install the JS frontend without this flag".into()),
         Lang::Js => js::install_js(env, version),
     }
 }

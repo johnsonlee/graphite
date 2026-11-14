@@ -706,10 +706,23 @@ mod tests {
             .parse()
             .unwrap();
         assert_eq!(heap, 8);
-        assert_eq!(recorded, format!(
-            "probe:{heap}\nbuild:{}\n-jar\n/fixture/graphite.jar\nbuild\ninput.jar\n-o\ngraph-directory\n",
+        let staged = recorded.lines().last().unwrap();
+        assert_eq!(std::path::Path::new(staged).file_name().unwrap(), "saved");
+        assert!(std::path::Path::new(staged)
+            .parent()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with(".graphite-build-"));
+        assert!(!std::path::Path::new(staged).exists());
+        assert_eq!(
+            recorded,
+            format!(
+            "probe:{heap}\nbuild:{}\n-jar\n/fixture/graphite.jar\nbuild\ninput.jar\n-o\n{staged}\n",
             profile(heap)
-        ));
+        )
+        );
     }
 
     #[test]

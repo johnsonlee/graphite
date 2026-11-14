@@ -936,7 +936,7 @@ fn error_response(id: Value, code: i64, message: &str) -> Value {
 /// Which browser origins may reach `/mcp`.
 ///
 /// The Streamable HTTP transport requires the server to validate `Origin` on every
-/// request: `graphite serve` binds all interfaces, and without the check a page on any
+/// request: even with the default loopback listener, without the check a page on any
 /// site could resolve a name to the user's Explorer and call every tool, Cypher
 /// included, against the loaded graphs. A request without `Origin` (a CLI, an MCP
 /// client) is accepted; a request with one is accepted only when the origin is a

@@ -321,9 +321,10 @@ symbol and extension stores; the rest of the reader is unchanged.
 Every loader reads through `source.rs`: a graph is a directory of files or one
 `.graphite` container (`container.rs`), a STORED zip with page-aligned entries and a
 `META-INF/graphite.manifest` of sizes and SHA-256 digests, mapped once and sliced per
-entry. The frontends keep writing directories; `graphite build -o x.graphite` stages the
-directory next to the output and the CLI packs it, so the single file exists for every
-frontend without any of them knowing. `graphite verify|info|pack|unpack` operate on
+entry. The frontends keep writing directories; `graphite build -o x` selects
+`x.graphite`, while `-o x.graphite` keeps the explicit archive name. The CLI stages
+the frontend output and packs it, so every frontend produces a single file without
+knowing about the container. `graphite verify|info|pack|unpack` operate on
 the container. The v4 additions (manifest, symbol table, extension store) are further
 entries of the same archive.
 

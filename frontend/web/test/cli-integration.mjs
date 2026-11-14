@@ -27,39 +27,48 @@ try {
   const result = JSON.parse(run(['query', graph, "MATCH (p:Parameter)-[r]->(v:LocalVariable) WHERE v.name = 'cur' RETURN r.kind AS kind", '--format', 'json']).stdout);
   assert.deepEqual(result.rows, [{ kind: 'ARRAY_LOAD' }]);
 
-  // Reuse a precreated directory, then replace its saved graph on every alias.
-  // Compare actual values and every saved byte after failed rebuilds.
+  // A bare output selects an archive and leaves an existing sibling directory alone.
+  // Compare actual values and both published files after failed rebuilds.
   const rebuildInput = path.join(dir, 'rebuild.js');
-  const rebuilt = path.join(dir, 'rebuilt');
-  fs.mkdirSync(rebuilt);
-  const strings = () => JSON.parse(run(['query', rebuilt,
+  const output = path.join(dir, 'rebuilt'), rebuilt = output + '.graphite';
+  fs.mkdirSync(output);
+  fs.writeFileSync(path.join(output, 'keep.txt'), 'unrelated user data');
+  const strings = saved => JSON.parse(run(['query', saved,
     'MATCH (s:StringConstant) RETURN s.value AS value ORDER BY value', '--format', 'json']).stdout).rows;
-  const snapshot = () => Object.fromEntries(fs.readdirSync(rebuilt).sort()
-    .map(name => [name, fs.readFileSync(path.join(rebuilt, name)).toString('hex')]));
+  const snapshot = () => [rebuilt, rebuilt + '.sha256'].map(file => fs.readFileSync(file).toString('hex'));
   for (const selector of ['js', 'ts', 'es']) {
     fs.writeFileSync(rebuildInput, `console.log("${selector}");`);
-    run(['build', '--lang', selector, rebuildInput, '-o', rebuilt]);
-    assert.deepEqual(strings(), [{ value: selector }]);
+    run(['build', '--lang', selector, rebuildInput, '-o', output]);
+    run(['verify', rebuilt]);
+    assert.deepEqual(strings(rebuilt), [{ value: selector }]);
+    assert.deepEqual(fs.readdirSync(output), ['keep.txt']);
+    assert.equal(fs.readFileSync(path.join(output, 'keep.txt'), 'utf8'), 'unrelated user data');
+    const unpacked = path.join(dir, selector + '-unpacked');
+    run(['unpack', rebuilt, unpacked]);
+    assert.deepEqual(strings(unpacked), [{ value: selector }]);
   }
   const previous = snapshot();
   fs.writeFileSync(rebuildInput, 'function broken( {');
-  const failed = spawnSync(cli, ['build', '--lang', 'js', rebuildInput, '-o', rebuilt], {
+  const failed = spawnSync(cli, ['build', '--lang', 'js', rebuildInput, '-o', output], {
     encoding: 'utf8', timeout: 60000, env: { ...process.env, GRAPHITE_FRONTEND_JS: frontend },
   });
   assert.equal(failed.status, 1, failed.error?.message ?? failed.stderr);
   assert.match(failed.stderr, /No parseable JavaScript artifacts remain/);
   assert.deepEqual(snapshot(), previous);
-  assert.deepEqual(strings(), [{ value: 'es' }]);
+  assert.deepEqual(strings(rebuilt), [{ value: 'es' }]);
   fs.writeFileSync(rebuildInput, 'console.log("replacement");');
-  fs.writeFileSync(path.join(rebuilt, 'keep.txt'), 'unrelated user data');
-  const withUserData = snapshot();
-  const refused = spawnSync(cli, ['build', '--lang', 'js', rebuildInput, '-o', rebuilt], {
+  const digest = fs.readFileSync(rebuilt + '.sha256');
+  fs.writeFileSync(rebuilt + '.sha256', '0'.repeat(64) + '  rebuilt.graphite\n');
+  const damagedPair = snapshot();
+  const refused = spawnSync(cli, ['build', '--lang', 'js', rebuildInput, '-o', output], {
     encoding: 'utf8', timeout: 60000, env: { ...process.env, GRAPHITE_FRONTEND_JS: frontend },
   });
   assert.equal(refused.status, 2, refused.error?.message ?? refused.stderr);
-  assert.match(refused.stderr, /unrelated entry/);
-  assert.deepEqual(snapshot(), withUserData);
-  assert.deepEqual(strings(), [{ value: 'es' }]);
+  assert.match(refused.stderr, /refusing to replace/);
+  assert.deepEqual(snapshot(), damagedPair);
+  fs.writeFileSync(rebuilt + '.sha256', digest);
+  run(['verify', rebuilt]);
+  assert.deepEqual(strings(rebuilt), [{ value: 'es' }]);
 
   const usage = spawnSync(cli, ['build','--lang','js','-o',path.join(dir,'missing.graphite')], {
     encoding:'utf8', env:{ ...process.env, GRAPHITE_FRONTEND_JS:frontend },

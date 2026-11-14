@@ -1,10 +1,10 @@
 //! `graphite` — the command-line tool: `build`, `query`, `serve`, `frontend`.
 //!
-//! The command surface is the Kotlin `graphite.jar`'s, so a command line written for it
-//! keeps working once the binary is swapped:
+//! The native CLI owns graph publication and server transports; language frontends
+//! provide analysis and interchange import:
 //!
 //! - `build` is a shell over the JVM frontend (`graphite.jar build`, the SootUp
-//!   analysis): every argument is passed through, and the frontend is found as
+//!   analysis): shell options and archive output are resolved before forwarding, and the frontend is found as
 //!   `frontend.rs` describes. A `--fold` file with `select` rules makes it build twice,
 //!   resolving the queries on the first graph (`fold.rs`).
 //! - `import` is the same shell over `graphite.jar import`: it persists the Graph IR
@@ -51,7 +51,7 @@ const MIN_COLUMN_WIDTH: usize = 4;
 #[derive(Parser, Debug)]
 #[command(
     name = "graphite",
-    about = "Build and query Graphite graphs",
+    about = "Build, query and serve Graphite graphs",
     version = VERSION
 )]
 struct Cli {
@@ -61,20 +61,33 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build a JVM, compiled JavaScript, or Apple graph. Run `graphite help build` for shell options
+    /// Build a .graphite archive with a JVM, JavaScript, or Apple frontend
     #[command(
-        override_usage = "graphite build [--lang <jvm|js|ts|es|apple>] [FRONTEND_ARGS]...",
-        after_help = "Use --lang js (aliases: ts, es) for compiled JavaScript artifacts. A Swift package, .xcodeproj, or .xcworkspace selects the Apple frontend. Other inputs default to JVM. Place --lang, --pack and --profile before the -- separator. Arguments after -- are frontend inputs. --pack builds a .graphite archive and its .sha256 sidecar, appending .graphite to -o when needed.\n\n  graphite build --pack app.jar -o app\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
+        override_usage = "graphite build [--lang <LANG>] [FRONTEND_ARGS]... -o <OUTPUT>",
+        after_help = "Build writes a .graphite archive and its .sha256 sidecar, appending .graphite to -o when needed. -o app and -o app.graphite both write app.graphite. Existing verified archives are rebuilt in place. A trailing directory separator is rejected; use graphite unpack for directory output. When appending the suffix, build reports the archive path and warns if the old directory still exists.\n\nUse --lang js (aliases: javascript, ts, typescript, es) for compiled JavaScript artifacts. A Swift package, .xcodeproj, or .xcworkspace selects apple (aliases: swift, ios, macos). Other inputs default to jvm (aliases: java, kotlin, android). Use --frontend <PATH> to select a JVM JAR/launcher or Apple executable explicitly; pair it with --lang jvm for JVM. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build app.jar -o app\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nThis is shell help. For options reported by the installed frontend, run graphite build --help (JVM) or graphite build --lang js --help. Direct frontend commands keep their own output format; use graphite unpack app.graphite app/ to obtain a graph directory."
     )]
     Build(BuildArgs),
     /// Import a Graph IR written by a language frontend (.graphite-ir) and save the graph
-    #[command(disable_help_flag = true, disable_version_flag = true)]
+    #[command(
+        disable_help_flag = true,
+        disable_version_flag = true,
+        override_usage = "graphite import <INPUT.graphite-ir> -o <OUTPUT> [FRONTEND_ARGS]...",
+        after_help = "Requires the JVM frontend. Unlike build, import does not append an extension: -o app writes a graph directory, while -o app.graphite writes an archive and its .sha256 sidecar.\n\n  graphite import app.graphite-ir -o app.graphite\n  graphite import app.graphite-ir -o saved-graph\n\nThis is shell help (graphite help import). graphite import --help reports options from the installed JVM frontend."
+    )]
     Import(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),
-    /// Serve one or more saved Graphite webgraphs over HTTP (with MCP at /mcp)
+    /// Start the web UI, REST API and MCP over HTTP
+    #[command(
+        long_about = "Start an HTTP server for the web UI, REST API and MCP at /mcp. Use this for a browser or clients connecting to a running server. For a client-launched MCP subprocess over stdin/stdout instead, use graphite mcp.",
+        after_help = "  graphite serve app.graphite\n  graphite serve --id app saved-graph/ --port 8080\n  graphite serve --data /data/graphs\n\nWeb UI: http://localhost:8080\nREST API: http://localhost:8080/api/graphs\nMCP over HTTP: http://localhost:8080/mcp\n\nA positional graph defaults to its basename (app.graphite -> app). Use --id to override it. --data can start an empty server and discovers .graphite files on startup. Both directories and archives are supported."
+    )]
     Serve(ServeArgs),
-    /// Serve the same graphs to an MCP client over stdio
+    /// Run MCP over stdin/stdout for a client-launched subprocess
+    #[command(
+        long_about = "Run MCP over stdio (stdin/stdout). Configure an MCP client to launch this command as a subprocess. It loads graphs itself, needs no running serve process, and opens no HTTP port or web UI. For MCP over HTTP or a browser, use graphite serve instead.",
+        after_help = "Client executable: graphite\nClient arguments: mcp app.graphite\n\n  graphite mcp app.graphite\n  graphite mcp --graph orders:orders.graphite --graph billing:billing.graphite\n\nThe client exchanges MCP messages over stdin/stdout; startup diagnostics go to stderr. A positional graph defaults to its basename (app.graphite -> app). Use --id to override it. Graph directories and archives are both supported."
+    )]
     Mcp(McpArgs),
     /// List, describe or install the frontends that build graphs
     Frontend {
@@ -85,7 +98,10 @@ enum Command {
     Pack(pack::PackArgs),
     /// Unpack a .graphite file into a directory of the original files
     Unpack(pack::UnpackArgs),
-    /// Check a .graphite file against its CRC-32s, manifest SHA-256s and .sha256 file
+    /// Verify archive CRC-32s and available manifest/sidecar SHA-256 digests
+    #[command(
+        after_help = "A missing manifest produces a warning; per-entry checks then use CRC-32 only. A missing .sha256 sidecar is reported but is not an error. Mismatching available checksums fail verification.\n\n  graphite verify app.graphite --verbose"
+    )]
     Verify(pack::VerifyArgs),
     /// Describe a .graphite file as JSON: entries, sizes, fingerprint, file digest
     Info(pack::InfoArgs),
@@ -111,12 +127,12 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm, js (ts/es), or apple (swift/ios/macos)
+        /// Language: jvm (java/kotlin/android), js (javascript/ts/typescript/es), apple (swift/ios/macos)
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm, js (ts/es), or apple (swift/ios/macos)
+        /// Language: jvm (java/kotlin/android), js (javascript/ts/typescript/es), apple (swift/ios/macos)
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
@@ -133,6 +149,7 @@ struct QueryArgs {
     #[arg(long, default_value = "graphite")]
     dialect: graphite_cypher::CypherDialect,
     /// Path to a saved graph: a directory or a .graphite file
+    #[arg(value_name = "GRAPH")]
     graph_dir: PathBuf,
 
     /// Cypher query string
