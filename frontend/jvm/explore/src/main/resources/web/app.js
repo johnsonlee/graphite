@@ -2,6 +2,7 @@ let cy;
 let dashboardInfo;
 let activeGraphId;
 let resizeTimer;
+let currentViewMode;
 let incomingLoadGeneration = 0;
 const canvasIntentController = GraphiteUiState.createLatestIntentController();
 const runCanvasAction = GraphiteUiState.createInterruptingActionRunner(
@@ -25,7 +26,7 @@ const NODE_SIZES = {
     CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
 };
 
-const EDGE_COLORS = { TopologyCall: '#f85149', DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
+const EDGE_COLORS = { TopologyCall: '#708ba6', DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
 
 function initCytoscape() {
     cy = cytoscape({
@@ -45,13 +46,11 @@ function initCytoscape() {
                 'curve-style': 'bezier', 'opacity': 0.48
             }},
             { selector: 'node[nodeType = "Graph"]', style: {
-                'shape': 'round-rectangle', 'width': 216, 'height': 86,
-                'background-color': '#132131', 'background-fill': 'linear-gradient',
-                'background-gradient-stop-colors': '#1d3b4e #1d3b4e #132131 #132131',
-                'background-gradient-stop-positions': '0% 34% 34% 100%', 'background-gradient-direction': 'to-bottom',
+                'shape': 'round-rectangle', 'width': 216, 'height': 60,
+                'background-color': '#132131',
                 'color': '#f2f6fb', 'font-size': '11px', 'font-weight': 500,
                 'text-valign': 'center', 'text-margin-y': 0, 'border-width': 1.5, 'border-color': '#477092',
-                'text-max-width': '190px', 'text-wrap': 'wrap', 'text-overflow-wrap': 'anywhere',
+                'text-max-width': '194px', 'text-wrap': 'wrap', 'text-overflow-wrap': 'anywhere',
                 'text-justification': 'left', 'line-height': 1.6
             }},
             { selector: 'node[nodeType = "Class"]', style: {
@@ -61,10 +60,18 @@ function initCytoscape() {
                 'text-max-width': '108px', 'text-wrap': 'ellipsis'
             }},
             { selector: 'edge[edgeType = "TopologyCall"]', style: {
-                'label': 'data(label)', 'color': '#ffb86b', 'font-size': '9px',
+                'label': '', 'color': '#c4d6e9', 'font-size': '10px',
                 'text-background-color': '#070b11', 'text-background-opacity': 0.9,
-                'text-background-padding': '4px', 'text-rotation': 'autorotate', 'opacity': 0.68
+                'text-background-padding': '4px', 'text-rotation': 'autorotate', 'opacity': 0.4,
+                'control-point-step-size': 48, 'arrow-scale': 0.7
             }},
+            { selector: 'node.topology-muted', style: { 'opacity': 0.2 }},
+            { selector: 'edge.topology-muted', style: { 'opacity': 0.045 }},
+            { selector: 'edge.topology-focused', style: {
+                'opacity': 0.9, 'line-color': '#5ee4c2', 'target-arrow-color': '#5ee4c2', 'z-index': 5
+            }},
+            { selector: 'edge[edgeType = "TopologyCall"]:selected', style: { 'label': 'data(label)' }},
+            { selector: 'edge.topology-hovered', style: { 'label': 'data(label)', 'opacity': 1 }},
             { selector: 'node:active', style: { 'overlay-opacity': 0.08, 'overlay-color': '#5ee4c2' }},
             { selector: 'node:selected', style: { 'border-width': 2.5, 'border-color': '#5ee4c2' }},
             { selector: 'node.highlighted', style: { 'border-width': 2.5, 'border-color': '#5ee4c2', 'z-index': 10 }},
@@ -98,10 +105,32 @@ function initCytoscape() {
             runCanvasAction(function(intent) { return showNodeDetail(e.target.data('graphId'), nodeId, intent); });
         } else if (e.target.data('edgeType') === 'TopologyCall') {
             runCanvasAction(function(intent) {
-                intent.commit(function() { showTopologyRelationDetail(e.target.data('edgeData')); });
+                intent.commit(function() {
+                    focusTopology(e.target.union(e.target.connectedNodes()));
+                    showTopologyRelationDetail(e.target.data('edgeData'));
+                });
             });
         }
     });
+    cy.on('mouseover', 'edge[edgeType = "TopologyCall"]', e => e.target.addClass('topology-hovered'));
+    cy.on('mouseout', 'edge[edgeType = "TopologyCall"]', e => e.target.removeClass('topology-hovered'));
+    cy.on('tap', e => { if (e.target === cy) clearTopologyFocus(); });
+}
+
+function focusTopology(elements) {
+    if (currentViewMode !== 'topology') return;
+    cy.elements().removeClass('topology-muted topology-focused');
+    if (elements && elements.length) {
+        cy.elements().difference(elements).addClass('topology-muted');
+        elements.edges().addClass('topology-focused');
+    }
+    document.getElementById('btn-clear-focus').hidden = !elements || !elements.length;
+}
+
+function clearTopologyFocus() {
+    if (currentViewMode !== 'topology') return;
+    focusTopology();
+    cy.elements().unselect().removeClass('highlighted');
 }
 
 async function loadDashboard(intent) {
@@ -231,7 +260,10 @@ function showGraphDetail(graph) {
     cy.elements().removeClass('highlighted');
     const graphId = graph.graphId || graph.id;
     const cyNode = cy.getElementById(graphElementId(graphId));
-    if (cyNode.length) cyNode.addClass('highlighted');
+    if (cyNode.length) {
+        cyNode.addClass('highlighted');
+        focusTopology(cyNode.closedNeighborhood());
+    }
     const panel = document.getElementById('detail-content');
     panel.innerHTML = '<div class="detail-block"><h4>Graph</h4>' +
         '<div class="detail-row"><span class="detail-key">ID</span><span class="detail-value">' + escapeHtml(graphId) + '</span></div>' +
@@ -351,10 +383,15 @@ function exploreSubgraph(graphId, centerId, depth) {
 }
 
 function renderGraph(data, centerId, viewMode, intent) {
+    currentViewMode = viewMode;
+    document.getElementById('btn-clear-focus').hidden = true;
+    document.getElementById('topology-hint').hidden = viewMode !== 'topology';
     const elements = [];
     const seen = new Set();
+    const nodes = viewMode === 'topology'
+        ? data.nodes.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))) : data.nodes;
 
-    data.nodes.forEach(n => {
+    nodes.forEach(n => {
         const elementId = n.elementId || (n.graphId + ':' + n.id);
         if (seen.has(elementId)) return;
         seen.add(elementId);
@@ -369,7 +406,11 @@ function renderGraph(data, centerId, viewMode, intent) {
         }});
     });
 
-    data.edges.forEach((e, i) => {
+    const edges = viewMode === 'topology' ? data.edges.slice().sort((a, b) =>
+        String(a.from).localeCompare(String(b.from)) ||
+        String(a.to).localeCompare(String(b.to)) ||
+        String(a.protocol || '').localeCompare(String(b.protocol || ''))) : data.edges;
+    edges.forEach((e, i) => {
         const from = e.fromElementId || (e.graphId + ':' + e.from);
         const to = e.toElementId || (e.graphId + ':' + e.to);
         if (!seen.has(from) || !seen.has(to)) return;
@@ -385,12 +426,12 @@ function renderGraph(data, centerId, viewMode, intent) {
     cy.elements().remove();
     cy.add(elements);
 
-    const nodeCount = data.nodes.length;
-    const edgeCount = data.edges.length;
+    const nodeCount = cy.nodes().length;
+    const edgeCount = cy.edges().length;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let layoutOpts;
-    if (viewMode === 'topology' && edgeCount === 0) {
-        layoutOpts = topologyGridOptions();
+    if (viewMode === 'topology') {
+        layoutOpts = edgeCount === 0 ? topologyGridOptions() : topologyRelationOptions();
     } else if (nodeCount > 180) {
         layoutOpts = {
             name: 'concentric', animate: false, minNodeSpacing: 16,
@@ -399,9 +440,9 @@ function renderGraph(data, centerId, viewMode, intent) {
     } else {
         layoutOpts = {
             name: 'cose', animate: !reduceMotion, animationDuration: 420,
-            nodeRepulsion: function() { return viewMode === 'topology' ? 42000 : 15000; },
-            idealEdgeLength: function() { return viewMode === 'topology' ? 210 : 92; },
-            gravity: viewMode === 'topology' ? 0.16 : 0.28, numIter: 420
+            nodeRepulsion: function() { return 15000; },
+            idealEdgeLength: function() { return 92; },
+            gravity: 0.28, numIter: 420
         };
     }
 
@@ -412,6 +453,25 @@ function renderGraph(data, centerId, viewMode, intent) {
         setCanvasState();
     });
     layout.run();
+}
+
+function topologyRelationOptions() {
+    // Layer callers before callees and route long relations around intermediate cards.
+    // The fallback keeps exploration usable if the optional layout CDN is unavailable.
+    if (cytoscape('layout', 'dagre')) {
+        return {
+            name: 'dagre', rankDir: 'TB', ranker: 'network-simplex', acyclicer: 'greedy',
+            nodeSep: 40, rankSep: 64, edgeSep: 20,
+            nodeDimensionsIncludeLabels: true, useDagreEdgeControlPoints: true,
+            animate: false, padding: 72
+        };
+    }
+    return {
+        name: 'breadthfirst', directed: true, grid: true, animate: false,
+        avoidOverlap: true, nodeDimensionsIncludeLabels: true, spacingFactor: 1.35,
+        padding: 72, depthSort: (a, b) => a.id().localeCompare(b.id()),
+        transform: (node, position) => ({ x: position.y, y: position.x * 0.42 })
+    };
 }
 
 function topologyGridOptions() {
@@ -454,7 +514,7 @@ function finishGraphLayout(centerId, reduceMotion) {
 
 function topologyEdgeWidth(edge) {
     if (edge.type !== 'TopologyCall') return 1.2;
-    return Math.max(1.5, Math.min(8, 1.5 + Math.log10(Number(edge.weight || 0) + 1) * 1.8));
+    return Math.max(1, Math.min(2.5, 1 + Math.log10(Number(edge.weight || 0) + 1) * 0.3));
 }
 
 function truncate(s, len) { return s.length > len ? s.substring(0, len) + '...' : s; }
@@ -490,8 +550,10 @@ function formatCompactMetric(value) {
 
 function graphCardLabel(graph) {
     const id = graph.label || graph.id || graph.graphId || 'Graph';
-    return id + '\n\n' + formatCompactMetric(graph.nodes) + ' nodes  ·  ' + formatCompactMetric(graph.edges) + ' edges\n' +
-        formatCompactMetric(graph.methods) + ' methods  ·  ' + formatCompactMetric(graph.callSites) + ' calls';
+    const name = String(id);
+    const label = name.length > 30 ? name.slice(0, 17) + '…' + name.slice(-12) : name;
+    return label + '\n' + formatCompactMetric(graph.nodes) + ' nodes  ·  ' +
+        formatCompactMetric(graph.callSites) + ' calls';
 }
 
 function setMetric(id, value) {
@@ -576,6 +638,7 @@ function mergeGroupedGraphs(response) {
 }
 
 // Event listeners
+document.getElementById('btn-clear-focus').addEventListener('click', clearTopologyFocus);
 document.getElementById('btn-fit').addEventListener('click', function() { finishGraphLayout(null, false); });
 window.addEventListener('resize', function() {
     window.clearTimeout(resizeTimer);
