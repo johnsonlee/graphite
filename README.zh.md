@@ -197,6 +197,22 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 例如 `graphite serve app.graphite` 的 ID 为 `app`。可用 `--id` 覆盖默认名称；
 若文件名不符合 graph ID 规则，也需要显式指定。`graphite mcp` 的位置参数同样遵循此规则。
 
+`graphite serve` 现在默认监听 `127.0.0.1`，只允许本机连接。
+**迁移说明：** 旧版本监听所有 IPv4 网络接口；远程部署现在必须显式设置 `--bind-address`，例如：
+
+```bash
+graphite serve --bind-address 0.0.0.0 --id app /data/app-graph --port 8080
+```
+
+可以指定某个本机网络接口的 IP 来限制监听接口，或使用 `::1` 监听 IPv6 回环地址。
+绑定 `0.0.0.0` 会接受所有 IPv4 接口上的连接，但不会认证客户端。
+`::` 会监听所有 IPv6 接口，并可能根据操作系统的双栈设置同时接受 IPv4 连接。
+Docker 镜像显式绑定容器内的 `0.0.0.0`；使用 `-p 127.0.0.1:8080:8080` 将宿主机访问限制在本机。
+此次默认值变更仅适用于原生 CLI；旧版 `graphite.jar serve` 仍监听所有接口。
+远程 HTTP 访问必须配合外部访问控制，例如仅允许可信客户端的防火墙规则，
+或带身份认证的反向代理（同时阻止绕过代理直接访问 Graphite）。
+本地 MCP 客户端建议使用 stdio 模式的 `graphite mcp`，该模式不启动 HTTP 监听器。
+
 ### Homebrew formula 安装的内容
 
 `graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过语言前端执行 `build`。Homebrew formula 会安装 JVM 前端 `graphite.jar` 和 `openjdk@17`，并在 macOS 和 Linux x86_64 上安装 `graphite-frontend-apple`。JavaScript 前端可通过 `graphite frontend install js` 安装。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。运行 `graphite build --help` 或 `graphite build --lang js --help` 可查看对应前端的选项。
@@ -764,6 +780,9 @@ stdio 客户端无需另外启动 `serve`。两者都接受图目录和 `.graphi
 `schema`（`GET /api/schema`、`GET /api/graphs/{id}/schema`）可在毫秒级描述图中的内容：各标签组合的节点数量和属性键、各关系类型的数量，以及最常见的 `(labels)-[type]->(labels)` 模式。智能体可以先读取这些信息再编写 Cypher，无需通过 `MATCH (n) RETURN labels(n), keys(n), count(*)` 之类的探测查询了解图结构。这些探测查询同样会按类型处理（参见 `backend/cypher/src/engine/partition.rs` 中的分区求值），但一次调用比多轮交互成本更低。
 HTTP 客户端使用 `POST /mcp`（Streamable HTTP）。
 
+本地客户端推荐使用 stdio。HTTP 默认监听 `127.0.0.1`；远程访问需要显式设置
+`--bind-address` 并配合外部访问控制。
+
 对于 **Claude Code**，构建图后在项目目录中运行以下命令。将 `/data/app-graph.graphite` 替换为已保存图的绝对路径：
 
 ```bash
@@ -793,7 +812,7 @@ claude mcp add --transport http --scope project graphite http://localhost:8080/m
 ```
 
 为 `graphite` 条目选择 stdio 或 HTTP 其中一种方式。其他支持 HTTP 的客户端可通过其 Streamable HTTP 设置连接 `http://localhost:8080/mcp`。
-`/mcp` 会校验 `Origin` 请求头（防止 DNS 重绑定）：接受不带该请求头的请求及来源为回环地址的请求；其他来源默认返回 403，除非通过 `graphite serve --mcp-allowed-origin https://tools.example.com` 显式允许（可重复指定；`*` 表示允许所有来源）。REST API 不受影响。
+`/mcp` 会校验 `Origin` 请求头（防止 DNS 重绑定）：接受不带该请求头的请求及来源为回环地址的请求；其他来源默认返回 403，除非通过 `graphite serve --mcp-allowed-origin https://tools.example.com` 显式允许（可重复指定；`*` 表示允许所有来源）。此检查不提供身份认证，也不限制客户端的网络地址：其他主机可以发送不带 `Origin` 的请求。因此开启远程访问时，它不能替代外部访问控制，REST API 也不受此检查保护。
 
 查询方言的选择方式见 [Cypher 兼容性](#cypher-兼容性)。
 

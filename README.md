@@ -264,6 +264,26 @@ basename without `.graphite`: `graphite serve app.graphite` serves it as `app`.
 Use `--id` to override the inferred name, including when the basename is not a valid
 graph ID. The same positional-graph default applies to `graphite mcp`.
 
+`graphite serve` now listens on `127.0.0.1` by default, allowing connections only
+from the same host. **Migration:** earlier versions listened on all IPv4 interfaces;
+remote deployments must now explicitly set `--bind-address`. For example:
+
+```bash
+graphite serve --bind-address 0.0.0.0 --id app /data/app-graph --port 8080
+```
+
+Use a specific local interface IP to limit listening to that interface, or `::1`
+for IPv6 loopback. Binding to `0.0.0.0` permits connections on all IPv4 interfaces;
+it does not authenticate clients. `::` listens on all IPv6 interfaces and may also
+accept IPv4 connections, depending on the operating system's dual-stack settings.
+The Docker image explicitly binds `0.0.0.0` inside the container; publish with
+`-p 127.0.0.1:8080:8080` for host-local access. This default change applies to the
+native CLI; legacy `graphite.jar serve` still listens on all interfaces.
+Remote HTTP access requires external access
+controls, such as a firewall restricting trusted clients or an authenticated reverse
+proxy with direct access to Graphite blocked. For local MCP clients, prefer
+`graphite mcp` over stdio, which opens no HTTP listener.
+
 ### What the formula installs
 
 `graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
@@ -1148,6 +1168,9 @@ probes are answered per type as well (see the partitioned evaluation in
 `backend/cypher/src/engine/partition.rs`), but one call is cheaper than a conversation.
 HTTP clients use `POST /mcp` (Streamable HTTP).
 
+For local clients, prefer stdio. The HTTP listener defaults to `127.0.0.1`;
+remote access requires an explicit `--bind-address` and external access controls.
+
 For **Claude Code**, run this from your project directory after building a graph.
 Replace `/data/app-graph.graphite` with the absolute path to your saved graph:
 
@@ -1188,7 +1211,10 @@ can connect to `http://localhost:8080/mcp` using their Streamable HTTP settings.
 `/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
 accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
-all). The REST API is unaffected.
+all). This check is not authentication or a restriction on client network addresses:
+other hosts can send requests without `Origin`. It does not replace external network
+access controls when remote access is enabled, and the REST API is not protected by
+this check.
 
 For query dialect selection, see [Cypher compatibility](#cypher-compatibility).
 

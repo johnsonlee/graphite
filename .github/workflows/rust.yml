@@ -122,6 +122,8 @@ jobs:
         docker build -f backend/explore/Dockerfile --build-arg VERSION=ci -t graphite-explore:ci .
         docker run --rm --entrypoint /app/graphite graphite-explore:ci --version
         docker run --rm graphite-explore:ci --help | grep -F -- '--graph'
+        cargo run --release --locked -p graphite-storage --example http_smoke_fixture -- "${RUNNER_TEMP}/docker-smoke-graph"
+        python3 .github/scripts/check-docker-http.py graphite-explore:ci "${RUNNER_TEMP}/docker-smoke-graph"
         rm -rf release-assets
 
     # The in-memory CallSite index must reproduce the persisted one byte for byte.
