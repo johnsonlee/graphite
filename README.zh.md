@@ -801,7 +801,7 @@ claude mcp add --transport http --scope project graphite http://localhost:8080/m
 # Start Explorer
 graphite serve --id app /path/to/saved-graph
 
-# The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
+# --load-mode 是兼容标签；所有值均使用相同的原生文件读取路径。
 ```
 
 也可以启动时不加载任何图，稍后再热加载服务图（在下次启动前放入 `--data` 目录的 `.graphite` 文件会被自动发现）：

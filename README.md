@@ -1203,7 +1203,7 @@ For HTTP connections, start the Explorer first; stdio opens the graph directly:
 # Start Explorer
 graphite serve --id app /path/to/saved-graph
 
-# The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
+# --load-mode is a compatibility label; all values use the same native file reader.
 ```
 
 You can also start with no initial graph and hot-load services later (a `.graphite`

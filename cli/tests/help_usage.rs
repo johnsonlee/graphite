@@ -76,6 +76,8 @@ fn transport_help_distinguishes_http_server_from_stdio_subprocess() {
         assert!(text.contains("--graph <ID:PATH>"));
         assert!(text.contains("app.graphite -> app"));
         assert!(!text.contains("GRAPH_DIR"));
+        assert!(text.contains("Compatibility label reported as loadMode"));
+        assert!(text.contains("same memory-mapped file reader for all values"));
     }
     let query = help(&["query", "--help"]);
     assert!(query.contains("<GRAPH> <QUERY>"));

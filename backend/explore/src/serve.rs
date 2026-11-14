@@ -44,7 +44,8 @@ pub struct GraphArgs {
     #[arg(long)]
     pub id: Option<String>,
 
-    /// Graph load mode: EAGER, MAPPED, AUTO. Defaults to MAPPED for multi-graph heap stability.
+    /// Compatibility label reported as loadMode: EAGER, MAPPED, AUTO.
+    /// Native loading uses the same memory-mapped file reader for all values.
     #[arg(long = "load-mode", default_value = "MAPPED")]
     pub load_mode: String,
 
