@@ -154,8 +154,9 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
       // The automatic policy must refuse those hosts rather than violate its
       // reserve. Verify that exact refusal, then still build with the override.
       // Unknown memory/cgroup detection, timeout and JVM failures remain errors.
+      const expectedRefusal = `Writing ${archive} (appended .graphite to --output)\n${LOW_CAPACITY_ERROR}`;
       if (name !== 'default' || !(error instanceof BuildFailed) || error.exitCode !== 1
-          || readFileSync(stderr, 'utf8').trim() !== LOW_CAPACITY_ERROR) throw error;
+          || readFileSync(stderr, 'utf8').trim() !== expectedRefusal) throw error;
       assert.ok(capacity.totalMemoryBytes < 16 * 1024 ** 3,
         `CLI refused automatic heap despite independently observed capacity ${capacity.totalMemoryBytes}`);
       assert.ok(!existsSync(log), 'capacity refusal must not start the frontend JVM');

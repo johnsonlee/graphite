@@ -71,8 +71,11 @@ if(args[0]==='unpack') {
   process.exit(0);
 }
 if(args[0]!=='build')throw new Error('unexpected command');
+const output=args[args.indexOf('-o')+1];
+console.error('Writing '+output+'.graphite (appended .graphite to --output)');
 const launch=(args,env)=>{const result=spawnSync(process.env.GRAPHITE_JAVA,args,{env,stdio:'inherit'});if(result.error)throw result.error;if(result.status!==0)process.exit(result.status ?? 1);};
 if(process.env.LOW_CAPACITY && (!process.env.JAVA_OPTS || process.env.REJECT_OVERRIDE)) {
+  if(process.env.EXTRA_DIAGNOSTIC)console.error('Unexpected launcher failure');
   if(process.env.FALSE_RECEIPT)writeFileSync(process.env.BUILD_JVM_DEFAULTS_RECEIPT,'{}');
   if(process.env.FALSE_GRAPH)mkdirSync(process.argv[process.argv.indexOf('-o')+1]);
   if(process.env.FALSE_ARCHIVE)writeFileSync(process.argv[process.argv.indexOf('-o')+1]+'.graphite','bad');
@@ -86,7 +89,6 @@ let options=process.env.JAVA_OPTS || profile;
 if(process.env.WRONG_HEAP)options+=' -Xmx1g';
 if(process.env.WRONG_GC)options+=' -XX:GCTimeRatio=99';
 if(process.env.MIX_PROFILE && process.env.JAVA_OPTS)options=profile+' '+process.env.JAVA_OPTS;
-const output=args[args.indexOf('-o')+1];
 const stage=output+'.staging';
 args[args.indexOf('-o')+1]=stage;
 launch(['-jar',frontend,...args],{...process.env,JAVA_TOOL_OPTIONS:options});
@@ -155,6 +157,8 @@ test('low-capacity default refusal still requires an explicit-heap build and com
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   const refusal = JSON.parse(readFileSync(join(setup.output, 'default-refusal.json'), 'utf8'));
   assert.deepEqual(refusal, { case: 'default', outcome: 'expected-low-capacity-refusal', totalMemoryBytes: 8 * 1024 ** 3, diagnostic: LOW_CAPACITY_ERROR });
+  assert.equal(readFileSync(join(setup.output, 'default.stderr'), 'utf8'),
+    `Writing ${join(setup.output, 'default.graphite')} (appended .graphite to --output)\n${LOW_CAPACITY_ERROR}\n`);
   assert.ok(!existsSync(join(setup.output, 'default.json')));
   assert.ok(!existsSync(join(setup.output, 'default')));
   assert.ok(!existsSync(join(setup.output, 'default.graphite')));
@@ -164,7 +168,7 @@ test('low-capacity default refusal still requires an explicit-heap build and com
   assert.match(result.stdout, /PASS explicit-small-heap:/);
 });
 
-for (const variable of ['UNKNOWN_CAPACITY', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 'FALSE_GRAPH', 'FALSE_ARCHIVE', 'FALSE_DIGEST', 'FALSE_CAPACITY']) {
+for (const variable of ['UNKNOWN_CAPACITY', 'EXTRA_DIAGNOSTIC', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 'FALSE_GRAPH', 'FALSE_ARCHIVE', 'FALSE_DIGEST', 'FALSE_CAPACITY']) {
   test(`low-capacity handling rejects ${variable}`, t => {
     const root = mkdtempSync(join(tmpdir(), 'build-defaults-low-invalid-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -174,6 +178,7 @@ for (const variable of ['UNKNOWN_CAPACITY', 'REJECT_OVERRIDE', 'FALSE_RECEIPT', 
     });
     assert.notEqual(result.status, 0, result.stdout);
     if (variable === 'UNKNOWN_CAPACITY') assert.match(result.stderr, /could not determine physical\/container memory/);
+    if (variable === 'EXTRA_DIAGNOSTIC') assert.match(result.stderr, /Unexpected launcher failure/);
   });
 }
 
