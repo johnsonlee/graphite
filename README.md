@@ -201,10 +201,13 @@ so building a graph requires no separate Node.js, Bun or npm installation. Saved
 the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
 See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).
 
-**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
-adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
-program graph through Graph IR. This work is not yet merged. Language frontends
-extend the input paths to Graphite's structured context and query tools.
+The **Apple frontend** supports Swift packages and Xcode projects/workspaces,
+including mixed Swift and Objective-C applications. It reads compiler index stores
+and source declarations, imports the graph through Graph IR, and supports the same
+native query and server commands. Swift packages can be built with a compatible
+Swift toolchain on macOS or Linux; Xcode and iOS application builds require macOS
+and the application's Xcode toolchain. See [the Swift frontend guide](#the-apple-frontend-swift-and-objective-c)
+and [the iOS application walkthrough](docs/ios-app-build.md).
 
 ## Quick Start
 
@@ -337,15 +340,18 @@ It finds `java` through `GRAPHITE_JAVA`, `JAVA_HOME`, then `PATH`. The release a
 
 ### Inputs by language
 
-`graphite build` picks the frontend by its input. A build artifact goes to the JVM
-frontend; a Swift package or an Xcode index store goes to the Apple frontend.
-`--lang jvm|apple` (aliases `swift`, `ios`, `macos`) overrides the detection and
-`--frontend <executable>` names a frontend directly.
+`graphite build` detects Swift packages and Xcode projects/workspaces; other inputs
+use the JVM frontend by default. `--lang jvm|apple|js` overrides detection; `swift`,
+`ios` and `macos` are aliases for `apple`, while `ts` and `es` are aliases for `js`.
+Use `--lang apple` when supplying an existing `--index-store` without a project,
+and `--lang js` for JavaScript artifacts. `--frontend <executable>` selects an
+executable directly.
 
 | Language / platform | Input | Frontend | Notes |
 |---|---|---|---|
 | Java, Kotlin (JVM) | `.jar`, `.war`, a class directory | jvm | `--include com.example` limits the packages; build the artifact first (`./gradlew assemble`, `mvn package`) |
 | Android | `.apk`, `.aar` | jvm | `--android-sdk`, or the SDK lookup below |
+| JavaScript artifacts | `.js`, `.mjs`, `.cjs`, or an artifact directory | js | explicitly select `--lang js`; compile TypeScript/JSX inputs first |
 | Swift package | `Package.swift`, or a directory holding one | apple | runs `swift build`, graphs every built target the manifest lists (custom `path:` included) from its index store; `--skip-build` when it is already built |
 | Swift app (Xcode) | `.xcodeproj`, `.xcworkspace` | apple | runs `xcodebuild` on the project's only scheme (`--scheme` otherwise), with `--destination`, `--configuration`, `--derived-data`; or `--index-store` + `--sources` for a store Xcode already wrote |
 
@@ -363,7 +369,7 @@ Graphite searches in this order:
    - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
 3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
 
-### Other languages: the Swift frontend
+### The Apple frontend: Swift and Objective-C
 
 Swift inputs go to the **Apple frontend**, `graphite-frontend-apple`, a Swift binary
 that indexes the package with the compiler's index store, SwiftSyntax and
@@ -437,16 +443,27 @@ creates) and spelled as Clang spells them, nullability included (`NSString * _No
 `instancetype _Nullable`, `void (^ _Nonnull)(BOOL)`, `NSDictionary<NSString *, id> *`,
 `char *const`; under `NS_ASSUME_NONNULL_BEGIN` an unannotated pointer is `_Nonnull`), the
 header's declaration before the `.m`'s definition, and a call site into Objective-C
-carries the same descriptor as the declaration. Objective-C call sites carry no literal arguments yet
-(the Swift syntax pass reads Swift only), and data flow through variables and returns
-(SIL) is the next step.
+carries the same descriptor as the declaration.
 
-Type enrichment uses a lightweight source parser and does not evaluate preprocessor
-conditionals. Conditional branches with unmatched braces in the unprocessed source,
-and C declarations wrapped in `extern "C"` blocks, can retain empty type information
-even when their indexed declarations and calls are present. Validation against Signal
-and Swift Package Manager, including these remaining limits, is recorded in
+For supported Swift function bodies, a bare, lexically bound formal parameter used
+as a call argument has an `ASSIGN` edge from its `Parameter` node to the argument
+reference, followed by `PARAMETER_PASS` to the call site. An explicit return of a
+direct call has a `RETURN_VALUE` edge when both signatures establish a value result.
+Assignments through local variables, field flow and complete interprocedural
+propagation remain unsupported; Objective-C call sites do not yet carry expression
+literals. These boundaries are detailed in the [iOS application guide](docs/ios-app-build.md#current-analysis-boundary).
+
+Type enrichment uses a lightweight source parser, including C++ language-linkage
+blocks, rather than a complete preprocessor. Indexed explicit Objective-C method
+signatures can be recovered at verified source anchors when conditional bodies
+prevent a whole-file parse; macro-dependent or split signatures can remain unknown.
+Validation against Signal and Swift Package Manager is recorded in
 [the Apple frontend validation report](docs/apple-frontend-validation.md).
+
+Use `--resource-bundle` to inventory an explicitly selected built `.app` or `.appex`
+product's supported `Info.plist` and localized `.strings` values. Unsupported values
+produce partial-graph status; resource-to-code lookup edges are not inferred. See
+[resource inventory and its limits](docs/ios-app-build.md#inventory-a-selected-built-applications-resources).
 
 ### Upgrading a legacy installation
 

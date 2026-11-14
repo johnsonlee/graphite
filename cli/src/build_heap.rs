@@ -10,13 +10,11 @@ pub(super) const MAX_HEAP_GIB: u64 = 31;
 #[derive(Default)]
 struct CodeSize {
     classes: u64,
-    bytes: u64,
 }
 
 impl CodeSize {
-    fn add(&mut self, classes: u64, bytes: u64) {
+    fn add(&mut self, classes: u64) {
         self.classes = self.classes.saturating_add(classes);
-        self.bytes = self.bytes.saturating_add(bytes);
     }
 
     fn heap_gib(&self) -> u64 {
@@ -62,6 +60,7 @@ fn inspect(path: &Path, size: &mut CodeSize, include_libraries: bool) -> io::Res
     let metadata = path.metadata()?;
     let mut nested_budget = MAX_TOTAL_NESTED_BYTES;
     if metadata.is_dir() {
+        let path_root = path;
         let mut pending = vec![path.to_owned()];
         while let Some(directory) = pending.pop() {
             for entry in std::fs::read_dir(directory)? {
@@ -73,7 +72,11 @@ fn inspect(path: &Path, size: &mut CodeSize, include_libraries: bool) -> io::Res
                 } else if kind.is_file() || (kind.is_symlink() && entry.path().is_file()) {
                     let path = entry.path();
                     if extension_is(&path, "class") {
-                        size.add(1, entry.metadata()?.len());
+                        if !path.strip_prefix(path_root).is_ok_and(|relative| {
+                            relative.starts_with(Path::new("META-INF/versions"))
+                        }) {
+                            size.add(1);
+                        }
                     } else if extension_is(&path, "jar") {
                         // Directory jars are application inputs even without
                         // --include-libs. Count all conservatively: package and
@@ -147,7 +150,7 @@ fn inspect_archive<R: Read + Seek>(
                 let mut header = [0; 112];
                 if entry.read_exact(&mut header).is_ok() {
                     if let Some(classes) = dex_classes(&header, bytes) {
-                        size.add(classes, bytes);
+                        size.add(classes);
                     }
                 }
             }
@@ -158,8 +161,10 @@ fn inspect_archive<R: Read + Seek>(
             ArchiveKind::War => "WEB-INF/classes/",
             _ => "",
         };
-        if name.starts_with(prefix) && name.ends_with(".class") {
-            size.add(1, bytes);
+        if name.strip_prefix(prefix).is_some_and(|relative| {
+            relative.ends_with(".class") && !relative.starts_with("META-INF/versions/")
+        }) {
+            size.add(1);
         }
         let lib_prefix = match kind {
             ArchiveKind::Boot => "BOOT-INF/lib/",
@@ -196,12 +201,12 @@ fn inspect_archive<R: Read + Seek>(
                 })()
             };
             match nested {
-                Ok(nested) => size.add(nested.classes, nested.bytes),
+                Ok(nested) => size.add(nested.classes),
                 Err(error) => {
                     // Each ZIP class requires local and central entry headers
                     // (>64 bytes). Bound conservatively instead of dropping
                     // an enabled library when inspection is unavailable.
-                    size.add(bytes.div_ceil(64), bytes);
+                    size.add(bytes.div_ceil(64));
                     eprintln!("Warning: JVM heap inspection of {name} is incomplete ({error}); using a conservative archive bound");
                 }
             }
@@ -281,36 +286,14 @@ mod tests {
     fn class_budget_rounds_up_at_two_gib_boundaries_without_byte_multiplier() {
         assert_eq!(CodeSize::default().heap_gib(), 8);
         for (classes, expected) in [(74_898, 8), (74_899, 10), (131_072, 14), (131_073, 16)] {
-            for bytes in [0, u64::MAX] {
-                assert_eq!(CodeSize { classes, bytes }.heap_gib(), expected);
-            }
+            assert_eq!(CodeSize { classes }.heap_gib(), expected);
         }
         for (classes, expected) in [
             (30 * GIB / (112 * 1024), 30),
             (30 * GIB / (112 * 1024) + 1, 31),
             (u64::MAX, 31),
         ] {
-            assert_eq!(CodeSize { classes, bytes: 0 }.heap_gib(), expected);
-        }
-    }
-
-    #[test]
-    fn real_fixture_metadata_preserves_supported_defaults_and_large_apk_budget() {
-        // Metadata is observed from real inputs; expectations are configuration
-        // defaults, not minimum-heap measurements. Historical 4 GiB whole-JAR
-        // gates disable features and cannot calibrate the default CLI's heap.
-        for (name, classes, bytes, expected) in [
-            ("Kotlin compiler", 24_941, 155_369_431, 8),
-            ("Tika", 33_128, 114_602_889, 8),
-            ("Hive", 38_999, 192_448_259, 8),
-            ("Android-all", 48_226, 184_607_622, 8),
-            ("Netflix", 47_987, 39_761_900, 8),
-            ("Chrome", 18_571, 11_799_036, 8),
-            ("GoTV", 13_612, 16_519_264, 8),
-            ("TVBox", 13_072, 13_814_304, 8),
-            ("Coupang", 132_532, 140_388_432, 16),
-        ] {
-            assert_eq!(CodeSize { classes, bytes }.heap_gib(), expected, "{name}");
+            assert_eq!(CodeSize { classes }.heap_gib(), expected);
         }
     }
 
@@ -339,16 +322,29 @@ mod tests {
     #[test]
     fn jar_and_directory_inspection_count_only_class_code() {
         let temp = tempfile::tempdir().unwrap();
-        let jar = temp.path().join("app.jar");
-        archive(&jar, &[("a/A.class", &[1, 2, 3]), ("resource", &[0; 100])]);
+        let jar = temp.path().join("app.JAR");
+        archive(
+            &jar,
+            &[
+                ("a/A.class", &[1, 2, 3]),
+                ("META-INF/versions/17/a/A.class", &[1, 2, 3]),
+                ("resource", &[0; 100]),
+            ],
+        );
         let mut size = CodeSize::default();
         inspect(&jar, &mut size, false).unwrap();
-        assert_eq!((size.classes, size.bytes), (1, 3));
+        assert_eq!(size.classes, 1);
         std::fs::create_dir(temp.path().join("classes")).unwrap();
-        std::fs::write(temp.path().join("classes/B.class"), [0; 7]).unwrap();
+        std::fs::write(temp.path().join("classes/B.CLASS"), [0; 7]).unwrap();
+        std::fs::create_dir_all(temp.path().join("META-INF/versions/17/classes")).unwrap();
+        std::fs::write(
+            temp.path().join("META-INF/versions/17/classes/B.class"),
+            [0; 7],
+        )
+        .unwrap();
         let mut size = CodeSize::default();
         inspect(temp.path(), &mut size, false).unwrap();
-        assert_eq!((size.classes, size.bytes), (2, 10));
+        assert_eq!(size.classes, 2);
     }
 
     #[test]
@@ -411,7 +407,14 @@ mod tests {
     fn boot_and_war_count_enabled_nested_libraries_but_not_nested_assets() {
         let temp = tempfile::tempdir().unwrap();
         let library = temp.path().join("lib.jar");
-        archive(&library, &[("dep/A.class", &[1]), ("dep/B.class", &[1, 2])]);
+        archive(
+            &library,
+            &[
+                ("dep/A.class", &[1]),
+                ("dep/B.class", &[1, 2]),
+                ("META-INF/versions/17/dep/A.class", &[1]),
+            ],
+        );
         let library_bytes = std::fs::read(&library).unwrap();
         for (extension, root) in [("jar", "BOOT-INF"), ("war", "WEB-INF")] {
             let path = temp.path().join(format!("app.{extension}"));
@@ -420,6 +423,10 @@ mod tests {
                 .unwrap();
             for (name, bytes) in [
                 (format!("{root}/classes/app/Main.class"), &[0u8][..]),
+                (
+                    format!("{root}/classes/META-INF/versions/17/app/Main.class"),
+                    &[0u8][..],
+                ),
                 (format!("{root}/lib/dep.jar"), library_bytes.as_slice()),
                 ("assets/ignored.jar".into(), library_bytes.as_slice()),
                 ("launcher/Ignore.class".into(), &[0u8][..]),
