@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphite Explorer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@4.1.0/dist/cytoscape-dagre.js"></script>
     <script src="/ui-state.js"></script>
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -91,6 +92,7 @@
 
             <section id="graph-area" aria-label="Graph visualization">
             <div class="graph-toolbar">
+                <span id="topology-hint" hidden>Select a graph to trace its calls · Hover a relation for its label</span>
                 <span id="graph-info">Loading graph…</span>
             </div>
             <div id="canvas-state" class="canvas-state" role="status">
@@ -99,6 +101,7 @@
             </div>
             <div id="cy"></div>
             <div id="graph-controls">
+                <button id="btn-clear-focus" type="button" hidden>Clear focus</button>
                 <button id="btn-fit" type="button" title="Fit graph to view">Fit view</button>
                 <button id="btn-reset" type="button" title="Return to the workspace overview">Reset</button>
             </div>
