@@ -4,6 +4,7 @@ use crate::guard::*;
 use crate::registry::{GraphRegistry, LoadMode};
 use crate::routes::{router, AppState};
 use clap::Args;
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -79,6 +80,10 @@ pub struct ServeArgs {
     /// HTTP port
     #[arg(long, short = 'p', default_value_t = DEFAULT_PORT)]
     pub port: u16,
+
+    /// IP address to listen on. Non-loopback addresses require external network isolation.
+    #[arg(long, default_value = "127.0.0.1")]
+    pub bind_address: IpAddr,
 
     /// Expose Prometheus performance metrics at /metrics
     #[arg(long)]
@@ -386,6 +391,10 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
     })
 }
 
+async fn bind_listener(cli: &ServeArgs) -> std::io::Result<tokio::net::TcpListener> {
+    tokio::net::TcpListener::bind((cli.bind_address, cli.port)).await
+}
+
 /// Serve the graphs described by `cli`, blocking until the server stops. The HTTP API
 /// also carries the MCP server at `/mcp` (see `crate::mcp`).
 pub fn serve(cli: ServeArgs) -> Result<(), String> {
@@ -393,14 +402,12 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
     let opened = open(&cli.graphs, cli.metrics)?;
     let runtime = runtime(cli.graphs.max_concurrent_cypher)?;
     runtime.block_on(async move {
-        let listener = tokio::net::TcpListener::bind(("0.0.0.0", cli.port))
-            .await
-            .map_err(|e| e.to_string())?;
-        let actual = listener.local_addr().map(|a| a.port()).unwrap_or(cli.port);
-        eprintln!("Web UI: http://localhost:{actual}");
-        eprintln!("MCP: http://localhost:{actual}/mcp");
+        let listener = bind_listener(&cli).await.map_err(|e| e.to_string())?;
+        let actual = listener.local_addr().map_err(|e| e.to_string())?;
+        eprintln!("Web UI: http://{actual}");
+        eprintln!("MCP: http://{actual}/mcp");
         if cli.metrics {
-            eprintln!("Metrics: http://localhost:{actual}/metrics");
+            eprintln!("Metrics: http://{actual}/metrics");
         }
         report_loaded(&opened, &cli.graphs);
         report_c4_warmup(opened.state.warm_c4());
@@ -419,6 +426,55 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use clap::Parser;
+
+    #[derive(Parser)]
+    struct ServeCli {
+        #[command(flatten)]
+        serve: ServeArgs,
+    }
+
+    #[test]
+    fn listener_address_defaults_to_ipv4_loopback() {
+        let cli = ServeCli::try_parse_from(["serve"]).unwrap();
+        assert_eq!(
+            cli.serve.bind_address,
+            "127.0.0.1".parse::<IpAddr>().unwrap()
+        );
+        assert_eq!(cli.serve.port, DEFAULT_PORT);
+    }
+
+    #[test]
+    fn listener_address_accepts_explicit_ipv4_and_ipv6() {
+        for address in ["0.0.0.0", "192.0.2.1", "::1", "::"] {
+            let cli = ServeCli::try_parse_from(["serve", "--bind-address", address]).unwrap();
+            assert_eq!(cli.serve.bind_address, address.parse::<IpAddr>().unwrap());
+        }
+    }
+
+    #[test]
+    fn listener_address_rejects_hostnames_and_invalid_addresses() {
+        for address in ["localhost", "256.0.0.1", "127.0.0.1:8080", "[::1]", ""] {
+            let error = ServeCli::try_parse_from(["serve", "--bind-address", address])
+                .err()
+                .expect("invalid IP address must fail before startup");
+            assert_eq!(error.kind(), clap::error::ErrorKind::ValueValidation);
+        }
+    }
+
+    #[tokio::test]
+    async fn listener_binds_default_loopback_and_explicit_wildcard() {
+        for arguments in [
+            vec!["serve", "--port", "0"],
+            vec!["serve", "--port", "0", "--bind-address", "0.0.0.0"],
+        ] {
+            let cli = ServeCli::try_parse_from(arguments).unwrap();
+            let listener = bind_listener(&cli.serve).await.unwrap();
+            let address = listener.local_addr().unwrap();
+            assert_eq!(address.ip(), cli.serve.bind_address);
+            assert_ne!(address.port(), 0);
+        }
+    }
 
     /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the server is ready with its declared
     /// tables read, so the first request that needs a declared value parses nothing.

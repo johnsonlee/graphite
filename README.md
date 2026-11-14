@@ -261,6 +261,21 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
 
+`graphite serve` now listens on `127.0.0.1` by default, allowing connections only
+from the same host. **Migration:** earlier versions listened on all IPv4 interfaces;
+remote deployments must now explicitly set `--bind-address`. For example:
+
+```bash
+graphite serve --bind-address 0.0.0.0 --id app /data/app-graph --port 8080
+```
+
+Use a specific local interface IP to limit listening to that interface, or `::1`
+for IPv6 loopback. Binding to `0.0.0.0` permits connections on all IPv4 interfaces;
+it does not authenticate clients. Remote HTTP access requires external access
+controls, such as a firewall restricting trusted clients or an authenticated reverse
+proxy with direct access to Graphite blocked. For local MCP clients, prefer
+`graphite mcp` over stdio, which opens no HTTP listener.
+
 ### What the formula installs
 
 `graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
@@ -1130,10 +1145,11 @@ probes are answered per type as well (see the partitioned evaluation in
 `backend/cypher/src/engine/partition.rs`), but one call is cheaper than a conversation.
 Two ways to connect:
 
-- **stdio**, for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
+- **stdio** (recommended for local use), for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
   opens the graphs itself; no server to start first.
 - **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
-  `POST /mcp` (Streamable HTTP).
+  `POST /mcp` (Streamable HTTP). The listener defaults to `127.0.0.1`. Remote
+  access requires an explicit `--bind-address` and external access controls.
 
 For **Claude Code**, run this from your project directory after building a graph.
 Replace `/data/app-graph` with the absolute path to your saved graph:
@@ -1175,7 +1191,10 @@ can connect to `http://localhost:8080/mcp` using their Streamable HTTP settings.
 `/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
 accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
-all). The REST API is unaffected.
+all). This check is not authentication or a restriction on client network addresses:
+other hosts can send requests without `Origin`. It does not replace external network
+access controls when remote access is enabled, and the REST API is not protected by
+this check.
 
 For query dialect selection, see [Cypher compatibility](#cypher-compatibility).
 

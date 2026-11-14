@@ -91,7 +91,13 @@ Expected JSON:
 ```
 
 The script prints a ready-to-run `graphite serve` command for the generated graph.
-Run it and open [the local Explorer](http://localhost:8080) to inspect the graph.
+The server defaults to `127.0.0.1`, accepting only local connections.
+Run it and open [the Explorer](http://localhost:8080) to inspect the graph.
+For remote access, explicitly pass `--bind-address 0.0.0.0` (or a specific interface
+IP) and restrict access through a firewall or an authenticated reverse proxy that
+cannot be bypassed. The `/mcp` Origin check does not authenticate remote clients:
+requests without `Origin` are accepted.
+For local MCP use, prefer the stdio setup below, which opens no HTTP listener.
 Stop the server with Ctrl+C. You can delete the printed temporary directory when
 finished.
 
