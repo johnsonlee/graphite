@@ -96,11 +96,17 @@ internal class DispatchHierarchy(private val context: SootUpAdapter) {
 
     /**
      * [sootClass]'s methods ordered by signature. SootUp's method set has no stable iteration
-     * order across JVM runs, and the order decides which node IDs the call sites get.
+     * order across JVM runs, and the order decides which node IDs the call sites get. Cached
+     * per class while dispatch is resolved, so each method is one object: [overriddenBy]
+     * compares them by identity. A DEX class's are headers that hold the signature and
+     * modifiers dispatch reads and no body ([dexMethodHeaders]): listing them through the class
+     * would convert every body; a bridge whose target dispatch reads converts its own
+     * ([MethodSources.bridgeBody]).
      */
     fun methodsInSignatureOrder(sootClass: SootClass): List<SootMethod> =
         sortedMethodsByClass.getOrPut(sootClass.type.fullyQualifiedName) {
-            (methodSources.streamMethodsOrNull(sootClass)?.toList() ?: bytecodeMethods.resolveMethodsOrEmpty(sootClass))
+            (dexMethodHeaders(sootClass) ?: methodSources.streamMethodsOrNull(sootClass)?.toList()
+                ?: bytecodeMethods.resolveMethodsOrEmpty(sootClass))
                 .sortedBy { it.signature.toString() }
         }
 

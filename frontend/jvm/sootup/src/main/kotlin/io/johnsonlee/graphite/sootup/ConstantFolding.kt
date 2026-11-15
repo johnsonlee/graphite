@@ -571,7 +571,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             val others = collidingOverloads.getOrPut(signature) {
                 val rendered = render(signature) to descriptorOf(signature)
                 view.getClass(signature.declClassType).map { sootClass ->
-                    declaredMethodSignatures(sootClass, view.identifierFactory)
+                    declaredMethodSignatures(sootClass)
                         .filter { it != signature && (render(it) to descriptorOf(it)) == rendered }
                 }.orElse(emptyList()).map { it.toString() }.sorted()
             }
@@ -734,7 +734,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 val field = assign.rightOp as? JStaticFieldRef ?: return@forEach
                 val owner = field.fieldSignature.declClassType
                 if (owner != builder.methodSignature.declClassType && isEnumConstant(view, field) &&
-                    enumInitialization.isNonReentrant(view, owner)
+                    enumInitialization.isNonReentrant(view, owner, builder.methodSignature)
                 ) reads[local] = field
             }
             // An erased call folded to an enum constant reaches its test through a cast:
@@ -1001,7 +1001,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun declares(view: View, type: ClassType, subSignature: MethodSubSignature): Boolean =
         runCatching {
             view.getClass(type).map { sootClass ->
-                declaredMethodSignatures(sootClass, view.identifierFactory).any { it.subSignature == subSignature }
+                declaredMethodSignatures(sootClass).any { it.subSignature == subSignature }
             }.orElse(false)
         }.getOrDefault(false)
 

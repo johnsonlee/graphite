@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.core.EnumValueReference
 import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.TypeRelation
+import sootup.apk.frontend.dexpler.DexClassSource
 import sootup.core.jimple.common.Local
 import sootup.core.jimple.common.Value
 import sootup.core.jimple.common.constant.Constant as SootConstant
@@ -14,6 +15,7 @@ import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.jimple.common.stmt.JInvokeStmt
 import sootup.core.jimple.common.stmt.Stmt
 import sootup.core.model.SootClass
+import sootup.core.model.SootMethod
 import sootup.core.model.SootField
 import sootup.java.core.JavaSootClass
 import sootup.java.core.JavaSootMethod
@@ -61,15 +63,25 @@ internal class ClassDeclarationsEmitter(private val context: SootUpAdapter) {
             if (activeSyntheticClass) {
                 syntheticIdentities.addClass(sootClass)
             }
+            // A DEX class is never asked for its methods through the class the view caches: SootUp
+            // converts every body to list them, and the cached class would keep them all. The
+            // graph pass reads its methods as headers, one body at a time; an extension gets the
+            // methods the pass built, bodies included, on a class of its own dropped with the class.
+            val dexWithExtensions = application && extensions.isNotEmpty() && sootClass.classSource is DexClassSource
+            val visited = if (dexWithExtensions) mutableListOf<SootMethod>() else null
             methodSources.forEachMethod(sootClass) { method ->
                 bodies.processMethod(method)
+                visited?.add(method)
                 if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
                     metadata.extractAnnotations(method.annotations, sootClass.type.fullyQualifiedName, method.name)
                 }
             }
 
             visitFieldsForClass(sootClass)
-            if (application) extensions.forEach { it.visit(sootClass, extensionContext) }
+            if (application) {
+                val visible = visited?.let { context.dexMethods.classWithMethods(sootClass, it) } ?: sootClass
+                extensions.forEach { it.visit(visible, extensionContext) }
+            }
         } finally {
             bytecodeMethodsCache.clear()
             streamingSourcesCache.clear()

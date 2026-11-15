@@ -78,6 +78,7 @@ internal class DispatchResolution(private val context: SootUpAdapter) {
         sortedMethodsByClass.clear()
         supertypeContractsByClass.clear()
         bridgesInvokingByClass.clear()
+        context.dexBridgeCalls.clear()
         implementedByFunctionValue.clear()
     }
 

@@ -761,6 +761,28 @@ SootUp collection before numbering nodes from it; `SyntheticIdentity` and `visit
   bodies, and the view's own methods once a call-graph algorithm has run), not only in the
   streaming sequence, whose `finally` runs before a `toList()` consumer resolves anything and
   never runs for an abandoned `firstOrNull`.
+- The DEX frontend is eager where the bytecode frontend is lazy: `DexClassSource.resolveMethods()`
+  jimplifies every method and runs the body interceptors to *list* a class's methods, and the
+  class the view caches memoizes the list. A signature lookup (`declaresMethod`, dispatch's
+  method index, enum safety) therefore converted and pinned every body of the class it asked
+  about, more than half of the fixture APK's bodies before the graph pass reached them, and a
+  fold that asked about an enum whose initializer was the body being intercepted converted that
+  body again inside its own interception: the second resolution replaced the fold's ordinals and
+  the folded graph lost the call's ordinal (`Right.<init>` in `DeclarationLookups`). Declaration
+  lookups read dexlib headers (`DexClassSource.methodHeaders()`), the graph pass converts each body
+  once through the headers, a body converted ahead of the pass (enum initializer, bridge, enum
+  safety) is lent to it through the build's `DexBodyLedger` and dropped when taken, and enum safety
+  answers conservatively, without caching, when the initializer it needs is one of the bodies
+  whose fold is asking (`DexBodyLifetimeTest`). The ledger belongs to one build (opened by
+  `buildGraph`, found by the fold interceptors through the view, closed with the build) and holds
+  bodies only of classes pass 2 reads: a process-wide ledger kept the previous build's `processed`
+  set and brought the double conversion back on a second build over the same view, and one that
+  held every lent body kept library enum initializers the scope excludes until dispatch ended.
+  Extensions get the methods the pass built, bodies included, on a class of their own, not the
+  view's class, whose method list would convert every body again. A body that fails to convert,
+  bridge or enum initializer included, fails that method alone (`catchingMethodFailure`, the
+  one list of per-method failures). The adapter never asks the view's own DEX classes for their
+  methods (an opt-in SootUp call-graph algorithm still does); an abstract DEX method no longer runs the interceptors on its empty body.
 - `AsmClassSource.resolveMethods()` collects into a `HashSet` keyed by identity, so the order
   changes from load to load; the adapter sorts by signature. Unsorted, synthetic fingerprints
   were non-deterministic across two loads of the same classes.

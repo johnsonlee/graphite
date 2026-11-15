@@ -300,6 +300,8 @@ class SootUpAdapter(
     internal val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
     internal val supertypeContractsByClass = mutableMapOf<String, Set<String>?>()
     internal val bridgesInvokingByClass = mutableMapOf<String, Map<String, List<String>>>()
+    /** The calls of each DEX bridge the graph pass read, so dispatch never converts its body again. */
+    internal val dexBridgeCalls = mutableMapOf<MethodSignature, List<MethodSignature>>()
     internal val implementedByFunctionValue = mutableMapOf<MethodDescriptor, Boolean>()
     // The flow graph while resolveFunctionalDispatch() runs (null before and after), and calls
     // that resolving another call produced (`Function::apply` on a function value), waiting
@@ -554,6 +556,7 @@ class SootUpAdapter(
     internal val descriptors = DescriptorResolution(this)
     internal val functionObjects = FunctionObjectMethods(this)
     internal val bytecodeMethods = BytecodeMethodSources(this)
+    internal val dexMethods = DexMethods(this)
 
     fun buildGraph(): Graph = construction.buildGraph()
 

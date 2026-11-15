@@ -310,12 +310,14 @@ internal class ResourceInventory(private val context: SootUpAdapter) {
 
     fun collectDeclaredMethodSubSignatures(className: String): Set<String> {
         val sootClass = resolveClassByName(className) ?: return emptySet()
-        val asmSubSignatures = if (sootClass is JavaSootClass) {
-            methodSources.streamingSources(sootClass)?.mapTo(HashSet()) { it.signatureFor(sootClass.type).subSignature.toString() }
-                ?: bytecodeMethods.bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
-        } else {
-            null
-        }
+        // A DEX class's declarations, without converting its bodies.
+        val asmSubSignatures = dexMethodHeaders(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
+            ?: if (sootClass is JavaSootClass) {
+                methodSources.streamingSources(sootClass)?.mapTo(HashSet()) { it.signatureFor(sootClass.type).subSignature.toString() }
+                    ?: bytecodeMethods.bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
+            } else {
+                null
+            }
         return asmSubSignatures ?: bytecodeMethods.resolveMethodsOrEmpty(sootClass)
             .mapTo(HashSet()) { it.signature.subSignature.toString() }
     }
