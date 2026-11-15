@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
@@ -346,6 +347,7 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
         internal const val TAG_ANNOTATION_NODE = 13
         internal const val TAG_RESOURCE_VALUE_NODE = 14
         internal const val TAG_RESOURCE_FILE_NODE = 15
+        internal const val TAG_CLASS_CONSTANT = 16
 
         private val NODE_CLASSES_BY_TAG: Array<Class<out Node>> =
             arrayOf(
@@ -364,7 +366,8 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
                 CallSiteNode::class.java,
                 AnnotationNode::class.java,
                 ResourceValueNode::class.java,
-                ResourceFileNode::class.java)
+                ResourceFileNode::class.java,
+                ClassConstant::class.java)
 
         // Edge type tags
         internal const val TAG_EDGE_DATAFLOW = 0
@@ -461,6 +464,7 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
                 TAG_DOUBLE_CONSTANT -> DoubleConstant(id, s.readDouble())
                 TAG_BOOLEAN_CONSTANT -> BooleanConstant(id, s.readBoolean())
                 TAG_NULL_CONSTANT -> NullConstant(id)
+                TAG_CLASS_CONSTANT -> ClassConstant(id, readString(s))
                 TAG_ENUM_CONSTANT -> {
                     val enumType = readTypeDescriptor(s, nodeTypes)
                     val enumName = readString(s)
@@ -720,6 +724,10 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
             }
             is NullConstant -> {
                 dos.writeByte(TAG_NULL_CONSTANT)
+            }
+            is ClassConstant -> {
+                dos.writeByte(TAG_CLASS_CONSTANT)
+                writeString(dos, node.value)
             }
             is EnumConstant -> {
                 dos.writeByte(TAG_ENUM_CONSTANT)

@@ -2,6 +2,8 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
+import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.EnumConstant
@@ -33,6 +35,7 @@ internal fun collectGraphNodeStrings(nodes: Iterable<Node>, dest: MutableSet<Str
 internal fun collectNodeStrings(node: Node, dest: MutableSet<String>) {
     when (node) {
         is StringConstant -> dest.add(node.value)
+        is ClassConstant -> dest.add(node.value)
         is EnumConstant -> {
             dest.add(node.enumType.className)
             dest.add(node.enumName)
@@ -88,6 +91,18 @@ internal fun collectNodeStrings(node: Node, dest: MutableSet<String>) {
 
 internal fun graphNodeTagOf(node: Node): Int =
     when (node) {
+        is ConstantNode -> constantNodeTagOf(node)
+        is LocalVariable -> NodeSerializer.TAG_LOCAL_VARIABLE
+        is FieldNode -> NodeSerializer.TAG_FIELD_NODE
+        is ParameterNode -> NodeSerializer.TAG_PARAMETER_NODE
+        is ReturnNode -> NodeSerializer.TAG_RETURN_NODE
+        is CallSiteNode -> NodeSerializer.TAG_CALL_SITE_NODE
+        is AnnotationNode -> NodeSerializer.TAG_ANNOTATION_NODE
+        is ResourceFileNode -> NodeSerializer.TAG_RESOURCE_FILE_NODE
+    }
+
+private fun constantNodeTagOf(node: ConstantNode): Int =
+    when (node) {
         is IntConstant -> NodeSerializer.TAG_INT_CONSTANT
         is StringConstant -> NodeSerializer.TAG_STRING_CONSTANT
         is LongConstant -> NodeSerializer.TAG_LONG_CONSTANT
@@ -96,14 +111,8 @@ internal fun graphNodeTagOf(node: Node): Int =
         is BooleanConstant -> NodeSerializer.TAG_BOOLEAN_CONSTANT
         is NullConstant -> NodeSerializer.TAG_NULL_CONSTANT
         is EnumConstant -> NodeSerializer.TAG_ENUM_CONSTANT
-        is LocalVariable -> NodeSerializer.TAG_LOCAL_VARIABLE
-        is FieldNode -> NodeSerializer.TAG_FIELD_NODE
-        is ParameterNode -> NodeSerializer.TAG_PARAMETER_NODE
-        is ReturnNode -> NodeSerializer.TAG_RETURN_NODE
-        is CallSiteNode -> NodeSerializer.TAG_CALL_SITE_NODE
-        is AnnotationNode -> NodeSerializer.TAG_ANNOTATION_NODE
-        is ResourceFileNode -> NodeSerializer.TAG_RESOURCE_FILE_NODE
         is ResourceValueNode -> NodeSerializer.TAG_RESOURCE_VALUE_NODE
+        is ClassConstant -> NodeSerializer.TAG_CLASS_CONSTANT
     }
 
 internal fun writeGraphNode(dos: DataOutputStream, node: Node, strings: StringTable): Int {
@@ -114,6 +123,7 @@ internal fun writeGraphNode(dos: DataOutputStream, node: Node, strings: StringTa
     when (node) {
         is IntConstant -> dos.writeInt(node.value)
         is StringConstant -> dos.writeInt(strings.indexOf(node.value))
+        is ClassConstant -> dos.writeInt(strings.indexOf(node.value))
         is LongConstant -> dos.writeLong(node.value)
         is FloatConstant -> dos.writeFloat(node.value)
         is DoubleConstant -> dos.writeDouble(node.value)
@@ -217,6 +227,7 @@ internal fun readGraphNode(
         NodeSerializer.TAG_DOUBLE_CONSTANT -> DoubleConstant(id, dis.readDouble())
         NodeSerializer.TAG_BOOLEAN_CONSTANT -> BooleanConstant(id, dis.readBoolean())
         NodeSerializer.TAG_NULL_CONSTANT -> NullConstant(id)
+        NodeSerializer.TAG_CLASS_CONSTANT -> ClassConstant(id, strings.get(dis.readInt()))
         else -> readStructuredNode(tag, id, dis, strings, formatVersion, ordinals)
     }
 }

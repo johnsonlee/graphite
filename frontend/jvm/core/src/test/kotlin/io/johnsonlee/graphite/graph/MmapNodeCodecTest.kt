@@ -16,6 +16,7 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.ResourceValueNode
@@ -85,6 +86,17 @@ internal class MmapNodeCodecTest : MmapGraphBuilderTestSupport() {
         val node = NullConstant(id)
         val graph = MmapGraphBuilder().addNode(node).build()
         assertEquals(node, graph.node(id))
+    }
+
+    @Test
+    fun `round-trip ClassConstant keeps the descriptor and its kind`() {
+        val literal = ClassConstant(NodeId.next(), "[Lsample/Payload;")
+        val text = StringConstant(NodeId.next(), "[Lsample/Payload;")
+        val graph = MmapGraphBuilder().addNode(literal).addNode(text).build()
+        assertEquals(literal, graph.node(literal.id))
+        assertEquals(text, graph.node(text.id))
+        assertEquals(listOf(literal), graph.nodes(ClassConstant::class.java).toList())
+        assertEquals(listOf(text), graph.nodes(StringConstant::class.java).toList())
     }
 
     @Test

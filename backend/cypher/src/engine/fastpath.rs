@@ -580,7 +580,7 @@ pub(crate) fn raw_string_field(tag: u8, property: &str) -> Option<StringField> {
     use graphite_storage::node::*;
     let at = |i: usize| Some(StringField::Fixed(NODE_HEADER_BYTES + i * 4));
     match (tag, property) {
-        (TAG_STRING_CONSTANT, "value") => at(0),
+        (TAG_STRING_CONSTANT | TAG_CLASS_CONSTANT, "value") => at(0),
         (TAG_LOCAL_VARIABLE, "name") => at(0),
         (TAG_LOCAL_VARIABLE, "type") => at(1),
         (TAG_FIELD_NODE, "class") => at(0),

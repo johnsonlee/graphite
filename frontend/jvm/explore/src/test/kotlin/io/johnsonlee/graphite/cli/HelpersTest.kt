@@ -19,6 +19,7 @@ import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceFileNode
@@ -311,6 +312,16 @@ class HelpersTest {
         val map = nodeToMap(node)
         assertEquals("NullConstant", map["type"])
         assertEquals("null", map["label"])
+    }
+
+    @Test
+    fun `ClassConstant formats as the source literal and maps its descriptor`() {
+        val node = ClassConstant(NodeId(41), "[Lsample/Payload;")
+        assertEquals("ClassConstant[node#41] = sample.Payload[].class", formatNode(node))
+        assertEquals(
+            mapOf("type" to "ClassConstant", "id" to 41, "value" to "[Lsample/Payload;", "label" to "Payload[].class"),
+            nodeToMap(node))
+        assertEquals("LongConstant[node#42] = 7", formatNode(LongConstant(NodeId(42), 7L)))
     }
 
     @Test

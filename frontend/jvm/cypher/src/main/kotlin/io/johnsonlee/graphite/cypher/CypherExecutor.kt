@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.EnumConstant
@@ -402,7 +403,7 @@ class CypherExecutor internal constructor(
                 map[PROPERTY_VALUE] = node.value
             }
             is IntConstant, is StringConstant, is LongConstant, is FloatConstant,
-            is DoubleConstant, is BooleanConstant, is NullConstant -> map[PROPERTY_VALUE] = (node as ConstantNode).value
+            is DoubleConstant, is BooleanConstant, is NullConstant, is ClassConstant -> map[PROPERTY_VALUE] = (node as ConstantNode).value
             is LocalVariable -> {
                 map[PROPERTY_NAME] = node.name
                 map[PROPERTY_TYPE] = node.type.className

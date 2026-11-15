@@ -323,6 +323,10 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             _ => Value::Null,
         },
         NodeKind::NullConstant => Value::Null,
+        NodeKind::ClassConstant(v) => match key {
+            "value" => s(g, *v),
+            _ => Value::Null,
+        },
         NodeKind::EnumConstant {
             enum_type,
             enum_name,
@@ -516,6 +520,7 @@ fn node_properties_impl(
         NodeKind::DoubleConstant(v) => put("value", Value::Float(*v)),
         NodeKind::BooleanConstant(v) => put("value", Value::Bool(*v)),
         NodeKind::NullConstant => put("value", Value::Null),
+        NodeKind::ClassConstant(v) => put("value", s(g, *v)),
         NodeKind::EnumConstant {
             enum_type,
             enum_name,
@@ -657,6 +662,7 @@ pub fn node_labels(tag: u8) -> Vec<&'static str> {
         TAG_BOOLEAN_CONSTANT => vec!["BooleanConstant", "Constant"],
         TAG_NULL_CONSTANT => vec!["NullConstant", "Constant"],
         TAG_ENUM_CONSTANT => vec!["EnumConstant", "Constant"],
+        TAG_CLASS_CONSTANT => vec!["ClassConstant", "Constant"],
         TAG_LOCAL_VARIABLE => vec!["LocalVariable"],
         TAG_FIELD_NODE => vec!["FieldNode"],
         TAG_PARAMETER_NODE => vec!["ParameterNode"],
@@ -682,7 +688,8 @@ pub fn label_tags(label: &str) -> Option<Vec<u8>> {
         "booleanconstant" => vec![TAG_BOOLEAN_CONSTANT],
         "nullconstant" => vec![TAG_NULL_CONSTANT],
         "enumconstant" => vec![TAG_ENUM_CONSTANT],
-        "constant" | "constantnode" => (0..=TAG_ENUM_CONSTANT).collect(),
+        "classconstant" => vec![TAG_CLASS_CONSTANT],
+        "constant" | "constantnode" => CONSTANT_TAGS.to_vec(),
         "fieldnode" | "field" => vec![TAG_FIELD_NODE],
         "parameternode" | "parameter" => vec![TAG_PARAMETER_NODE],
         "returnnode" | "return" => vec![TAG_RETURN_NODE],

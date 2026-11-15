@@ -172,6 +172,7 @@ internal object NodeSerializer {
     internal const val TAG_ANNOTATION_NODE = 13
     internal const val TAG_RESOURCE_VALUE_NODE = 14
     internal const val TAG_RESOURCE_FILE_NODE = 15
+    internal const val TAG_CLASS_CONSTANT = 16
 
     // Value type tags (for heterogeneous value lists like enum constructor args)
     internal const val VAL_INT = 0

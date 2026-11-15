@@ -297,6 +297,22 @@ path, a size and a modification time are no content identity (a file replaced by
 length can keep both), so nothing short of the hash admits the entries. Hashing the whole sidecar per mapping
 instead cost the cold rows of the slow-query-shapes gate 15–20% per query on a 14-megabyte sidecar; the index
 is a sixty-fourth of the entries, and a lookup proves one 2-kilobyte block.
+### Class literals (node tag 16)
+
+A class literal (`Payload.class`, `Payload[].class`, `int[][].class`) is a `ClassConstant` node, record tag `16`,
+whose only field is the string table index of the referenced type's JVM descriptor (`Lsample/Payload;`,
+`[Lsample/Payload;`, `[[I`): the same layout as a `StringConstant`, a different tag. It carries the `ClassConstant`
+and `Constant` labels, `value` is the descriptor, and both engines read `value` from the record at a fixed offset
+(the Rust raw string column and the Kotlin mapped string index), so equality, `STARTS WITH`, `IN`, `CONTAINS` and
+`ENDS WITH` over it take the same paths as over a string's value. The tag is an addition, not a format version:
+the node data header stays at version `3`, and `graph.typeindex` simply holds one more (possibly empty) entry, which
+older readers skip.
+
+Compatibility: graphs built before tag `16` existed hold each class literal as `IntConstant(0)` (the frontend's
+fallback for constants it did not model), so the type is not in the file and no reader can recover it; rebuild
+the graph to get `ClassConstant` nodes. A reader that predates the tag rejects a graph that contains one
+(`Unknown node tag: 16`), so read new graphs with a current CLI or library.
+
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
 not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an

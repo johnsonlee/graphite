@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -63,6 +64,12 @@ object NodePropertyAccessor {
     private const val PROPERTY_CLASS = "class"
     private const val PROPERTY_FORMAT = "format"
     private const val PROPERTY_PROFILE = "profile"
+    private val constantTypeNames: Map<Class<out ConstantNode>, String> =
+        listOf(
+            IntConstant::class.java, StringConstant::class.java, LongConstant::class.java, FloatConstant::class.java,
+            DoubleConstant::class.java, BooleanConstant::class.java, NullConstant::class.java, EnumConstant::class.java,
+            ClassConstant::class.java, ResourceValueNode::class.java
+        ).associateWith { it.simpleName }
     private val nodeTypesByLabel =
         mapOf(
             "callsitenode" to CallSiteNode::class.java,
@@ -75,6 +82,7 @@ object NodePropertyAccessor {
             "booleanconstant" to BooleanConstant::class.java,
             "nullconstant" to NullConstant::class.java,
             "enumconstant" to EnumConstant::class.java,
+            "classconstant" to ClassConstant::class.java,
             "constant" to ConstantNode::class.java,
             "constantnode" to ConstantNode::class.java,
             "fieldnode" to FieldNode::class.java,
@@ -122,7 +130,8 @@ object NodePropertyAccessor {
                 is FloatConstant,
                 is DoubleConstant,
                 is BooleanConstant,
-                is NullConstant -> constantProperty(node as ConstantNode, property)
+                is NullConstant,
+                is ClassConstant -> constantProperty(node as ConstantNode, property)
                 is LocalVariable -> getLocalVariableProperty(node, property)
                 is FieldNode -> getFieldNodeProperty(node, property)
                 is ParameterNode -> getParameterNodeProperty(node, property)
@@ -142,20 +151,12 @@ object NodePropertyAccessor {
     fun nodeTypeName(node: Node): String =
         when (node) {
             is CallSiteNode -> "CallSiteNode"
-            is IntConstant -> "IntConstant"
-            is StringConstant -> "StringConstant"
-            is LongConstant -> "LongConstant"
-            is FloatConstant -> "FloatConstant"
-            is DoubleConstant -> "DoubleConstant"
-            is BooleanConstant -> "BooleanConstant"
-            is NullConstant -> "NullConstant"
-            is EnumConstant -> "EnumConstant"
+            is ConstantNode -> constantTypeNames.getValue(node.javaClass)
             is LocalVariable -> "LocalVariable"
             is FieldNode -> "FieldNode"
             is ParameterNode -> "ParameterNode"
             is ReturnNode -> "ReturnNode"
             is ResourceFileNode -> "ResourceFileNode"
-            is ResourceValueNode -> "ResourceValueNode"
             is AnnotationNode -> "AnnotationNode"
         }
 
@@ -276,7 +277,8 @@ object NodePropertyAccessor {
             is FloatConstant,
             is DoubleConstant,
             is BooleanConstant,
-            is NullConstant -> constantProperties(node as ConstantNode)
+            is NullConstant,
+            is ClassConstant -> constantProperties(node as ConstantNode)
             is LocalVariable ->
                 mapOf(
                     PROPERTY_ID to node.id.value,

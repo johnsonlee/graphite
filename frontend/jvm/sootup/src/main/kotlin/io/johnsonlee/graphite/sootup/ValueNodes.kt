@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.FieldDescriptor
@@ -22,6 +23,7 @@ import sootup.core.jimple.common.constant.DoubleConstant as SootDoubleConstant
 import sootup.core.jimple.common.constant.NullConstant as SootNullConstant
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.constant.Constant as SootConstant
+import sootup.core.jimple.common.constant.ClassConstant as SootClassConstant
 import sootup.core.jimple.common.expr.AbstractInvokeExpr
 import sootup.core.jimple.common.ref.JFieldRef
 import sootup.core.jimple.common.ref.JStaticFieldRef
@@ -86,8 +88,10 @@ internal class ValueNodes(private val context: SootUpAdapter) {
     }
 
     fun getOrCreateConstant(constant: SootConstant): ConstantNode {
-        val value = extractConstantValue(constant)
-        return constantNodes.getOrPut(value ?: constant) {
+        // A class literal is keyed by its own kind: its descriptor is text, and must never
+        // intern onto the StringConstant that spells the same characters.
+        val key = if (constant is SootClassConstant) ClassLiteralKey(classLiteralDescriptor(constant)) else extractConstantValue(constant)
+        return constantNodes.getOrPut(key ?: constant) {
             val node = when (constant) {
                 is SootIntConstant -> IntConstant(
                     id = metadata.nextNodeId(CONST_NODE_PREFIX),
@@ -113,6 +117,10 @@ internal class ValueNodes(private val context: SootUpAdapter) {
                 )
                 is SootNullConstant -> NullConstant(
                     id = metadata.nextNodeId(CONST_NODE_PREFIX)
+                )
+                is SootClassConstant -> ClassConstant(
+                    id = metadata.nextNodeId(CONST_NODE_PREFIX),
+                    value = classLiteralDescriptor(constant)
                 )
                 else -> {
                     declarations.log { "Unsupported constant type: ${constant.javaClass.simpleName} = $constant" }
@@ -170,4 +178,17 @@ internal class ValueNodes(private val context: SootUpAdapter) {
             else -> null
         }
     }
+}
+
+/** The interning key of a class literal: a kind of its own, never equal to a constant's value. */
+internal data class ClassLiteralKey(val descriptor: String)
+
+/**
+ * The JVM descriptor of the type a class literal names (`Lsample/Payload;`, `[Lsample/Payload;`,
+ * `[I`). SootUp keeps the descriptor the bytecode spells; a bare internal name (`sample/Payload`,
+ * which `ClassConstant` also accepts) is normalised to the same spelling.
+ */
+internal fun classLiteralDescriptor(constant: SootClassConstant): String {
+    val value = constant.value
+    return if (value.startsWith("[") || (value.startsWith("L") && value.endsWith(";"))) value else "L$value;"
 }

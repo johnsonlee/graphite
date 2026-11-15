@@ -101,6 +101,17 @@ class NodeTest {
     }
 
     @Test
+    fun `ClassConstant value is the descriptor and typeName is the source spelling`() {
+        val payload = ClassConstant(NodeId.next(), "Lsample/Outer\$Payload;")
+        assertEquals("Lsample/Outer\$Payload;", payload.value)
+        assertEquals("sample.Outer\$Payload", payload.typeName)
+        assertEquals("sample.Outer\$Payload[][]", ClassConstant(NodeId.next(), "[[Lsample/Outer\$Payload;").typeName)
+        assertEquals(
+            listOf("boolean", "byte", "char", "short", "int[]", "long", "float", "double[][]", "void"),
+            listOf("Z", "B", "C", "S", "[I", "J", "F", "[[D", "V").map { ClassConstant(NodeId.next(), it).typeName })
+    }
+
+    @Test
     fun `NullConstant has null value`() {
         val c = NullConstant(NodeId.next())
         assertNull(c.value)

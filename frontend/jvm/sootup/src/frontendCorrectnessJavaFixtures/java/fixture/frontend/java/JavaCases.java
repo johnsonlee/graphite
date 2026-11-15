@@ -55,6 +55,14 @@ public final class JavaCases {
         return null;
     }
 
+    public static Class<?> classLiteral() {
+        return JavaCases.class;
+    }
+
+    public static Class<?> arrayClassLiteral() {
+        return JavaCases[].class;
+    }
+
     public static double constantNodes(long input) {
         long longValue = 7000000001L;
         float floatValue = 1.25f;

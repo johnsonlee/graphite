@@ -109,6 +109,33 @@ data class NullConstant(
 }
 
 /**
+ * A class literal (`Payload.class`, `Payload[].class`, `int[].class`): the `java.lang.Class`
+ * object the JVM loads with `ldc`. [value] is the referenced type's JVM descriptor
+ * (`Lsample/Payload;`, `[Lsample/Payload;`, `[I`), so it keeps array dimensions and is never
+ * the same constant as a [StringConstant] that happens to spell the same text.
+ */
+data class ClassConstant(
+    override val id: NodeId,
+    override val value: String
+) : ConstantNode {
+    /** The literal as Java source spells it, without `.class`: `sample.Payload[]`, `int[][]`. */
+    val typeName: String
+        get() {
+            val dimensions = value.takeWhile { it == '[' }.length
+            val element = value.substring(dimensions)
+            val base = PRIMITIVE_DESCRIPTORS[element]
+                ?: element.removePrefix("L").removeSuffix(";").replace('/', '.')
+            return base + "[]".repeat(dimensions)
+        }
+}
+
+/** The source names of the primitive JVM descriptors a class literal can name. */
+private val PRIMITIVE_DESCRIPTORS = mapOf(
+    "Z" to "boolean", "B" to "byte", "C" to "char", "S" to "short",
+    "I" to "int", "J" to "long", "F" to "float", "D" to "double", "V" to "void"
+)
+
+/**
  * Represents a reference from one enum's constructor argument to another enum constant.
  *
  * For example, in:

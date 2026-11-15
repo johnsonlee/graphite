@@ -15,8 +15,9 @@
 
 use crate::io::read_i32_at;
 use crate::node::{
-    NODE_HEADER_BYTES, TAG_ANNOTATION_NODE, TAG_ENUM_CONSTANT, TAG_FIELD_NODE, TAG_LOCAL_VARIABLE,
-    TAG_PARAMETER_NODE, TAG_RESOURCE_FILE_NODE, TAG_RESOURCE_VALUE_NODE, TAG_STRING_CONSTANT,
+    NODE_HEADER_BYTES, TAG_ANNOTATION_NODE, TAG_CLASS_CONSTANT, TAG_ENUM_CONSTANT, TAG_FIELD_NODE,
+    TAG_LOCAL_VARIABLE, TAG_PARAMETER_NODE, TAG_RESOURCE_FILE_NODE, TAG_RESOURCE_VALUE_NODE,
+    TAG_STRING_CONSTANT,
 };
 use crate::strings::StringTable;
 use std::collections::HashMap;
@@ -118,6 +119,12 @@ pub const RAW_STRING_FIELDS: &[RawStringField] = &[
         tag: TAG_ANNOTATION_NODE,
         property: "member",
         offset: 8,
+    },
+    // Appended, so every earlier slot keeps its number.
+    RawStringField {
+        tag: TAG_CLASS_CONSTANT,
+        property: "value",
+        offset: 0,
     },
 ];
 
@@ -319,6 +326,10 @@ mod tests {
         assert_eq!(raw_string_field(TAG_STRING_CONSTANT, "value"), Some(0));
         assert_eq!(raw_string_field(TAG_STRING_CONSTANT, "name"), None);
         assert_eq!(raw_string_field(TAG_FIELD_NODE, "type"), Some(7));
+        assert_eq!(
+            raw_string_field(TAG_CLASS_CONSTANT, "value"),
+            Some(RAW_STRING_FIELDS.len() - 1)
+        );
     }
 
     #[test]

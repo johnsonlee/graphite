@@ -16,7 +16,7 @@ use crate::ast::{Expr, Pattern};
 use crate::eval::Evaluator;
 use crate::value::Value;
 use crate::CypherResult;
-use graphite_storage::node::TAG_STRING_CONSTANT;
+use graphite_storage::node::{TAG_CLASS_CONSTANT, TAG_STRING_CONSTANT};
 
 pub(super) struct StringSeedPlan {
     scan: ScanPlan,
@@ -57,7 +57,7 @@ impl StringSeedPlan {
         let NodeClass::Tags(tags) = resolve_node_class(&first.labels) else {
             return None;
         };
-        if tags.as_slice() != [TAG_STRING_CONSTANT] {
+        if tags.as_slice() != [TAG_STRING_CONSTANT] && tags.as_slice() != [TAG_CLASS_CONSTANT] {
             return None;
         }
 
