@@ -441,6 +441,37 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "1fd1901075bd8b865cbbb9da03147a619373f9ade33c574c301cf03f239878a7",
         reason: "PR #193: 21,081,154 -> 21,081,153 traversals, matching the one fewer IntConstant -> DATAFLOW -> FieldNode edge",
     },
+    // PR #226 (head c69f543, base main d4dd8ee), run 43729611853: class literals are ClassConstant nodes.
+    Rule {
+        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
+        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        case_id: "schema-label-histogram",
+        base_query_sha256: "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+        head_query_sha256: "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+        base_response_sha256: "a2c5135bd200cf53b9b407d80bd20ec78c47ddcebc9c3d70b90a74f73a058866",
+        head_response_sha256: "af893672357699830c1a555c8cb0586e68a18310c3171bb14db7db4d819ed6c7",
+        reason: "PR #226: class literals become ClassConstant nodes instead of IntConstant(0): IntConstant 157,407 -> 126,774 and a new ClassConstant row of 30,633; the total is conserved and every other label is unchanged",
+    },
+    Rule {
+        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
+        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        case_id: "schema-relationship-histogram",
+        base_query_sha256: "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+        head_query_sha256: "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+        base_response_sha256: "04a30e6d7c605601217eac9b14669eb85e1fe29f81bd6ad126d1284c01c7696b",
+        head_response_sha256: "b989ecf27a50d74f82af0b16739dbdc613823db7a7ddb2f9dc7fe7f3df4c1557",
+        reason: "PR #226: IntConstant -> CallSite DATAFLOW -35,112 and IntConstant -> Local DATAFLOW -10,881 return as ClassConstant buckets with those counts, pushing Float -> Return (385) and Null -> CallSite CONTROL_FLOW (194) out of the top 40",
+    },
+    Rule {
+        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
+        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        case_id: "shape-label-scan-constant",
+        base_query_sha256: "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+        head_query_sha256: "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+        base_response_sha256: "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db",
+        head_response_sha256: "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
+        reason: "PR #226: Constant rows that read 0 for a class literal now read its JVM descriptor (for example Ljavax/xml/validation/SchemaFactory;)",
+    },
 ];
 
 fn digest(value: &str, bytes: usize) -> bool {
