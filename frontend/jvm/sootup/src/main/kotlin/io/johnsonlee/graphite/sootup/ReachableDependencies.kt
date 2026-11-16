@@ -184,7 +184,7 @@ internal class ReachableDependencies(private val context: SootUpAdapter) {
     fun collectDefaultBearingInterfaces(type: String, visited: MutableSet<String>, result: MutableSet<String>) {
         val iface = if (visited.add(type)) resources.resolveClassByName(type) else null
         if (iface != null) {
-            if (iface.methods.any { !it.isAbstract && !it.isStatic }) result += type
+            if (declaredMethods(iface).any { !it.isAbstract && !it.isStatic }) result += type
             iface.interfaces.forEach { collectDefaultBearingInterfaces(it.fullyQualifiedName, visited, result) }
         }
     }

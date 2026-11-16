@@ -26,7 +26,7 @@ class DeclaredMethodSignaturesTest : DependencyScopeFixture() {
         val view = JavaView(location)
         val owner = view.identifierFactory.getClassType("fixture.frontend.android.AndroidCases")
         val declared = view.getClass(owner).get()
-        val signatures = declaredMethodSignatures(declared, view.identifierFactory)
+        val signatures = declaredMethodSignatures(declared)
         assertEquals(listOf(
             "<fixture.frontend.android.AndroidCases: int sink(int)>",
             "<fixture.frontend.android.AndroidCases: java.lang.String sink(java.lang.String,int)>"
@@ -37,10 +37,10 @@ class DeclaredMethodSignaturesTest : DependencyScopeFixture() {
         assertEquals("double", graphTypeName(signatures.single { it.name == "constantNodes" }.type))
         assertTrue(signatures.all { it.declClassType == owner })
         assertFalse(signatures.any { it.name == "missing" })
-        assertEquals(signatures, declaredMethodSignatures(declared, view.identifierFactory))
+        assertEquals(signatures, declaredMethodSignatures(declared))
         val missingType = view.identifierFactory.getClassType("fixture.frontend.android.Missing")
         val missing = JavaSootClass(DexClassSource(view, location, missingType, apk), SourceType.Application)
-        assertEquals(emptyList(), declaredMethodSignatures(missing, view.identifierFactory))
+        assertEquals(emptyList(), declaredMethodSignatures(missing))
         assertEquals(0, bodies, "neither a present nor a missing declaration may resolve any method body")
     }
 
@@ -57,7 +57,7 @@ class DeclaredMethodSignaturesTest : DependencyScopeFixture() {
         val view = JavaView(PathBasedAnalysisInputLocation.create(classes, SourceType.Application,
             listOf(BodyInterceptor { _, _ -> bodies++; error("declaration lookup must not resolve bytecode bodies") })))
         val owner = view.identifierFactory.getClassType("sample.signatures.Declarations")
-        val signatures = declaredMethodSignatures(view.getClass(owner).get(), view.identifierFactory)
+        val signatures = declaredMethodSignatures(view.getClass(owner).get())
         assertEquals(listOf(
             "<sample.signatures.Declarations: int[][] transform(java.lang.String[][])>",
             "<sample.signatures.Declarations: long transform(int[])>",

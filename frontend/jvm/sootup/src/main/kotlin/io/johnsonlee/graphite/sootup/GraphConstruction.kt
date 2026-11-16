@@ -77,9 +77,18 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
         val classes = view.classes.toList()
         context.classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
         indexInputs(classes)
-        emitDeclarations(classes)
-        val extensionContext = emitBodies(classes)
-        resolveDeferredCalls(extensionContext)
+        // DEX bodies read ahead of the graph pass are held for it only while this build runs,
+        // and only for the classes it will read.
+        val dexBodies = view.openDexBodies { type ->
+            context.classesByNameCache?.get(type.fullyQualifiedName)?.let(::readsBodies) == true
+        }
+        try {
+            emitDeclarations(classes)
+            val extensionContext = emitBodies(classes)
+            resolveDeferredCalls(extensionContext)
+        } finally {
+            view.closeDexBodies(dexBodies)
+        }
         return finishGraph(classes)
     }
 
@@ -134,10 +143,9 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
         )
         classes.forEach { sootClass ->
             val className = sootClass.type.fullyQualifiedName
-            val origin = evidenceOrigin(sootClass)
             val application = metadata.shouldIncludeClass(sootClass)
-            if (!application && !(reachability.isLibraryOrigin(origin) && config.dependencyBodies.covers(className, origin))) {
-                classEvidence[className] = ClassEvidence(origin, AnalysisStatus.EXCLUDED_BY_SCOPE)
+            if (!application && !dependencyBodiesCover(sootClass)) {
+                classEvidence[className] = ClassEvidence(evidenceOrigin(sootClass), AnalysisStatus.EXCLUDED_BY_SCOPE)
                 return@forEach
             }
             pass2Count++
@@ -178,7 +186,14 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
             declarations.log { "Linked $edges interprocedural dataflow edge(s)" }
         }
         dispatchResolution.releaseFunctionalDispatchState()
+    }
 
+    /** Whether pass 2 reads [sootClass]'s bodies: an application class, or a library class the dependency body scope covers. */
+    private fun readsBodies(sootClass: SootClass): Boolean = metadata.shouldIncludeClass(sootClass) || dependencyBodiesCover(sootClass)
+
+    private fun dependencyBodiesCover(sootClass: SootClass): Boolean {
+        val origin = evidenceOrigin(sootClass)
+        return reachability.isLibraryOrigin(origin) && config.dependencyBodies.covers(sootClass.type.fullyQualifiedName, origin)
     }
 
     private fun finishGraph(classes: List<SootClass>): Graph {

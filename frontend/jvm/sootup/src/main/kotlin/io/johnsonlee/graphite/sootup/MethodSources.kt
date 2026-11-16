@@ -26,6 +26,7 @@ internal class MethodSources(private val context: SootUpAdapter) {
     private val view = context.view
     private val config = context.config
     private val bytecodeMethods get() = context.bytecodeMethods
+    private val dexMethods get() = context.dexMethods
     private val completeness get() = context.completeness
     private val declarations get() = context.declarations
     private val descriptors get() = context.descriptors
@@ -58,8 +59,13 @@ internal class MethodSources(private val context: SootUpAdapter) {
         else bytecodeMethods.bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
     }
 
+    /**
+     * The body of [bridge], selected because dispatch reads the call it delegates to. A DEX
+     * header's body is lent to the graph pass rather than memoized on the header the dispatch
+     * caches hold.
+     */
     fun bridgeBody(bridge: SootMethod): Body = try {
-        bridge.body
+        (bridge.bodySource as? DexHeaderBodySource)?.let { it.resolveBody(bridge.modifiers) } ?: bridge.body
     } finally {
         releaseConversionState(bridge)
     }
@@ -85,26 +91,23 @@ internal class MethodSources(private val context: SootUpAdapter) {
         // Find main methods and other entry points
         val entryPoints = mutableListOf<MethodSignature>()
         view.classes.forEach { sootClass ->
-            val selected = streamingStaticMethodsOrNull(sootClass, "main")
-            if (selected != null) {
-                selected.mapTo(entryPoints) { it.signature }
-            } else {
-                forEachMethod(sootClass) { method ->
-                    if (method.name == "main" && method.isStatic) {
-                        entryPoints.add(method.signature)
-                    }
-                }
-            }
+            // A DEX class's declarations answer the question without converting any body.
+            val candidates = streamingStaticMethodsOrNull(sootClass, "main") ?: dexMethodHeaders(sootClass)
+                ?: buildList { forEachMethod(sootClass, ::add) }
+            candidates.filter { it.name == "main" && it.isStatic }.mapTo(entryPoints) { it.signature }
         }
         return entryPoints
     }
 
     fun forEachMethod(sootClass: SootClass, action: (SootMethod) -> Unit) {
+        dexMethodHeaders(sootClass)?.let { headers -> return dexMethods.forEach(sootClass, headers, action) }
         streamMethodsOrNull(sootClass)?.forEach(action)
             ?: bytecodeMethods.resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)
     }
 
     fun findStaticMethod(sootClass: SootClass, name: String): SootMethod? {
+        // A DEX class converts only the method asked for, under the failures its method list has.
+        dexMethodHeaders(sootClass)?.let { headers -> return dexMethods.staticMethod(headers, name) }
         val selected = streamingStaticMethodsOrNull(sootClass, name)
         val streamed = if (selected != null) {
             selected.firstOrNull()
@@ -124,28 +127,16 @@ internal class MethodSources(private val context: SootUpAdapter) {
         if (sootClass !is JavaSootClass) return null
         return streamingSources(sootClass)?.mapNotNull { source ->
             try {
-                if (source.name == name && (source.access and Opcodes.ACC_STATIC) != 0) {
-                    source.asStreamingMethod(sootClass.type)
-                } else {
+                catchingMethodFailure({
+                    if (source.name == name && (source.access and Opcodes.ACC_STATIC) != 0) {
+                        source.asStreamingMethod(sootClass.type)
+                    } else {
+                        null
+                    }
+                }) { failure ->
+                    recordSourceFailure(sootClass, source, failure)
                     null
                 }
-            } catch (oom: OutOfMemoryError) {
-                declarations.log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
-                completeness.recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
-
-                null
-            } catch (e: sootup.core.frontend.ResolveException) {
-                recordSourceFailure(sootClass, source, e)
-                null
-            } catch (expectedMalformedMetadata: IndexOutOfBoundsException) {
-                recordSourceFailure(sootClass, source, expectedMalformedMetadata)
-                null
-            } catch (failure: IllegalArgumentException) {
-                recordSourceFailure(sootClass, source, failure)
-                null
-            } catch (failure: IllegalStateException) {
-                recordSourceFailure(sootClass, source, failure)
-                null
             } finally {
                 // Run even for non-matches, and before a caller can stop after its first match.
                 releaseConversionState(source)
@@ -163,28 +154,7 @@ internal class MethodSources(private val context: SootUpAdapter) {
     private fun streamDetachedMethods(methods: List<JavaSootMethod>): Sequence<SootMethod> = sequence {
             for (method in methods) {
                 try {
-                    yield(bytecodeMethods.detached(method))
-                } catch (oom: OutOfMemoryError) {
-                    declarations.log { "Skipping method ${method.signature}: OOM during streaming resolution" }
-                    completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
-                        AnalysisStatus.RESOLUTION_FAILED, oom.message ?: oom.javaClass.name)
-
-                } catch (e: sootup.core.frontend.ResolveException) {
-                    declarations.log { "Skipping method ${method.signature}: ${e.message}" }
-                    completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
-                        AnalysisStatus.RESOLUTION_FAILED, e.message ?: e.javaClass.name)
-                } catch (expectedMalformedMetadata: IndexOutOfBoundsException) {
-                    declarations.log { "Skipping method ${method.signature}: ${expectedMalformedMetadata.message}" }
-                    completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
-                        AnalysisStatus.RESOLUTION_FAILED, expectedMalformedMetadata.message ?: expectedMalformedMetadata.javaClass.name)
-                } catch (failure: IllegalArgumentException) {
-                    declarations.log { "Skipping method ${method.signature}: ${failure.message}" }
-                    completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
-                        AnalysisStatus.RESOLUTION_FAILED, failure.message ?: failure.javaClass.name)
-                } catch (failure: IllegalStateException) {
-                    declarations.log { "Skipping method ${method.signature}: ${failure.message}" }
-                    completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
-                        AnalysisStatus.RESOLUTION_FAILED, failure.message ?: failure.javaClass.name)
+                    catchingMethodFailure({ yield(bytecodeMethods.detached(method)) }) { recordMethodFailure(method, it) }
                 } finally {
                     releaseConversionState(method.bodySource)
                 }
@@ -201,19 +171,7 @@ internal class MethodSources(private val context: SootUpAdapter) {
     fun streamMethods(sootClass: JavaSootClass, sources: List<AsmMethodSource>): Sequence<SootMethod> = sequence {
         for (source in sources) {
             try {
-                yield(source.asStreamingMethod(sootClass.type))
-            } catch (oom: OutOfMemoryError) {
-                declarations.log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
-                completeness.recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
-
-            } catch (e: sootup.core.frontend.ResolveException) {
-                recordSourceFailure(sootClass, source, e)
-            } catch (expectedMalformedMetadata: IndexOutOfBoundsException) {
-                recordSourceFailure(sootClass, source, expectedMalformedMetadata)
-            } catch (failure: IllegalArgumentException) {
-                recordSourceFailure(sootClass, source, failure)
-            } catch (failure: IllegalStateException) {
-                recordSourceFailure(sootClass, source, failure)
+                catchingMethodFailure({ yield(source.asStreamingMethod(sootClass.type)) }) { recordSourceFailure(sootClass, source, it) }
             } finally {
                 releaseConversionState(source)
             }
@@ -253,12 +211,41 @@ internal class MethodSources(private val context: SootUpAdapter) {
             }
         }
     private fun recordSourceFailure(sootClass: JavaSootClass, source: AsmMethodSource, failure: Throwable) {
-        declarations.log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${failure.message}" }
+        declarations.log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${diagnostic(failure)}" }
         completeness.recordResolutionFailure(sootClass.type, source.name, source.desc, failure.message ?: failure.javaClass.name)
     }
+
+    /** [method] failed to resolve and is left out; the rest of its class is read. */
+    fun recordMethodFailure(method: SootMethod, failure: Throwable) {
+        declarations.log { "Skipping method ${method.signature}: ${diagnostic(failure)}" }
+        completeness.recordMethodEvidence(descriptors.toMethodDescriptor(method),
+            AnalysisStatus.RESOLUTION_FAILED, failure.message ?: failure.javaClass.name)
+    }
+
+    private fun diagnostic(failure: Throwable): String? =
+        if (failure is OutOfMemoryError) "OOM during streaming resolution" else failure.message
 
     private fun recordCallGraphFailure(failure: Throwable) {
         declarations.log { "Call graph unavailable for the current classpath: ${failure.message}" }
     }
 
+}
+
+/**
+ * [block]'s value, or [onFailure]'s when resolving one method fails in a way that fails that
+ * method alone (its body or metadata could not be converted, or converting it ran out of
+ * memory). Every path that reads one method at a time, bytecode or DEX, fails the same way.
+ */
+internal inline fun <T> catchingMethodFailure(block: () -> T, onFailure: (Throwable) -> T): T = try {
+    block()
+} catch (failure: OutOfMemoryError) {
+    onFailure(failure)
+} catch (failure: sootup.core.frontend.ResolveException) {
+    onFailure(failure)
+} catch (expectedMalformedMetadata: IndexOutOfBoundsException) {
+    onFailure(expectedMalformedMetadata)
+} catch (failure: IllegalArgumentException) {
+    onFailure(failure)
+} catch (failure: IllegalStateException) {
+    onFailure(failure)
 }

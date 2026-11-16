@@ -76,8 +76,8 @@ class KotlinEnumFoldTest {
         val ordinary = view.identifierFactory.getClassType(prefix + "KotlinFoldOption")
         val initializer = view.getClass(ordinary).get().methods.single { it.name == "<clinit>" }.body
         assertTrue(initializer.stmts.any { it.callee() == "enumEntries" }, "fixture exercises modern Kotlin enum initialization")
-        assertTrue(safety.isNonReentrant(view, ordinary))
-        assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "KotlinUnsafeFoldOption")))
+        assertTrue(safety.isNonReentrant(view, ordinary, ASKER))
+        assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "KotlinUnsafeFoldOption"), ASKER))
     }
 
     @Test
@@ -107,3 +107,6 @@ class KotlinEnumFoldTest {
         assertEquals(1, body.stmts.filterIsInstance<JIfStmt>().size, body.toString())
     }
 }
+
+/** A body outside every fixture enum, standing in for the fold that asks. */
+private val ASKER = sootup.java.core.JavaIdentifierFactory.getInstance().parseMethodSignature("<sample.Asker: void ask()>")

@@ -100,19 +100,29 @@ class EnumInitializationSafetyTest {
         val view = JavaView(PathBasedAnalysisInputLocation.create(compile(), SourceType.Application))
         val safety = EnumInitializationSafety()
         val prefix = "sample.enuminit.Shapes\$"
-        assertTrue(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Plain")))
+        assertTrue(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Plain"), ASKER))
         val unsafe = listOf(
             "ConstructorCallsOut", "ConstructorCallsOwn", "InitializerCallsOut", "EntriesProviderOverload", "FieldTriggersInitialization",
             "ImplementsDefault", "ConstantSubclass"
         )
         for (name in unsafe) {
-            assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + name)), name)
+            assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + name), ASKER), name)
         }
         val provider = view.getClass(view.identifierFactory.getClassType(prefix + "EntriesProviderOverload")).get()
         val providerCall = provider.methods.single { it.name == "<clinit>" }.body.stmts.filterIsInstance<JInvokeStmt>()
             .single { it.invokeExpr.get().methodSignature.name == "enumEntries" }.invokeExpr.get()
         assertEquals(listOf("kotlin.jvm.functions.Function0"), providerCall.methodSignature.parameterTypes.map { it.toString() })
-        assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Missing")))
+        assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Missing"), ASKER))
+    }
+
+    @Test
+    fun `a question asked by an enum's own initializer is answered conservatively and not remembered`() {
+        val view = JavaView(PathBasedAnalysisInputLocation.create(compile(), SourceType.Application))
+        val safety = EnumInitializationSafety()
+        val plain = view.identifierFactory.getClassType("sample.enuminit.Shapes\$Plain")
+        val initializer = view.identifierFactory.getMethodSignature(plain, "<clinit>", "void", emptyList())
+        assertFalse(safety.isNonReentrant(view, plain, initializer), "its initializer is the body being intercepted")
+        assertTrue(safety.isNonReentrant(view, plain, ASKER), "proved once no initializer of its own is asking")
     }
 
     @Test
@@ -162,3 +172,6 @@ class EnumInitializationSafetyTest {
         }, "the configured lookup still folds; the uncertain equality is retained")
     }
 }
+
+/** A body outside every fixture enum, standing in for the fold that asks. */
+private val ASKER = sootup.java.core.JavaIdentifierFactory.getInstance().parseMethodSignature("<sample.Asker: void ask()>")

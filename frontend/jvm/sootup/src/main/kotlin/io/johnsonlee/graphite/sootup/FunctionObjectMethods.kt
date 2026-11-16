@@ -17,8 +17,10 @@ import sootup.core.jimple.common.stmt.Stmt
 import sootup.core.model.SootClass
 import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
+import sootup.core.model.Body
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootMethod
+import sootup.core.signatures.MethodSignature
 
 /** Resolves implementations and bridges of SAM, lambda and callable-reference objects. */
 internal class FunctionObjectMethods(private val context: SootUpAdapter) {
@@ -34,6 +36,7 @@ internal class FunctionObjectMethods(private val context: SootUpAdapter) {
     private val dispatchHierarchy get() = context.dispatchHierarchy
     private val metadata get() = context.metadata
     private val methodSources get() = context.methodSources
+    private val declarations get() = context.declarations
     private val resources get() = context.resources
 
     /**
@@ -122,19 +125,33 @@ internal class FunctionObjectMethods(private val context: SootUpAdapter) {
             dispatchHierarchy.methodsInSignatureOrder(sootClass)
                 .filter { MethodModifier.isBridge(it.modifiers) && it.hasBody() }
                 .flatMap { bridge ->
-                    methodSources.bridgeBody(bridge).controlFlowGraph.stmts.asSequence()
-                        .mapNotNull { stmt ->
-                            when (stmt) {
-                                is JInvokeStmt -> stmt.invokeExpr.orElse(null)
-                                is JAssignStmt -> stmt.rightOp as? AbstractInvokeExpr
-                                else -> null
-                            }?.methodSignature
-                        }
+                    (context.dexBridgeCalls[bridge.signature]?.asSequence() ?: bridgeCalls(bridge))
                         .filter { it.declClassType == sootClass.type && it.name == bridge.name }
                         .map { it.subSignature.toString() to erasedSignature(bridge) }
                         .toList()
                 }
                 .groupBy({ it.first }, { it.second })
+        }
+
+    /**
+     * The methods [bridge] calls, or none when its body cannot be read: a bridge whose body
+     * fails to convert delegates to nothing dispatch can name, and the graph pass records the
+     * failure when it reaches the method.
+     */
+    private fun bridgeCalls(bridge: SootMethod): Sequence<MethodSignature> =
+        catchingMethodFailure({ invokedSignatures(methodSources.bridgeBody(bridge)).toList().asSequence() }) { failure ->
+            declarations.log { "Skipping bridge ${bridge.signature}: ${failure.message ?: failure.javaClass.name}" }
+            emptySequence()
+        }
+
+    /** The methods [body]'s statements call, in statement order. */
+    fun invokedSignatures(body: Body): Sequence<MethodSignature> = body.controlFlowGraph.stmts.asSequence()
+        .mapNotNull { stmt ->
+            when (stmt) {
+                is JInvokeStmt -> stmt.invokeExpr.orElse(null)
+                is JAssignStmt -> stmt.rightOp as? AbstractInvokeExpr
+                else -> null
+            }?.methodSignature
         }
 
     fun erasedSignature(method: SootMethod): String =

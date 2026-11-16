@@ -12,6 +12,7 @@ import sootup.core.jimple.common.stmt.Stmt
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootClass
 import sootup.core.model.SootMethod
+import sootup.core.signatures.MethodSignature
 import sootup.core.types.ClassType
 import sootup.core.views.View
 
@@ -29,33 +30,54 @@ private const val ENUM_VALUES_FACTORY = "\$values"
 internal class EnumInitializationSafety {
     private val safe = ConcurrentHashMap<ClassType, Boolean>()
 
-    fun isNonReentrant(view: View, type: ClassType): Boolean {
+    /** The bodies whose fold asked a question on this thread and is still running, innermost last. */
+    private val asking = ThreadLocal.withInitial { ArrayDeque<MethodSignature>() }
+
+    /**
+     * Whether [type]'s initialization is safe to read enum constants of, asked by the fold of
+     * [asker]'s body. The answer resolves [type]'s initialization bodies, whose own folds may ask
+     * about other enums in turn; an initialization body that one of those askers still is (two
+     * enums whose constructors read each other) is not resolved again: that is the body being
+     * intercepted, and this question gets a conservative answer that is not remembered.
+     */
+    fun isNonReentrant(view: View, type: ClassType, asker: MethodSignature): Boolean {
         // Resolving an initializer body may itself run the fold interceptor. Publish false
         // before resolving it, so recursive readers remain conservative instead of looping.
         safe.putIfAbsent(type, false)?.let { return it }
-        val result = runCatching { prove(view.getClass(type).orElse(null)) }.getOrDefault(false)
-        safe[type] = result
-        return result
+        val askers = asking.get()
+        askers.addLast(asker)
+        // A class that cannot be read, or a proof that fails, is unsafe; a re-entrant proof is `null`.
+        val result = try {
+            val declared = runCatching { view.getClass(type).orElse(null) }.getOrNull()
+            if (declared == null) false else runCatching { prove(declared, askers) }.getOrDefault(false)
+        } finally {
+            askers.removeLast()
+        }
+        if (result == null) safe.remove(type) else safe[type] = result
+        return result == true
     }
 
-    private fun prove(declared: SootClass?): Boolean {
-        if (declared == null) return false
+    /** `null` when an initialization body of [declared] is one of the [askers]. */
+    private fun prove(declared: SootClass, askers: Collection<MethodSignature>): Boolean? {
         val ordinaryEnum = declared.isEnum && declared.isFinal && declared.interfaces.isEmpty()
-        val candidates = if (ordinaryEnum && declared.superclass.orElse(null)?.fullyQualifiedName == ENUM_BASE_CLASS) {
-            declared.methods
+        // Declarations without bodies for a DEX class: only the initialization bodies are converted.
+        val methods = if (ordinaryEnum && declared.superclass.orElse(null)?.fullyQualifiedName == ENUM_BASE_CLASS) {
+            declaredMethods(declared)
         } else emptyList()
-        val initialization = candidates.filter {
+        val initialization = methods.filter {
             it.name == ENUM_INITIALIZER || it.name == ENUM_CONSTRUCTOR || isValuesFactory(it)
         }
-        return initialization.any { it.name == ENUM_INITIALIZER } &&
-            initialization.any { it.name == ENUM_CONSTRUCTOR } &&
-            initialization.all { method -> method.hasBody() && method.body.stmts.all { safeStatement(it, declared) } }
+        return if (initialization.any { it.signature in askers }) null else {
+            initialization.any { it.name == ENUM_INITIALIZER } &&
+                initialization.any { it.name == ENUM_CONSTRUCTOR } &&
+                initialization.all { method -> method.hasBody() && method.body.stmts.all { safeStatement(it, declared, methods) } }
+        }
     }
 
     private fun isValuesFactory(method: SootMethod): Boolean =
         method.name == ENUM_VALUES_FACTORY && method.isPrivate && method.isStatic && MethodModifier.SYNTHETIC in method.modifiers
 
-    private fun safeStatement(stmt: Stmt, declared: SootClass): Boolean {
+    private fun safeStatement(stmt: Stmt, declared: SootClass, methods: Collection<SootMethod>): Boolean {
         val assignment = stmt as? JAssignStmt
         val fields = stmt.uses.filterIsInstance<JStaticFieldRef>() + listOfNotNull(assignment?.leftOp as? JStaticFieldRef)
         val ownFields = fields.all { it.fieldSignature.declClassType == declared.type }
@@ -66,12 +88,12 @@ internal class EnumInitializationSafety {
             is JInvokeStmt -> stmt.invokeExpr.orElse(null)
             else -> null
         }
-        return ownFields && ownAllocation && (invoke == null || safeInvocation(invoke, declared))
+        return ownFields && ownAllocation && (invoke == null || safeInvocation(invoke, declared, methods))
     }
 
-    private fun safeInvocation(invoke: AbstractInvokeExpr, declared: SootClass): Boolean {
+    private fun safeInvocation(invoke: AbstractInvokeExpr, declared: SootClass, methods: Collection<SootMethod>): Boolean {
         val signature = invoke.methodSignature
-        val target = declared.methods.firstOrNull { it.signature == signature }
+        val target = methods.firstOrNull { it.signature == signature }
         return when {
             signature.declClassType.fullyQualifiedName == ENUM_BASE_CLASS ->
                 invoke is JSpecialInvokeExpr && signature.name == ENUM_CONSTRUCTOR
