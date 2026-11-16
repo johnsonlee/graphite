@@ -441,10 +441,12 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "1fd1901075bd8b865cbbb9da03147a619373f9ade33c574c301cf03f239878a7",
         reason: "PR #193: 21,081,154 -> 21,081,153 traversals, matching the one fewer IntConstant -> DATAFLOW -> FieldNode edge",
     },
-    // PR #226 (head c69f543, base main d4dd8ee), run 43729611853: class literals are ClassConstant nodes.
+    // PR #226 (head 002413a, base main c38905b), run 43808397749: class literals are ClassConstant nodes.
+    // First bound to c69f543 on d4dd8ee (run 43729611853, #227); #225 moved both identities and
+    // left all three response digests unchanged.
     Rule {
-        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
-        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        base_product_identity: "5ad958fdddc70af949b8c0cf1c2594b412ced7134000c8aa2850adfd0c396aeb",
+        head_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
         case_id: "schema-label-histogram",
         base_query_sha256: "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
         head_query_sha256: "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
@@ -453,8 +455,8 @@ const RULES: &[Rule<'static>] = &[
         reason: "PR #226: class literals become ClassConstant nodes instead of IntConstant(0): IntConstant 157,407 -> 126,774 and a new ClassConstant row of 30,633; the total is conserved and every other label is unchanged",
     },
     Rule {
-        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
-        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        base_product_identity: "5ad958fdddc70af949b8c0cf1c2594b412ced7134000c8aa2850adfd0c396aeb",
+        head_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
         case_id: "schema-relationship-histogram",
         base_query_sha256: "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
         head_query_sha256: "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
@@ -463,8 +465,8 @@ const RULES: &[Rule<'static>] = &[
         reason: "PR #226: IntConstant -> CallSite DATAFLOW -35,112 and IntConstant -> Local DATAFLOW -10,881 return as ClassConstant buckets with those counts, pushing Float -> Return (385) and Null -> CallSite CONTROL_FLOW (194) out of the top 40",
     },
     Rule {
-        base_product_identity: "a6edb46687a91a227ff24425efd131fafe93a5375657d54a948e9d3398be0dc7",
-        head_product_identity: "aa06cf4f607352d4b5b7d1850cbccb6e2df12c02d54a4f61ee684c2c823d49f0",
+        base_product_identity: "5ad958fdddc70af949b8c0cf1c2594b412ced7134000c8aa2850adfd0c396aeb",
+        head_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
         case_id: "shape-label-scan-constant",
         base_query_sha256: "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
         head_query_sha256: "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
