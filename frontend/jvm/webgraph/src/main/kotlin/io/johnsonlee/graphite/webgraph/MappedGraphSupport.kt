@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.LocalVariable
@@ -617,6 +618,7 @@ internal fun supportsRawStringProperty(type: Class<out Node>, property: String):
 private val RAW_STRING_PROPERTY_LAYOUT =
     mapOf<Class<out Node>, Set<String>>(
         StringConstant::class.java to setOf("value"),
+        ClassConstant::class.java to setOf("value"),
         EnumConstant::class.java to setOf("enum_type", "name"),
         LocalVariable::class.java to setOf("name", "type"),
         FieldNode::class.java to setOf("class", "name", "type"),

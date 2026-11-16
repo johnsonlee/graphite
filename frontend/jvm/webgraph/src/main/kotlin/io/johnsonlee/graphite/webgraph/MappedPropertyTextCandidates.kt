@@ -70,7 +70,8 @@ internal class MappedPropertyTextCandidates(
         val tag = data.get(offset + Int.SIZE_BYTES).toInt()
         if (isNonStringConstant(tag)) return false
         return when (tag) {
-            NodeSerializer.TAG_STRING_CONSTANT -> matches(fields, matcher)
+            NodeSerializer.TAG_STRING_CONSTANT,
+            NodeSerializer.TAG_CLASS_CONSTANT -> matches(fields, matcher)
             NodeSerializer.TAG_LOCAL_VARIABLE,
             NodeSerializer.TAG_PARAMETER_NODE -> matchesRange(fields, methodEnd(fields + 2 * Int.SIZE_BYTES), matcher)
             NodeSerializer.TAG_FIELD_NODE -> matchesRange(fields, fields + FIELD_STRING_BYTES, matcher)

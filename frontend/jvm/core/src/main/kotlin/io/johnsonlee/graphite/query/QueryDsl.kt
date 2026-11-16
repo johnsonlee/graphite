@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.analysis.AnalysisConfig
 import io.johnsonlee.graphite.analysis.DataFlowAnalysis
 import io.johnsonlee.graphite.analysis.TypeHierarchyAnalysis
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -37,6 +38,7 @@ private const val JAVA_LANG_FLOAT = "java.lang.Float"
 private const val JAVA_LANG_DOUBLE = "java.lang.Double"
 private const val JAVA_LANG_BOOLEAN = "java.lang.Boolean"
 private const val JAVA_LANG_STRING = "java.lang.String"
+private const val JAVA_LANG_CLASS = "java.lang.Class"
 
 /**
  * High-level Query DSL for common analysis patterns.
@@ -179,6 +181,7 @@ class GraphiteQuery(private val graph: Graph) {
             is StringConstant -> TypeDescriptor(JAVA_LANG_STRING)
             is EnumConstant -> node.enumType
             is NullConstant -> null
+            is ClassConstant -> TypeDescriptor(JAVA_LANG_CLASS)
             is ResourceValueNode -> resourceConstantType(node.value)
         }
 

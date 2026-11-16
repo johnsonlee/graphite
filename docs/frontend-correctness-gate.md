@@ -36,20 +36,20 @@ reviewed and removed. This makes an upgrade surface both regressions and upstrea
 
 ## Current contract
 
-The current gate has 60 executable semantic cases: 20 Java/JVM, 22 Kotlin/JVM, and 18
-Android/DEX. These cases are evidence for 42 schema obligations: 28 are covered end to end and 14
+The current gate has 62 executable semantic cases: 21 Java/JVM, 22 Kotlin/JVM, and 19
+Android/DEX. These cases are evidence for 43 schema obligations: 29 are covered end to end and 14
 are explicit producer gaps. The numbers are a summary, not the acceptance criterion; the exact
 case-to-schema mapping is checked from the TSV catalogues.
 
 | Frontend | Control flow | Data flow | Invocation and lowering |
 | --- | --- | --- | --- |
-| Java/JVM | relational branches, dense and sparse switches, exception path, returns | parameters, null and numeric constants, static/instance fields, arrays, resources | static/virtual/interface/constructor/recursive calls, capturing and non-capturing lambdas, annotations |
+| Java/JVM | relational branches, dense and sparse switches, exception path, returns | parameters, null, numeric and class-literal constants, static/instance fields, arrays, resources | static/virtual/interface/constructor/recursive calls, capturing and non-capturing lambdas, annotations |
 | Kotlin/JVM | relational branches, integer and string `when`, null/Elvis/safe-call, try/catch | parameters, numeric constants, object/instance fields, arrays | static/virtual/interface/constructor calls, capturing and non-capturing lambdas, extension lowering, suspend ABI, default-argument bridge |
-| Android/DEX | boolean and relational branches, packed and sparse switches, returns | parameters, null and numeric constants, static/instance fields, arrays | static/virtual/interface/constructor/recursive calls, narrow and wide argument positions |
+| Android/DEX | boolean and relational branches, packed and sparse switches, returns | parameters, null, numeric and class-literal constants, static/instance fields, arrays | static/virtual/interface/constructor/recursive calls, narrow and wide argument positions |
 
-All 16 concrete node types are inventoried. Thirteen are currently emitted and covered:
+All 17 concrete node types are inventoried. Fourteen are currently emitted and covered:
 `IntConstant`, `StringConstant`, `LongConstant`, `FloatConstant`, `DoubleConstant`, `NullConstant`,
-`LocalVariable`, `FieldNode`, `ParameterNode`, `ReturnNode`, `ResourceFileNode`, `CallSiteNode`, and
+`ClassConstant`, `LocalVariable`, `FieldNode`, `ParameterNode`, `ReturnNode`, `ResourceFileNode`, `CallSiteNode`, and
 `AnnotationNode`. The three node gaps are:
 
 - `EnumConstant`: enum constants are retained only as annotation metadata.

@@ -48,7 +48,7 @@ object CypherDslAdapter {
         // Handle semicolon-separated statements
         val clauses =
             if (cypher.contains(';')) {
-                    val parts = cypher.split(';').map { it.trim() }.filter { it.isNotEmpty() }
+                    val parts = splitStatements(cypher).map { it.trim() }.filter { it.isNotEmpty() }
                     if (parts.size > 1) {
                         parts.flatMap { parse(it) }
                     } else {
@@ -60,6 +60,32 @@ object CypherDslAdapter {
                 .toImmutableCypherAst()
         cacheParsedQuery(cypher, clauses)
         return clauses
+    }
+
+    /**
+     * The statements of [cypher], split on the semicolons outside string literals and escaped names: a class literal's
+     * descriptor (`'Lsample/Payload;'`) holds one, and splitting inside the literal broke the query in two.
+     */
+    internal fun splitStatements(cypher: String): List<String> {
+        val statements = mutableListOf<String>()
+        var start = 0
+        var quote: Char? = null
+        var index = 0
+        while (index < cypher.length) {
+            val c = cypher[index]
+            when {
+                quote != null && quote != '`' && c == '\\' -> index++
+                quote != null && c == quote -> quote = null
+                quote == null && (c == '\'' || c == '"' || c == '`') -> quote = c
+                quote == null && c == ';' -> {
+                    statements += cypher.substring(start, index)
+                    start = index + 1
+                }
+            }
+            index++
+        }
+        statements += cypher.substring(start)
+        return statements
     }
 
     private fun cacheParsedQuery(cypher: String, clauses: List<CypherClause>) {

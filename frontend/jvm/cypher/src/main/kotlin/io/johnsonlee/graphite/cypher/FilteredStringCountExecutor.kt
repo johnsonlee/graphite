@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.checkThreadInterrupted
@@ -185,7 +186,7 @@ internal class FilteredStringCountExecutor(
     ): Boolean {
         val property = (operand.expression as? CypherExpr.Property)?.propertyName
         val supported = operand.expression == null || property in properties
-        val scalarValue = property != NODE_VALUE_PROPERTY || type == StringConstant::class.java
+        val scalarValue = property != NODE_VALUE_PROPERTY || type == StringConstant::class.java || type == ClassConstant::class.java
         if (!supported || !scalarValue) return false
         val annotationValue =
             when {

@@ -22,7 +22,11 @@ RETURN DISTINCT c.value, labels(c)[0] AS type, cs.caller_signature
 ```
 
 This finds literals reaching any argument (and the receiver). Replace
-`Constant` by `StringConstant`, `IntConstant`, ... to narrow. Enum values and
+`Constant` by `StringConstant`, `IntConstant`, ... to narrow. A class literal
+(`Payload.class`) is a `ClassConstant` whose `value` is the JVM descriptor
+(`'Lcom/example/Payload;'`, `'[Lcom/example/Payload;'` for an array), never a
+`StringConstant`; graphs built before it existed hold it as `IntConstant` 0 and
+need a rebuild. Enum values and
 non-constant static fields are not `Constant`s; they arrive as static
 `FieldNode`s. To include them, add a second half
 `MATCH (key:FieldNode)-[:DATAFLOW*1..8]->(cs) WHERE key.static ...` with

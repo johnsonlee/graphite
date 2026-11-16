@@ -381,13 +381,17 @@ jobs:
         GRAPHITE_INHERITED_TYPES_FIXTURE: ${{ runner.temp }}/inherited-types-graphs
         GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES: "1"
         GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE: "1"
+        GRAPHITE_CLASS_CONSTANT_FIXTURE: ${{ runner.temp }}/class-constant-graphs
+        GRAPHITE_REQUIRE_CLASS_CONSTANT_FIXTURE: "1"
         JAVA_TOOL_OPTIONS: -Xmx4g
       run: |
         # The JVM writer saves structural v5; the test also creates v1 through v4 equivalents.
         # Rerun this task so Gradle's cached success cannot omit the temp fixture.
         test ! -e "${GRAPHITE_INHERITED_TYPES_FIXTURE}"
         ./gradlew :webgraph:test --tests '*DeclaredTypePersistenceTest' \
-          --tests '*InheritedFieldPersistenceTest' --rerun --no-daemon -q
+          --tests '*InheritedFieldPersistenceTest' --tests '*ClassConstantPersistenceTest' --rerun --no-daemon -q
+        test -f "${GRAPHITE_CLASS_CONSTANT_FIXTURE}/default/graph.nodedata"
+        test -f "${GRAPHITE_CLASS_CONSTANT_FIXTURE}/mmap/graph.nodedata"
         for FIXTURE in "${GRAPHITE_TYPES_V1_FIXTURE}" "${GRAPHITE_TYPES_V2_FIXTURE}" "${GRAPHITE_TYPES_V3_FIXTURE}" "${GRAPHITE_TYPES_V4_FIXTURE}" "${GRAPHITE_TYPES_FIXTURE}"; do
           test -f "${FIXTURE}/graph.types"
           grep -E '^graphite\.declaredTypes\.sha256=[[:xdigit:]]{64}$' "${FIXTURE}/forward.properties"
@@ -401,6 +405,7 @@ jobs:
           done
         done
         cargo test --release --locked -p graphite-cypher --test inherited_fields_interop -- --nocapture
+        cargo test --release --locked -p graphite-cypher --test class_constant -- --nocapture
         cargo test --release --locked -p graphite-cypher matching::matching_tests -- --nocapture
         cargo test --release --locked -p graphite-cypher method_source_guard::tests -- --nocapture
         cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture

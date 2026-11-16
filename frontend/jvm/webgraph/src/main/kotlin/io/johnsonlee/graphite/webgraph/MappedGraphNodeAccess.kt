@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.LocalVariable
@@ -109,7 +110,7 @@ internal fun MappedGraphContext.rawStringPropertyIndex(nodeId: Int, type: Class<
 
 private fun rawFixedStringOffset(type: Class<out Node>, property: String): Int? =
     when (type) {
-        StringConstant::class.java -> 0
+        StringConstant::class.java, ClassConstant::class.java -> 0
         EnumConstant::class.java -> namedStringOffset(property, "enum_type", "name")
         LocalVariable::class.java -> namedStringOffset(property, "name", "type")
         FieldNode::class.java -> namedStringOffset(property, "class", "name", "type")

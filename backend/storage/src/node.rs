@@ -26,8 +26,29 @@ pub const TAG_CALL_SITE_NODE: u8 = 12;
 pub const TAG_ANNOTATION_NODE: u8 = 13;
 pub const TAG_RESOURCE_VALUE_NODE: u8 = 14;
 pub const TAG_RESOURCE_FILE_NODE: u8 = 15;
+/// A class literal (`Payload.class`): its value is the JVM type descriptor. Added after the
+/// other constants, so a reader built before it rejects a graph that holds one.
+pub const TAG_CLASS_CONSTANT: u8 = 16;
 
-pub const TAG_COUNT: usize = 16;
+pub const TAG_COUNT: usize = 17;
+
+/// Every constant tag, in tag order: the literal constants and the class literal.
+pub const CONSTANT_TAGS: [u8; 9] = [
+    TAG_INT_CONSTANT,
+    TAG_STRING_CONSTANT,
+    TAG_LONG_CONSTANT,
+    TAG_FLOAT_CONSTANT,
+    TAG_DOUBLE_CONSTANT,
+    TAG_BOOLEAN_CONSTANT,
+    TAG_NULL_CONSTANT,
+    TAG_ENUM_CONSTANT,
+    TAG_CLASS_CONSTANT,
+];
+
+/// Whether a node of `tag` carries the `Constant` label.
+pub fn is_constant_tag(tag: u8) -> bool {
+    tag <= TAG_ENUM_CONSTANT || tag == TAG_CLASS_CONSTANT
+}
 
 /// Node record header: int32 id + tag byte.
 pub const NODE_HEADER_BYTES: usize = 5;
@@ -135,6 +156,30 @@ pub fn push_type_descriptor(type_name: &str, out: &mut String) {
     }
 }
 
+/// A class literal's descriptor as Java source spells the type, without `.class`:
+/// `[Lsample/Payload;` is `sample.Payload[]`, `[[I` is `int[][]` — the Kotlin
+/// `ClassConstant.typeName`.
+pub fn class_literal_type_name(descriptor: &str) -> String {
+    let element = descriptor.trim_start_matches('[');
+    let dimensions = descriptor.len() - element.len();
+    let base = match element {
+        "Z" => "boolean".to_string(),
+        "B" => "byte".to_string(),
+        "C" => "char".to_string(),
+        "S" => "short".to_string(),
+        "I" => "int".to_string(),
+        "J" => "long".to_string(),
+        "F" => "float".to_string(),
+        "D" => "double".to_string(),
+        "V" => "void".to_string(),
+        _ => {
+            let name = element.strip_prefix('L').unwrap_or(element);
+            name.strip_suffix(';').unwrap_or(name).replace('/', ".")
+        }
+    };
+    base + &"[]".repeat(dimensions)
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AnyValue {
     Int(i32),
@@ -197,6 +242,8 @@ pub enum NodeKind {
     DoubleConstant(f64),
     BooleanConstant(bool),
     NullConstant,
+    /// A class literal; the string is the JVM type descriptor (`Lsample/Payload;`, `[I`).
+    ClassConstant(StrId),
     EnumConstant {
         enum_type: StrId,
         enum_name: StrId,
@@ -271,6 +318,7 @@ impl Node {
             NodeKind::DoubleConstant(_) => TAG_DOUBLE_CONSTANT,
             NodeKind::BooleanConstant(_) => TAG_BOOLEAN_CONSTANT,
             NodeKind::NullConstant => TAG_NULL_CONSTANT,
+            NodeKind::ClassConstant(_) => TAG_CLASS_CONSTANT,
             NodeKind::EnumConstant { .. } => TAG_ENUM_CONSTANT,
             NodeKind::LocalVariable { .. } => TAG_LOCAL_VARIABLE,
             NodeKind::Field { .. } => TAG_FIELD_NODE,
@@ -289,7 +337,7 @@ impl Node {
     }
 
     pub fn is_constant(&self) -> bool {
-        self.tag() <= TAG_ENUM_CONSTANT
+        is_constant_tag(self.tag())
     }
 
     /// Decode one record starting at `pos` (the int32 id).
@@ -305,6 +353,7 @@ impl Node {
             TAG_DOUBLE_CONSTANT => NodeKind::DoubleConstant(c.f64()?),
             TAG_BOOLEAN_CONSTANT => NodeKind::BooleanConstant(c.bool()?),
             TAG_NULL_CONSTANT => NodeKind::NullConstant,
+            TAG_CLASS_CONSTANT => NodeKind::ClassConstant(c.u32()?),
             TAG_ENUM_CONSTANT => {
                 let enum_type = c.u32()?;
                 let enum_name = c.u32()?;
@@ -452,6 +501,7 @@ pub fn tag_type_name(tag: u8) -> &'static str {
         TAG_ANNOTATION_NODE => "AnnotationNode",
         TAG_RESOURCE_VALUE_NODE => "ResourceValueNode",
         TAG_RESOURCE_FILE_NODE => "ResourceFileNode",
+        TAG_CLASS_CONSTANT => "ClassConstant",
         _ => "Node",
     }
 }

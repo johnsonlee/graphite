@@ -36,7 +36,10 @@ pub fn parse_with_dialect(text: &str, dialect: CypherDialect) -> CypherResult<Ve
     }
     // `CypherDslAdapter.parse`: split on ';' when it yields more than one non-blank part.
     if text.contains(';') {
-        let parts: Vec<&str> = text.split(';').filter(|p| !p.trim().is_empty()).collect();
+        let parts: Vec<&str> = split_statements(text)
+            .into_iter()
+            .filter(|p| !p.trim().is_empty())
+            .collect();
         if parts.len() > 1 {
             let mut out = Vec::new();
             for p in parts {
@@ -46,6 +49,33 @@ pub fn parse_with_dialect(text: &str, dialect: CypherDialect) -> CypherResult<Ve
         }
     }
     parse_single(text, dialect)
+}
+
+/// The statements of `text`, split on the semicolons outside string literals and escaped
+/// names (`CypherDslAdapter.splitStatements`): a class literal's descriptor
+/// (`'Lsample/Payload;'`) holds one, and splitting inside the literal broke the query in two.
+pub(crate) fn split_statements(text: &str) -> Vec<&str> {
+    let mut statements = Vec::new();
+    let mut start = 0;
+    let mut quote: Option<char> = None;
+    let mut chars = text.char_indices();
+    while let Some((index, c)) = chars.next() {
+        match quote {
+            Some(q) if q != '`' && c == '\\' => {
+                chars.next();
+            }
+            Some(q) if c == q => quote = None,
+            Some(_) => {}
+            None if matches!(c, '\'' | '"' | '`') => quote = Some(c),
+            None if c == ';' => {
+                statements.push(&text[start..index]);
+                start = index + 1;
+            }
+            None => {}
+        }
+    }
+    statements.push(&text[start..]);
+    statements
 }
 
 fn parse_single(text: &str, dialect: CypherDialect) -> CypherResult<Vec<Clause>> {
@@ -1611,6 +1641,24 @@ mod mutation_tests {
                 }
             ]
         );
+    }
+}
+
+#[cfg(test)]
+mod statement_split_tests {
+    use super::*;
+    #[test]
+    fn splits_only_on_semicolons_outside_literals_and_escaped_names() {
+        assert_eq!(split_statements("a 'x;y' b; c"), vec!["a 'x;y' b", " c"]);
+        assert_eq!(split_statements("\"p;\\\";q\";"), vec!["\"p;\\\";q\"", ""]);
+        assert_eq!(split_statements("`a;b` 'it''s;'"), vec!["`a;b` 'it''s;'"]);
+        assert_eq!(
+            split_statements("RETURN 1 AS a; RETURN 2 AS b"),
+            vec!["RETURN 1 AS a", " RETURN 2 AS b"]
+        );
+        let clauses = parse("MATCH (n) WHERE n.value = 'Lsample/Payload;' RETURN n").unwrap();
+        assert!(matches!(clauses.last(), Some(Clause::Return { .. })));
+        assert_eq!(parse("RETURN 1 AS a; RETURN 2 AS b").unwrap().len(), 2);
     }
 }
 

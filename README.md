@@ -144,6 +144,7 @@ open the saved graph in the web Explorer.
 | Relationship | Example | Question it helps answer |
 |-------------|---------|-------------------------|
 | **Dataflow** | `x = 42; foo(x)` → constant 42 flows to `foo` | Which constants can reach this argument? |
+| **Class literals** | `registry.register(Payload.class)` → `ClassConstant {value: 'Lcom/example/Payload;'}` flows to `register` | Which classes are registered reflectively? (graphs built by v2.18.0 or earlier hold these as `IntConstant(0)`; rebuild them) |
 | **Call graph** | `UserService.save()` calls `Repository.insert()` | Where is this method called? |
 | **Type hierarchy** | `AdminUser extends User implements Auditable` | Which indexed types implement this interface? |
 | **Annotations** | `@GetMapping("/api/users")` on `listUsers()` | Which endpoints are declared in this app? |

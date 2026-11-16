@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.EnumConstant
@@ -174,7 +175,8 @@ private val NODE_CLASSES_BY_TAG: Array<Class<out Node>?> = arrayOf(
     CallSiteNode::class.java,
     AnnotationNode::class.java,
     ResourceValueNode::class.java,
-    ResourceFileNode::class.java
+    ResourceFileNode::class.java,
+    ClassConstant::class.java
 )
 
 private val NODE_TAGS: IntArray = IntArray(NODE_CLASSES_BY_TAG.size) { it }

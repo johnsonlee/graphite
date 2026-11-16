@@ -2,6 +2,8 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
+import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallEdge
@@ -320,26 +322,24 @@ private class GraphParityCanonicalizer(
                 "class=${escape(node.className)}," +
                 "member=${escape(node.memberName)}," +
                 "values=${valueKey(node.values)})"
-            is BooleanConstant -> "BooleanConstant(${node.value})"
+            is BooleanConstant, is DoubleConstant, is FloatConstant, is IntConstant, is LongConstant ->
+                "${node.javaClass.simpleName}(${(node as ConstantNode).value})"
+            is ClassConstant -> "ClassConstant(${escape(node.value)})"
             is CallSiteNode -> "CallSiteNode(" +
                 "caller=${node.caller.key()}," +
                 "callee=${node.callee.key()}," +
                 "line=${node.lineNumber}," +
                 "receiver=${node.receiver?.let(::nodeKey)}," +
                 "args=${node.arguments.joinToString(prefix = "[", postfix = "]") { nodeKey(it) }})"
-            is DoubleConstant -> "DoubleConstant(${node.value})"
             is EnumConstant -> "EnumConstant(" +
                 "type=${node.enumType.key()}," +
                 "name=${escape(node.enumName)}," +
                 "args=${valueKey(node.constructorArgs)})"
             is FieldNode -> "FieldNode(field=${node.descriptor.key()},static=${node.isStatic})"
-            is FloatConstant -> "FloatConstant(${node.value})"
-            is IntConstant -> "IntConstant(${node.value})"
             is LocalVariable -> "LocalVariable(" +
                 "method=${node.method.key()}," +
                 "name=${escape(node.name)}," +
                 "type=${node.type.key()})"
-            is LongConstant -> "LongConstant(${node.value})"
             is NullConstant -> "NullConstant"
             is ParameterNode -> "ParameterNode(" +
                 "method=${node.method.key()}," +

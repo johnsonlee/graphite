@@ -156,6 +156,18 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert("label".into(), json!("null"));
         }
+        NodeKind::ClassConstant(v) => {
+            m.insert("type".into(), json!("ClassConstant"));
+            m.insert("id".into(), id);
+            m.insert("value".into(), s(*v));
+            m.insert(
+                "label".into(),
+                json!(format!(
+                    "{}.class",
+                    simple_name(&class_literal_type_name(g.str(*v)))
+                )),
+            );
+        }
         NodeKind::ResourceFile {
             path,
             source,

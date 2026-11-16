@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.LocalVariable
@@ -32,6 +33,7 @@ internal val CALL_SITE_DIRECT_STRING_PROPERTIES = setOf(
 
 internal val DIRECT_STRING_NODE_PROPERTIES = listOf(
     StringConstant::class.java to setOf(NODE_VALUE_PROPERTY),
+    ClassConstant::class.java to setOf(NODE_VALUE_PROPERTY),
     ResourceValueNode::class.java to setOf(NODE_VALUE_PROPERTY),
     EnumConstant::class.java to setOf("name", NODE_VALUE_PROPERTY),
     LocalVariable::class.java to setOf("name"),

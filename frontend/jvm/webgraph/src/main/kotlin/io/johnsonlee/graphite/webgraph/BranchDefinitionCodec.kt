@@ -203,7 +203,8 @@ private class DefinitionValidator(private val nodeTags: BranchDefinitionNodeTags
     private fun isConstant(nodeId: Int): Boolean {
         if (nodeId == BranchScope.NO_CONSTANT || constants.contains(nodeId)) return true
         val tag = nodeTags.tagOf(nodeId)
-        return (tag in NodeSerializer.TAG_INT_CONSTANT..NodeSerializer.TAG_ENUM_CONSTANT) && constants.add(nodeId)
+        val constant = tag in NodeSerializer.TAG_INT_CONSTANT..NodeSerializer.TAG_ENUM_CONSTANT || tag == NodeSerializer.TAG_CLASS_CONSTANT
+        return constant && constants.add(nodeId)
     }
 
     /** One branch side: ordinals strictly increasing, constants nodes; the locals are checked against the tables. */

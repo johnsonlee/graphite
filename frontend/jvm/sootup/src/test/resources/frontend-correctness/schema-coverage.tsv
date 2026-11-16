@@ -7,6 +7,7 @@ node:FloatConstant	covered	java:constant-nodes	The case requires the exact schem
 node:DoubleConstant	covered	java:constant-nodes	The case requires the exact schema-node marker and a controlled double literal
 node:BooleanConstant	gap	-	JVM and DEX booleans currently materialize as IntConstant and the adapter never creates BooleanConstant
 node:NullConstant	covered	java:null-return	The case requires the exact schema-node marker and null-to-return flow
+node:ClassConstant	covered	java:class-literal	The case requires the exact schema-node marker, the class and array descriptors, and literal-to-return flow
 node:LocalVariable	covered	java:parameter-return	The case requires the exact schema-node marker and parameter-to-return reachability
 node:FieldNode	covered	java:field-store	The case requires the exact schema-node marker and correct store direction
 node:ParameterNode	covered	java:parameter-return	The case requires the exact schema-node marker and parameter-to-return reachability

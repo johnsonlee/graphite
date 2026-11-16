@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
@@ -590,6 +591,7 @@ private object SemanticFacts {
         is FloatConstant -> "float:$value"
         is DoubleConstant -> "double:$value"
         is NullConstant -> "null"
+        is ClassConstant -> "class:${value.escape()}"
         else -> "constant:${value.toString().escape()}"
     }
 

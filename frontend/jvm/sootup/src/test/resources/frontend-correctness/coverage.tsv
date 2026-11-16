@@ -5,6 +5,7 @@ java	control-flow	switch-returns	tableswitch/lookupswitch lowering and return va
 java	control-flow	sparse-switch	lookupswitch lowering with negative and distant keys
 java	data-flow	parameter-return	parameter binding and transitive flow into the return node
 java	data-flow	null-return	null constant identity and return flow
+java	data-flow	class-literal	class literal identity, array descriptor and return flow
 java	data-flow	constant-nodes	long float and double constant node materialization
 java	data-flow	field-store	field store direction must not be reported as a load
 java	data-flow	array-store	array store direction must not be reported as a load
@@ -49,6 +50,7 @@ android	control-flow	dense-switch	DEX packed-switch values reaching return
 android	control-flow	sparse-switch	DEX sparse-switch values reaching return
 android	data-flow	parameter-return	DEX parameter binding and transitive return flow
 android	data-flow	null-return	DEX null constant identity and return flow
+android	data-flow	class-literal	DEX const-class identity, array descriptor and return flow
 android	data-flow	constant-nodes	DEX long float and double constant materialization
 android	data-flow	field-store	DEX sput direction must not be reported as a field load
 android	data-flow	field-load	DEX sget direction, field identity and return flow

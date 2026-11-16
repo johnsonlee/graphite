@@ -55,6 +55,10 @@ enum InputNode {
         value: bool,
     },
     NullConstant,
+    /// A class literal; `value` is the JVM type descriptor (`Lsample/Payload;`, `[I`).
+    ClassConstant {
+        value: String,
+    },
     #[serde(rename_all = "camelCase")]
     LocalVariable {
         name: String,
@@ -258,7 +262,7 @@ fn graph_strings(g: &InputGraph) -> HashSet<&str> {
             | InputNode::DoubleConstant { .. }
             | InputNode::BooleanConstant { .. }
             | InputNode::NullConstant => {}
-            InputNode::StringConstant { value } => {
+            InputNode::StringConstant { value } | InputNode::ClassConstant { value } => {
                 strings.insert(value.as_str());
             }
             InputNode::LocalVariable {
@@ -371,6 +375,7 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
             InputNode::DoubleConstant { .. } => 4,
             InputNode::BooleanConstant { .. } => 5,
             InputNode::NullConstant => 6,
+            InputNode::ClassConstant { .. } => crate::node::TAG_CLASS_CONSTANT,
             InputNode::LocalVariable { .. } => 8,
             InputNode::Field { .. } => 9,
             InputNode::Parameter { .. } => 10,
@@ -385,7 +390,9 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
         data.push(tag);
         match &record.node {
             InputNode::IntConstant { value } => signed(&mut data, *value),
-            InputNode::StringConstant { value } => sid(&mut data, value),
+            InputNode::StringConstant { value } | InputNode::ClassConstant { value } => {
+                sid(&mut data, value)
+            }
             InputNode::DoubleConstant { value } => data.extend(value.to_be_bytes()),
             InputNode::BooleanConstant { value } => data.push(u8::from(*value)),
             InputNode::NullConstant => {}

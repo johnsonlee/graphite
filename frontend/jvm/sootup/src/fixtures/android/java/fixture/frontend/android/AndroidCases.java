@@ -56,6 +56,14 @@ public final class AndroidCases {
         return null;
     }
 
+    public static Class<?> classLiteral() {
+        return AndroidCases.class;
+    }
+
+    public static Class<?> arrayClassLiteral() {
+        return AndroidCases[].class;
+    }
+
     public static double constantNodes(long input) {
         long longValue = 9000000001L;
         float floatValue = 2.25f;

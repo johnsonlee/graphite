@@ -4,6 +4,8 @@ import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
+import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DoubleConstant
@@ -31,14 +33,12 @@ internal fun formatNode(node: Node): String =
         is CallSiteNode ->
             "CallSite[${node.id}] ${node.caller.declaringClass.simpleName}.${node.caller.name} -> " +
                 "${node.callee.declaringClass.simpleName}.${node.callee.name}"
-        is IntConstant -> "IntConstant[${node.id}] = ${node.value}"
+        is IntConstant, is LongConstant, is FloatConstant, is DoubleConstant, is BooleanConstant ->
+            "${node.javaClass.simpleName}[${node.id}] = ${(node as ConstantNode).value}"
         is StringConstant -> "StringConstant[${node.id}] = \"${node.value}\""
         is EnumConstant -> "EnumConstant[${node.id}] = ${node.enumType.simpleName}.${node.enumName}"
-        is LongConstant -> "LongConstant[${node.id}] = ${node.value}"
-        is FloatConstant -> "FloatConstant[${node.id}] = ${node.value}"
-        is DoubleConstant -> "DoubleConstant[${node.id}] = ${node.value}"
-        is BooleanConstant -> "BooleanConstant[${node.id}] = ${node.value}"
         is NullConstant -> "NullConstant[${node.id}]"
+        is ClassConstant -> "ClassConstant[${node.id}] = ${node.typeName}.class"
         is ResourceFileNode -> "ResourceFile[${node.id}] ${node.path} (${node.source})"
         is ResourceValueNode -> "ResourceValue[${node.id}] ${node.path}#${node.key} = ${node.value}"
         is FieldNode ->
@@ -66,6 +66,51 @@ internal fun nodeToMap(node: Node): Map<String, Any?> =
                 "caller" to node.caller.signature,
                 "callee" to node.callee.signature,
                 API_FIELD_LABEL to "${node.callee.declaringClass.simpleName}.${node.callee.name}")
+        is ConstantNode -> constantToMap(node)
+        is ResourceFileNode ->
+            mapOf(
+                API_FIELD_TYPE to "ResourceFileNode",
+                API_FIELD_ID to node.id.value,
+                API_FIELD_PATH to node.path,
+                API_FIELD_SOURCE to node.source,
+                API_FIELD_FORMAT to node.format,
+                API_FIELD_PROFILE to node.profile,
+                API_FIELD_LABEL to node.path)
+        is FieldNode ->
+            mapOf(
+                API_FIELD_TYPE to "FieldNode",
+                API_FIELD_ID to node.id.value,
+                API_FIELD_CLASS to node.descriptor.declaringClass.className,
+                API_FIELD_NAME to node.descriptor.name,
+                "fieldType" to node.descriptor.type.className,
+                API_FIELD_LABEL to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}")
+        is ParameterNode ->
+            mapOf(
+                API_FIELD_TYPE to "ParameterNode",
+                API_FIELD_ID to node.id.value,
+                "index" to node.index,
+                "paramType" to node.type.className,
+                API_FIELD_METHOD to node.method.signature,
+                API_FIELD_LABEL to "param#${node.index}")
+        is ReturnNode ->
+            mapOf(
+                API_FIELD_TYPE to "ReturnNode",
+                API_FIELD_ID to node.id.value,
+                API_FIELD_METHOD to node.method.signature,
+                API_FIELD_LABEL to "return")
+        is LocalVariable ->
+            mapOf(
+                API_FIELD_TYPE to "LocalVariable",
+                API_FIELD_ID to node.id.value,
+                API_FIELD_NAME to node.name,
+                "varType" to node.type.className,
+                API_FIELD_METHOD to node.method.signature,
+                API_FIELD_LABEL to node.name)
+        is AnnotationNode -> annotationToMap(node)
+    }
+
+private fun constantToMap(node: ConstantNode): Map<String, Any?> =
+    when (node) {
         is IntConstant ->
             mapOf(
                 API_FIELD_TYPE to "IntConstant",
@@ -110,15 +155,12 @@ internal fun nodeToMap(node: Node): Map<String, Any?> =
                 API_FIELD_VALUE to node.value,
                 API_FIELD_LABEL to "${node.value}")
         is NullConstant -> mapOf(API_FIELD_TYPE to "NullConstant", API_FIELD_ID to node.id.value, API_FIELD_LABEL to "null")
-        is ResourceFileNode ->
+        is ClassConstant ->
             mapOf(
-                API_FIELD_TYPE to "ResourceFileNode",
+                API_FIELD_TYPE to "ClassConstant",
                 API_FIELD_ID to node.id.value,
-                API_FIELD_PATH to node.path,
-                API_FIELD_SOURCE to node.source,
-                API_FIELD_FORMAT to node.format,
-                API_FIELD_PROFILE to node.profile,
-                API_FIELD_LABEL to node.path)
+                API_FIELD_VALUE to node.value,
+                API_FIELD_LABEL to "${node.typeName.substringAfterLast('.')}.class")
         is ResourceValueNode ->
             mapOf(
                 API_FIELD_TYPE to "ResourceValueNode",
@@ -129,37 +171,6 @@ internal fun nodeToMap(node: Node): Map<String, Any?> =
                 API_FIELD_FORMAT to node.format,
                 API_FIELD_PROFILE to node.profile,
                 API_FIELD_LABEL to "${node.key}=${node.value}")
-        is FieldNode ->
-            mapOf(
-                API_FIELD_TYPE to "FieldNode",
-                API_FIELD_ID to node.id.value,
-                API_FIELD_CLASS to node.descriptor.declaringClass.className,
-                API_FIELD_NAME to node.descriptor.name,
-                "fieldType" to node.descriptor.type.className,
-                API_FIELD_LABEL to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}")
-        is ParameterNode ->
-            mapOf(
-                API_FIELD_TYPE to "ParameterNode",
-                API_FIELD_ID to node.id.value,
-                "index" to node.index,
-                "paramType" to node.type.className,
-                API_FIELD_METHOD to node.method.signature,
-                API_FIELD_LABEL to "param#${node.index}")
-        is ReturnNode ->
-            mapOf(
-                API_FIELD_TYPE to "ReturnNode",
-                API_FIELD_ID to node.id.value,
-                API_FIELD_METHOD to node.method.signature,
-                API_FIELD_LABEL to "return")
-        is LocalVariable ->
-            mapOf(
-                API_FIELD_TYPE to "LocalVariable",
-                API_FIELD_ID to node.id.value,
-                API_FIELD_NAME to node.name,
-                "varType" to node.type.className,
-                API_FIELD_METHOD to node.method.signature,
-                API_FIELD_LABEL to node.name)
-        is AnnotationNode -> annotationToMap(node)
     }
 
 internal fun edgeToMap(edge: Edge): Map<String, Any?> =

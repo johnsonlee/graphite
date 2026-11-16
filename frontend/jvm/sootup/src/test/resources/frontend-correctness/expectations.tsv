@@ -26,6 +26,11 @@ java	parameter-return	forbid	return-parameter|fixture.frontend.java.JavaCases.pa
 java	null-return	require	return-constant|fixture.frontend.java.JavaCases.nullReturn()|null
 java	null-return	require	schema-node|NullConstant
 java	null-return	forbid	return-constant|fixture.frontend.java.JavaCases.nullReturn()|string:java-static
+java	class-literal	require	return-constant|fixture.frontend.java.JavaCases.classLiteral()|class:Lfixture/frontend/java/JavaCases;
+java	class-literal	require	return-constant|fixture.frontend.java.JavaCases.arrayClassLiteral()|class:[Lfixture/frontend/java/JavaCases;
+java	class-literal	require	schema-node|ClassConstant
+java	class-literal	forbid	return-constant|fixture.frontend.java.JavaCases.classLiteral()|int:0
+java	class-literal	forbid	return-constant|fixture.frontend.java.JavaCases.classLiteral()|string:Lfixture/frontend/java/JavaCases;
 java	constant-nodes	require	node|long:7000000001
 java	constant-nodes	require	node|float:1.25
 java	constant-nodes	require	node|double:2.5
@@ -173,6 +178,9 @@ android	parameter-return	forbid	return-parameter|fixture.frontend.android.Androi
 android	null-return	require	return-constant|fixture.frontend.android.AndroidCases.nullReturn()|null
 android	null-return	require	return-flow|fixture.frontend.android.AndroidCases.nullReturn()
 android	null-return	forbid	return-constant|fixture.frontend.android.AndroidCases.nullReturn()|string:android
+android	class-literal	require	return-constant|fixture.frontend.android.AndroidCases.classLiteral()|class:Lfixture/frontend/android/AndroidCases;
+android	class-literal	require	return-constant|fixture.frontend.android.AndroidCases.arrayClassLiteral()|class:[Lfixture/frontend/android/AndroidCases;
+android	class-literal	forbid	return-constant|fixture.frontend.android.AndroidCases.classLiteral()|int:0
 android	constant-nodes	require	node|long:9000000001
 android	constant-nodes	require	node|float:2.25
 android	constant-nodes	require	node|double:5.5

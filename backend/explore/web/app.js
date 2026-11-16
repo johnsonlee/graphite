@@ -19,7 +19,7 @@ const NODE_COLORS = {
     FieldNode: '#bc8cff', ParameterNode: '#3fb950', ReturnNode: '#f778ba',
     LocalVariable: '#8b949e',
     LongConstant: '#39d2c0', FloatConstant: '#39d2c0', DoubleConstant: '#39d2c0',
-    BooleanConstant: '#39d2c0', NullConstant: '#484f58'
+    BooleanConstant: '#39d2c0', NullConstant: '#484f58', ClassConstant: '#e3b341'
 };
 
 const NODE_SIZES = {

@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.cypher
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.FieldNode
@@ -44,6 +45,7 @@ internal val nodeLabelDescriptors =
         NodeLabelDescriptor(BooleanConstant::class.java, listOf("BooleanConstant", CONSTANT_LABEL)),
         NodeLabelDescriptor(NullConstant::class.java, listOf("NullConstant", CONSTANT_LABEL)),
         NodeLabelDescriptor(EnumConstant::class.java, listOf("EnumConstant", CONSTANT_LABEL)),
+        NodeLabelDescriptor(ClassConstant::class.java, listOf("ClassConstant", CONSTANT_LABEL)),
         NodeLabelDescriptor(LocalVariable::class.java, listOf("LocalVariable")),
         NodeLabelDescriptor(FieldNode::class.java, listOf("FieldNode")),
         NodeLabelDescriptor(ParameterNode::class.java, listOf("ParameterNode")),

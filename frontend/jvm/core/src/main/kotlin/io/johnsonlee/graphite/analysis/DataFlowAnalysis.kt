@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.analysis
 
 import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.ClassConstant
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -197,6 +198,7 @@ class DataFlowAnalysis(private val graph: Graph, private val config: AnalysisCon
             is BooleanConstant -> "const boolean: ${node.value}"
             is EnumConstant -> "enum: ${node.enumType.simpleName}.${node.enumName}"
             is NullConstant -> "const null"
+            is ClassConstant -> "const class: ${node.value}"
             is ResourceValueNode -> "resource ${node.path}#${node.key} = ${node.value}"
         }
     }
