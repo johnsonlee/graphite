@@ -82,6 +82,7 @@ QUERIES = [
     "RETURN 'x' =~ '[' AS x",
     "RETURN substring('abc', 5) AS x",
     "RETURN substring('abc', 2, -1) AS x",
+    "RETURN substring('abc', 1, 9223372036854775807) AS x, substring('abc', 3, 9223372036854775807) AS y",
     "MATCH (n) DELETE n",
     "MATCH (n) REMOVE n.x RETURN 1",
     # Completeness: an absent fact told from an unrecorded one.

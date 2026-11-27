@@ -22,7 +22,8 @@ internal fun substringValue(args: List<Any?>): String? {
         if (args.size > 2) {
             val count = (args[2] as Number).toLong()
             if (count < 0) throw CypherException("begin $start, end ${start + count}, length $length")
-            minOf(start + count, length.toLong())
+            // Clamped before the addition: `start + Long.MAX_VALUE` wraps, where the Rust engine saturates.
+            start + minOf(count, length - start)
         } else {
             length.toLong()
         }

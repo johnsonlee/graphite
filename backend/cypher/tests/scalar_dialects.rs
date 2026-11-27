@@ -295,5 +295,9 @@ fn substring_bounds_fail_with_the_engines_shared_message_instead_of_panicking() 
         assert_eq!(error.to_string(), message, "{expression}");
     }
     assert_eq!(value(Graphite, "substring('abc', 1, 100)"), json!("bc"));
+    assert_eq!(
+        value(Graphite, "substring('abc', 1, 9223372036854775807)"),
+        json!("bc")
+    );
     assert_eq!(value(Graphite, "substring('abc', 3)"), json!(""));
 }

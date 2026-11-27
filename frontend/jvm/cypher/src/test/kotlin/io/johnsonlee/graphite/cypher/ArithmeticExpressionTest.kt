@@ -277,6 +277,8 @@ class ArithmeticExpressionTest : ExpressionEvaluatorTestFixture() {
             assertEquals(message, assertFailsWith<CypherException> { CypherFunctions.call("substring", args) }.message)
         }
         assertEquals("bc", CypherFunctions.call("substring", listOf("abc", 1L, 100L)))
+        assertEquals("bc", CypherFunctions.call("substring", listOf("abc", 1L, Long.MAX_VALUE)))
+        assertEquals("", CypherFunctions.call("substring", listOf("abc", 3L, Long.MAX_VALUE)))
         assertEquals("", CypherFunctions.call("substring", listOf("abc", 3L)))
     }
 
