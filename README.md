@@ -1140,7 +1140,8 @@ per graph (`facts.completeness`), so a client never reads `null` as "complete".
 - **Paging.** `/api/cypher`, `/api/graphs/{id}/cypher` and `/api/cypher/graphs` (cross-graph
   mode) take `offset` beside `limit`. A truncated page answers
   `"total": {"relation": "gte"}` and `"nextOffset"`, the offset of the next page; the last
-  page answers `"nextOffset": null`, and a query's own `LIMIT` ends the pages. A page must
+  page answers `"nextOffset": null`, and a query's own `LIMIT` (a literal, a parameter or
+  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows. A page must
   end within the first 50,000 rows of a result (`offset + limit`), since the rows before a
   page are matched to be skipped; beyond that, narrow the query (`ORDER BY` a key and
   `WHERE key > last`). Use `ORDER BY` for pages that do not depend on the engine's row order.

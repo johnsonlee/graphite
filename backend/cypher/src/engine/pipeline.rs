@@ -296,25 +296,50 @@ impl Executor {
         let mut result: Option<QueryResult> = None;
         let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
-        for (i, (mut seg, all)) in segments.into_iter().enumerate() {
-            let windowed = max_rows.is_some_and(|max| inject_limit(&mut seg, max));
-            let keep = if self.probe {
-                probe_limit(&mut seg)
-            } else {
-                None
-            };
-            let mut r = if let Some(row) = seed {
-                self.run_segment_seeded(&seg, vec![row.clone()])?
-            } else {
-                self.run_segment(&seg)?
-            };
-            if let Some(n) = keep {
-                let beyond = trim_probe(&mut r, n);
-                more |= beyond;
-                if beyond && windowed {
-                    self.window_cut
-                        .store(true, std::sync::atomic::Ordering::Relaxed);
+        // A UNION that removes duplicates pages over distinct rows, so a branch cut at the
+        // window's row count may hold fewer distinct rows than the page needs.
+        let deduplicating = segments.iter().skip(1).any(|(_, all)| !all);
+        let branches = segments.len();
+        for (i, (original, all)) in segments.into_iter().enumerate() {
+            let mut factor = 1usize;
+            let (r, cut) = loop {
+                let mut seg = original.clone();
+                self.fold_constant_limit(&mut seg);
+                let window = max_rows.map(|max| max.saturating_mul(factor));
+                let windowed = window.is_some_and(|max| inject_limit(&mut seg, max));
+                let keep = if self.probe {
+                    probe_limit(&mut seg)
+                } else {
+                    None
+                };
+                let mut r = if let Some(row) = seed {
+                    self.run_segment_seeded(&seg, vec![row.clone()])?
+                } else {
+                    self.run_segment(&seg)?
+                };
+                let beyond = keep.is_some_and(|n| trim_probe(&mut r, n));
+                let cut = beyond && windowed;
+                if let (true, true, Some(max)) = (deduplicating, cut, max_rows) {
+                    let earlier = result
+                        .as_ref()
+                        .map(|acc| distinct_keys(&acc.rows))
+                        .unwrap_or_default();
+                    let fresh = distinct_keys(&r.rows)
+                        .into_iter()
+                        .filter(|key| !earlier.contains(key))
+                        .count();
+                    if fresh < max.saturating_sub(earlier.len()) && factor < MAX_UNION_WINDOW_FACTOR
+                    {
+                        factor *= 2;
+                        continue;
+                    }
                 }
+                more |= beyond;
+                break (r, cut);
+            };
+            if cut {
+                self.window_cut
+                    .store(true, std::sync::atomic::Ordering::Relaxed);
             }
             match &mut result {
                 None => {
@@ -366,12 +391,49 @@ impl Executor {
         if let Some(message) = self.take_declared_failure() {
             return Err(crate::error::CypherError::runtime(message));
         }
+        // Every branch got the window, so their union can exceed it: the page is the
+        // combined result's first `max_rows` rows, and a row past them is the next page's.
+        if let (Some(max), true) = (max_rows, branches > 1) {
+            let combined = res
+                .compact
+                .as_ref()
+                .map_or(res.rows.len(), |compact| compact.values.len());
+            if combined > max {
+                res.rows.truncate(max);
+                if let Some(compact) = res.compact.as_mut() {
+                    compact.values.truncate(max);
+                    compact.graph_ids.truncate(max);
+                }
+                more = true;
+                self.window_cut
+                    .store(true, std::sync::atomic::Ordering::Relaxed);
+            }
+        }
         res.more = more;
         // Strip internal keys except provenance.
         for row in &mut res.rows {
             row.retain(|k, _| !is_internal_key(k) || k == INTERNAL_PROVENANCE_KEY);
         }
         Ok(res)
+    }
+
+    /// Replaces a segment's trailing LIMIT expression that reads no row (literals,
+    /// parameters, arithmetic: `LIMIT 2 + 6`, `LIMIT $n`) by its value, so the window and
+    /// the probe see the limit a literal would give. An expression that does not evaluate
+    /// to a count is left for the pipeline, which reports it as before.
+    fn fold_constant_limit(&self, seg: &mut [Clause]) {
+        let Some(Clause::Limit(expr)) =
+            seg.iter_mut().rev().find(|c| matches!(c, Clause::Limit(_)))
+        else {
+            return;
+        };
+        if matches!(expr, Expr::Literal(_)) || !reads_no_row(expr) {
+            return;
+        }
+        let ev = Evaluator::new(self, &self.params);
+        if let Ok(n @ 0..) = eval_count(&ev, expr, None) {
+            *expr = Expr::Literal(Literal::Int(n));
+        }
     }
 
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
@@ -1690,6 +1752,25 @@ impl FusedShape {
 // ---------------------------------------------------------------------------
 // LIMIT injection and early limit
 // ---------------------------------------------------------------------------
+
+/// Whether `expr` is computed without a row: literals and parameters combined by arithmetic.
+fn reads_no_row(expr: &Expr) -> bool {
+    match expr {
+        Expr::Literal(_) | Expr::Parameter(_) => true,
+        Expr::Binary { left, right, .. } => reads_no_row(left) && reads_no_row(right),
+        Expr::Unary { expr, .. } => reads_no_row(expr),
+        _ => false,
+    }
+}
+
+/// How far a deduplicating UNION branch's window may grow (doubling) when its rows repeat:
+/// past it the branch keeps the rows it has, and a page can hold fewer of its distinct rows.
+const MAX_UNION_WINDOW_FACTOR: usize = 8;
+
+/// The distinct visible rows of `rows`, as the UNION deduplication keys them.
+fn distinct_keys(rows: &[Row]) -> std::collections::HashSet<Vec<Key>> {
+    rows.iter().map(visible_key).collect()
+}
 
 /// Lowers a segment's LIMIT to `max`, or adds it; returns whether `max` is now the limit
 /// that binds the segment's trailing LIMIT (the query's own literal limit was larger, or it

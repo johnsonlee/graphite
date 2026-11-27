@@ -708,7 +708,7 @@ RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c
 
 ## 查询服务：分页、层级与能力
 
-- **分页。** `/api/cypher`、`/api/graphs/{id}/cypher` 与 `/api/cypher/graphs`（cross-graph 模式）在 `limit` 之外支持 `offset`。被截断的页返回 `"total": {"relation": "gte"}` 和下一页的 `"nextOffset"`，最后一页返回 `"nextOffset": null`，查询自身的 `LIMIT` 也会结束分页。由于页之前的行需要先匹配再跳过，一页必须落在结果的前 50,000 行之内（`offset + limit`）；超出时请收窄查询（按某个键 `ORDER BY`，再用 `WHERE key > 上一页最后的值`）。需要稳定分页时请使用 `ORDER BY`。MCP `cypher` 工具同样支持 `offset`。
+- **分页。** `/api/cypher`、`/api/graphs/{id}/cypher` 与 `/api/cypher/graphs`（cross-graph 模式）在 `limit` 之外支持 `offset`。被截断的页返回 `"total": {"relation": "gte"}` 和下一页的 `"nextOffset"`，最后一页返回 `"nextOffset": null`，查询自身的 `LIMIT`（字面量、参数或它们的算术表达式）也会结束分页；`UNION` 按合并、去重后的结果分页。由于页之前的行需要先匹配再跳过，一页必须落在结果的前 50,000 行之内（`offset + limit`）；超出时请收窄查询（按某个键 `ORDER BY`，再用 `WHERE key > 上一页最后的值`）。需要稳定分页时请使用 `ORDER BY`。MCP `cypher` 工具同样支持 `offset`。
 - **层级。** `GET /api/graphs/{id}/hierarchy?type=T&direction=subtypes|supertypes&depth=N&limit=M&offset=K`（以及覆盖所有图的 `/api/hierarchy`、MCP `hierarchy` 工具）按固定顺序广度优先遍历类型层级，并在页满时停止，因此 `java.lang.Object` 的全部子类型是一系列分页，而不是一条跑到超时的路径查询。`known: false` 表示层级索引中没有该类型。遍历与 Cypher 查询一样受并发上限、超时与取消约束，每个请求最多检查 100,000 个层级条目。
 - **能力。** `GET /api/capabilities`（MCP `capabilities`）列出服务支持的方言、分页上限、Graphite 函数和层级上限，以及每个已加载图的生产者、存储格式和记录了哪些事实。
 

@@ -2724,6 +2724,65 @@ mod tests {
         assert_eq!(six["rows"].as_array().unwrap().len(), 6);
         assert_eq!(six["nextOffset"], 6);
         assert_eq!(six["total"], json!({"value": 7, "relation": "gte"}));
+        // A LIMIT computed from literals pages as the literal would (review of #229: it read
+        // as the query's own limit, `total` said eq 2 and no next page was named).
+        let pages_of = |query: &'static str, limit: usize| {
+            let app = app.clone();
+            async move {
+                let mut all = Vec::new();
+                let mut offset = Some(0u64);
+                let mut last = J::Null;
+                while let Some(at) = offset {
+                    let (status, body) = get_json(
+                        &app,
+                        &format!("/api/cypher?query={query}&limit={limit}&offset={at}"),
+                    )
+                    .await;
+                    assert_eq!(status, StatusCode::OK, "{query} at {at}: {body}");
+                    all.extend(
+                        body["rows"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .map(|r| r["v"].clone()),
+                    );
+                    offset = body["nextOffset"].as_u64();
+                    last = body;
+                }
+                (all, last)
+            }
+        };
+        let computed =
+            "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%202%2B6";
+        let (_, first) = get_json(&app, &format!("/api/cypher?query={computed}&limit=2")).await;
+        assert_eq!(values(&first), ["v0", "v1"]);
+        assert_eq!(first["nextOffset"], 2);
+        assert_eq!(first["total"]["relation"], "gte");
+        let (all, _) = pages_of(computed, 2).await;
+        assert_eq!(all.len(), 8, "{all:?}");
+        let short =
+            "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%202%2B1";
+        let (_, own) = get_json(&app, &format!("/api/cypher?query={short}&limit=3")).await;
+        assert_eq!(values(&own), ["v0", "v1", "v2"]);
+        assert!(own.get("nextOffset").is_none(), "{own}");
+        // The page window applies to a UNION's combined rows, not to each branch.
+        let union_all = "RETURN%201%20AS%20v%20UNION%20ALL%20RETURN%202%20AS%20v";
+        let (_, one) = get_json(&app, &format!("/api/cypher?query={union_all}&limit=1")).await;
+        assert_eq!(one["rows"].as_array().unwrap().len(), 1, "{one}");
+        assert_eq!(one["rows"][0]["v"], 1);
+        assert_eq!(one["nextOffset"], 1);
+        assert_eq!(one["total"]["relation"], "gte");
+        let (all, last) = pages_of(union_all, 1).await;
+        assert_eq!(all, [json!(1), json!(2)]);
+        assert_eq!(last["total"], json!({"value": 2, "relation": "eq"}));
+        // A deduplicating UNION whose first branch repeats rows: its distinct rows, in order,
+        // then the second branch's new ones, page for page.
+        let union = "UNWIND%20%5B1%2C1%2C1%2C2%2C3%5D%20AS%20x%20RETURN%20x%20AS%20v%20UNION%20UNWIND%20%5B3%2C4%5D%20AS%20x%20RETURN%20x%20AS%20v";
+        let (all, last) = pages_of(union, 2).await;
+        assert_eq!(all, [json!(1), json!(2), json!(3), json!(4)]);
+        assert_eq!(last["total"], json!({"value": 4, "relation": "eq"}));
+        let (whole, _) = pages_of(union, 50).await;
+        assert_eq!(whole, all, "pages concatenate to the whole result");
         // A query LIMIT one past the page: the next page holds exactly that row.
         let four =
             "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%204";
