@@ -1,0 +1,29 @@
+# JVM GraphStore.save into an existing directory (jshell over each revision's graphite.jar; counts read by the candidate Rust CLI, then by that revision's own JVM CLI)
+
+## baseline 70f908c
+### 1. save(loadMapped(acme), acme): the graph saved over the files it maps
+before: nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
+saved /tmp/claude-0/ds3-baseline/acme into /tmp/claude-0/ds3-baseline/acme
+after:  nodes 204; edges 
+after, read by this revision's JVM CLI: edges 
+### 2. save(loadMapped(fresh acme), core): a graph saved into a directory holding another graph whose transpose was persisted
+backward.* beside the core graph: 3 files
+saved /tmp/claude-0/ds3-baseline/acme into /tmp/claude-0/ds3-baseline/core
+acme (expected): edges "CONTROL_FLOW",5 "DATAFLOW",183 
+core dir now, Rust CLI: nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
+core dir now, JVM CLI incoming: 181
+leftover files the new graph did not write: backward.graph backward.offsets backward.properties 
+
+## candidate 28e761b
+### 1. save(loadMapped(acme), acme): the graph saved over the files it maps
+before: nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
+saved /tmp/claude-0/ds3-candidate/acme into /tmp/claude-0/ds3-candidate/acme
+after:  nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
+after, read by this revision's JVM CLI: edges "CONTROL_FLOW",5 "DATAFLOW",183 
+### 2. save(loadMapped(fresh acme), core): a graph saved into a directory holding another graph whose transpose was persisted
+backward.* beside the core graph: 3 files
+saved /tmp/claude-0/ds3-candidate/acme into /tmp/claude-0/ds3-candidate/core
+acme (expected): edges "CONTROL_FLOW",5 "DATAFLOW",183 
+core dir now, Rust CLI: nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
+core dir now, JVM CLI incoming: 188
+leftover files the new graph did not write: backward.graph backward.offsets backward.properties 

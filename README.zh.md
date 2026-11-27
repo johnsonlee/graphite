@@ -693,7 +693,7 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 所有写入方（JVM 保存、`graphite.jar build`/`import`、JSON 导入）最后都会写入 `graph.manifest`：先是 `@producer graphite-jvm 2.x.y`（或 `graphite-rust …`）与 `@storage-format 1`，再逐个文件列出 `sha256  size  name`，最后一行 `@seal <sha256>` 是之前所有行的 SHA-256。读取方遇到更新的存储格式时会按名称拒绝，而不是误读；被截断或改动过、或未列出图所需全部文件的清单也会被拒绝，而不会被当作一份文件更少的清单。
 
 - **保存要么完整、要么不发生。** `GraphStore.save` 先写入同级的暂存目录，再整体替换目标目录：`save(loadMapped(dir), dir)` 不再截断源图正在映射的文件，旧图遗留的文件（例如派生的 `backward.*`）不会残留在新图旁边，保存失败时保留原图。目标目录中若有图文件以外的内容，会拒绝替换；无法重命名的目标（例如挂载点）同样会被拒绝，因为逐个替换文件可能丢失原图，请改为保存到其下的子目录。
-- **损坏的数据会被拒绝，而不是被用来回答查询。** 两套读取器在解码前检查清单中每个文件的大小，截断、复制不完整或被替换的文件会报 `corrupt graph: <文件>: N bytes, but graph.manifest lists M`。大小不变的损坏需要计算哈希：`graphite verify <目录>` 会校验每个字节，`GRAPHITE_VERIFY_GRAPHS=1` 让 `query`、`serve`、`mcp` 在加载时校验，`graphite pack` 也会拒绝与清单不符的目录。没有清单的旧目录照常加载。
+- **能检测到什么、何时检测。** 默认情况下，两套读取器在解码前检查清单的 seal 与每个文件的大小，截断、复制不完整、被追加或被替换的文件会报 `corrupt graph: <文件>: N bytes, but graph.manifest lists M`。大小不变的损坏（例如翻转一位）默认**不会**被检测到：加载会成功；无法解码的损坏记录会让读取它的查询报错并指明图（进程不会崩溃），能解码的则可能给出错误答案。要检测这类损坏需要计算每个字节的哈希：`graphite verify <目录>`、在加载时校验的 `GRAPHITE_VERIFY_GRAPHS=1`（`query`、`serve`、`mcp`），以及会拒绝与清单不符目录的 `graphite pack`。没有清单的目录（清单出现之前写的，或清单被删除）照常加载，不做上述任何检查。
 
 ## 事实不存在与未被记录
 

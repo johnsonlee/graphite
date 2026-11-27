@@ -1,0 +1,75 @@
+{
+  "callSiteStatus": [
+    {
+      "status": "ANALYZED",
+      "n": 18
+    },
+    {
+      "status": "EXTERNAL",
+      "n": 28
+    }
+  ],
+  "methodStatus": [
+    {
+      "status": "ANALYZED",
+      "n": 20
+    }
+  ],
+  "externalCallees": [
+    {
+      "cls": "java.lang.Object",
+      "n": 6
+    },
+    {
+      "cls": "sootup.dummy.InvokeDynamic",
+      "n": 6
+    },
+    {
+      "cls": "java.util.Map",
+      "n": 4
+    },
+    {
+      "cls": "java.util.List",
+      "n": 3
+    },
+    {
+      "cls": "java.io.PrintStream",
+      "n": 2
+    },
+    {
+      "cls": "java.lang.IllegalStateException",
+      "n": 2
+    },
+    {
+      "cls": "java.lang.Integer",
+      "n": 2
+    },
+    {
+      "cls": "java.lang.Long",
+      "n": 1
+    },
+    {
+      "cls": "java.util.ArrayList",
+      "n": 1
+    },
+    {
+      "cls": "java.util.HashMap",
+      "n": 1
+    }
+  ],
+  "dispatchGaps": [
+    {
+      "gap": "DISPATCH_UNRESOLVED",
+      "n": 9
+    },
+    {
+      "n": 37
+    }
+  ],
+  "applicationCalls": [
+    {
+      "status": "ANALYZED",
+      "n": 18
+    }
+  ]
+}

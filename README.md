@@ -1089,12 +1089,17 @@ file a graph needs, is refused rather than taken as the inventory of fewer files
   earlier graph. A target holding anything but graph files is refused, never replaced, and so
   is a target that cannot be renamed (a mount point): replacing its files one by one could
   lose the earlier graph, so the save asks for a directory below it.
-- **Damage is refused, not answered.** Both readers check every listed file's size before
-  decoding anything, so a truncated, partially copied or replaced file fails the load with
-  `corrupt graph: <file>: N bytes, but graph.manifest lists M`. Same-size damage needs
+- **What is detected, and when.** By default both readers check the manifest's seal and
+  every listed file's size before decoding anything, so a truncated, partially copied,
+  extended or replaced file fails the load with
+  `corrupt graph: <file>: N bytes, but graph.manifest lists M`. Damage that keeps a file's
+  size (a flipped bit) is **not** detected by default: the load succeeds, a damaged record
+  that does not decode fails the query that reads it with an error naming the graph (the
+  process does not abort), and one that does decode can answer wrongly. Detecting it needs
   every byte hashed: `graphite verify <dir>` does that, `GRAPHITE_VERIFY_GRAPHS=1` makes
   `query`, `serve` and `mcp` do it on load, and `graphite pack` refuses a sealed directory
-  whose files no longer match. A directory written before the manifest loads as before.
+  whose files no longer match. A directory without a manifest (written before it existed,
+  or whose manifest was deleted) loads as before, without any of these checks.
 
 ```bash
 graphite verify saved-graph/              # SHA-256 of every file against graph.manifest; prints the producer

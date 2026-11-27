@@ -512,6 +512,13 @@ jobs:
         python3 backend/bench/parity-cli.py "${RUNNER_TEMP}/fixture-graph" \
           frontend/jvm/query/build/libs/graphite.jar target/release/graphite
 
+    - name: Completeness facts end to end (real frontend build, both engines)
+      run: |
+        # The acme graph was built from bytecode by the JVM frontend with --include com.acme:
+        # analysisStatus/dispatchGap must tell its JDK calls (never read) from its own.
+        python3 backend/bench/completeness-e2e.py "${RUNNER_TEMP}/acme-graph" \
+          frontend/jvm/query/build/libs/graphite.jar target/release/graphite
+
     - name: Retain JVM default-policy smoke evidence
       if: always()
       uses: actions/upload-artifact@v7

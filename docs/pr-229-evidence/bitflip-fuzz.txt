@@ -1,0 +1,22 @@
+# Single-bit flips, 30 per file, seed 7; outcome per flip over four queries
+## baseline 70f908c (base graphite binary, graph built by the base frontend)
+graph.nodedata: {'PANIC': 4, 'ok': 26}
+graph.nodeoffsets: {'PANIC': 7, 'ok': 23}
+forward.graph: {'PANIC': 4, 'ok': 26}
+forward.offsets: {'PANIC': 30}
+graph.labels: {'ok': 30}
+graph.typeindex: {'PANIC': 17, 'error': 1, 'ok': 12}
+## candidate 28e761b (candidate binary, graph built by the candidate frontend)
+graph.nodedata: {'error': 4, 'ok': 26}
+graph.nodeoffsets: {'error': 7, 'ok': 23}
+forward.graph: {'error': 10, 'ok': 20}
+forward.offsets: {'error': 30}
+graph.labels: {'ok': 30}
+graph.typeindex: {'error': 1, 'ok': 29}
+## candidate 28e761b with GRAPHITE_VERIFY_GRAPHS=1 (every listed file hashed at load)
+graph.nodedata: {'error': 30}
+graph.nodeoffsets: {'error': 30}
+forward.graph: {'error': 30}
+forward.offsets: {'error': 30}
+graph.labels: {'error': 30}
+graph.typeindex: {'error': 30}

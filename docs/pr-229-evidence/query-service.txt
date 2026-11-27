@@ -1,0 +1,23 @@
+# Query service over HTTP on the acme graph (each revision's own server, port 18090)
+## baseline 70f908c
+GET /api/capabilities -> 404
+    
+GET /api/graphs/acme/hierarchy?type=java.lang.Object&limit=3 -> 404
+    
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5 -> 200
+    rows ['<clinit>', '<init>', '<init>', '<init>', '<init>'] total {'value': 6, 'relation': 'gte'} offset - nextOffset -
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5&offset=5 -> 200
+    rows ['<clinit>', '<init>', '<init>', '<init>', '<init>'] total {'value': 6, 'relation': 'gte'} offset - nextOffset -
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5&offset=10000000 -> 200
+    rows ['<clinit>', '<init>', '<init>', '<init>', '<init>'] total {'value': 6, 'relation': 'gte'} offset - nextOffset -
+## candidate 28e761b
+GET /api/capabilities -> 200
+    {"server": {"name": "graphite", "version": "2.5.0"}, "storageFormat": 1, "cypher": {"dialects": ["graphite", "opencypher-m23"], "modes": ["cross-graph", "fanout"], "readOnly": true, "pagination": {"parameters": ["limit", "offset"], "defaultLimit": 1000, "maxLi
+GET /api/graphs/acme/hierarchy?type=java.lang.Object&limit=3 -> 200
+    {"graphId": "acme", "type": "java.lang.Object", "direction": "subtypes", "depth": 1, "known": true, "types": [{"type": "com.acme.shop.api.Main", "depth": 1, "parent": "java.lang.Object"}, {"type": "com.acme.shop.api.ShopApi", "depth": 1, "parent": "java.lang.O
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5 -> 200
+    rows ['<clinit>', '<init>', '<init>', '<init>', '<init>'] total {'value': 6, 'relation': 'gte'} offset 0 nextOffset 5
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5&offset=5 -> 200
+    rows ['<init>', '<init>', 'available', 'cancel', 'count'] total {'value': 11, 'relation': 'gte'} offset 5 nextOffset 10
+GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5&offset=10000000 -> 400
+    {"error": "'offset' is 10000000; a page must end within the first 50000 rows of a result"}

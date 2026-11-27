@@ -38,6 +38,12 @@ pub struct AppState {
     // Test-only execution boundary: no hook or tuning surface exists in production.
     #[cfg(test)]
     pub(crate) cypher_before_execute: Option<CypherExecutionHook>,
+    /// Test-only: runs before a hierarchy walk with its cancellation token, as the Cypher hook does.
+    #[cfg(test)]
+    pub(crate) hierarchy_before_walk: Option<CypherExecutionHook>,
+    /// Test-only: the visit budget of one hierarchy request, [`MAX_HIERARCHY_VISITS`] by default.
+    #[cfg(test)]
+    pub(crate) hierarchy_visit_budget: usize,
     pub registry: Arc<GraphRegistry>,
     pub guard: Arc<CypherGuard>,
     pub version: String,
@@ -100,6 +106,10 @@ impl AppState {
         AppState {
             #[cfg(test)]
             cypher_before_execute: None,
+            #[cfg(test)]
+            hierarchy_before_walk: None,
+            #[cfg(test)]
+            hierarchy_visit_budget: MAX_HIERARCHY_VISITS,
             registry,
             guard,
             version,
@@ -685,15 +695,17 @@ fn hierarchy_request(q: &Params) -> Result<HierarchyRequest, Response> {
 struct HierarchyBudget<'a> {
     cancel: &'a graphite_cypher::engine::CancelToken,
     visits: usize,
+    max: usize,
 }
 
 impl HierarchyBudget<'_> {
     fn visit(&mut self) -> graphite_cypher::CypherResult<()> {
         self.visits += 1;
-        if self.visits > MAX_HIERARCHY_VISITS {
+        if self.visits > self.max {
             return Err(graphite_cypher::CypherError::Runtime(format!(
-                "The hierarchy walk examined {MAX_HIERARCHY_VISITS} types without completing the page; \
-                 lower 'depth' or start from a narrower type"
+                "The hierarchy walk examined {} types without completing the page; \
+                 lower 'depth' or start from a narrower type",
+                self.max
             )));
         }
         self.cancel.check()
@@ -743,10 +755,24 @@ async fn run_hierarchy(
         Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
+    #[cfg(test)]
+    let (before_walk, max) = (s.hierarchy_before_walk.clone(), s.hierarchy_visit_budget);
+    #[cfg(not(test))]
+    let max = MAX_HIERARCHY_VISITS;
     let result = crate::query_job::run(permit, move |permit| {
+        let cancel = permit.cancel.clone();
+        #[cfg(test)]
+        let cancel = {
+            let mut cancel = cancel;
+            if let Some(hook) = before_walk {
+                hook(&mut cancel, timeout_millis);
+            }
+            cancel
+        };
         let mut budget = HierarchyBudget {
-            cancel: &permit.cancel,
+            cancel: &cancel,
             visits: 0,
+            max,
         };
         let payloads = leases
             .iter()
@@ -2880,6 +2906,7 @@ mod tests {
         let mut budget = HierarchyBudget {
             cancel: &cancel,
             visits: MAX_HIERARCHY_VISITS - 1,
+            max: MAX_HIERARCHY_VISITS,
         };
         assert!(budget.visit().is_ok());
         let err = budget.visit().unwrap_err().to_string();
@@ -2893,6 +2920,7 @@ mod tests {
         let mut budget = HierarchyBudget {
             cancel: &cancelled,
             visits: 0,
+            max: MAX_HIERARCHY_VISITS,
         };
         assert!(matches!(
             budget.visit(),
@@ -2902,6 +2930,101 @@ mod tests {
         assert_eq!(caps["hierarchy"]["maxVisits"], 100_000);
         assert_eq!(caps["cypher"]["pagination"]["maxWindow"], 50_000);
         let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// A service over one graph whose hierarchy is wide: `app.Root` has `width` subtypes
+    /// `app.Kid0000..`, each with one subtype `app.Kid0000Leaf`.
+    fn wide_hierarchy_app(
+        width: usize,
+        configure: impl FnOnce(&mut AppState),
+    ) -> (Router, std::path::PathBuf) {
+        let dir = std::env::temp_dir().join(format!("graphite-wide-{}", uuid::Uuid::new_v4()));
+        let mut supertypes = Vec::new();
+        for i in 0..width {
+            supertypes.push(json!({"type": format!("app.Kid{i:04}"), "supertypes": ["app.Root"]}));
+            supertypes.push(
+                json!({"type": format!("app.Kid{i:04}Leaf"), "supertypes": [format!("app.Kid{i:04}")]}),
+            );
+        }
+        let graph = json!({
+            "version": 1, "methods": [], "edges": [], "supertypes": supertypes,
+            "nodes": [{"id": 0, "kind": "StringConstant", "value": "x"}]
+        });
+        graphite_storage::interchange::import_json(graph.to_string().as_bytes(), &dir).unwrap();
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().unwrap().to_path_buf(),
+            LoadMode::Mapped,
+        ));
+        registry.load("w", &dir, None).unwrap();
+        let mut state = AppState::new(
+            registry,
+            Arc::new(CypherGuard::new(2, 1_000)),
+            "test".into(),
+            false,
+        );
+        configure(&mut state);
+        let state = Arc::new(state);
+        (instrumented(router(state.clone()), state), dir)
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn a_wide_hierarchy_pages_to_completion_and_stops_at_its_budget_or_deadline() {
+        let width = 1500;
+        let (app, dir) = wide_hierarchy_app(width, |_| {});
+        let mut walked = Vec::new();
+        let mut offset = Some(0u64);
+        let mut pages = 0;
+        while let Some(at) = offset {
+            let (status, body) = get_json(
+                &app,
+                &format!("/api/graphs/w/hierarchy?type=app.Root&depth=2&limit=1000&offset={at}"),
+            )
+            .await;
+            assert_eq!(status, StatusCode::OK, "{body}");
+            walked.extend(body["types"].as_array().unwrap().iter().cloned());
+            offset = body["nextOffset"].as_u64();
+            assert_eq!(body["truncated"], offset.is_some());
+            pages += 1;
+        }
+        assert_eq!(pages, 3, "3,000 types in pages of 1,000");
+        assert_eq!(walked.len(), 2 * width);
+        // Level by level, by name, each type once, with the parent it was reached from.
+        assert_eq!(
+            walked[0],
+            json!({"type": "app.Kid0000", "depth": 1, "parent": "app.Root"})
+        );
+        assert_eq!(walked[width - 1]["type"], "app.Kid1499");
+        assert_eq!(
+            walked[width],
+            json!({"type": "app.Kid0000Leaf", "depth": 2, "parent": "app.Kid0000"})
+        );
+        let names: std::collections::HashSet<&str> =
+            walked.iter().map(|t| t["type"].as_str().unwrap()).collect();
+        assert_eq!(names.len(), 2 * width);
+        let _ = std::fs::remove_dir_all(&dir);
+
+        // The same walk under a small visit budget stops instead of walking the wide level.
+        let (app, dir) = wide_hierarchy_app(width, |state| state.hierarchy_visit_budget = 500);
+        let (status, body) = get_json(&app, "/api/graphs/w/hierarchy?type=app.Root&limit=1").await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+        assert!(
+            body["error"]
+                .as_str()
+                .unwrap()
+                .contains("examined 500 types without completing the page"),
+            "{body}"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+
+        // And one whose deadline passed stops with the Cypher timeout response.
+        let (app, dir) = wide_hierarchy_app(width, |state| {
+            state.hierarchy_before_walk = Some(Arc::new(|cancel, _| {
+                *cancel = CancelToken::with_timeout(0);
+            }));
+        });
+        let (status, body) = get_json(&app, "/api/hierarchy?type=app.Root&depth=2").await;
+        assert_eq!(status, StatusCode::GATEWAY_TIMEOUT, "{body}");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[tokio::test(flavor = "multi_thread")]
