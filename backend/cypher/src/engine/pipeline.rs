@@ -297,9 +297,7 @@ impl Executor {
         let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
         for (i, (mut seg, all)) in segments.into_iter().enumerate() {
-            if let Some(max) = max_rows {
-                inject_limit(&mut seg, max);
-            }
+            let windowed = max_rows.is_some_and(|max| inject_limit(&mut seg, max));
             let keep = if self.probe {
                 probe_limit(&mut seg)
             } else {
@@ -311,7 +309,12 @@ impl Executor {
                 self.run_segment(&seg)?
             };
             if let Some(n) = keep {
-                more |= trim_probe(&mut r, n);
+                let beyond = trim_probe(&mut r, n);
+                more |= beyond;
+                if beyond && windowed {
+                    self.window_cut
+                        .store(true, std::sync::atomic::Ordering::Relaxed);
+                }
             }
             match &mut result {
                 None => {
@@ -1688,19 +1691,29 @@ impl FusedShape {
 // LIMIT injection and early limit
 // ---------------------------------------------------------------------------
 
-fn inject_limit(seg: &mut Vec<Clause>, max: usize) {
+/// Lowers a segment's LIMIT to `max`, or adds it; returns whether `max` is now the limit
+/// that binds the segment's trailing LIMIT (the query's own literal limit was larger, or it
+/// had none). A query limit equal to `max` binds itself: a row past it is no page.
+fn inject_limit(seg: &mut Vec<Clause>, max: usize) -> bool {
     let lit = Clause::Limit(Expr::Literal(Literal::Int(max as i64)));
     if let Some(pos) = seg.iter().rposition(|c| matches!(c, Clause::Limit(_))) {
         match &seg[pos] {
             Clause::Limit(Expr::Literal(Literal::Int(n))) => {
                 if *n > max as i64 {
                     seg[pos] = lit;
+                    return true;
                 }
+                false
             }
-            _ => seg.insert(pos, lit),
+            // A parameterised limit stays last and is never probed.
+            _ => {
+                seg.insert(pos, lit);
+                false
+            }
         }
     } else {
         seg.push(lit);
+        true
     }
 }
 

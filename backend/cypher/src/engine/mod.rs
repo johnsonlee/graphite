@@ -211,6 +211,9 @@ pub struct Executor {
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
     poll: AtomicU64,
+    /// Set when a segment's `max_rows` window, not the query's own LIMIT, cut its rows and
+    /// the probe found a row past it; see `Executor::window_cut`.
+    window_cut: std::sync::atomic::AtomicBool,
     /// The first declared-type table this query needed and could not read. A table that fails
     /// to parse is absent for the whole process, so without this the query would answer as if
     /// the graph declared nothing; the query ends with this error instead (see
@@ -263,6 +266,7 @@ impl Executor {
             partition: true,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
+            window_cut: std::sync::atomic::AtomicBool::new(false),
             declared_failure: std::sync::Mutex::new(None),
         }
     }
@@ -390,6 +394,14 @@ impl Executor {
     pub fn without_partitioning(mut self) -> Self {
         self.partition = false;
         self
+    }
+
+    /// Whether a query this executor ran with a `max_rows` window had a row past that window
+    /// that its own LIMIT did not exclude: the next page of the same query exists. Read with
+    /// the probe (`with_probe`), which supplies the one row past the window; `QueryResult::more`
+    /// alone also reports a row past the query's own LIMIT, which is no page.
+    pub fn window_cut(&self) -> bool {
+        self.window_cut.load(Ordering::Relaxed)
     }
 
     /// Report whether more rows exist beyond a LIMIT (`QueryResult::more`), at the cost

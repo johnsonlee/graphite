@@ -2201,26 +2201,20 @@ async fn run_cypher(
             .with_cancel(cancel)
             .with_compact()
             .with_probe();
-        // A page runs the query to one row past `offset + limit` and drops the first
-        // `offset`. That extra row is the next page's first, so a next page exists exactly
-        // when it arrives; a query whose own LIMIT ends within the window never yields it
-        // (the engine's probe would: it looks past the query's LIMIT, which is no page).
-        // Pages of a query without ORDER BY follow the engine's row order, which is stable
-        // for one graph set.
-        let mut result = executor.execute(&query, Some(window + 1))?;
-        let fetched = row_count(&result);
-        keep_leading_rows(&mut result, window);
+        // A page runs the query to `offset + limit` rows and drops the first `offset`. The
+        // engine's probe matches one row past that window, the only lookahead: a row it finds
+        // is the next page's first when the window cut the rows (`window_cut`), and no page
+        // when the query's own LIMIT did. Pages of a query without ORDER BY follow the
+        // engine's row order, which is stable for one graph set.
+        let mut result = executor.execute(&query, Some(window))?;
         // The rows this request consumed, counted rather than assumed from `offset`: a page
         // past the end has consumed every row there is.
-        let consumed = fetched.min(window);
+        let consumed = row_count(&result);
         drop_leading_rows(&mut result, offset);
         let returned = row_count(&result);
         let mut extra = extra;
-        extra.push((
-            "total",
-            total_json(consumed, fetched > window || result.more),
-        ));
-        let paged = page > 0 && fetched > window;
+        extra.push(("total", total_json(consumed, result.more)));
+        let paged = page > 0 && executor.window_cut();
         if offset > 0 || paged {
             extra.push(("offset", json!(offset)));
             extra.push((
@@ -2248,15 +2242,6 @@ fn row_count(result: &graphite_cypher::engine::QueryResult) -> usize {
         .compact
         .as_ref()
         .map_or(result.rows.len(), |compact| compact.values.len())
-}
-
-/// Keeps the first `n` rows of a result, in whichever representation it holds them.
-fn keep_leading_rows(result: &mut graphite_cypher::engine::QueryResult, n: usize) {
-    if let Some(compact) = result.compact.as_mut() {
-        compact.values.truncate(n);
-        compact.graph_ids.truncate(n);
-    }
-    result.rows.truncate(n);
 }
 
 /// Removes the first `offset` rows of a result, in whichever representation it holds them.
@@ -2730,6 +2715,15 @@ mod tests {
             .await;
             assert_eq!(replay["rows"], json!([]), "limit={page}: {replay}");
         }
+        // One lookahead only: the row past the page is matched (it is the probe), the one
+        // after it is not, so an error there cannot fail a page that ends before it. v7 is
+        // the eighth row and divides by zero. (With ORDER BY every row is projected first.)
+        let divide = "MATCH%20(n:StringConstant)%20RETURN%201%20/%20(7%20-%20toInteger(substring(n.value,%201)))%20AS%20v";
+        let (status, six) = get_json(&app, &format!("/api/cypher?query={divide}&limit=6")).await;
+        assert_eq!(status, StatusCode::OK, "{six}");
+        assert_eq!(six["rows"].as_array().unwrap().len(), 6);
+        assert_eq!(six["nextOffset"], 6);
+        assert_eq!(six["total"], json!({"value": 7, "relation": "gte"}));
         // A query LIMIT one past the page: the next page holds exactly that row.
         let four =
             "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%204";
