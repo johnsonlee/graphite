@@ -32,7 +32,7 @@ class GraphStoreLayoutTest : GraphStoreTestFixture() {
         kotlin.test.assertNull(compressAndLoadTransientBackwardGraph(damaged))
         val notDirectory = Files.createTempFile("backward-not-directory", ".file")
         try {
-            kotlin.test.assertNull(persistAndLoadBackwardGraph(notDirectory, source))
+            kotlin.test.assertNull(persistAndLoadBackwardGraph(notDirectory, source, null))
         } finally { Files.delete(notDirectory) }
     }
 

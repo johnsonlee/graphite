@@ -209,10 +209,14 @@ internal fun copyLegacyNodeIndexEntries(nodeIndexPath: Path, offsetWriter: NodeO
 
 internal data class LegacyNodeIndexStats(val maxNodeId: Int, val typeCounts: IntArray)
 
-internal fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
-    // A transpose is derived after the save, so the manifest cannot list it; it names the graph it was derived from instead, and one
-    // derived from another graph (left by an earlier graph in this directory, or written by a process still holding it) is rebuilt.
-    if (!hasPersistedBackwardGraph(dir) || backwardGraphIdentity(dir) != GraphManifest.identity(dir)) return null
+/**
+ * The persisted transpose of the graph generation [identity] (the manifest digest the graph was loaded with), or null. A transpose is
+ * derived after the save, so the manifest cannot list it; it names the graph it was derived from instead, and it is read only while the
+ * directory still holds that generation and the transpose names it. One derived from another graph (left by an earlier graph in this
+ * directory, or written by a process still holding a replaced one) is rebuilt.
+ */
+internal fun loadPersistedBackwardGraph(dir: Path, identity: String?): ImmutableGraph? {
+    if (!hasPersistedBackwardGraph(dir) || !holdsGeneration(dir, identity) || backwardGraphIdentity(dir) != identity) return null
     return try {
         BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
     } catch (_: Exception) {
@@ -220,12 +224,19 @@ internal fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
     }
 }
 
-internal fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph? {
+/**
+ * Persists [backward], the transpose of generation [identity], beside it and returns it loaded. Nothing is published once the directory
+ * holds another generation (the caller keeps the transpose in memory), and what is published names [identity], the generation it was
+ * derived from, never whichever manifest occupies the directory when it is written: a directory replaced while the transpose was being
+ * stored therefore holds a transpose its readers refuse.
+ */
+internal fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph, identity: String?): ImmutableGraph? {
+    if (!holdsGeneration(dir, identity)) return null
     var tempDir: Path? = null
     return try {
         tempDir = Files.createTempDirectory(dir, "$BACKWARD_GRAPH.")
         val loaded = storeAndLoadBackwardGraph(tempDir, backward)
-        GraphManifest.identity(dir)?.let { identity ->
+        identity?.let { identity ->
             Files.writeString(
                 tempDir.resolve(BACKWARD_PROPERTIES),
                 "$BACKWARD_IDENTITY_KEY=$identity\n",
@@ -284,6 +295,14 @@ internal fun stripPropertiesComments(properties: Path) {
 }
 
 internal const val BACKWARD_IDENTITY_KEY = "graphite.graph.identity"
+
+/** Whether [dir] still holds the generation whose manifest digest is [identity] (null: a graph without a manifest). */
+internal fun holdsGeneration(dir: Path, identity: String?): Boolean =
+    try {
+        GraphManifest.identity(dir) == identity
+    } catch (_: GraphIntegrityException) {
+        false
+    }
 
 /** The manifest digest a persisted transpose records, or null for one written by a legacy graph or before manifests existed. */
 internal fun backwardGraphIdentity(dir: Path): String? =

@@ -39,7 +39,9 @@ internal fun loadEagerGraph(dir: Path): Graph {
     val labelBytes = labelsFuture.join()
 
     val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
-    val backward = lazy { loadBackwardGraph(dir, forward) }
+    // The generation this load reads: the transpose is derived from it, whatever the directory holds when it is first asked for.
+    val identity = GraphManifest.identity(dir)
+    val backward = lazy { loadBackwardGraph(dir, forward, identity) }
 
     val comparisonMap =
         DataInputStream(BufferedInputStream(dir.resolve(GraphStore.COMPARISONS_FILE).toFile().inputStream())).use { dis ->
@@ -100,7 +102,9 @@ internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, per
     val nodeIndex = joinGraphLoad(nodeIndexFuture)
     val methodCount = joinGraphLoad(methodCountFuture)
     val comparisonLookup = joinGraphLoad(comparisonFuture)
-    val backward = lazy { loadBackwardGraph(dir, forward) }
+    // The generation this load reads: the transpose is derived from it, whatever the directory holds when it is first asked for.
+    val identity = GraphManifest.identity(dir)
+    val backward = lazy { loadBackwardGraph(dir, forward, identity) }
     val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
     val metadata = lazy { loadGraphMetadataWithTrailer(dir, stringTable) }
     val branchDefinitions = lazy {

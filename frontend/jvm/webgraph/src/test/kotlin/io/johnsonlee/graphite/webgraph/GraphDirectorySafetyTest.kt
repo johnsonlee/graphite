@@ -62,6 +62,62 @@ class GraphDirectorySafetyTest : GraphStoreTestFixture() {
         }
     }
 
+    /** Two graphs over the same node ids, `1 -> 2` when [forward], `2 -> 1` otherwise. */
+    private fun pair(forward: Boolean): Graph {
+        val builder = DefaultGraph.Builder()
+        val one = IntConstant(NodeId(1), 1)
+        val two = IntConstant(NodeId(2), 2)
+        builder.addNode(one)
+        builder.addNode(two)
+        builder.addEdge(
+            if (forward) DataFlowEdge(one.id, two.id, DataFlowKind.ASSIGN) else DataFlowEdge(two.id, one.id, DataFlowKind.ASSIGN))
+        return builder.build()
+    }
+
+    @Test
+    fun `a graph replaced after load never publishes its transpose for the new graph`() = inTemp { root ->
+        for (mode in listOf(GraphStore.LoadMode.MAPPED, GraphStore.LoadMode.EAGER)) {
+            val dir = root.resolve(mode.name)
+            GraphStore.save(pair(forward = false), dir)
+            // Loaded before any incoming edge is read, so its transpose is derived lazily, after the replacement.
+            val old = GraphStore.load(dir, mode)
+            try {
+                GraphStore.save(pair(forward = true), dir)
+                assertEquals(listOf(2), old.incoming(NodeId(1)).map { it.from.value }.toList(), "the old graph keeps its own edges")
+                assertFalse(hasPersistedBackwardGraph(dir), "nothing is published into another generation")
+                assertNull(loadPersistedBackwardGraph(dir, GraphManifest.identity(dir)))
+                val fresh = GraphStore.load(dir, mode)
+                try {
+                    assertEquals(emptyList(), fresh.incoming(NodeId(1)).map { it.from.value }.toList())
+                    assertEquals(listOf(1), fresh.incoming(NodeId(2)).map { it.from.value }.toList())
+                } finally {
+                    (fresh as? AutoCloseable)?.close()
+                }
+            } finally {
+                (old as? AutoCloseable)?.close()
+            }
+        }
+    }
+
+    @Test
+    fun `a transpose stamped with a generation the directory no longer holds is not read`() = inTemp { root ->
+        val dir = root.resolve("g")
+        GraphStore.save(pair(forward = false), dir)
+        val first = GraphManifest.identity(dir)
+        val graph = GraphStore.load(dir, GraphStore.LoadMode.MAPPED)
+        graph.incoming(NodeId(1)).count()
+        (graph as? AutoCloseable)?.close()
+        assertEquals(first, backwardGraphIdentity(dir))
+        assertNotNull(loadPersistedBackwardGraph(dir, first))
+        // The transpose names its own generation; a reader of another one rebuilds.
+        assertNull(loadPersistedBackwardGraph(dir, "0".repeat(64)))
+        assertNull(loadPersistedBackwardGraph(dir, null))
+        // A directory whose manifest no longer parses holds no generation a transpose could belong to.
+        Files.writeString(dir.resolve(GraphManifest.FILE_NAME), "damaged\n")
+        assertFalse(holdsGeneration(dir, first))
+        assertNull(loadPersistedBackwardGraph(dir, first))
+    }
+
     @Test
     fun `saving a mapped graph back into its own directory keeps the graph intact`() {
         val dir = Files.createTempDirectory("graph-dir-self")
@@ -298,13 +354,13 @@ class GraphDirectorySafetyTest : GraphStoreTestFixture() {
         Files.writeString(
             dir.resolve("backward.properties"),
             Files.readString(dir.resolve("backward.properties")).replace(GraphManifest.identity(dir)!!, "0".repeat(64)))
-        assertNull(loadPersistedBackwardGraph(dir))
+        assertNull(loadPersistedBackwardGraph(dir, GraphManifest.identity(dir)))
         // A legacy directory keeps reading a transpose without an identity.
         unsealGraph(dir)
         Files.writeString(
             dir.resolve("backward.properties"),
             Files.readAllLines(dir.resolve("backward.properties")).filterNot { it.startsWith(BACKWARD_IDENTITY_KEY) }.joinToString("\n"))
-        assertNotNull(loadPersistedBackwardGraph(dir))
+        assertNotNull(loadPersistedBackwardGraph(dir, null))
     }
 
     @Test
