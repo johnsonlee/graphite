@@ -76,10 +76,25 @@ impl Completeness {
     }
 }
 
-/// Reads the evidence `forward.properties` binds; `Ok(None)` when the graph has none
-/// (written before the evidence existed, by a frontend that records none, or the file
-/// is another save's).
-pub fn load(src: &GraphSource) -> Result<Option<Completeness>, String> {
+/// The evidence of one loaded graph, mapped at load and parsed on first use.
+///
+/// Mapping the file pins the bytes the load saw: a directory replaced afterwards (a new
+/// save of the same path) keeps serving this graph its own evidence, never the new one's.
+pub struct Bound {
+    bytes: crate::container::Bytes,
+    layout: String,
+    binding: String,
+}
+
+impl Bound {
+    pub fn parse(&self) -> Result<Option<Completeness>, String> {
+        parse(&self.bytes, &self.layout, &self.binding)
+    }
+}
+
+/// Maps the evidence `forward.properties` binds, without parsing it; `Ok(None)` when the
+/// graph has none (written before the evidence existed, or by a frontend that records none).
+pub fn bind(src: &GraphSource) -> Result<Option<Bound>, String> {
     let properties = match src.bytes("forward.properties") {
         Ok(Some(bytes)) => String::from_utf8_lossy(&bytes).into_owned(),
         Ok(None) => return Ok(None),
@@ -94,12 +109,25 @@ pub fn load(src: &GraphSource) -> Result<Option<Completeness>, String> {
     let (Some(layout), Some(binding)) = (property(LAYOUT_KEY), property(BINDING_KEY)) else {
         return Ok(None);
     };
-    let bytes = match src.bytes(FILE_NAME) {
-        Ok(Some(bytes)) => bytes,
-        Ok(None) => return Ok(None),
-        Err((path, e)) => return Err(format!("{path}: {e}")),
-    };
-    parse(&bytes, &layout, &binding)
+    match src.bytes(FILE_NAME) {
+        Ok(Some(bytes)) => Ok(Some(Bound {
+            bytes,
+            layout,
+            binding,
+        })),
+        Ok(None) => Ok(None),
+        Err((path, e)) => Err(format!("{path}: {e}")),
+    }
+}
+
+/// Reads the evidence `forward.properties` binds; `Ok(None)` when the graph has none
+/// (written before the evidence existed, by a frontend that records none, or the file
+/// is another save's).
+pub fn load(src: &GraphSource) -> Result<Option<Completeness>, String> {
+    match bind(src)? {
+        Some(bound) => bound.parse(),
+        None => Ok(None),
+    }
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -313,6 +341,46 @@ mod tests {
         let digest = Sha256::digest(&out);
         out.extend_from_slice(&digest);
         out
+    }
+
+    #[test]
+    fn a_loaded_graph_keeps_its_own_evidence_after_its_directory_is_replaced() {
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-completeness-generation-{}",
+            std::process::id()
+        ));
+        let write = |with_evidence: bool| {
+            let _ = std::fs::remove_dir_all(&dir);
+            let graph = serde_json::json!({
+                "version": 1, "methods": [], "edges": [],
+                "nodes": [{"id": 0, "kind": "StringConstant", "value": "a"}]
+            });
+            crate::interchange::import_json(graph.to_string().as_bytes(), &dir).unwrap();
+            if with_evidence {
+                let bytes = sidecar(&payload(), [7; 32]);
+                let binding = hex(&bytes[bytes.len() - 32..]);
+                std::fs::write(dir.join(FILE_NAME), &bytes).unwrap();
+                let properties = dir.join("forward.properties");
+                let mut text = std::fs::read_to_string(&properties).unwrap();
+                text.push_str(&format!(
+                    "{LAYOUT_KEY}={}\n{BINDING_KEY}={binding}\n",
+                    hex(&[7; 32])
+                ));
+                std::fs::write(&properties, text).unwrap();
+                crate::manifest::GraphManifest::write_dir(&dir).unwrap();
+            }
+        };
+        write(true);
+        let graph = crate::Graph::load(&dir).unwrap();
+        // A new save of the same path before the first status question.
+        write(false);
+        assert_eq!(
+            crate::Graph::load(&dir).unwrap().dispatch_gap(42).unwrap(),
+            None,
+            "the new graph has no evidence"
+        );
+        assert_eq!(graph.dispatch_gap(42).unwrap(), Some("DISPATCH_PARTIAL"));
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]

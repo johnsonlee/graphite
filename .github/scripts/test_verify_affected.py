@@ -27,6 +27,14 @@ class AffectedPlanTest(unittest.TestCase):
         self.assertEqual(set(affected.GRADLE_DEPENDENTS), modules)
         self.assertTrue(web)
 
+    def test_all_checks_everything_even_with_no_changed_paths(self):
+        crates, modules, web = affected.plan([], everything=True)
+        self.assertEqual(crates, set(affected.CARGO_DEPENDENTS) | {c for d in affected.CARGO_DEPENDENTS.values() for c in d})
+        self.assertEqual(modules, set(affected.GRADLE_DEPENDENTS))
+        self.assertTrue(web)
+        self.assertEqual([name for name, _ in affected.commands(crates, modules, web)], ["rust", "jvm", "web"])
+        self.assertEqual(affected.plan([]), (set(), set(), False))
+
     def test_groups_run_rust_jvm_and_web_side_by_side(self):
         groups = affected.commands({"graphite-cli"}, {"query"}, True)
         self.assertEqual(["rust", "jvm", "web"], [name for name, _ in groups])

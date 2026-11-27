@@ -32,14 +32,23 @@ graph-dir/
 `graph.manifest` is the one inventory of a saved graph: `graphite-graph 1`, then
 `@producer <name> <version>` and `@storage-format <n>`, then `sha256  size  name` per file
 (the container manifest's line format, so a packed directory carries it as an ordinary
-entry and `pack` refuses files that no longer match it). Both readers check every listed
-file's presence and size before decoding, refuse a later storage format by name, and
-treat a directory without a manifest as a graph written before it. Files derived after
+entry and `pack` refuses files that no longer match it), and last `@seal <sha256>`, the
+SHA-256 of every byte before that line. The inventory must list every file each writer
+produces (`REQUIRED_FILES` in both readers: `forward.graph`, `forward.offsets`,
+`forward.properties`, `graph.labels`, `graph.metadata`, `graph.nodedata`,
+`graph.nodeoffsets`, `graph.strings`, `graph.typeindex`), so a manifest cut at a line
+boundary, down to its header, fails instead of certifying the files it still names. Both
+readers check the seal and every listed file's presence and size before decoding, refuse a
+later storage format by name, and treat a directory without a manifest as a graph written
+before it. Files derived after
 the save are not listed: a persisted `backward.*` transpose records the manifest digest it
 was derived from (`graphite.graph.identity` in `backward.properties`) and is rebuilt when
 that is not the directory's current manifest, and a sealed CallSite index is never
 rewritten in place. `GraphStore.save` writes the whole directory into a sibling staging
-directory and swaps it in, so no file of an earlier graph survives beside a new one; a new
+directory and swaps it in, so no file of an earlier graph survives beside a new one. A
+target that cannot be renamed (a mount point) is refused and keeps its graph: emptying it
+and moving files in one by one would delete the earlier graph first, and a directory left
+half way would have no manifest and read as a legacy graph. A new
 persisted file therefore needs no deletion list, only its writer, its readers, and a name
 in `OPTIONAL_ENTRIES` (`graphite-storage`'s list of graph file names).
 

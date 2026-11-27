@@ -1077,14 +1077,18 @@ server's mapping stays bound to the old inode until the last in-flight query fin
 Every writer (the JVM saver, `graphite.jar build`/`import`, and the JSON importer) seals
 a graph directory with `graph.manifest`, written last: the container manifest's
 `sha256  size  name` line per file, preceded by `@producer graphite-jvm 2.x.y` (or
-`graphite-rust …`) and `@storage-format 1`. A reader that meets a later storage format
-refuses it by name instead of misreading it.
+`graphite-rust …`) and `@storage-format 1`, and closed by `@seal <sha256>`, the SHA-256 of
+every line before it. A reader that meets a later storage format refuses it by name instead
+of misreading it, and a manifest that is cut short or edited, or that does not list every
+file a graph needs, is refused rather than taken as the inventory of fewer files.
 
 - **Saving is all or nothing.** `GraphStore.save` writes into a sibling staging directory
   and only then takes the target's place, so `save(loadMapped(dir), dir)` no longer
   truncates the files the source graph maps, no file of an earlier graph (such as a
   derived `backward.*` transpose) survives beside a new one, and a failed save leaves the
-  earlier graph. A target holding anything but graph files is refused, never replaced.
+  earlier graph. A target holding anything but graph files is refused, never replaced, and so
+  is a target that cannot be renamed (a mount point): replacing its files one by one could
+  lose the earlier graph, so the save asks for a directory below it.
 - **Damage is refused, not answered.** Both readers check every listed file's size before
   decoding anything, so a truncated, partially copied or replaced file fails the load with
   `corrupt graph: <file>: N bytes, but graph.manifest lists M`. Same-size damage needs
@@ -1136,13 +1140,18 @@ per graph (`facts.completeness`), so a client never reads `null` as "complete".
 - **Paging.** `/api/cypher`, `/api/graphs/{id}/cypher` and `/api/cypher/graphs` (cross-graph
   mode) take `offset` beside `limit`. A truncated page answers
   `"total": {"relation": "gte"}` and `"nextOffset"`, the offset of the next page; the last
-  page answers `"nextOffset": null`. Use `ORDER BY` for pages that do not depend on the
-  engine's row order. The MCP `cypher` tool takes `offset` too.
+  page answers `"nextOffset": null`, and a query's own `LIMIT` ends the pages. A page must
+  end within the first 50,000 rows of a result (`offset + limit`), since the rows before a
+  page are matched to be skipped; beyond that, narrow the query (`ORDER BY` a key and
+  `WHERE key > last`). Use `ORDER BY` for pages that do not depend on the engine's row order.
+  The MCP `cypher` tool takes `offset` too.
 - **Hierarchy.** `GET /api/graphs/{id}/hierarchy?type=T&direction=subtypes|supertypes&depth=N&limit=M&offset=K`
   (and `/api/hierarchy` for every graph, the MCP `hierarchy` tool) walks the type
   hierarchy breadth first in a fixed order and stops at the page, so every subtype of
   `java.lang.Object` is a series of pages rather than a path query that runs into the
-  timeout. `known: false` says the hierarchy does not name the type.
+  timeout. `known: false` says the hierarchy does not name the type. A walk runs as a Cypher
+  query does, under the concurrency limit, deadline and cancellation, and examines at most
+  100,000 hierarchy entries per request.
 - **Capabilities.** `GET /api/capabilities` (MCP `capabilities`) names the dialects,
   paging bounds, Graphite functions and hierarchy bounds the server supports, and for
   every loaded graph its producer, storage format and which facts it recorded.

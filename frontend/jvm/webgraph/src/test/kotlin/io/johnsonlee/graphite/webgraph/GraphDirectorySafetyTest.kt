@@ -143,24 +143,73 @@ class GraphDirectorySafetyTest : GraphStoreTestFixture() {
         val dir = root.resolve("g")
         GraphStore.save(buildTestGraph(), dir)
         val path = dir.resolve(GraphManifest.FILE_NAME)
-        val text = Files.readString(path)
+        val entries = requiredEntries()
+        val body = Files.readString(path).substringBeforeLast("@${GraphManifest.SEAL} ")
         val newer =
-            text.replace("@storage-format 1", "@storage-format 2").replace(Regex("@producer [^\\n]*"), "@producer graphite-jvm 9.0.0")
-        Files.writeString(path, newer)
+            body.replace("@storage-format 1", "@storage-format 2").replace(Regex("@producer [^\\n]*"), "@producer graphite-jvm 9.0.0")
+        Files.writeString(path, sealed(newer))
         assertEquals(
             "$path: storage format 2 was written by graphite-jvm 9.0.0; this reader supports format 1",
             assertFailsWith<GraphIntegrityException> { GraphStore.load(dir) }.message)
-        Files.writeString(path, "${GraphManifest.HEADER}\n@storage-format 2\n")
+        Files.writeString(path, sealed("${GraphManifest.HEADER}\n@storage-format 2\n"))
         assertContains(assertFailsWith<GraphIntegrityException> { GraphStore.load(dir) }.message!!, "written by an unknown producer")
-        Files.writeString(path, "not a manifest\n")
+        Files.writeString(path, sealed("not a manifest\n"))
         assertContains(assertFailsWith<GraphIntegrityException> { GraphStore.load(dir) }.message!!, "does not start with")
         for (line in listOf("abc  1  graph.x", "${"a".repeat(64)}  x  graph.x", "${"a".repeat(64)}  1", "${"A".repeat(64)}  1  graph.x")) {
-            Files.writeString(path, "${GraphManifest.HEADER}\n\n$line\n")
+            Files.writeString(path, sealed("${GraphManifest.HEADER}\n\n$line\n"))
             assertContains(assertFailsWith<GraphIntegrityException> { GraphStore.load(dir) }.message!!, "malformed line")
         }
         // An attribute without a value and no format attribute: the current format.
-        Files.writeString(path, "${GraphManifest.HEADER}\n@note\n")
-        assertEquals("", GraphManifest.checkSizes(dir)!!.attributes["note"])
+        Files.writeString(path, sealed("${GraphManifest.HEADER}\n@note\n$entries"))
+        assertEquals("", GraphManifest.parse(Files.readAllBytes(path), path.toString()).attributes["note"])
+    }
+
+    @Test
+    fun `a manifest cut short or edited certifies nothing`() = inTemp { root ->
+        val dir = root.resolve("g")
+        GraphStore.save(buildTestGraph(), dir)
+        val path = dir.resolve(GraphManifest.FILE_NAME)
+        val whole = Files.readString(path)
+        // A damaged data file of the same size, then the manifest cut back line by line down to its header: before the seal, the
+        // header alone verified zero files successfully.
+        val nodedata = dir.resolve("graph.nodedata")
+        val bytes = Files.readAllBytes(nodedata)
+        bytes[bytes.size / 2] = (bytes[bytes.size / 2].toInt() xor 1).toByte()
+        Files.write(nodedata, bytes)
+        val lines = whole.lines().filter(String::isNotEmpty)
+        for (keep in 1 until lines.size) {
+            Files.writeString(path, lines.take(keep).joinToString("") { "$it\n" })
+            assertContains(assertFailsWith<GraphIntegrityException> { GraphStore.load(dir) }.message!!, "has no seal line")
+            assertContains(GraphStore.verify(dir).single(), "has no seal line")
+        }
+        Files.writeString(path, whole.dropLast(1))
+        assertContains(GraphStore.verify(dir).single(), "has no seal line")
+        // Every line kept, one entry rewritten to the damaged bytes' digest.
+        val entry = lines.single { it.endsWith("  graph.nodedata") }
+        val forged = "${GraphManifestTestDigest.sha256(bytes)}${entry.substring(64)}"
+        Files.writeString(path, whole.replace(entry, forged))
+        assertContains(GraphStore.verify(dir).single(), "does not match the inventory")
+        Files.writeString(path, whole)
+        assertContains(GraphStore.verify(dir).single(), "graph.nodedata: expected")
+    }
+
+    @Test
+    fun `a sealed manifest must list every file every writer produces`() = inTemp { root ->
+        val path = root.resolve(GraphManifest.FILE_NAME)
+        val partial = requiredEntries().lines().filterNot { it.endsWith("  graph.nodedata") || it.endsWith("  forward.graph") }
+        Files.writeString(path, sealed("${GraphManifest.HEADER}\n${partial.joinToString("\n")}"))
+        assertEquals(
+            "$path: does not list forward.graph, graph.nodedata; it is not the inventory of a complete graph",
+            assertFailsWith<GraphIntegrityException> { GraphManifest.read(root) }.message)
+        Files.writeString(path, sealed("${GraphManifest.HEADER}\n${requiredEntries()}"))
+        assertEquals(GraphManifest.REQUIRED_FILES.toSet(), GraphManifest.read(root)!!.entries.keys)
+    }
+
+    private fun sealed(body: String): String = "$body@${GraphManifest.SEAL} ${GraphManifestTestDigest.sha256(body.toByteArray())}\n"
+
+    private fun requiredEntries(): String {
+        val empty = GraphManifestTestDigest.sha256(ByteArray(0))
+        return GraphManifest.REQUIRED_FILES.joinToString("") { "$empty  0  $it\n" }
     }
 
     @Test
@@ -212,24 +261,28 @@ class GraphDirectorySafetyTest : GraphStoreTestFixture() {
     }
 
     @Test
-    fun `a directory that cannot be renamed has its files replaced and is sealed last`() = inTemp { root ->
+    fun `a directory that cannot be renamed keeps its earlier graph and the save is refused`() = inTemp { root ->
         val target = root.resolve("mounted")
         GraphStore.save(chain(listOf(1, 2, 3)), target)
-        Files.writeString(target.resolve("backward.properties"), "stale")
+        val before = dirFiles(target).associateWith { Files.readAllBytes(target.resolve(it)).toList() }
+        val nodes = GraphStore.load(target).nodes(Node::class.java).count()
         val stage = root.resolve("stage")
         GraphStore.save(chain(listOf(9)), stage)
-        val sealedStage = Files.readAllBytes(stage.resolve(GraphManifest.FILE_NAME))
-        // A mount point refuses to be moved aside; nothing else does.
+        // A mount point refuses to be moved aside; nothing else does. Emptying it and moving the new files in one by one deleted the
+        // earlier graph before the new one was whole.
         val renameRefused: (Path, Path) -> Unit = { source, destination ->
             if (source == target) throw java.nio.file.FileSystemException(source.toString(), null, "Device or resource busy")
             Files.move(source, destination)
         }
-        GraphDirectoryPublication.swap(stage, target, root.resolve("aside"), renameRefused)
-        assertFalse(Files.exists(stage))
-        assertFalse(Files.exists(target.resolve("backward.properties")), "no file of the earlier graph survives")
-        assertTrue(sealedStage.contentEquals(Files.readAllBytes(target.resolve(GraphManifest.FILE_NAME))))
+        val message = assertFailsWith<java.io.IOException> {
+            GraphDirectoryPublication.swap(stage, target, root.resolve("aside"), renameRefused)
+        }.message!!
+        assertContains(message, "Cannot replace $target as a whole")
+        assertContains(message, "Device or resource busy")
+        assertEquals(before, dirFiles(target).associateWith { Files.readAllBytes(target.resolve(it)).toList() })
         assertEquals(emptyList(), GraphStore.verify(target))
-        assertEquals(2, GraphStore.load(target).nodes(Node::class.java).count())
+        assertEquals(nodes, GraphStore.load(target).nodes(Node::class.java).count())
+        assertFalse(Files.exists(root.resolve("aside")))
     }
 
     @Test
@@ -269,4 +322,9 @@ class GraphDirectorySafetyTest : GraphStoreTestFixture() {
         assertEquals("unknown", GraphManifest.producerVersion("no-such-resource.properties"))
         assertNotNull(GraphManifest.producerVersion())
     }
+}
+
+private object GraphManifestTestDigest {
+    fun sha256(bytes: ByteArray): String =
+        java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes))
 }

@@ -7,6 +7,11 @@
 //! costs a `stat` per file and refuses a truncated, partially copied or replaced
 //! file instead of decoding it; `verify` hashes every byte. A graph written before
 //! the manifest existed has none and is read as before.
+//!
+//! The inventory proves itself complete: its last line, `@seal <sha256>`, is the
+//! SHA-256 of every byte before it, and it must list each file every writer produces
+//! ([`REQUIRED_FILES`]). A manifest cut short at a line boundary, down to its header,
+//! therefore fails instead of certifying the fewer files it still names.
 
 use crate::source::GraphSource;
 use sha2::{Digest, Sha256};
@@ -17,6 +22,21 @@ pub const FILE_NAME: &str = "graph.manifest";
 pub const HEADER: &str = "graphite-graph 1";
 pub const PRODUCER: &str = "producer";
 pub const STORAGE_FORMAT: &str = "storage-format";
+/// The last line's attribute: the SHA-256 of the manifest bytes before that line.
+pub const SEAL: &str = "seal";
+/// The files every graph writer produces; a manifest that does not list them all is
+/// not the inventory of a complete graph.
+pub const REQUIRED_FILES: [&str; 9] = [
+    "forward.graph",
+    "forward.offsets",
+    "forward.properties",
+    "graph.labels",
+    "graph.metadata",
+    "graph.nodedata",
+    "graph.nodeoffsets",
+    "graph.strings",
+    "graph.typeindex",
+];
 /// The storage format this reader understands; a later one is refused by name.
 pub const CURRENT_STORAGE_FORMAT: u32 = 1;
 
@@ -42,7 +62,8 @@ pub fn producer() -> String {
 impl GraphManifest {
     pub fn parse(bytes: &[u8]) -> Result<GraphManifest, String> {
         let text = std::str::from_utf8(bytes).map_err(|_| format!("{FILE_NAME} is not UTF-8"))?;
-        let mut lines = text.lines();
+        let body = unseal(text)?;
+        let mut lines = body.lines();
         if lines.next() != Some(HEADER) {
             return Err(format!("{FILE_NAME} does not start with {HEADER:?}"));
         }
@@ -95,6 +116,17 @@ impl GraphManifest {
                     .unwrap_or("an unknown producer")
             ));
         }
+        let missing: Vec<&str> = REQUIRED_FILES
+            .iter()
+            .copied()
+            .filter(|name| !entries.contains_key(*name))
+            .collect();
+        if !missing.is_empty() {
+            return Err(format!(
+                "{FILE_NAME} does not list {}; it is not the inventory of a complete graph",
+                missing.join(", ")
+            ));
+        }
         Ok(GraphManifest {
             attributes,
             entries,
@@ -125,6 +157,8 @@ impl GraphManifest {
         for (name, entry) in entries {
             out.push_str(&format!("{}  {}  {name}\n", entry.sha256, entry.size));
         }
+        let seal = hex(&Sha256::digest(out.as_bytes()));
+        out.push_str(&format!("@{SEAL} {seal}\n"));
         out
     }
 
@@ -232,6 +266,23 @@ pub fn verify(src: &GraphSource) -> Result<Vec<String>, String> {
     Ok(failures)
 }
 
+/// The manifest text before its seal line, once the seal proves it whole.
+fn unseal(text: &str) -> Result<&str, String> {
+    let cut = || format!("{FILE_NAME} has no {SEAL} line; the inventory was cut short or edited");
+    let without_newline = text.strip_suffix('\n').ok_or_else(cut)?;
+    let start = without_newline.rfind('\n').map_or(0, |i| i + 1);
+    let seal = without_newline[start..]
+        .strip_prefix(&format!("@{SEAL} "))
+        .ok_or_else(cut)?;
+    let body = &text[..start];
+    if hex(&Sha256::digest(body.as_bytes())) != seal {
+        return Err(format!(
+            "{FILE_NAME}: the {SEAL} does not match the inventory; it was edited after the save"
+        ));
+    }
+    Ok(body)
+}
+
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
@@ -240,11 +291,28 @@ fn hex(bytes: &[u8]) -> String {
 mod tests {
     use super::*;
 
+    /// `body` sealed as a writer seals it.
+    fn sealed(body: &str) -> String {
+        format!("{body}@{SEAL} {}\n", hex(&Sha256::digest(body.as_bytes())))
+    }
+
+    /// The entry lines of every required file, empty, as a hand-made manifest lists them.
+    fn required_entries() -> String {
+        let empty = hex(&Sha256::digest(b""));
+        REQUIRED_FILES
+            .iter()
+            .map(|name| format!("{empty}  0  {name}\n"))
+            .collect()
+    }
+
     fn sealed_dir(name: &str) -> std::path::PathBuf {
         let dir =
             std::env::temp_dir().join(format!("graphite-manifest-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
+        for required in REQUIRED_FILES {
+            std::fs::write(dir.join(required), b"").unwrap();
+        }
         std::fs::write(dir.join("graph.a"), b"hello").unwrap();
         std::fs::write(dir.join("forward.b"), b"world!").unwrap();
         GraphManifest::write_dir(&dir).unwrap();
@@ -259,15 +327,22 @@ mod tests {
         assert_eq!(manifest.producer(), Some(producer().as_str()));
         assert!(manifest.producer().unwrap().starts_with("graphite-rust "));
         assert_eq!(manifest.attributes[STORAGE_FORMAT], "1");
+        let mut expected: Vec<String> = REQUIRED_FILES.iter().map(|n| n.to_string()).collect();
+        expected.extend(["forward.b".to_string(), "graph.a".to_string()]);
+        expected.sort();
         assert_eq!(
             manifest.entries.keys().cloned().collect::<Vec<_>>(),
-            vec!["forward.b".to_string(), "graph.a".to_string()]
+            expected
         );
         assert_eq!(manifest.entries["graph.a"].size, 5);
         assert_eq!(
             manifest.entries["graph.a"].sha256,
             "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
         );
+        // The seal is not an attribute of the graph; it is the proof the list is whole.
+        assert!(!manifest.attributes.contains_key(SEAL));
+        let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap();
+        assert!(text.lines().last().unwrap().starts_with("@seal "));
         assert!(verify(&src).unwrap().is_empty());
         std::fs::remove_dir_all(&dir).unwrap();
     }
@@ -305,8 +380,64 @@ mod tests {
     }
 
     #[test]
+    fn a_manifest_cut_short_or_edited_certifies_nothing() {
+        let dir = sealed_dir("cut");
+        let path = dir.join(FILE_NAME);
+        let whole = std::fs::read_to_string(&path).unwrap();
+        // A damaged data file, then the manifest cut back to its header: before the seal
+        // this verified zero files successfully.
+        std::fs::write(dir.join("graph.a"), b"jello").unwrap();
+        let src = GraphSource::open(&dir).unwrap();
+        let lines: Vec<&str> = whole.lines().collect();
+        for keep in 1..lines.len() {
+            let cut: String = lines[..keep].iter().map(|l| format!("{l}\n")).collect();
+            std::fs::write(&path, &cut).unwrap();
+            let err = check_sizes(&src).unwrap_err();
+            assert!(err.contains("has no seal line"), "{keep}: {err}");
+            assert!(verify(&src).is_err(), "{keep}");
+        }
+        // Every line kept but the graph.a entry rewritten to the damaged bytes.
+        let edited = whole.replace(
+            "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  5  graph.a",
+            &format!("{}  5  graph.a", hex(&Sha256::digest(b"jello"))),
+        );
+        assert_ne!(edited, whole);
+        std::fs::write(&path, &edited).unwrap();
+        let err = check_sizes(&src).unwrap_err();
+        assert!(err.contains("does not match the inventory"), "{err}");
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_sealed_manifest_must_list_every_required_file() {
+        let partial: String = required_entries()
+            .lines()
+            .filter(|line| {
+                !line.ends_with("  graph.nodedata") && !line.ends_with("  forward.graph")
+            })
+            .map(|line| format!("{line}\n"))
+            .collect();
+        let err =
+            GraphManifest::parse(sealed(&format!("{HEADER}\n{partial}")).as_bytes()).unwrap_err();
+        assert_eq!(
+            err,
+            "graph.manifest does not list forward.graph, graph.nodedata; it is not the inventory of a complete graph"
+        );
+        let whole = sealed(&format!("{HEADER}\n{}", required_entries()));
+        assert_eq!(
+            GraphManifest::parse(whole.as_bytes())
+                .unwrap()
+                .entries
+                .len(),
+            9
+        );
+    }
+
+    #[test]
     fn a_newer_storage_format_is_refused_by_producer_name() {
-        let text = format!("{HEADER}\n@producer graphite-jvm 9.0.0\n@storage-format 2\n");
+        let text = sealed(&format!(
+            "{HEADER}\n@producer graphite-jvm 9.0.0\n@storage-format 2\n"
+        ));
         let err = GraphManifest::parse(text.as_bytes()).unwrap_err();
         assert_eq!(
             err,
@@ -316,18 +447,21 @@ mod tests {
 
     #[test]
     fn malformed_manifests_are_errors() {
-        assert!(GraphManifest::parse(b"nope\n")
+        assert!(GraphManifest::parse(sealed("nope\n").as_bytes())
             .unwrap_err()
             .contains("does not start"));
-        let bad = format!("{HEADER}\nxyz  1  graph.a\n");
+        assert!(GraphManifest::parse(b"no newline")
+            .unwrap_err()
+            .contains("has no seal line"));
+        let bad = sealed(&format!("{HEADER}\nxyz  1  graph.a\n"));
         assert!(GraphManifest::parse(bad.as_bytes())
             .unwrap_err()
             .contains("malformed line"));
-        let bad = format!("{HEADER}\n{}  big  graph.a\n", "a".repeat(64));
+        let bad = sealed(&format!("{HEADER}\n{}  big  graph.a\n", "a".repeat(64)));
         assert!(GraphManifest::parse(bad.as_bytes())
             .unwrap_err()
             .contains("malformed line"));
-        let bad = format!("{HEADER}\n@storage-format x\n");
+        let bad = sealed(&format!("{HEADER}\n@storage-format x\n"));
         assert!(GraphManifest::parse(bad.as_bytes())
             .unwrap_err()
             .contains("storage format \"x\""));

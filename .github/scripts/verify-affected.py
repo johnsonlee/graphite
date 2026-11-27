@@ -70,10 +70,11 @@ def closure(start, dependents):
 
 
 def plan(paths, everything=False):
+    # --all needs everything whether or not anything changed: a clean checkout is checked whole.
+    if everything or any(path.startswith(EVERYTHING) for path in paths):
+        return closure(CARGO_DEPENDENTS, CARGO_DEPENDENTS), set(GRADLE_DEPENDENTS), True
     crates, modules, web = set(), set(), False
     for path in paths:
-        if everything or path.startswith(EVERYTHING):
-            return closure(CARGO_DEPENDENTS, CARGO_DEPENDENTS), set(GRADLE_DEPENDENTS), True
         for prefix, crate in CARGO_DIRS.items():
             if path.startswith(prefix):
                 crates.add(crate)

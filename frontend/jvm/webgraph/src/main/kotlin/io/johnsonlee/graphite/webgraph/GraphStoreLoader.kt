@@ -73,7 +73,7 @@ internal fun loadEagerGraph(dir: Path): Graph {
                     dir, metadata, nodeCount, eagerBranchDefinitionNodeTags(nodesById))
             },
             lazy { DeclaredTypeStore.load(dir, stringTable) },
-            lazy { AnalysisCompletenessStore.load(dir) }))
+            AnalysisCompletenessStore.bind(dir).let { bound -> lazy { bound() } }))
 }
 
 @Suppress("TooGenericExceptionCaught")
@@ -126,7 +126,7 @@ internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, per
                         // Query-only state: preserve the lazy reads, bindings and validation.
                         lazy { DeclaredTypeStore.load(dir, stringTable) },
                         lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) },
-                        lazy { AnalysisCompletenessStore.load(dir) })),
+                        AnalysisCompletenessStore.bind(dir).let { bound -> lazy { bound() } })),
             indexes = MappedIndexFiles(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE), persistentCallSiteStringIndex))
     if (prepareCallSiteStringIndex) {
         try {

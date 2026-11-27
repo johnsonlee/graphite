@@ -333,13 +333,17 @@ mod tests {
         std::fs::write(legacy.join("graph.manifest"), "garbage").unwrap();
         assert!(verify(dir(&legacy))
             .unwrap_err()
-            .contains("does not start with"));
+            .contains("has no seal line"));
         let err = pack(PackArgs {
             inputs: vec![legacy.clone()],
             output: root.join("garbage.graphite"),
         })
         .unwrap_err();
-        assert!(err.contains("does not start with"), "{err}");
+        assert!(err.contains("has no seal line"), "{err}");
+        // A manifest cut back to its header certified zero files before the seal.
+        std::fs::write(legacy.join("graph.manifest"), "graphite-graph 1\n").unwrap();
+        let err = verify(dir(&legacy)).unwrap_err();
+        assert!(err.contains("has no seal line"), "{err}");
         std::fs::remove_dir_all(root).unwrap();
     }
 

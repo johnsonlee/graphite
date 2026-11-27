@@ -602,7 +602,8 @@ async fn capabilities(State(s): St) -> Response {
                 "parameters": ["limit", "offset"],
                 "defaultLimit": DEFAULT_CYPHER_ROW_LIMIT,
                 "maxLimit": MAX_CYPHER_ROW_LIMIT,
-                "maxOffset": MAX_CYPHER_OFFSET,
+                "maxOffset": MAX_CYPHER_PAGE_WINDOW,
+                "maxWindow": MAX_CYPHER_PAGE_WINDOW,
                 "continuation": "nextOffset",
                 "fanout": false,
             },
@@ -612,6 +613,7 @@ async fn capabilities(State(s): St) -> Response {
             "directions": ["subtypes", "supertypes"],
             "maxDepth": MAX_HIERARCHY_DEPTH,
             "maxLimit": MAX_HIERARCHY_LIMIT,
+            "maxVisits": MAX_HIERARCHY_VISITS,
             "continuation": "nextOffset",
         },
         "graphs": graphs,
@@ -622,6 +624,10 @@ const DEFAULT_HIERARCHY_DEPTH: usize = 1;
 const MAX_HIERARCHY_DEPTH: usize = 64;
 const DEFAULT_HIERARCHY_LIMIT: usize = 200;
 const MAX_HIERARCHY_LIMIT: usize = 5000;
+/// Hierarchy entries one request may examine, across every graph it walks. A level is
+/// ordered whole before a page is cut from it, so the page size alone does not bound a
+/// walk through a wide level; this does, next to the guard's deadline and work budget.
+const MAX_HIERARCHY_VISITS: usize = 100_000;
 
 struct HierarchyRequest {
     root: String,
@@ -670,17 +676,44 @@ fn hierarchy_request(q: &Params) -> Result<HierarchyRequest, Response> {
         subtypes,
         depth: number("depth", DEFAULT_HIERARCHY_DEPTH, MAX_HIERARCHY_DEPTH)?,
         limit: number("limit", DEFAULT_HIERARCHY_LIMIT, MAX_HIERARCHY_LIMIT)?,
-        offset: number("offset", 0, MAX_CYPHER_OFFSET as usize)?,
+        offset: number("offset", 0, MAX_HIERARCHY_VISITS)?,
     })
 }
 
-fn hierarchy_payload(lease: &GraphLease, r: &HierarchyRequest) -> J {
-    let walk = lease
-        .graph
-        .type_hierarchy(&r.root, r.subtypes, r.depth, r.offset, r.limit);
+/// One walk's visit budget: the guard's cancellation, deadline and work charge per entry,
+/// and at most [`MAX_HIERARCHY_VISITS`] entries for the whole request.
+struct HierarchyBudget<'a> {
+    cancel: &'a graphite_cypher::engine::CancelToken,
+    visits: usize,
+}
+
+impl HierarchyBudget<'_> {
+    fn visit(&mut self) -> graphite_cypher::CypherResult<()> {
+        self.visits += 1;
+        if self.visits > MAX_HIERARCHY_VISITS {
+            return Err(graphite_cypher::CypherError::Runtime(format!(
+                "The hierarchy walk examined {MAX_HIERARCHY_VISITS} types without completing the page; \
+                 lower 'depth' or start from a narrower type"
+            )));
+        }
+        self.cancel.check()
+    }
+}
+
+fn hierarchy_payload(
+    lease: &GraphLease,
+    r: &HierarchyRequest,
+    budget: &mut HierarchyBudget,
+) -> graphite_cypher::CypherResult<J> {
+    let walk =
+        lease
+            .graph
+            .type_hierarchy(&r.root, r.subtypes, r.depth, r.offset, r.limit, &mut || {
+                budget.visit()
+            })?;
     let known = walk.is_some();
     let (types, more) = walk.unwrap_or_default();
-    json!({
+    Ok(json!({
         "graphId": lease.id,
         "type": r.root,
         "direction": if r.subtypes { "subtypes" } else { "supertypes" },
@@ -693,7 +726,41 @@ fn hierarchy_payload(lease: &GraphLease, r: &HierarchyRequest) -> J {
         "offset": r.offset,
         "truncated": more,
         "nextOffset": if more { json!(r.offset + types.len()) } else { J::Null },
+    }))
+}
+
+/// Runs a hierarchy request as a Cypher request runs: under a guard permit, on the
+/// blocking pool, with the permit's deadline and cancellation, so concurrent walks
+/// share the service's concurrency limit instead of occupying its async workers.
+async fn run_hierarchy(
+    s: &AppState,
+    leases: Vec<GraphLease>,
+    r: HierarchyRequest,
+    single: bool,
+) -> Response {
+    let permit = match s.guard.try_acquire(None) {
+        Ok(p) => p,
+        Err(limit) => return concurrency_limit_response(limit),
+    };
+    let timeout_millis = permit.timeout_millis;
+    let result = crate::query_job::run(permit, move |permit| {
+        let mut budget = HierarchyBudget {
+            cancel: &permit.cancel,
+            visits: 0,
+        };
+        let payloads = leases
+            .iter()
+            .map(|lease| hierarchy_payload(lease, &r, &mut budget))
+            .collect::<graphite_cypher::CypherResult<Vec<J>>>()?;
+        let body = if single {
+            payloads.into_iter().next().unwrap_or(J::Null)
+        } else {
+            json!({ "graphs": payloads })
+        };
+        Ok(ok_json(body))
     })
+    .await;
+    query_job_response(result, timeout_millis)
 }
 
 /// `GET /api/graphs/{graphId}/hierarchy?type=T&direction=subtypes&depth=N&limit=M&offset=K`:
@@ -710,22 +777,16 @@ async fn graph_hierarchy(
         Err(r) => return r,
     };
     match hierarchy_request(&q) {
-        Ok(r) => ok_json(hierarchy_payload(&l, &r)),
+        Ok(r) => run_hierarchy(&s, vec![l], r, true).await,
         Err(response) => response,
     }
 }
 
-/// `GET /api/hierarchy`: the same walk in every loaded graph, each graph paged on its own.
+/// `GET /api/hierarchy`: the same walk in every loaded graph, each graph paged on its own
+/// and the visit budget shared by all of them.
 async fn all_hierarchy(State(s): St, Query(q): Query<Params>) -> Response {
     match hierarchy_request(&q) {
-        Ok(r) => ok_json(json!({
-            "graphs": s
-                .registry
-                .acquire_all()
-                .iter()
-                .map(|lease| hierarchy_payload(lease, &r))
-                .collect::<Vec<_>>()
-        })),
+        Ok(r) => run_hierarchy(&s, s.registry.acquire_all(), r, false).await,
         Err(response) => response,
     }
 }
@@ -2095,6 +2156,19 @@ async fn run_cypher(
     timeout: Option<u64>,
     extra: Vec<(&'static str, J)>,
 ) -> Response {
+    // Rows before the page are matched and held to be skipped, so the window, not the
+    // page, is what a request costs in memory; it is bounded before any work starts.
+    let page = limit.max(0) as usize;
+    let window = offset.saturating_add(page);
+    if window > MAX_CYPHER_PAGE_WINDOW {
+        return error_json(
+            StatusCode::BAD_REQUEST,
+            &format!(
+                "'offset' + 'limit' is {window}; a page must end within the first {MAX_CYPHER_PAGE_WINDOW} rows of a result. \
+                 Narrow the query instead, for example ORDER BY a key and WHERE key > the last one seen"
+            ),
+        );
+    }
     let permit = match s.guard.try_acquire(timeout) {
         Ok(p) => p,
         Err(limit) => return concurrency_limit_response(limit),
@@ -2127,22 +2201,26 @@ async fn run_cypher(
             .with_cancel(cancel)
             .with_compact()
             .with_probe();
-        // A page past the first runs the query to `offset + limit` rows and drops the
-        // first `offset`: the engine's probe still says whether a row exists beyond the
-        // page, and `nextOffset` names the page that holds it. Pages of a query without
-        // ORDER BY follow the engine's row order, which is stable for one graph set.
-        let window = (limit.max(0) as usize).saturating_add(offset);
-        let mut result = executor.execute(&query, Some(window))?;
+        // A page runs the query to one row past `offset + limit` and drops the first
+        // `offset`. That extra row is the next page's first, so a next page exists exactly
+        // when it arrives; a query whose own LIMIT ends within the window never yields it
+        // (the engine's probe would: it looks past the query's LIMIT, which is no page).
+        // Pages of a query without ORDER BY follow the engine's row order, which is stable
+        // for one graph set.
+        let mut result = executor.execute(&query, Some(window + 1))?;
+        let fetched = row_count(&result);
+        keep_leading_rows(&mut result, window);
+        // The rows this request consumed, counted rather than assumed from `offset`: a page
+        // past the end has consumed every row there is.
+        let consumed = fetched.min(window);
         drop_leading_rows(&mut result, offset);
-        let returned = result
-            .compact
-            .as_ref()
-            .map_or(result.rows.len(), |compact| compact.values.len());
+        let returned = row_count(&result);
         let mut extra = extra;
-        extra.push(("total", total_json(offset + returned, result.more)));
-        // A next page exists only where the server's cap filled this one: a row past the
-        // query's own LIMIT is not a page (the same query at a later offset is empty).
-        let paged = result.more && limit > 0 && returned == limit as usize;
+        extra.push((
+            "total",
+            total_json(consumed, fetched > window || result.more),
+        ));
+        let paged = page > 0 && fetched > window;
         if offset > 0 || paged {
             extra.push(("offset", json!(offset)));
             extra.push((
@@ -2163,6 +2241,22 @@ async fn run_cypher(
     })
     .await;
     query_job_response(result, timeout_millis)
+}
+
+fn row_count(result: &graphite_cypher::engine::QueryResult) -> usize {
+    result
+        .compact
+        .as_ref()
+        .map_or(result.rows.len(), |compact| compact.values.len())
+}
+
+/// Keeps the first `n` rows of a result, in whichever representation it holds them.
+fn keep_leading_rows(result: &mut graphite_cypher::engine::QueryResult, n: usize) {
+    if let Some(compact) = result.compact.as_mut() {
+        compact.values.truncate(n);
+        compact.graph_ids.truncate(n);
+    }
+    result.rows.truncate(n);
 }
 
 /// Removes the first `offset` rows of a result, in whichever representation it holds them.
@@ -2197,14 +2291,21 @@ fn read_offset(body: &str, q: &Params) -> Result<usize, Response> {
     match raw {
         None => Ok(0),
         Some(s) => match s.parse::<u64>() {
-            Ok(v) if v <= MAX_CYPHER_OFFSET => Ok(v as usize),
+            Ok(v) if v <= MAX_CYPHER_PAGE_WINDOW as u64 => Ok(v as usize),
+            Ok(v) => Err(error_json(
+                StatusCode::BAD_REQUEST,
+                &format!(
+                    "'offset' is {v}; a page must end within the first {MAX_CYPHER_PAGE_WINDOW} rows of a result"
+                ),
+            )),
             _ => Err(error_json(StatusCode::BAD_REQUEST, BAD)),
         },
     }
 }
 
-/// A page deeper than this re-runs too much of the query to be a page; narrow the query.
-const MAX_CYPHER_OFFSET: u64 = 10_000_000;
+/// The last row a Cypher page may reach: ten times the largest page. Paging past it
+/// would hold every earlier row in memory to skip it.
+pub(crate) const MAX_CYPHER_PAGE_WINDOW: usize = 50_000;
 
 /// The `total` of a Cypher response, in the shape Elasticsearch gives `hits.total`:
 /// `{"value": n, "relation": "eq"}` when `returned` is every row, and
@@ -2616,10 +2717,28 @@ mod tests {
         // A row past the query's own LIMIT is no page: the same query at a later offset is empty.
         let limited =
             "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%202";
-        let (_, own) = get_json(&app, &format!("/api/cypher?query={limited}&limit=5")).await;
-        assert_eq!(values(&own), ["v0", "v1"]);
-        assert_eq!(own["total"]["relation"], "gte");
-        assert!(own.get("nextOffset").is_none(), "{own}");
+        for page in [5, 2] {
+            let (_, own) =
+                get_json(&app, &format!("/api/cypher?query={limited}&limit={page}")).await;
+            assert_eq!(values(&own), ["v0", "v1"], "limit={page}");
+            assert_eq!(own["total"]["relation"], "gte");
+            assert!(own.get("nextOffset").is_none(), "limit={page}: {own}");
+            let (_, replay) = get_json(
+                &app,
+                &format!("/api/cypher?query={limited}&limit={page}&offset=2"),
+            )
+            .await;
+            assert_eq!(replay["rows"], json!([]), "limit={page}: {replay}");
+        }
+        // A query LIMIT one past the page: the next page holds exactly that row.
+        let four =
+            "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%204";
+        let (_, first) = get_json(&app, &format!("/api/cypher?query={four}&limit=3")).await;
+        assert_eq!(values(&first), ["v0", "v1", "v2"]);
+        assert_eq!(first["nextOffset"], 3);
+        let (_, last) = get_json(&app, &format!("/api/cypher?query={four}&limit=3&offset=3")).await;
+        assert_eq!(values(&last), ["v3"]);
+        assert_eq!(last["nextOffset"], J::Null);
         let (status, fanout) = get_json(
             &app,
             &format!("/api/cypher/graphs?query={query}&allGraphs=true&mode=fanout&offset=3"),
@@ -2638,16 +2757,97 @@ mod tests {
         let (_, whole) = get_json(&app, &format!("/api/cypher?query={query}")).await;
         assert_eq!(values(&whole).len(), 8);
         assert!(whole.get("nextOffset").is_none() && whole.get("offset").is_none());
-        // A page past the end is empty, and a bad offset is refused.
+        // A page past the end is empty and counts the rows there are, not the offset.
         let (_, past) = get_json(&app, &format!("/api/cypher?query={query}&offset=20")).await;
         assert_eq!(past["rows"], json!([]));
         assert_eq!(past["nextOffset"], J::Null);
-        for bad in ["-1", "x", "10000001"] {
+        assert_eq!(past["total"], json!({"value": 8, "relation": "eq"}));
+        for bad in ["-1", "x"] {
             let (status, body) =
                 get_json(&app, &format!("/api/cypher?query={query}&offset={bad}")).await;
             assert_eq!(status, StatusCode::BAD_REQUEST, "{bad}: {body}");
             assert_eq!(body["error"], "'offset' must be a non-negative integer");
         }
+        // Skipped rows are held to be skipped: a page must end within the window.
+        let (status, deep) = get_json(
+            &app,
+            &format!("/api/cypher?query={query}&offset=10000000&limit=1"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{deep}");
+        assert_eq!(
+            deep["error"],
+            "'offset' is 10000000; a page must end within the first 50000 rows of a result"
+        );
+        let (status, edge) = get_json(
+            &app,
+            &format!("/api/cypher?query={query}&offset=49000&limit=2000"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{edge}");
+        assert!(
+            edge["error"].as_str().unwrap().starts_with(
+                "'offset' + 'limit' is 51000; a page must end within the first 50000 rows"
+            ),
+            "{edge}"
+        );
+        let (status, inside) = get_json(
+            &app,
+            &format!("/api/cypher?query={query}&offset=45000&limit=5000"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{inside}");
+        assert_eq!(inside["total"], json!({"value": 8, "relation": "eq"}));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hierarchy_walks_share_the_query_guard_and_a_visit_budget() {
+        let (app, state, dir) = service_fixture();
+        let held: Vec<_> = (0..2)
+            .map(|_| match state.guard.try_acquire(None) {
+                Ok(permit) => permit,
+                Err(_) => panic!("the test guard has two permits"),
+            })
+            .collect();
+        for uri in [
+            "/api/graphs/g/hierarchy?type=app.Base",
+            "/api/hierarchy?type=app.Base",
+        ] {
+            let (status, body) = get_json(&app, uri).await;
+            assert_eq!(status, StatusCode::TOO_MANY_REQUESTS, "{uri}: {body}");
+        }
+        drop(held);
+        let (status, body) = get_json(&app, "/api/hierarchy?type=app.Base").await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert_eq!(body["graphs"][0]["types"].as_array().unwrap().len(), 2);
+
+        // The budget counts every entry examined, across graphs, and stops at the cap.
+        let cancel = graphite_cypher::engine::CancelToken::new();
+        let mut budget = HierarchyBudget {
+            cancel: &cancel,
+            visits: MAX_HIERARCHY_VISITS - 1,
+        };
+        assert!(budget.visit().is_ok());
+        let err = budget.visit().unwrap_err().to_string();
+        assert!(
+            err.contains("examined 100000 types without completing the page"),
+            "{err}"
+        );
+        // A cancelled request stops at its next visit.
+        let cancelled = graphite_cypher::engine::CancelToken::new();
+        cancelled.cancel();
+        let mut budget = HierarchyBudget {
+            cancel: &cancelled,
+            visits: 0,
+        };
+        assert!(matches!(
+            budget.visit(),
+            Err(graphite_cypher::CypherError::Cancelled)
+        ));
+        let (_, caps) = get_json(&app, "/api/capabilities").await;
+        assert_eq!(caps["hierarchy"]["maxVisits"], 100_000);
+        assert_eq!(caps["cypher"]["pagination"]["maxWindow"], 50_000);
         let _ = std::fs::remove_dir_all(dir);
     }
 

@@ -274,6 +274,9 @@ pub struct Graph {
     /// The build's completeness evidence (`graph.completeness`), read on first use: no
     /// query but a status question needs it.
     completeness: std::sync::OnceLock<Result<Option<CompletenessIndex>, String>>,
+    /// The evidence file as the load mapped it, so a later read cannot pick up another
+    /// generation of the directory.
+    completeness_source: Result<Option<crate::completeness::Bound>, String>,
     /// The inventory the writer sealed the graph with; `None` for a graph written before it.
     manifest: Option<crate::manifest::GraphManifest>,
 }
@@ -436,6 +439,7 @@ impl Graph {
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
             completeness: std::sync::OnceLock::new(),
+            completeness_source: crate::completeness::bind(&src),
             manifest,
         };
         // A summary that is bound but does not describe these nodes (a partition count that is
@@ -477,18 +481,18 @@ impl Graph {
     pub fn completeness(&self) -> Result<Option<&CompletenessIndex>, String> {
         self.completeness
             .get_or_init(|| {
-                let src = GraphSource::open(&self.dir).map_err(|e| e.to_string())?;
-                Ok(
-                    crate::completeness::load(&src)?.map(|evidence| CompletenessIndex {
-                        evidence,
-                        methods_in_graph: self
-                            .metadata
-                            .methods
-                            .iter()
-                            .map(|m| m.identity(&self.strings))
-                            .collect(),
-                    }),
-                )
+                let Some(bound) = self.completeness_source.as_ref().map_err(Clone::clone)? else {
+                    return Ok(None);
+                };
+                Ok(bound.parse()?.map(|evidence| CompletenessIndex {
+                    evidence,
+                    methods_in_graph: self
+                        .metadata
+                        .methods
+                        .iter()
+                        .map(|m| m.identity(&self.strings))
+                        .collect(),
+                }))
             })
             .as_ref()
             .map(Option::as_ref)
@@ -519,34 +523,47 @@ impl Graph {
 
     /// Breadth-first walk of the type hierarchy from `root`, `subtypes` or supertypes,
     /// at most `depth` levels, skipping the first `offset` types and returning at most
-    /// `limit`: each `(type, depth, parent)`, in a fixed order (by level, then by name).
-    /// The walk stops in the level that fills the page, so its work is bounded by the page
-    /// and the levels it reaches, never by the depth of the whole hierarchy; the flag says a
-    /// type exists past the page.
-    /// `None` when `root` is not a type the hierarchy index names.
-    pub fn type_hierarchy(
+    /// `limit`: each `(type, depth, parent)`, in a fixed order (by level, then by name),
+    /// and whether a type exists past the page. `Ok(None)` when `root` is not a type the
+    /// hierarchy index names.
+    ///
+    /// A level is ordered whole before the page is cut from it, so a wide level costs its
+    /// width whatever the page size: `visit` is called for every hierarchy entry the walk
+    /// examines (the root lookup's, then each child's), and the first error it returns
+    /// stops the walk. The caller bounds the work there, with a budget, a deadline or
+    /// cancellation.
+    pub fn type_hierarchy<E>(
         &self,
         root: &str,
         subtypes: bool,
         depth: usize,
         offset: usize,
         limit: usize,
-    ) -> Option<(Vec<HierarchyEntry>, bool)> {
+        visit: &mut impl FnMut() -> Result<(), E>,
+    ) -> Result<Option<(Vec<HierarchyEntry>, bool)>, E> {
         let (pairs, index) = if subtypes {
             (&self.metadata.subtypes, &self.metadata.subtypes_index)
         } else {
             (&self.metadata.supertypes, &self.metadata.supertypes_index)
         };
-        let known = |name: &str| {
-            self.metadata
-                .subtypes
-                .iter()
-                .chain(self.metadata.supertypes.iter())
-                .flat_map(|(k, vs)| std::iter::once(k).chain(vs.iter()))
-                .find(|id| self.strings.get(**id as usize) == name)
-                .copied()
+        let mut root_id = None;
+        'lookup: for (key, values) in self
+            .metadata
+            .subtypes
+            .iter()
+            .chain(self.metadata.supertypes.iter())
+        {
+            for id in std::iter::once(key).chain(values.iter()) {
+                visit()?;
+                if self.strings.get(*id as usize) == root {
+                    root_id = Some(*id);
+                    break 'lookup;
+                }
+            }
+        }
+        let Some(root_id) = root_id else {
+            return Ok(None);
         };
-        let root_id = known(root)?;
         let mut seen = std::collections::HashSet::from([root_id]);
         let mut level = vec![root_id];
         let mut skipped = 0usize;
@@ -556,6 +573,7 @@ impl Graph {
             for parent in &level {
                 if let Some(&i) = index.get(parent) {
                     for child in &pairs[i].1 {
+                        visit()?;
                         if seen.insert(*child) {
                             next.push((*child, *parent));
                         }
@@ -573,7 +591,7 @@ impl Graph {
                     continue;
                 }
                 if out.len() == limit {
-                    return Some((out, true));
+                    return Ok(Some((out, true)));
                 }
                 out.push((
                     self.strings.get(*child as usize).to_string(),
@@ -586,7 +604,7 @@ impl Graph {
             }
             level = next.into_iter().map(|(child, _)| child).collect();
         }
-        Some((out, false))
+        Ok(Some((out, false)))
     }
 
     /// The analysis status of `method` (see `AnalysisStatus` in the JVM core): whether the

@@ -223,6 +223,24 @@ class AnalysisCompletenessPersistenceTest {
     }
 
     @Test
+    fun `a loaded graph keeps its own evidence after its directory is replaced`() {
+        val dir = directory("completeness-generation")
+        for (load in listOf<(Path) -> Graph>({ GraphStore.load(it) }, { GraphStore.loadMapped(it) })) {
+            GraphStore.save(graph(), dir)
+            val graph = load(dir)
+            try {
+                // A new save of the same path before the first status question.
+                GraphStore.save(graph(evidence = null), dir)
+                loaded(dir) { replaced -> assertNull(replaced.analysisCompleteness(), "the new graph has no evidence") }
+                assertEquals(completeness, graph.analysisCompleteness())
+                assertEquals(CallSiteGap.DISPATCH_PARTIAL, graph.analysisCompleteness()!!.callSiteGaps.getValue(5))
+            } finally {
+                (graph as? Closeable)?.close()
+            }
+        }
+    }
+
+    @Test
     fun `a file another save wrote reads as absent, a bound file that no longer hashes throws`() {
         val first = directory("completeness-first")
         val second = directory("completeness-second")

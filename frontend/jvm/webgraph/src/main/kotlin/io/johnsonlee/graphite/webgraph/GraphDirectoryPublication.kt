@@ -15,6 +15,10 @@ import java.util.UUID
  *   writer no longer keeps a list of files to delete;
  * - a failed or interrupted save leaves the earlier graph, not a mixture.
  *
+ * A target that cannot be renamed (a mount point, a volume root) is refused rather than emptied and refilled: replacing its files one by
+ * one would delete the earlier graph before the new one is complete, and a directory left half way would have no manifest and read as a
+ * legacy graph, unchecked. Such a target keeps its earlier graph and the save asks for a directory below it.
+ *
  * An existing target is replaced only when it is empty or holds nothing but graph files, so a mistaken output path never deletes a
  * directory of anything else.
  */
@@ -57,10 +61,11 @@ internal object GraphDirectoryPublication {
         // Two renames: the earlier graph steps aside, the new one takes its name. A failure between them restores the earlier graph.
         try {
             move(target, aside)
-        } catch (_: java.io.IOException) {
-            // A directory that cannot be renamed (a mount point, a volume) keeps its name and has its files replaced instead.
-            replaceContents(stage, target)
-            return
+        } catch (refused: java.io.IOException) {
+            throw java.io.IOException(
+                "Cannot replace $target as a whole: it cannot be renamed (${refused.message}), and replacing its files one by one could " +
+                    "lose the earlier graph. It is unchanged; save into a directory below it instead.",
+                refused)
         }
         try {
             move(stage, target)
@@ -70,18 +75,6 @@ internal object GraphDirectoryPublication {
         }
         // A process that still maps the earlier graph keeps its open files; only the names go.
         deleteRecursively(aside)
-    }
-
-    /**
-     * Replaces the graph files of [target] by those of [stage] without renaming [target]. The manifest goes first and comes back last,
-     * so a directory interrupted half way has no manifest and is not read as the sealed graph it no longer is.
-     */
-    internal fun replaceContents(stage: Path, target: Path) {
-        Files.deleteIfExists(target.resolve(GraphManifest.FILE_NAME))
-        Files.list(target).use { paths -> paths.toList() }.forEach(::deleteRecursively)
-        val files = Files.list(stage).use { paths -> paths.toList() }.sortedBy { it.fileName.toString() == GraphManifest.FILE_NAME }
-        for (file in files) Files.move(file, target.resolve(file.fileName.toString()), StandardCopyOption.REPLACE_EXISTING)
-        Files.delete(stage)
     }
 
     private fun atomicMove(source: Path, target: Path) {

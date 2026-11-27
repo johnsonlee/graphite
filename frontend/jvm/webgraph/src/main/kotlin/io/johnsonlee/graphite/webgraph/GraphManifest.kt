@@ -18,12 +18,23 @@ class GraphIntegrityException(message: String) : IllegalStateException(message)
  * `@key value` attribute lines before the entries. A reader checks every listed file's presence and size at load, which costs one `stat`
  * per file and catches truncation, partial copies and files replaced by another graph's; `verify` hashes the bytes. A directory without a
  * manifest is a graph written before it existed and is read as before.
+ *
+ * The inventory proves itself complete: its last line, `@seal <sha256>`, is the SHA-256 of every byte before it, and it must list each
+ * file every writer produces ([REQUIRED_FILES]). A manifest cut short at a line boundary, down to its header, therefore fails instead of
+ * certifying the fewer files it still names.
  */
 object GraphManifest {
     const val FILE_NAME = "graph.manifest"
     const val HEADER = "graphite-graph 1"
     const val PRODUCER = "producer"
     const val STORAGE_FORMAT = "storage-format"
+    const val SEAL = "seal"
+
+    /** The files every graph writer produces; a manifest that does not list them all is not the inventory of a complete graph. */
+    val REQUIRED_FILES = listOf(
+        "forward.graph", "forward.offsets", "forward.properties", "graph.labels", "graph.metadata", "graph.nodedata",
+        "graph.nodeoffsets", "graph.strings", "graph.typeindex",
+    )
 
     /** The storage format this reader understands. A manifest naming a later one was written by a newer producer and is refused. */
     const val CURRENT_STORAGE_FORMAT = 1
@@ -70,7 +81,7 @@ object GraphManifest {
     }
 
     internal fun parse(bytes: ByteArray, origin: String): Manifest {
-        val lines = String(bytes, Charsets.UTF_8).lines()
+        val lines = unseal(String(bytes, Charsets.UTF_8), origin).lines()
         if (lines.firstOrNull() != HEADER) throw GraphIntegrityException("$origin: does not start with \"$HEADER\"")
         val attributes = linkedMapOf<String, String>()
         val entries = linkedMapOf<String, Entry>()
@@ -84,7 +95,25 @@ object GraphManifest {
             }
         }
         checkFormat(attributes, origin)
+        val missing = REQUIRED_FILES.filterNot(entries::containsKey)
+        if (missing.isNotEmpty()) {
+            throw GraphIntegrityException("$origin: does not list ${missing.joinToString()}; it is not the inventory of a complete graph")
+        }
         return Manifest(attributes, entries, sha256Hex(bytes))
+    }
+
+    /** The manifest text before its seal line, once the seal proves it whole. */
+    private fun unseal(text: String, origin: String): String {
+        val cut = "$origin: has no $SEAL line; the inventory was cut short or edited"
+        if (!text.endsWith('\n')) throw GraphIntegrityException(cut)
+        val start = text.lastIndexOf('\n', text.length - 2) + 1
+        val seal = text.substring(start, text.length - 1).removePrefix("@$SEAL ")
+        if (seal.length == text.length - 1 - start) throw GraphIntegrityException(cut)
+        val body = text.substring(0, start)
+        if (sha256Hex(body.toByteArray(Charsets.UTF_8)) != seal) {
+            throw GraphIntegrityException("$origin: the $SEAL does not match the inventory; it was edited after the save")
+        }
+        return body
     }
 
     private fun entry(line: String, origin: String): Pair<String, Entry> {
@@ -125,7 +154,11 @@ object GraphManifest {
 
     /** Hashes every listed file and returns one message per file that does not match; empty when the graph is intact. */
     fun verify(dir: Path): List<String> {
-        val manifest = read(dir) ?: return listOf("${dir.resolve(FILE_NAME)}: missing; nothing to verify the graph against")
+        val manifest = try {
+            read(dir)
+        } catch (damaged: GraphIntegrityException) {
+            return listOf(damaged.message.orEmpty())
+        } ?: return listOf("${dir.resolve(FILE_NAME)}: missing; nothing to verify the graph against")
         return manifest.entries.mapNotNull { (name, entry) ->
             val path = dir.resolve(name)
             when {
@@ -145,12 +178,15 @@ object GraphManifest {
     /** The identity of the graph in [dir] for files derived from it after the save: the manifest digest, or null for a legacy graph. */
     internal fun identity(dir: Path): String? = read(dir)?.digest
 
-    internal fun render(attributes: Map<String, String>, entries: Map<String, Entry>): String = buildString {
-        append(HEADER).append('\n')
-        for ((key, value) in attributes) append('@').append(key).append(' ').append(value).append('\n')
-        for ((name, entry) in entries) {
-            append(entry.sha256).append(ENTRY_SEPARATOR).append(entry.size).append(ENTRY_SEPARATOR).append(name).append('\n')
+    internal fun render(attributes: Map<String, String>, entries: Map<String, Entry>): String {
+        val body = buildString {
+            append(HEADER).append('\n')
+            for ((key, value) in attributes) append('@').append(key).append(' ').append(value).append('\n')
+            for ((name, entry) in entries) {
+                append(entry.sha256).append(ENTRY_SEPARATOR).append(entry.size).append(ENTRY_SEPARATOR).append(name).append('\n')
+            }
         }
+        return "$body@$SEAL ${sha256Hex(body.toByteArray(Charsets.UTF_8))}\n"
     }
 
     private fun describe(path: Path): Entry {
