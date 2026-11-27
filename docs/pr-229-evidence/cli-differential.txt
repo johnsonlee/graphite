@@ -1,5 +1,5 @@
-# Kotlin-vs-Rust CLI differential (backend/bench/parity-cli.py at 28e761b), byte-for-byte stdout/stderr/exit code
-## baseline 70f908c: base graphite.jar vs base graphite binary, base-built fixture graph
+# Kotlin-vs-Rust CLI differential (backend/bench/parity-cli.py of f026363; identities.txt)
+## baseline 70f908c
 cli parity: 168 passed, 60 failed of 228
 
 --- query -f text: MATCH (n:LocalVariable) RETURN n ORDER BY id(n) LIMIT 3
@@ -234,61 +234,61 @@ cli parity: 168 passed, 60 failed of 228
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11102) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
+    stderr: b"thread 'main' (15763) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f json: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11133) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
+    stderr: b"thread 'main' (15793) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f csv: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11163) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
+    stderr: b"thread 'main' (15823) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f CSV: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11193) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
+    stderr: b"thread 'main' (15853) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f bogus: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11223) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
+    stderr: b"thread 'main' (15883) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f text: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11253) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
+    stderr: b"thread 'main' (15913) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f json: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11283) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
+    stderr: b"thread 'main' (15943) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f csv: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11313) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
+    stderr: b"thread 'main' (15973) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f CSV: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11343) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
+    stderr: b"thread 'main' (16003) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f bogus: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (11373) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
+    stderr: b"thread 'main' (16033) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f text: MATCH (n) DELETE n
   kotlin: exit=1
@@ -361,6 +361,5 @@ cli parity: 168 passed, 60 failed of 228
     stderr: b'Exception in thread "main" kotlin.NotImplementedError: An operation is not implemented: CREATE is not supported \xe2\x80\x94 graph is immutable\n\tat io.johnsonlee.graphite.cypher.QueryPipeline$ClauseExecution.executeClause(QueryPipeline.kt:180)\n\tat io.johnsonlee.graphite.cypher.QueryPipeline$ClauseExecution.execute(QueryPipeline.kt:161)\n\tat io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralFallback('
   rust: exit=1
     stderr: b'Error: An operation is not implemented: CREATE is not supported \xe2\x80\x94 graph is immutable\n'
-
-## candidate 28e761b: candidate graphite.jar vs candidate binary, candidate-built fixture graph
+## candidate f026363
 cli parity: 228 passed, 0 failed of 228

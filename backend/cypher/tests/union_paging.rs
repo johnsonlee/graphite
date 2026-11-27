@@ -45,9 +45,40 @@ fn a_repeating_branch_yields_the_complete_distinct_prefix_with_or_without_the_pr
 }
 
 #[test]
+fn a_duplicate_past_the_page_is_no_next_page() {
+    // Review of #229: the branch's probe row was another `1`, so the page claimed a next page
+    // and a lower bound of two rows where the whole result is one row.
+    let tail = "UNWIND [1,1,1] AS x RETURN x AS v UNION RETURN 1 AS v";
+    let probed = Executor::new(vec![], false).with_probe();
+    let result = probed.execute(tail, Some(1)).unwrap();
+    assert_eq!(result.rows.len(), 1);
+    assert!(!result.more, "no row exists past the page");
+    assert!(!probed.window_cut(), "so no next page");
+    // A distinct row past the page, in either branch, is one.
+    for query in [
+        "UNWIND [1,1,1,2] AS x RETURN x AS v UNION RETURN 1 AS v",
+        "UNWIND [1,1,1] AS x RETURN x AS v UNION RETURN 2 AS v",
+    ] {
+        let probed = Executor::new(vec![], false).with_probe();
+        let result = probed.execute(query, Some(1)).unwrap();
+        assert_eq!(result.rows.len(), 1, "{query}");
+        assert!(result.more && probed.window_cut(), "{query}");
+    }
+    // A UNION ALL keeps its duplicates, so a duplicate past the page is a row of the next.
+    let all = Executor::new(vec![], false).with_probe();
+    let result = all
+        .execute(
+            "UNWIND [1,1,1] AS x RETURN x AS v UNION ALL RETURN 1 AS v",
+            Some(1),
+        )
+        .unwrap();
+    assert!(result.more && all.window_cut());
+}
+
+#[test]
 fn a_branch_whose_distinct_prefix_exceeds_the_row_cap_fails_instead_of_answering_short() {
-    // 60,000 copies of one row: the branch is read to its end within the cap (the window
-    // doubles to 65,536 rows), and the answer is complete.
+    // 60,000 copies of one row: the branch is read to its end within the cap (its window,
+    // one row past the page, doubles from 3 to 98,304 rows), and the answer is complete.
     let read_through = "UNWIND range(1, 60000) AS i RETURN 1 AS v UNION RETURN 2 AS v";
     assert_eq!(
         values(&Executor::new(vec![], false).with_probe(), read_through, 2).unwrap(),
@@ -62,7 +93,7 @@ fn a_branch_whose_distinct_prefix_exceeds_the_row_cap_fails_instead_of_answering
         "{err}"
     );
     assert!(
-        err.contains("65536 of its rows hold only 1 new distinct rows"),
+        err.contains("98304 of its rows hold only 1 new distinct rows"),
         "{err}"
     );
     // UNION ALL keeps every row, so a window never needs more than the window.

@@ -1,13 +1,13 @@
-# Four builds of the same input (core-1.0.0-SNAPSHOT.jar, sha256 0116f54eafa4195d…) in one JVM, saved in turn
+# Four builds of core-1.0.0-SNAPSHOT.jar in one JVM (repeated-builds.jsh; identities.txt)
 ## baseline 70f908c
 built 4
-g00: graph.nodeoffsets 247672 bytes; 30957,1,30957
-g01: graph.nodeoffsets 495328 bytes; 30957,30958,61914
-g02: graph.nodeoffsets 742984 bytes; 30957,61915,92871
-g03: graph.nodeoffsets 990640 bytes; 30957,92872,123828
-## candidate 28e761b
+g00: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
+g01: graph.nodeoffsets 495328 bytes; nodes,minId,maxId 30957,30958,61914
+g02: graph.nodeoffsets 742984 bytes; nodes,minId,maxId 30957,61915,92871
+g03: graph.nodeoffsets 990640 bytes; nodes,minId,maxId 30957,92872,123828
+## candidate f026363
 built 4
-g00: graph.nodeoffsets 247672 bytes; 30957,1,30957
-g01: graph.nodeoffsets 247672 bytes; 30957,1,30957
-g02: graph.nodeoffsets 247672 bytes; 30957,1,30957
-g03: graph.nodeoffsets 247672 bytes; 30957,1,30957
+g00: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
+g01: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
+g02: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
+g03: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957

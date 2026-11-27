@@ -1,12 +1,22 @@
-# Truncated graph files: what a query answers
+# Truncated graph files: what a query answers (identities.txt)
+### baseline 70f908c: undamaged
+t,n
+"CALL",134
+"CONTROL_FLOW",3415
+"DATAFLOW",30296
+### candidate f026363: undamaged
+t,n
+"CALL",134
+"CONTROL_FLOW",3415
+"DATAFLOW",30296
 ### baseline 70f908c: graph.labels cut by 1 bytes
 t,n
 "CALL",133
 "CONTROL_FLOW",3415
 "DATAFLOW",30297
 exit=0
-### candidate 28e761b: graph.labels cut by 1 bytes
-Error: corrupt graph: /tmp/claude-0/trunc/graph.labels: 33844 bytes, but graph.manifest lists 33845; the graph was modified or cut short
+### candidate f026363: graph.labels cut by 1 bytes
+Error: corrupt graph: /tmp/tmp.LVnfCBe5lD/trunc/graph.labels: 33844 bytes, but graph.manifest lists 33845; the graph was modified or cut short
 exit=1
 ### baseline 70f908c: graph.nodedata cut by 64 bytes
 t,n
@@ -14,8 +24,8 @@ t,n
 "CONTROL_FLOW",3415
 "DATAFLOW",30296
 exit=0
-### candidate 28e761b: graph.nodedata cut by 64 bytes
-Error: corrupt graph: /tmp/claude-0/trunc/graph.nodedata: 1359392 bytes, but graph.manifest lists 1359456; the graph was modified or cut short
+### candidate f026363: graph.nodedata cut by 64 bytes
+Error: corrupt graph: /tmp/tmp.LVnfCBe5lD/trunc/graph.nodedata: 1359392 bytes, but graph.manifest lists 1359456; the graph was modified or cut short
 exit=1
 ### baseline 70f908c: forward.graph cut by 16 bytes
 t,n
@@ -23,16 +33,6 @@ t,n
 "CONTROL_FLOW",3415
 "DATAFLOW",30294
 exit=0
-### candidate 28e761b: forward.graph cut by 16 bytes
-Error: corrupt graph: /tmp/claude-0/trunc/forward.graph: 38485 bytes, but graph.manifest lists 38501; the graph was modified or cut short
+### candidate f026363: forward.graph cut by 16 bytes
+Error: corrupt graph: /tmp/tmp.LVnfCBe5lD/trunc/forward.graph: 38485 bytes, but graph.manifest lists 38501; the graph was modified or cut short
 exit=1
-### oracle: undamaged candidate graph
-t,n
-"CALL",134
-"CONTROL_FLOW",3415
-"DATAFLOW",30296
-### oracle: undamaged baseline graph
-t,n
-"CALL",134
-"CONTROL_FLOW",3415
-"DATAFLOW",30296

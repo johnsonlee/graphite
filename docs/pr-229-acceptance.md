@@ -8,12 +8,29 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 - **Baseline:** `70f908c` (`main` at the time of review). Base binaries were built from a
   clean worktree of that commit: `cargo build -p graphite-cli` and
   `./gradlew :query:shadowJar :explore:shadowJar`.
-- **Candidate:** the evidence files were produced with binaries built from `28e761b`. The
-  commit that adds this matrix adds tests, a CI step, test-only hooks and documentation; it
-  does not change a production code path.
-- **Raw evidence:** `docs/pr-229-evidence/*.txt`, each produced by the commands it names.
-  Base and candidate always ran the same input; graphs were built by each revision's own
-  frontend unless stated otherwise.
+- **Candidate:** the evidence files were produced with binaries built from `f026363`. The
+  commits after it change UNION paging only, which no evidence file exercises; its
+  regressions are the committed tests named in row 5.
+- **Raw evidence:** `docs/pr-229-evidence/*.txt`, every file produced by one replay:
+
+  ```
+  docs/pr-229-evidence/replay/replay.sh \
+    70f908c <base graphite> <base graphite.jar> \
+    f026363 <candidate graphite> <candidate graphite.jar> \
+    frontend/jvm/core/build/libs/core-1.0.0-SNAPSHOT.jar docs/pr-229-evidence
+  ```
+
+  `identities.txt` records the full SHA-256 of both binaries, both jars, the input jar and
+  the compiled acme fixture, plus the JDK and kernel the replay ran on. The harnesses it
+  runs are committed beside it:
+  - `fuzz.py`: per-flip offset, bit, outcome and exit code of every query asked; each flip
+    is derived from `file:k`, so any one flip replays on its own;
+  - `repeated-builds.jsh`;
+  - `save-into.jsh`.
+
+  Base and candidate always ran the same input, and every graph was built by its own
+  revision's frontend. Another checkout reproduces both columns by building `70f908c` and
+  the candidate and running the command above.
 - **Hosted benchmark timings are report-only.** They are not performance acceptance (see
   row 6).
 
@@ -149,7 +166,7 @@ Tests: `GraphMetadataRoundTripTest`,
 | `graph.labels` cut by 1 byte | answers `CALL 133, DATAFLOW 30297` (oracle: 134 / 30296): a call edge silently typed as dataflow | `corrupt graph: …graph.labels: 33844 bytes, but graph.manifest lists 33845` |
 | `forward.graph` cut by 16 bytes | answers `CALL 129, DATAFLOW 30294` (edges silently lost) | refused, same message form |
 | `graph.nodedata` cut by 64 bytes | answers | refused |
-| 180 single-bit flips across six files, default mode | **62 process aborts** (exit 101), 1 error, 117 answers | **0 aborts**, 52 errors, 128 answers |
+| 180 single-bit flips across six files, default mode (`fuzz.py`, every flip listed) | **63 process aborts** (exit 101), 7 errors, 110 answers | **0 aborts**, 59 errors, 121 answers |
 | The same 180 flips, `GRAPHITE_VERIFY_GRAPHS=1` | (no such mode) | 180 refused |
 | Manifest cut at any line boundary, down to its header | (no manifest) | refused: `has no seal line` (review of #229) |
 | Target directory that cannot be renamed (mount point) | n/a | refused and the earlier graph kept byte for byte (review of #229) |
@@ -262,15 +279,18 @@ graph.
 **Limits (stated, not hidden)**
 - **Paging window:** paging ends at row 50,000 (`maxWindow`).
 - **Duplicate-heavy UNION:** a deduplicating UNION branch is read until it yields the
-  distinct rows a page needs, up to 8 windows or 50,000 rows, whichever is more. A branch
-  that still cannot establish them fails the query (`A UNION branch repeats its rows too
-  often to page`); it never answers a page that lacks rows.
+  distinct rows a page needs plus one more, the row that proves a next page, up to 8 windows
+  or 50,000 rows, whichever is more. A branch that still cannot establish them fails the
+  query (`A UNION branch repeats its rows too often to page`). It never answers a page that
+  lacks rows, and a duplicate past the page never claims a next page.
 - **Fanout mode:** fanout mode refuses `offset`.
 - **Hierarchy budget:** a hierarchy request examines at most 100,000 entries.
 
 ## 6. Memory and scale: node ids and index sizing
 
-**Reproducer** (`repeated-builds.txt`): four builds of the same input (`core-1.0.0-SNAPSHOT.jar`)
+**Reproducer** (`repeated-builds.txt`, harness `replay/repeated-builds.jsh`): four builds of
+the same input (`core-1.0.0-SNAPSHOT.jar`, SHA-256
+`0116f54eafa4195d7c558d87356ccd8d37f91cd83b9a530e688be463218e2bf2`)
 in one JVM, each saved in turn.
 
 | Build | Baseline ids / `graph.nodeoffsets` | Candidate ids / `graph.nodeoffsets` |
@@ -360,7 +380,8 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | Transpose stamped with another generation | `c5393c0` | `a graph replaced after load never publishes its transpose for the new graph` |
 | Expression LIMIT ended the pages | `28e761b` | route test (`LIMIT 2+6`, `LIMIT 2+1`) |
 | UNION page window per branch | `28e761b` | route test (UNION ALL, deduplicating UNION with repeats) |
-| Deduplicating UNION past the re-run cap answered a short page | the commit after `2b5496c` | route test (one row 17 times, every page size), `union_paging.rs` (explicit failure past the cap) |
+| Deduplicating UNION past the re-run cap answered a short page | `f026363` | route test (one row 17 times, every page size), `union_paging.rs` (explicit failure past the cap) |
+| A duplicate past a deduplicating UNION's page claimed a next page | the commit after `f026363` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which

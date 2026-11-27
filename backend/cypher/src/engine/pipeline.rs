@@ -297,15 +297,25 @@ impl Executor {
         let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
         // A UNION that removes duplicates pages over distinct rows, so a branch cut at the
-        // window's row count may hold fewer distinct rows than the page needs.
+        // window's row count may hold fewer distinct rows than the page needs, and a row the
+        // probe finds past it may be one more duplicate. Such a UNION asks its branches for
+        // one distinct row past the page, and only the combined result says whether a next
+        // page exists.
         let deduplicating = segments.iter().skip(1).any(|(_, all)| !all);
         let branches = segments.len();
+        let page_rows = max_rows.map(|max| {
+            if deduplicating {
+                max.saturating_add(1)
+            } else {
+                max
+            }
+        });
         for (i, (original, all)) in segments.into_iter().enumerate() {
             let mut factor = 1usize;
             let (r, cut) = loop {
                 let mut seg = original.clone();
                 self.fold_constant_limit(&mut seg);
-                let window = max_rows.map(|max| max.saturating_mul(factor));
+                let window = page_rows.map(|rows| rows.saturating_mul(factor));
                 let windowed = window.is_some_and(|max| inject_limit(&mut seg, max));
                 let keep = if self.probe {
                     probe_limit(&mut seg)
@@ -322,8 +332,8 @@ impl Executor {
                 // Without the probe, a branch that filled its window may have been cut.
                 let maybe_cut = cut
                     || (windowed && keep.is_none() && window.is_some_and(|w| r.rows.len() >= w));
-                if let (true, true, Some(max), Some(window)) =
-                    (deduplicating, maybe_cut, max_rows, window)
+                if let (true, true, Some(needed), Some(window)) =
+                    (deduplicating, maybe_cut, page_rows, window)
                 {
                     let earlier = result
                         .as_ref()
@@ -333,10 +343,10 @@ impl Executor {
                         .into_iter()
                         .filter(|key| !earlier.contains(key))
                         .count();
-                    if fresh < max.saturating_sub(earlier.len()) {
+                    if fresh < needed.saturating_sub(earlier.len()) {
                         // The branch's distinct prefix is not established yet: read more of
                         // it, or refuse rather than answer a page that lacks rows.
-                        if window < union_branch_row_cap(max) {
+                        if window < union_branch_row_cap(needed) {
                             factor *= 2;
                             continue;
                         }
@@ -347,7 +357,11 @@ impl Executor {
                         )));
                     }
                 }
-                more |= beyond;
+                // A deduplicating branch cut by the window proves no next page on its own:
+                // the combined, distinct result below decides. A row past the query's own
+                // LIMIT is reported as for any other query.
+                let cut = cut && !deduplicating;
+                more |= beyond && (cut || !windowed);
                 break (r, cut);
             };
             if cut {

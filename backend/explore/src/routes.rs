@@ -2819,6 +2819,16 @@ mod tests {
             assert_eq!(all, whole, "page size {page}");
             assert_eq!(last["total"], json!({"value": 3, "relation": "eq"}));
         }
+        // A duplicate past the page is no next page (review of #229: `nextOffset` 1 and a
+        // lower bound of 2, where the whole result is one row).
+        let tail =
+            "UNWIND%20%5B1%2C1%2C1%5D%20AS%20x%20RETURN%20x%20AS%20v%20UNION%20RETURN%201%20AS%20v";
+        let (_, only) = get_json(&app, &format!("/api/cypher?query={tail}&limit=1")).await;
+        assert_eq!(only["rows"].as_array().unwrap().len(), 1, "{only}");
+        assert!(only.get("nextOffset").is_none(), "{only}");
+        assert_eq!(only["total"], json!({"value": 1, "relation": "eq"}));
+        let (all, _) = pages_of(tail, 1).await;
+        assert_eq!(all, [json!(1)]);
         // A branch whose distinct prefix cannot be established within its row cap fails
         // rather than answering a page that lacks rows: `backend/cypher/tests/union_paging.rs`.
         // A query LIMIT one past the page: the next page holds exactly that row.

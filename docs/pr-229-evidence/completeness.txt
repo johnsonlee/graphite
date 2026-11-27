@@ -1,18 +1,12 @@
-# Absent versus unrecorded facts on the acme graph the JVM frontend builds with --include com.acme
-## baseline 70f908c (base binary, base-built graph)
+# analysisStatus/dispatchGap on the acme graph (identities.txt)
+## baseline 70f908c
 Error: Unknown function: analysisStatus
 exit=1
-## candidate 28e761b (backend/bench/completeness-e2e.py, both engines, candidate-built graph)
+## candidate f026363
 completeness-e2e: 10 of 10 engine answers match
 status   | n   
 ---------+-----
 ANALYZED | 18  
 EXTERNAL | 28  
-
-2 row(s)
-gap                 | n   
---------------------+-----
-DISPATCH_UNRESOLVED | 9   
-null                | 37  
 
 2 row(s)
