@@ -243,7 +243,12 @@ graph.
   concatenate to the whole result; `total` counts the rows read; a query's own LIMIT ends
   the pages (including `LIMIT 2` with page 2); the single lookahead row (review: division by
   zero in the row after the probe); a computed `LIMIT 2+6`; `UNION ALL` paged by 1; a
-  deduplicating `UNION` whose branch repeats rows; and the 50,000-row window.
+  deduplicating `UNION` whose branch repeats rows, including one row 17 times before the
+  second (review: pages lost `2` and repeated `3`), with every page size's pages compared to
+  the complete result; and the 50,000-row window.
+- **`backend/cypher/tests/union_paging.rs`:** the same distinct prefix with and without the
+  probe, a branch read to its end within the row cap, and a branch whose distinct prefix
+  cannot be established within the cap failing instead of answering a short page.
 - **`hierarchy_walks_share_the_query_guard_and_a_visit_budget`:** 429 under a saturated
   guard, plus the budget and a cancelled token.
 - **`a_wide_hierarchy_pages_to_completion_and_stops_at_its_budget_or_deadline`:** through
@@ -256,9 +261,10 @@ graph.
 
 **Limits (stated, not hidden)**
 - **Paging window:** paging ends at row 50,000 (`maxWindow`).
-- **Duplicate-heavy UNION:** a deduplicating UNION branch that repeats each row more than 8
-  times within the window can leave a page short of that branch's distinct rows (re-run
-  factor cap).
+- **Duplicate-heavy UNION:** a deduplicating UNION branch is read until it yields the
+  distinct rows a page needs, up to 8 windows or 50,000 rows, whichever is more. A branch
+  that still cannot establish them fails the query (`A UNION branch repeats its rows too
+  often to page`); it never answers a page that lacks rows.
 - **Fanout mode:** fanout mode refuses `offset`.
 - **Hierarchy budget:** a hierarchy request examines at most 100,000 entries.
 
@@ -354,6 +360,7 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | Transpose stamped with another generation | `c5393c0` | `a graph replaced after load never publishes its transpose for the new graph` |
 | Expression LIMIT ended the pages | `28e761b` | route test (`LIMIT 2+6`, `LIMIT 2+1`) |
 | UNION page window per branch | `28e761b` | route test (UNION ALL, deduplicating UNION with repeats) |
+| Deduplicating UNION past the re-run cap answered a short page | the commit after `2b5496c` | route test (one row 17 times, every page size), `union_paging.rs` (explicit failure past the cap) |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which

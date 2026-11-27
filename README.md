@@ -1146,7 +1146,9 @@ per graph (`facts.completeness`), so a client never reads `null` as "complete".
   mode) take `offset` beside `limit`. A truncated page answers
   `"total": {"relation": "gte"}` and `"nextOffset"`, the offset of the next page; the last
   page answers `"nextOffset": null`, and a query's own `LIMIT` (a literal, a parameter or
-  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows. A page must
+  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows; a branch that
+  repeats its rows so often that 50,000 of them (or 8 pages' worth) cannot complete a page
+  fails the query rather than answer a page that lacks rows. A page must
   end within the first 50,000 rows of a result (`offset + limit`), since the rows before a
   page are matched to be skipped; beyond that, narrow the query (`ORDER BY` a key and
   `WHERE key > last`). Use `ORDER BY` for pages that do not depend on the engine's row order.

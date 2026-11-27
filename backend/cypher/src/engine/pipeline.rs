@@ -319,7 +319,12 @@ impl Executor {
                 };
                 let beyond = keep.is_some_and(|n| trim_probe(&mut r, n));
                 let cut = beyond && windowed;
-                if let (true, true, Some(max)) = (deduplicating, cut, max_rows) {
+                // Without the probe, a branch that filled its window may have been cut.
+                let maybe_cut = cut
+                    || (windowed && keep.is_none() && window.is_some_and(|w| r.rows.len() >= w));
+                if let (true, true, Some(max), Some(window)) =
+                    (deduplicating, maybe_cut, max_rows, window)
+                {
                     let earlier = result
                         .as_ref()
                         .map(|acc| distinct_keys(&acc.rows))
@@ -328,10 +333,18 @@ impl Executor {
                         .into_iter()
                         .filter(|key| !earlier.contains(key))
                         .count();
-                    if fresh < max.saturating_sub(earlier.len()) && factor < MAX_UNION_WINDOW_FACTOR
-                    {
-                        factor *= 2;
-                        continue;
+                    if fresh < max.saturating_sub(earlier.len()) {
+                        // The branch's distinct prefix is not established yet: read more of
+                        // it, or refuse rather than answer a page that lacks rows.
+                        if window < union_branch_row_cap(max) {
+                            factor *= 2;
+                            continue;
+                        }
+                        return Err(CypherError::Other(format!(
+                            "A UNION branch repeats its rows too often to page: {window} of its rows hold only \
+                             {fresh} new distinct rows, fewer than the page needs. Use UNION ALL with DISTINCT \
+                             inside the branch, or narrow the branch"
+                        )));
                     }
                 }
                 more |= beyond;
@@ -1763,9 +1776,15 @@ fn reads_no_row(expr: &Expr) -> bool {
     }
 }
 
-/// How far a deduplicating UNION branch's window may grow (doubling) when its rows repeat:
-/// past it the branch keeps the rows it has, and a page can hold fewer of its distinct rows.
-const MAX_UNION_WINDOW_FACTOR: usize = 8;
+/// The most rows of one deduplicating UNION branch read to establish a page's distinct
+/// prefix: eight windows, and never fewer than this floor, so a small page over a
+/// branch that repeats its rows still completes. Past it the query fails; it never
+/// answers a page that lacks rows.
+const MIN_UNION_BRANCH_ROW_CAP: usize = 50_000;
+
+fn union_branch_row_cap(window: usize) -> usize {
+    window.saturating_mul(8).max(MIN_UNION_BRANCH_ROW_CAP)
+}
 
 /// The distinct visible rows of `rows`, as the UNION deduplication keys them.
 fn distinct_keys(rows: &[Row]) -> std::collections::HashSet<Vec<Key>> {

@@ -2809,6 +2809,18 @@ mod tests {
         assert_eq!(last["total"], json!({"value": 4, "relation": "eq"}));
         let (whole, _) = pages_of(union, 50).await;
         assert_eq!(whole, all, "pages concatenate to the whole result");
+        // A branch that repeats one row many times before its second distinct one (review of
+        // #229: past an 8x cap the pages lost 2 and repeated 3).
+        let repeated = "UNWIND%20%5B1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C2%5D%20AS%20x%20RETURN%20x%20AS%20v%20UNION%20RETURN%203%20AS%20v";
+        let (whole, _) = pages_of(repeated, 50).await;
+        assert_eq!(whole, [json!(1), json!(2), json!(3)]);
+        for page in [1, 2] {
+            let (all, last) = pages_of(repeated, page).await;
+            assert_eq!(all, whole, "page size {page}");
+            assert_eq!(last["total"], json!({"value": 3, "relation": "eq"}));
+        }
+        // A branch whose distinct prefix cannot be established within its row cap fails
+        // rather than answering a page that lacks rows: `backend/cypher/tests/union_paging.rs`.
         // A query LIMIT one past the page: the next page holds exactly that row.
         let four =
             "MATCH%20(n:StringConstant)%20RETURN%20n.value%20AS%20v%20ORDER%20BY%20v%20LIMIT%204";
