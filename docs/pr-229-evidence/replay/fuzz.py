@@ -6,9 +6,15 @@
 For each named file: 30 flips. Flip k uses random.Random(f"{file}:{k}") to choose a byte
 offset in [0, size) and a bit in [0, 8), so every flip is reproducible on its own. The
 damaged copy of the graph is asked QUERIES in order until one does not exit 0. Each line
-prints the file, flip, offset, bit, the outcome (ok: every query exit 0; error: a query
-exited 1; PANIC: a query exited 101) and the exit code and first stderr line per query
-asked. A summary per file follows. GRAPHITE_VERIFY_GRAPHS in the environment is passed on.
+prints the file, flip, offset, bit, the outcome and the raw exit code and first stderr line
+per query asked. A summary per file follows. GRAPHITE_VERIFY_GRAPHS in the environment is
+passed on.
+
+Outcomes (`classify`): ok, every query exited 0; error, a query exited 1, the CLI's
+controlled refusal; PANIC, a query exited 101, a Rust panic; CRASH, a query was killed by a
+signal (a negative return code: SIGABRT, SIGSEGV, a kill); UNEXPECTED, any other code. Only
+`error` counts as a clean rejection, and the script exits 3 if a run of the candidate (a
+binary passed with --expect-clean) saw any PANIC, CRASH or UNEXPECTED.
 """
 import collections, os, random, shutil, subprocess, sys
 
@@ -21,8 +27,25 @@ QUERIES = [
 FLIPS = 30
 
 
+def classify(returncode):
+    """The outcome of one query's exit status, as subprocess reports it."""
+    if returncode == 0:
+        return "ok"
+    if returncode == 1:
+        return "error"
+    if returncode == 101:
+        return "PANIC"
+    if returncode < 0:
+        return "CRASH"
+    return "UNEXPECTED"
+
+
 def main():
-    binary, src, work, *files = sys.argv[1:]
+    args = sys.argv[1:]
+    expect_clean = "--expect-clean" in args
+    args = [a for a in args if a != "--expect-clean"]
+    binary, src, work, *files = args
+    unclean = 0
     for i, q in enumerate(QUERIES):
         print(f"# query {i}: {q}")
     for name in files:
@@ -45,16 +68,17 @@ def main():
                                    env=dict(os.environ, RUST_BACKTRACE="0"))
                 first = next((l for l in r.stderr.splitlines() if l.strip()), "")
                 asked.append(f"q{i}={r.returncode}" + (f" {first[:160]!r}" if r.returncode else ""))
-                if r.returncode == 101:
-                    outcome = "PANIC"
-                    break
-                if r.returncode != 0:
-                    outcome = "error"
+                outcome = classify(r.returncode)
+                if outcome != "ok":
                     break
             tally[outcome] += 1
+            unclean += outcome in ("PANIC", "CRASH", "UNEXPECTED")
             print(f"{name} flip {k:2d} offset {offset} bit {bit}: {outcome}; " + "; ".join(asked))
         print(f"== {name}: {dict(sorted(tally.items()))}")
     shutil.rmtree(work, ignore_errors=True)
+    if expect_clean and unclean:
+        print(f"fuzz: {unclean} flips ended in a panic, crash or unexpected exit", file=sys.stderr)
+        sys.exit(3)
 
 
 if __name__ == "__main__":

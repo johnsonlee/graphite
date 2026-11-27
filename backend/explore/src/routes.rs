@@ -2829,6 +2829,13 @@ mod tests {
         assert_eq!(only["total"], json!({"value": 1, "relation": "eq"}));
         let (all, _) = pages_of(tail, 1).await;
         assert_eq!(all, [json!(1)]);
+        // The distinct lookahead is the only one: no raw probe row past it (review of #229:
+        // v7 divides by zero, and the page of six ends at v5 with v6 proving the next).
+        let lookahead = "MATCH%20(n:StringConstant)%20RETURN%201.0%2F(7-toInteger(substring(n.value%2C1)))%20AS%20v%20UNION%20RETURN%2099.0%20AS%20v";
+        let (status, six) = get_json(&app, &format!("/api/cypher?query={lookahead}&limit=6")).await;
+        assert_eq!(status, StatusCode::OK, "{six}");
+        assert_eq!(six["rows"].as_array().unwrap().len(), 6);
+        assert_eq!(six["nextOffset"], 6);
         // A branch whose distinct prefix cannot be established within its row cap fails
         // rather than answering a page that lacks rows: `backend/cypher/tests/union_paging.rs`.
         // A query LIMIT one past the page: the next page holds exactly that row.

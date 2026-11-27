@@ -317,7 +317,10 @@ impl Executor {
                 self.fold_constant_limit(&mut seg);
                 let window = page_rows.map(|rows| rows.saturating_mul(factor));
                 let windowed = window.is_some_and(|max| inject_limit(&mut seg, max));
-                let keep = if self.probe {
+                // A windowed deduplicating branch already reads one distinct row past the page;
+                // a raw probe on top would evaluate a row nothing needs (and whose error would
+                // fail a page that ends before it). It was cut only if it filled its window.
+                let keep = if self.probe && !(deduplicating && windowed) {
                     probe_limit(&mut seg)
                 } else {
                     None
