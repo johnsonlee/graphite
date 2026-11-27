@@ -104,13 +104,12 @@ object GraphManifest {
 
     /** The manifest text before its seal line, once the seal proves it whole. */
     private fun unseal(text: String, origin: String): String {
-        val cut = "$origin: has no $SEAL line; the inventory was cut short or edited"
-        if (!text.endsWith('\n')) throw GraphIntegrityException(cut)
-        val start = text.lastIndexOf('\n', text.length - 2) + 1
-        val seal = text.substring(start, text.length - 1).removePrefix("@$SEAL ")
-        if (seal.length == text.length - 1 - start) throw GraphIntegrityException(cut)
+        // The last line, without its newline; a text that does not end in one has no complete last line.
+        val start = if (text.endsWith('\n')) text.lastIndexOf('\n', text.length - 2) + 1 else text.length
+        val last = text.substring(start).removeSuffix("\n")
+        if (!last.startsWith("@$SEAL ")) throw GraphIntegrityException("$origin: has no $SEAL line; the inventory was cut short or edited")
         val body = text.substring(0, start)
-        if (sha256Hex(body.toByteArray(Charsets.UTF_8)) != seal) {
+        if (sha256Hex(body.toByteArray(Charsets.UTF_8)) != last.removePrefix("@$SEAL ")) {
             throw GraphIntegrityException("$origin: the $SEAL does not match the inventory; it was edited after the save")
         }
         return body
@@ -158,8 +157,8 @@ object GraphManifest {
             read(dir)
         } catch (damaged: GraphIntegrityException) {
             return listOf(damaged.message.orEmpty())
-        } ?: return listOf("${dir.resolve(FILE_NAME)}: missing; nothing to verify the graph against")
-        return manifest.entries.mapNotNull { (name, entry) ->
+        }
+        return manifest?.entries?.mapNotNull { (name, entry) ->
             val path = dir.resolve(name)
             when {
                 !Files.isRegularFile(path) -> "$name: missing"
@@ -169,7 +168,7 @@ object GraphManifest {
                         "found ${actual.size} bytes sha256 ${actual.sha256}"
                 }
             }
-        }
+        } ?: listOf("${dir.resolve(FILE_NAME)}: missing; nothing to verify the graph against")
     }
 
     /** Whether [name] is a file the manifest of [dir] seals; a sealed file must not be rewritten in place. */
