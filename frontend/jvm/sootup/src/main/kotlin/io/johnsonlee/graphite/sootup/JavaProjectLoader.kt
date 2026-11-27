@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.input.BodyInterceptionEvidence
 
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.ArtifactRole
@@ -382,10 +383,11 @@ class JavaProjectLoader(
         }
     }
 
-    private inline fun <T> withLoad(action: () -> T): T {
+    private inline fun <T> withLoad(crossinline action: () -> T): T {
         check(loading.compareAndSet(false, true)) { "JavaProjectLoader already has a load in progress" }
         return try {
-            action()
+            // Each build numbers its nodes from 1, whatever the process built before.
+            NodeId.numbered { action() }
         } finally {
             foldInterceptors = null
             loading.set(false)

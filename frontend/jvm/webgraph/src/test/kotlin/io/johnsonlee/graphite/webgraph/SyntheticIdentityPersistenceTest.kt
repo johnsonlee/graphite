@@ -82,6 +82,7 @@ class SyntheticIdentityPersistenceTest {
 
         // A file written before the section existed: everything after the trailer removed.
         Files.write(metadata(dir), bytes.copyOf(trailerStart + NodeSerializer.METADATA_TRAILER_BYTES))
+        unsealGraph(dir)
         val loaded = GraphStore.load(dir)
         assertEquals(emptyMap(), loaded.syntheticIdentities())
         assertEquals(0, loaded.branchScopes().count(), "trailer still read")
@@ -102,6 +103,7 @@ class SyntheticIdentityPersistenceTest {
         withSavedGraph(withIdentities = false) { dir ->
             val bytes = Files.readAllBytes(metadata(dir))
             Files.write(metadata(dir), bytes.copyOf(bytes.size - 1))
+            unsealGraph(dir)
             val loaded = GraphStore.load(dir)
             assertEquals(1, loaded.nodes(io.johnsonlee.graphite.core.Node::class.java).count(), "node data is intact")
             assertEquals(emptyMap(), loaded.syntheticIdentities())
@@ -110,6 +112,7 @@ class SyntheticIdentityPersistenceTest {
         withSavedGraph { dir ->
             val bytes = Files.readAllBytes(metadata(dir))
             Files.write(metadata(dir), bytes.copyOf(bytes.size - 1))
+            unsealGraph(dir)
             val loaded = GraphStore.load(dir)
             assertEquals(emptyMap(), loaded.syntheticIdentities(), "an incomplete identity section is dropped whole")
             assertEquals(1, loaded.nodes(io.johnsonlee.graphite.core.Node::class.java).count())

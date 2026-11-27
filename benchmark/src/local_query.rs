@@ -423,6 +423,7 @@ fn local_tasks(
             started,
             60_000,
             true,
+            PORT,
         );
         done.store(true, Ordering::Release);
         result

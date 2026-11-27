@@ -19,10 +19,38 @@ value class NodeId(val value: Int) {
     companion object {
         private val counter = AtomicInteger(0)
 
+        /** The numbering of the build running on this thread, if any: the last id it handed out. */
+        private val build = ThreadLocal<IntArray?>()
+
         /**
-         * Generate a new unique NodeId.
+         * Generate a new unique NodeId: the next id of the build running on this thread ([numbered]), or else the next id of the
+         * process-wide counter.
          */
-        fun next(): NodeId = NodeId(counter.incrementAndGet())
+        fun next(): NodeId {
+            val active = build.get() ?: return NodeId(counter.incrementAndGet())
+            active[0] += 1
+            return NodeId(active[0])
+        }
+
+        /**
+         * Runs a graph build whose nodes are numbered from 1 on this thread.
+         *
+         * A persisted graph sizes its node offset index, forward graph and per-node sidecars by its largest id, so numbering every build
+         * from one process-wide counter made each graph built later in a process pay for every node built before it (the same input built
+         * twice, with 1,000 ids allocated in between, wrote a node offset index three times the size). Ids handed out by the
+         * process-wide counter afterwards stay above every id the build used, so a synthetic node never shares an id with a built one.
+         */
+        fun <T> numbered(block: () -> T): T {
+            val outer = build.get()
+            val active = IntArray(1)
+            build.set(active)
+            try {
+                return block()
+            } finally {
+                build.set(outer)
+                counter.accumulateAndGet(active[0], ::maxOf)
+            }
+        }
 
         /**
          * Reset the counter (for testing purposes).

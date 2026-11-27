@@ -299,7 +299,47 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
     }
 }
 
+/// Runs a query; a panic while it reads the graph becomes an error that names the graph.
+///
+/// The load checks what it can afford to (the manifest's sizes, the structure of the
+/// indexes), but a same-size flip inside a record (a string id, an offset in a node's
+/// payload) is only met by the query that decodes it. The server answers such a request
+/// with a failure and keeps serving; this one-shot command says what it could not read and
+/// how to confirm it, rather than aborting with a stack location.
 fn query(args: QueryArgs) -> Result<(), String> {
+    let graph_dir = args.graph_dir.clone();
+    contain_decode_panic(&graph_dir, || query_unguarded(args))
+}
+
+fn contain_decode_panic(
+    graph_dir: &std::path::Path,
+    run: impl FnOnce() -> Result<(), String>,
+) -> Result<(), String> {
+    use std::sync::{Arc, Mutex};
+    let report = Arc::new(Mutex::new(None::<String>));
+    let previous = std::panic::take_hook();
+    let captured = Arc::clone(&report);
+    std::panic::set_hook(Box::new(move |info| {
+        *captured.lock().unwrap_or_else(|e| e.into_inner()) = Some(info.to_string());
+    }));
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(run));
+    std::panic::set_hook(previous);
+    outcome.unwrap_or_else(|_| {
+        let detail = report
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .take()
+            .unwrap_or_else(|| "no panic message".to_string());
+        Err(format!(
+            "the query stopped while reading {}: {detail}. The graph may be damaged; \
+             `graphite verify {}` checks every file against its manifest",
+            graph_dir.display(),
+            graph_dir.display()
+        ))
+    })
+}
+
+fn query_unguarded(args: QueryArgs) -> Result<(), String> {
     if !args.graph_dir.exists() {
         return Err(format!("No such graph: {}", args.graph_dir.display()));
     }
@@ -434,6 +474,27 @@ fn _context_marker(c: &dyn GraphContext) -> usize {
 #[cfg(test)]
 mod cli_tests {
     use super::*;
+
+    #[test]
+    fn a_panic_while_reading_a_graph_is_an_error_naming_the_graph() {
+        let dir = std::path::Path::new("damaged-graph");
+        let error = contain_decode_panic(dir, || {
+            let ids: Vec<u32> = vec![1, 2];
+            let index = ids.len() + 7;
+            println!("{}", ids[index]);
+            Ok(())
+        })
+        .unwrap_err();
+        assert!(error.starts_with("the query stopped while reading damaged-graph: "));
+        assert!(error.contains("index out of bounds: the len is 2 but the index is 9"));
+        assert!(error
+            .ends_with("`graphite verify damaged-graph` checks every file against its manifest"));
+        assert_eq!(contain_decode_panic(dir, || Ok(())), Ok(()));
+        assert_eq!(
+            contain_decode_panic(dir, || Err("plain".into())),
+            Err("plain".into())
+        );
+    }
 
     #[test]
     fn query_parser_exposes_public_dialect_and_rejects_invalid_values() {

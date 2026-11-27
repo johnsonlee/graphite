@@ -14,7 +14,8 @@ SPEC.loader.exec_module(schema)
 class ReviewedSchemaTest(unittest.TestCase):
     def setUp(self):
         self.rust = json.loads((HERE.parent / "explore/src/openapi.json").read_text())
-        self.legacy = schema.without_reviewed_dialect(self.rust)
+        # The Kotlin server has neither reviewed addition: the optional dialect and the paging offset.
+        self.legacy = schema.without_reviewed_offset(schema.without_reviewed_dialect(self.rust))
         self.extra_paths = {"/api/schema", "/api/graphs/{graphId}/schema"}
         for path in self.extra_paths:
             self.legacy["paths"].pop(path, None)
@@ -108,6 +109,22 @@ class ReviewedSchemaTest(unittest.TestCase):
         rust = copy.deepcopy(self.rust)
         rust["paths"]["/api/cypher"]["get"]["summary"] = "unreviewed change"
         self.assertNotEqual(*self.pair(rust))
+
+    def test_the_offset_parameter_is_removed_only_as_reviewed(self):
+        for path in schema.OFFSET_PATHS:
+            for mutation in ("missing", "duplicate", "changed"):
+                with self.subTest(path=path, mutation=mutation):
+                    rust = copy.deepcopy(self.rust)
+                    parameters = rust["paths"][path]["get"]["parameters"]
+                    offset = next(p for p in parameters if p.get("name") == "offset")
+                    if mutation == "missing":
+                        parameters.remove(offset)
+                    elif mutation == "duplicate":
+                        parameters.append(copy.deepcopy(offset))
+                    else:
+                        offset["schema"]["minimum"] = -1
+                    with self.assertRaisesRegex(ValueError, "reviewed offset parameter differs"):
+                        self.pair(rust)
 
     def test_build_version_is_the_only_schema_value_normalized(self):
         self.rust["info"]["version"] = "different-build"

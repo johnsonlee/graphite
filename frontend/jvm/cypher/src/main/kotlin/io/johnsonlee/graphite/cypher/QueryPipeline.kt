@@ -177,11 +177,20 @@ class QueryPipeline private constructor(
                 is CypherClause.Skip -> rows = rows.drop(context.integerValue(clause.count, rows.firstOrNull() ?: emptyMap()))
                 is CypherClause.Limit -> rows = rows.take(context.integerValue(clause.count, rows.firstOrNull() ?: emptyMap()))
                 is CypherClause.Union -> TODO("UNION is handled by CypherExecutor, not QueryPipeline")
-                is CypherClause.Create -> TODO("CREATE is not supported — graph is immutable")
-                is CypherClause.Delete -> TODO("DELETE is not supported — graph is immutable")
-                is CypherClause.Set -> TODO("SET is not supported — graph is immutable")
-                is CypherClause.Remove -> TODO("REMOVE is not supported — graph is immutable")
+                is CypherClause.Create, is CypherClause.Delete, is CypherClause.Set, is CypherClause.Remove -> throw immutableGraph(clause)
             }
+        }
+
+        /** A write clause fails the query with the message the Rust engine gives, not an uncaught NotImplementedError. */
+        private fun immutableGraph(clause: CypherClause): CypherException {
+            val name =
+                when (clause) {
+                    is CypherClause.Create -> "CREATE"
+                    is CypherClause.Delete -> "DELETE"
+                    is CypherClause.Set -> "SET"
+                    else -> "REMOVE"
+                }
+            return CypherException("An operation is not implemented: $name is not supported — graph is immutable")
         }
 
         private fun projectWith(clause: CypherClause.With, index: Int) {

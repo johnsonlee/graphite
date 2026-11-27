@@ -491,6 +491,7 @@ abstract class GraphStoreTestFixture {
         writeLegacyV1Metadata(dir, method, strings)
         writeLegacyV1NodeIndex(dir, method, returnNode, annotationNode, strings)
         writeLegacyV1Comparisons(dir)
+        unsealGraph(dir)
 
         return LegacyV1Fixture(dir, method, annotationNode)
     }
@@ -619,3 +620,21 @@ internal fun rewriteCallSiteStringIndexChecksum(bytes: ByteArray) {
     check(input.position() == bytes.size - Long.SIZE_BYTES)
     input.putLong(checksum.value)
 }
+
+/**
+ * Removes the manifest a save sealed [dir] with, so the directory reads as one a writer before manifests produced. Tests that tamper with
+ * a file to exercise a reader's own validation call this; a sealed graph refuses the tampered file before that validation runs.
+ */
+internal fun unsealGraph(dir: java.nio.file.Path) {
+    java.nio.file.Files.deleteIfExists(dir.resolve(GraphManifest.FILE_NAME))
+}
+
+/**
+ * A regular file that opens but cannot be memory-mapped (a Linux sysfs attribute: `mmap` fails with ENODEV), or null where the host
+ * has none. It reaches a reader's I/O failure path deterministically, where deleting a file between its existence check and its open
+ * would be a race; the coverage gate runs on Linux.
+ */
+internal fun unmappableFile(): java.nio.file.Path? =
+    listOf("/sys/kernel/profiling", "/sys/kernel/mm/transparent_hugepage/enabled", "/sys/kernel/uevent_seqnum")
+        .map { java.nio.file.Path.of(it) }
+        .firstOrNull { java.nio.file.Files.isRegularFile(it) && java.nio.file.Files.size(it) > 0 }

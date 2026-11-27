@@ -23,16 +23,11 @@ internal fun saveGraphFiles(
     prepareCallSiteStringIndex: Boolean,
     declaredTypeVersion: Int
 ) {
-    // A loaded graph reads its evidence on first use, from the directory this save may be
-    // rewriting: materialise it before any file of that directory is removed.
+    // A loaded graph reads its evidence on first use, from the directory this save will replace:
+    // materialise it before the new graph takes that directory's place. [dir] is a fresh staging
+    // directory (GraphDirectoryPublication), so no file of an earlier graph needs removing.
     val completeness = graph.analysisCompleteness()
     Files.createDirectories(dir)
-    Files.deleteIfExists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
-    Files.deleteIfExists(dir.resolve(GraphStore.BRANCH_DEFINITIONS_FILE))
-    Files.deleteIfExists(dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE))
-    Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
-    Files.deleteIfExists(dir.resolve(DeclaredPresence.FILE_NAME))
-    Files.deleteIfExists(dir.resolve(AnalysisCompletenessStore.FILE_NAME))
 
     // 1. Stream nodes: find maxNodeId, count nodes, collect strings
     var maxNodeId = 0

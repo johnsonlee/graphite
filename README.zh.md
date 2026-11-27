@@ -688,6 +688,30 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 
 替换正在提供服务的图，只需通过一次原子的 `rename`，用新文件覆盖旧文件：服务端的内存映射会一直绑定旧 inode，直到最后一个正在执行的查询完成。
 
+#### 图目录：清单、生产者与完整性
+
+所有写入方（JVM 保存、`graphite.jar build`/`import`、JSON 导入）最后都会写入 `graph.manifest`：先是 `@producer graphite-jvm 2.x.y`（或 `graphite-rust …`）与 `@storage-format 1`，再逐个文件列出 `sha256  size  name`。读取方遇到更新的存储格式时会按名称拒绝，而不是误读。
+
+- **保存要么完整、要么不发生。** `GraphStore.save` 先写入同级的暂存目录，再整体替换目标目录：`save(loadMapped(dir), dir)` 不再截断源图正在映射的文件，旧图遗留的文件（例如派生的 `backward.*`）不会残留在新图旁边，保存失败时保留原图。目标目录中若有图文件以外的内容，会拒绝替换。
+- **损坏的数据会被拒绝，而不是被用来回答查询。** 两套读取器在解码前检查清单中每个文件的大小，截断、复制不完整或被替换的文件会报 `corrupt graph: <文件>: N bytes, but graph.manifest lists M`。大小不变的损坏需要计算哈希：`graphite verify <目录>` 会校验每个字节，`GRAPHITE_VERIFY_GRAPHS=1` 让 `query`、`serve`、`mcp` 在加载时校验，`graphite pack` 也会拒绝与清单不符的目录。没有清单的旧目录照常加载。
+
+## 事实不存在与未被记录
+
+图是构建时读取的字节码的投影：一个方法没有调用边，可能是它确实不调用任何方法，也可能是它的方法体从未被读取（不在范围内、未加载、解析失败）。JVM 前端会记录是哪一种，两个查询引擎都能回答：
+
+```cypher
+MATCH (c:CallSite {caller_class: 'com.acme.Checkout'})
+RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c) AS gap
+```
+
+`analysisStatus(x)` 接受 `Method` 或 `CallSite`（取其被调方法），返回 `ANALYZED`、`EXCLUDED_BY_SCOPE`、`EXTERNAL`、`UNKNOWN_MEMBER` 等状态；`dispatchGap(c)` 说明函数值调用为何没有完全解析。没有完整性证据的图返回 `null`，`GET /api/capabilities` 的 `facts.completeness` 会说明这一点，客户端不会把 `null` 误读为"完整"。
+
+## 查询服务：分页、层级与能力
+
+- **分页。** `/api/cypher`、`/api/graphs/{id}/cypher` 与 `/api/cypher/graphs`（cross-graph 模式）在 `limit` 之外支持 `offset`。被截断的页返回 `"total": {"relation": "gte"}` 和下一页的 `"nextOffset"`，最后一页返回 `"nextOffset": null`。需要稳定分页时请使用 `ORDER BY`。MCP `cypher` 工具同样支持 `offset`。
+- **层级。** `GET /api/graphs/{id}/hierarchy?type=T&direction=subtypes|supertypes&depth=N&limit=M&offset=K`（以及覆盖所有图的 `/api/hierarchy`、MCP `hierarchy` 工具）按固定顺序广度优先遍历类型层级，并在页满时停止，因此 `java.lang.Object` 的全部子类型是一系列分页，而不是一条跑到超时的路径查询。`known: false` 表示层级索引中没有该类型。
+- **能力。** `GET /api/capabilities`（MCP `capabilities`）列出服务支持的方言、分页上限、Graphite 函数和层级上限，以及每个已加载图的生产者、存储格式和记录了哪些事实。
+
 ## 分析能力
 
 | 能力 | 说明 |
@@ -704,6 +728,8 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 | 资源访问 | JAR/WAR/fat JAR 内的文件（包括嵌套 JAR） |
 
 ## 扩展机制
+
+Graphite 有意不提供把框架语义（Spring、Dagger、Android 生命周期等）编码进图模型的扩展层：图模型保持与语言、框架无关，框架知识以数据的形式进入。可以放在三个地方：JVM `GraphiteExtension` 在构图时添加注解和元数据（见下文）；输出 JSON 交换格式的前端（`graphite import`）可以记录任意节点、边和 `supertypes`；查询在读取时组合这些数据（C4 架构视图就是这样推断出来的）。需要新的节点类型或边语义的框架规则，属于模型变更，需要同时修改各前端和两套引擎。
 
 通过 `GraphiteExtension` SPI（ServiceLoader）实现可插拔扩展：
 

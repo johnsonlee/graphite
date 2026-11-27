@@ -119,6 +119,7 @@ class QueryCommandTest {
             System.setErr(oldErr)
         }
         assertEquals(1, code)
+        assertEquals("Error: No such graph: /nonexistent", errBaos.toString().trim(), "the Rust CLI's words")
     }
 
     @Test
@@ -224,6 +225,31 @@ class QueryCommandTest {
             assertTrue(errBaos.toString().contains("Not a directory"))
         } finally {
             Files.deleteIfExists(tempFile)
+        }
+    }
+
+    @Test
+    fun `non-finite numbers are written as the Rust CLI writes them, not a serialisation crash`() {
+        val query = "RETURN sqrt(-1) AS nan, exp(1000) AS inf, [-exp(1000), 1.5] AS list, {x: sqrt(-1)} AS map"
+        val (stdout, stderr, code) = runCommand(query, "json")
+        assertEquals(0, code, stderr)
+        val row = com.google.gson.JsonParser.parseString(stdout).asJsonObject.getAsJsonArray("rows")[0].asJsonObject
+        assertEquals("NaN", row["nan"].asString)
+        assertEquals("Infinity", row["inf"].asString)
+        assertEquals("-Infinity", row.getAsJsonArray("list")[0].asString)
+        assertEquals(1.5, row.getAsJsonArray("list")[1].asDouble)
+        assertEquals("NaN", row.getAsJsonObject("map")["x"].asString)
+    }
+
+    @Test
+    fun `refused queries fail with one line, as the Rust CLI does`() {
+        for ((query, message) in listOf(
+            "CREATE (n:Foo) RETURN n" to "Error: An operation is not implemented: CREATE is not supported — graph is immutable",
+            "RETURN 'x' =~ '[' AS x" to "Error: Unsupported regex construct in pattern: [",
+            "RETURN 9223372036854775807 + 1 AS x" to "Error: long overflow")) {
+            val (_, stderr, code) = runCommand(query)
+            assertEquals(1, code, query)
+            assertEquals(message, stderr.trim(), query)
         }
     }
 }

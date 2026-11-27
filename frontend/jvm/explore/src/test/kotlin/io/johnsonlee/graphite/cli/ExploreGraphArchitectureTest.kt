@@ -261,8 +261,10 @@ internal class ExploreGraphArchitectureTest : ExploreCommandTestSupport() {
             }
         }
         thread.start()
-        // Give it time to start
-        Thread.sleep(2000)
+        // Wait until the command is parked in the server's join, whatever the runner's speed, instead of guessing how long startup takes.
+        val deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(60)
+        while (thread.state != Thread.State.WAITING && thread.isAlive && System.nanoTime() < deadline) Thread.onSpinWait()
+        assertTrue(thread.state == Thread.State.WAITING, "the command never reached the server's join: ${thread.state}")
         // Interrupt to unblock Thread.join()
         thread.interrupt()
         thread.join(5000)

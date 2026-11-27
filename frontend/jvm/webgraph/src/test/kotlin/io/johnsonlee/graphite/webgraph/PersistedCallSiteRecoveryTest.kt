@@ -53,6 +53,7 @@ class PersistedCallSiteRecoveryTest : GraphStoreTestFixture() {
             GraphStore.save(graph, dir)
             val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             val validIndex = Files.readAllBytes(indexFile)
+            unsealGraph(dir)
             Files.write(indexFile, validIndex + byteArrayOf(1))
             val rebuiltAfterTrailingData = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
@@ -155,6 +156,7 @@ class PersistedCallSiteRecoveryTest : GraphStoreTestFixture() {
                 graphADir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
                 graphBDir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
                 java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                unsealGraph(graphBDir)
 
             val rebuilt = GraphStore.loadMapped(graphBDir) as MappedWebGraphBackedGraph
             try {
@@ -220,6 +222,7 @@ class PersistedCallSiteRecoveryTest : GraphStoreTestFixture() {
             assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
             Files.delete(dir.resolve(StringTable.CONTENT_IDENTITY_FILE_NAME))
             Files.delete(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE))
+            unsealGraph(dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())

@@ -219,6 +219,10 @@ fn variant(
             continue;
         }
         let name = entry.file_name();
+        // A copy that rewrites files is a graph written before manifests: its seal would refuse it.
+        if name == "graph.manifest" {
+            continue;
+        }
         if name == "graph.typeindex"
             || (broken_index && name == "graph.callsite-string-index")
             || (bad_field.is_some() && name == "graph.nodedata")

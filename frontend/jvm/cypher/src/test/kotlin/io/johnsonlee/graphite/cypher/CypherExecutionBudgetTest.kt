@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -155,27 +154,17 @@ class CypherExecutionBudgetTest : CypherExecutorTestFixture() {
 
     @Test
     fun `execution context cancellation stops graph-free range and unwind work`() {
-        val cancellation = CypherCancellationSignal()
+        // Cancelled from the query's own third checkpoint, i.e. while the range is being produced: no second thread and no sleep, so
+        // the outcome does not depend on whether a loaded runner schedules a canceller before the work ends.
+        val checks = AtomicInteger()
+        lateinit var cancellation: CypherCancellationSignal
+        cancellation = CypherCancellationSignal { if (checks.incrementAndGet() == 3) cancellation.cancel() }
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1), cancellation)
-        val started = CountDownLatch(1)
-        val failure = AtomicReference<Throwable?>()
-        val worker = Thread {
-            try {
-                started.countDown()
-                CypherExecutor(graph, context).execute("UNWIND range(1, 10000000) AS x RETURN x LIMIT 1")
-            } catch (error: Throwable) {
-                failure.set(error)
-            }
+
+        assertFailsWith<CypherQueryCancelledException> {
+            CypherExecutor(graph, context).execute("UNWIND range(1, 10000000) AS x RETURN x LIMIT 1")
         }
-
-        worker.start()
-        assertTrue(started.await(1, TimeUnit.SECONDS))
-        Thread.sleep(20)
-        cancellation.cancel()
-        worker.join(TimeUnit.SECONDS.toMillis(2))
-
-        assertFalse(worker.isAlive, "Graph-free query ignored cancellation")
-        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
+        assertEquals(3, checks.get(), "the query stops at the first checkpoint after the cancellation")
     }
 
     @Test

@@ -151,13 +151,13 @@ class CypherSyntaxCompatibilityTest : CypherCompatibilityTestFixture() {
     // 17. DETACH DELETE (should parse and throw not implemented)
     @Test
     fun `DETACH DELETE parses and throws not implemented`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) DETACH DELETE n") }
+        assertRefusedAsImmutable { executor.execute("MATCH (n) DETACH DELETE n") }
     }
 
     // 18. MERGE (should parse and throw not implemented)
     @Test
     fun `MERGE parses and throws not implemented`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MERGE (n:Test {name: 'x'}) RETURN n") }
+        assertRefusedAsImmutable { executor.execute("MERGE (n:Test {name: 'x'}) RETURN n") }
     }
 
     // 19. Dotted function name (namespace.function)

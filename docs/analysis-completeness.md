@@ -193,9 +193,10 @@ whose trailer is not the one the directory recorded, or that carries another nod
 another save's and reads as absent. A bound file that no longer hashes, is cut short, has bytes
 after its last entry, or names a status this reader does not know is corruption after binding
 and throws rather than answers. A loaded graph that has not read its evidence yet reads it before
-a save into its own directory removes the file.
-Both JVM loads read it on the first call for it and never before; the Rust reader does not read
-it. Status and role codes index a name table the file carries, so a value added later still reads
+a save into its own directory replaces the directory.
+Both JVM loads read it on the first call for it and never before, and so does the Rust reader
+(`graphite_storage::completeness`), which answers `analysisStatus(x)` and `dispatchGap(c)` in the
+Rust engine as the Kotlin engine answers them from `Graph.analysisStatus`. Status and role codes index a name table the file carries, so a value added later still reads
 as itself.
 
 ## What this delivery does not do

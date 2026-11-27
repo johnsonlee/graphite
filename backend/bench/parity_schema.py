@@ -104,10 +104,34 @@ def without_reviewed_dialect(document):
     return normalized
 
 
+# The paging parameter the Rust Cypher routes add (reviewed, checked by parity.py's
+# check_service): removed only where it matches this definition exactly.
+OFFSET_PATHS = ("/api/cypher", "/api/graphs/{graphId}/cypher", "/api/cypher/graphs")
+OFFSET_PARAMETER = {
+    "in": "query",
+    "name": "offset",
+    "required": False,
+    "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+    "schema": {"type": "integer", "minimum": 0},
+}
+
+
+def without_reviewed_offset(document):
+    """Remove the reviewed offset parameter from each Cypher operation, and nothing else."""
+    for path in OFFSET_PATHS:
+        for method, operation in document.get("paths", {}).get(path, {}).items():
+            parameters = operation.get("parameters", [])
+            offsets = [p for p in parameters if isinstance(p, dict) and p.get("name") == "offset"]
+            if offsets != [OFFSET_PARAMETER]:
+                raise ValueError(f"{method} {path}: reviewed offset parameter differs")
+            parameters.remove(OFFSET_PARAMETER)
+    return document
+
+
 def legacy_schema_pair(legacy_raw, rust_raw, rust_only_paths):
     """Only build version and separately checked Rust-only routes precede exact diff."""
     legacy = load_schema(legacy_raw)
-    rust = without_reviewed_dialect(load_schema(rust_raw))
+    rust = without_reviewed_offset(without_reviewed_dialect(load_schema(rust_raw)))
     for document in (legacy, rust):
         if isinstance(document.get("info"), dict) and "version" in document["info"]:
             if not isinstance(document["info"]["version"], str):

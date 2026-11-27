@@ -28,6 +28,7 @@ internal const val NODE_INDEX_FILE = "graph.nodeindex"
 internal const val TYPE_INDEX_FILE = "graph.typeindex"
 internal const val LABEL_PREFIX_FILE = "graph.labelprefix"
 internal const val BACKWARD_GRAPH = "backward"
+internal const val BACKWARD_PROPERTIES = "$BACKWARD_GRAPH.properties"
 internal const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
 internal const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
 internal const val BACKWARD_COMPRESSION_THREADS = 2
@@ -209,7 +210,9 @@ internal fun copyLegacyNodeIndexEntries(nodeIndexPath: Path, offsetWriter: NodeO
 internal data class LegacyNodeIndexStats(val maxNodeId: Int, val typeCounts: IntArray)
 
 internal fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
-    if (!hasPersistedBackwardGraph(dir)) return null
+    // A transpose is derived after the save, so the manifest cannot list it; it names the graph it was derived from instead, and one
+    // derived from another graph (left by an earlier graph in this directory, or written by a process still holding it) is rebuilt.
+    if (!hasPersistedBackwardGraph(dir) || backwardGraphIdentity(dir) != GraphManifest.identity(dir)) return null
     return try {
         BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
     } catch (_: Exception) {
@@ -222,6 +225,12 @@ internal fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): I
     return try {
         tempDir = Files.createTempDirectory(dir, "$BACKWARD_GRAPH.")
         val loaded = storeAndLoadBackwardGraph(tempDir, backward)
+        GraphManifest.identity(dir)?.let { identity ->
+            Files.writeString(
+                tempDir.resolve(BACKWARD_PROPERTIES),
+                "$BACKWARD_IDENTITY_KEY=$identity\n",
+                StandardOpenOption.APPEND)
+        }
         try {
             moveGraphFiles(tempDir, dir)
         } catch (_: Exception) {
@@ -257,7 +266,7 @@ internal fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): Imm
         BVGraph.DEFAULT_ZETA_K,
         0,
         BACKWARD_COMPRESSION_THREADS)
-    stripPropertiesComments(dir.resolve("$BACKWARD_GRAPH.properties"))
+    stripPropertiesComments(dir.resolve(BACKWARD_PROPERTIES))
     return BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
 }
 
@@ -274,8 +283,16 @@ internal fun stripPropertiesComments(properties: Path) {
     }
 }
 
+internal const val BACKWARD_IDENTITY_KEY = "graphite.graph.identity"
+
+/** The manifest digest a persisted transpose records, or null for one written by a legacy graph or before manifests existed. */
+internal fun backwardGraphIdentity(dir: Path): String? =
+    Files.newInputStream(dir.resolve(BACKWARD_PROPERTIES)).use { input ->
+        java.util.Properties().apply { load(input) }.getProperty(BACKWARD_IDENTITY_KEY)
+    }
+
 internal fun hasPersistedBackwardGraph(dir: Path): Boolean =
-    Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.graph")) && Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.properties"))
+    Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.graph")) && Files.isRegularFile(dir.resolve(BACKWARD_PROPERTIES))
 
 internal fun moveGraphFiles(sourceDir: Path, targetDir: Path) {
     Files.list(sourceDir).use { paths ->
@@ -515,17 +532,34 @@ object GraphStore {
     }
 
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2, prepareCallSiteStringIndex: Boolean) =
-        saveGraphFiles(
-            graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
+        saveSealed(graph, dir, compressionThreads, prepareCallSiteStringIndex, CURRENT_DECLARED_TYPE_VERSION)
 
     /** Explicit compatibility fixture path; ordinary saves always choose the current representation. */
     internal fun saveLegacyDeclaredTypesV3(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        saveGraphFiles(
-            graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
+        saveSealed(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, SHARED_DECLARED_TYPE_VERSION)
 
     internal fun saveLegacyDeclaredTypesV4(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        saveGraphFiles(
-            graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
+        saveSealed(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, STRUCTURAL_DECLARED_TYPE_VERSION)
+
+    /** Writes the graph into a staging directory, seals it with its manifest, and only then puts it in [dir]'s place. */
+    private fun saveSealed(
+        graph: Graph,
+        dir: Path,
+        compressionThreads: Int,
+        prepareCallSiteStringIndex: Boolean,
+        declaredTypeVersion: Int
+    ) {
+        GraphDirectoryPublication.publish(dir) { stage ->
+            saveGraphFiles(graph, stage, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion)
+            GraphManifest.write(stage)
+        }
+    }
+
+    /**
+     * Hashes every file the graph's manifest lists and returns one message per file that is missing or does not match; an empty list
+     * means the graph on disk is the graph that was saved. A load checks only sizes; this reads every byte.
+     */
+    fun verify(dir: Path): List<String> = GraphManifest.verify(dir)
 
     internal const val CURRENT_DECLARED_TYPE_VERSION = 5
     internal const val STRUCTURAL_DECLARED_TYPE_VERSION = 4
@@ -538,6 +572,7 @@ object GraphStore {
      */
     fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
         require(Files.isDirectory(dir)) { graphNotDirectoryMessage(dir) }
+        GraphManifest.checkSizes(dir)
         return when (mode) {
             LoadMode.EAGER -> loadEagerGraph(dir)
             LoadMode.MAPPED -> {
@@ -577,11 +612,13 @@ object GraphStore {
      * not retain their memory. Set `graphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare before this method returns, or
      * `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
      */
-    fun loadMapped(dir: Path): Graph =
-        loadMappedGraph(
+    fun loadMapped(dir: Path): Graph {
+        GraphManifest.checkSizes(dir)
+        return loadMappedGraph(
             dir,
             prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
             persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled())
+    }
 
     /**
      * Flat sorted adjacency: targets[offsets[node]..offsets[node+1]] are the sorted, deduplicated successors of node. Zero per-node

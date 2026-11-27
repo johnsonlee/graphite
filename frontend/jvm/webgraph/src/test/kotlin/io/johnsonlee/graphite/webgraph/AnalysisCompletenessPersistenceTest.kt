@@ -208,6 +208,7 @@ class AnalysisCompletenessPersistenceTest {
         )
         val file = AnalysisCompletenessStore.FILE_NAME
         Files.copy(second.resolve(file), first.resolve(file), StandardCopyOption.REPLACE_EXISTING)
+        unsealGraph(first)
         assertNull(AnalysisCompletenessStore.load(first), "the node layout alone does not identify the evidence")
         loaded(first) { graph -> assertNull(graph.analysisCompleteness()) }
     }
@@ -235,6 +236,7 @@ class AnalysisCompletenessPersistenceTest {
         assertFalse(Files.readAllBytes(file).contentEquals(Files.readAllBytes(foreign)))
 
         Files.copy(foreign, file, StandardCopyOption.REPLACE_EXISTING)
+        unsealGraph(first)
         assertNull(AnalysisCompletenessStore.load(first), "bound to the other graph's node layout")
         loaded(first) { assertNull(it.analysisCompleteness()) }
 
@@ -242,6 +244,7 @@ class AnalysisCompletenessPersistenceTest {
         val bytes = Files.readAllBytes(file)
         bytes[bytes.size - 40] = (bytes[bytes.size - 40].toInt() xor 1).toByte()
         Files.write(file, bytes)
+        unsealGraph(first)
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} does not match its digest",
             assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(first) }.message

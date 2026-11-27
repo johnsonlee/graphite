@@ -246,6 +246,7 @@ class GraphLoaderTest : GraphStoreTestFixture() {
             GraphStore.save(graph, dir)
             // Delete node index
             Files.delete(dir.resolve("graph.nodeindex"))
+            unsealGraph(dir)
             assertFailsWith<IllegalArgumentException> { GraphStore.loadMapped(dir) }
         } finally {
             dir.toFile().deleteRecursively()

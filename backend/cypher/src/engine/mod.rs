@@ -770,6 +770,39 @@ impl GraphContext for Executor {
             .map(|md| md.identity(g.strings()))
             .unwrap_or_default()
     }
+    fn analysis_status(&self, value: &Value) -> CypherResult<Value> {
+        let status = match value {
+            Value::Method(m) => {
+                let g = self.graph(m.source);
+                match g.methods().get(m.index as usize) {
+                    Some(md) => g.analysis_status(md),
+                    None => Ok(None),
+                }
+            }
+            Value::Node(n) => {
+                let g = self.graph(n.source);
+                match g.node(n.id).map(|node| node.kind) {
+                    Some(graphite_storage::NodeKind::CallSite { callee, .. }) => {
+                        g.analysis_status(&callee)
+                    }
+                    _ => Ok(None),
+                }
+            }
+            _ => Ok(None),
+        };
+        status
+            .map(|s| s.map(Value::str).unwrap_or(Value::Null))
+            .map_err(|e| CypherError::Other(format!("graph.completeness: {e}")))
+    }
+    fn dispatch_gap(&self, value: &Value) -> CypherResult<Value> {
+        let Value::Node(n) = value else {
+            return Ok(Value::Null);
+        };
+        self.graph(n.source)
+            .dispatch_gap(n.id)
+            .map(|gap| gap.map(Value::str).unwrap_or(Value::Null))
+            .map_err(|e| CypherError::Other(format!("graph.completeness: {e}")))
+    }
     fn check_cancelled(&self) -> CypherResult<()> {
         self.tick()
     }

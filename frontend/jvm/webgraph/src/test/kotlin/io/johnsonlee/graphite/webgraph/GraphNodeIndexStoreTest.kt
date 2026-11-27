@@ -246,6 +246,7 @@ class GraphNodeIndexStoreTest : GraphStoreTestFixture() {
             }
 
             Files.delete(dir.resolve("graph.labelprefix"))
+            unsealGraph(dir)
             val loadedWithoutPrefix = GraphStore.loadMapped(dir)
             try {
                 assertGraphOperations(graph, loadedWithoutPrefix)
@@ -265,6 +266,7 @@ class GraphNodeIndexStoreTest : GraphStoreTestFixture() {
             GraphStore.save(graph, dir)
             Files.delete(dir.resolve("graph.nodeoffsets"))
             Files.delete(dir.resolve("graph.typeindex"))
+            unsealGraph(dir)
 
             val loaded = GraphStore.loadMapped(dir)
             try {

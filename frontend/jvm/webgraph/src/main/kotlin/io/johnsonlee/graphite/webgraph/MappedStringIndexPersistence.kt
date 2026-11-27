@@ -132,6 +132,8 @@ internal fun MappedGraphContext.persistPreparedCallSiteStringIndex(): Boolean =
     synchronized(callSiteStringIndexLock) {
         val index = callSiteStringIndex ?: return@synchronized false
         if (callSiteStringIndexLoadedFromPersistence && Files.isRegularFile(callSiteStringIndexFile)) return@synchronized true
+        // A file the manifest seals is part of the saved graph: replacing it would make the next load refuse the graph.
+        if (GraphManifest.seals(callSiteStringIndexFile.parent, callSiteStringIndexFile.fileName.toString())) return@synchronized false
         var temporary: Path? = null
         try {
             temporary = Files.createTempFile(callSiteStringIndexFile.parent, callSiteStringIndexFile.fileName.toString(), ".tmp")

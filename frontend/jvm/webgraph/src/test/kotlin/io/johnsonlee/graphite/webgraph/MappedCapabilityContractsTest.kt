@@ -48,6 +48,8 @@ class MappedCapabilityContractsTest : GraphStoreTestFixture() {
         Files.write(file, bytes.toByteArray())
         kotlin.test.assertNull(MappedCallSiteStringIndexView.load(
             file, viewContext.copy(expectedContentIdentity = byteArrayOf()), null))
+        // A file that passes every check before it is mapped and cannot be mapped reads as no index.
+        unmappableFile()?.let { kotlin.test.assertNull(MappedCallSiteStringIndexView.load(it, viewContext, null)) }
     }
 
     @Test

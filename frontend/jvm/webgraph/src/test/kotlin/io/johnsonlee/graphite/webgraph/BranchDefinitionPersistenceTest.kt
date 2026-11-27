@@ -116,6 +116,8 @@ class BranchDefinitionPersistenceTest {
 
     /** Load and touch the branch scopes, which is when the sidecar is read and any warning printed. */
     private fun loadScopes(dir: Path, mode: GraphStore.LoadMode = GraphStore.LoadMode.EAGER): Pair<Graph, String> {
+        // These cases exercise the sidecar's own validation; a sealed graph refuses the tampered file earlier.
+        unsealGraph(dir)
         val (graph, stderr) = capturingStderr { GraphStore.load(dir, mode).also { it.branchScopes().count() } }
         return graph to stderr
     }
@@ -396,7 +398,7 @@ class BranchDefinitionPersistenceTest {
         val names = Files.list(dir).use { files -> files.filter { Files.isRegularFile(it) }.map { it.fileName.toString() }.toList() }
         for (name in names) {
             val identical = Files.readAllBytes(dir.resolve(name)).contentEquals(Files.readAllBytes(other.resolve(name)))
-            if (name == GraphStore.BRANCH_DEFINITIONS_FILE || name == "graph.metadata") {
+            if (name == GraphStore.BRANCH_DEFINITIONS_FILE || name == "graph.metadata" || name == GraphManifest.FILE_NAME) {
                 assertFalse(identical, "$name must differ: it carries the side attribution")
             } else {
                 assertTrue(identical, "$name is byte-identical between the two graphs")

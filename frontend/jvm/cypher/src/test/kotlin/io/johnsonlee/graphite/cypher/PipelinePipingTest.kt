@@ -105,10 +105,10 @@ class PipelinePipingTest : QueryPipelineTestFixture() {
 
     @Test
     fun `write clauses throw NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { pipeline.execute(listOf(CypherClause.Create(listOf(pattern(nodePattern("m")))))) }
-        assertFailsWith<NotImplementedError> { pipeline.execute(listOf(CypherClause.Delete(listOf(variable("m"))))) }
-        assertFailsWith<NotImplementedError> { pipeline.execute(listOf(CypherClause.Set(emptyList()))) }
-        assertFailsWith<NotImplementedError> { pipeline.execute(listOf(CypherClause.Remove(emptyList()))) }
+        assertRefusedAsImmutable { pipeline.execute(listOf(CypherClause.Create(listOf(pattern(nodePattern("m")))))) }
+        assertRefusedAsImmutable { pipeline.execute(listOf(CypherClause.Delete(listOf(variable("m"))))) }
+        assertRefusedAsImmutable { pipeline.execute(listOf(CypherClause.Set(emptyList()))) }
+        assertRefusedAsImmutable { pipeline.execute(listOf(CypherClause.Remove(emptyList()))) }
     }
 
     @Test

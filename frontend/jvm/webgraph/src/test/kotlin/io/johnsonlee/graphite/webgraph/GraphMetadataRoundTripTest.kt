@@ -347,6 +347,7 @@ class GraphMetadataRoundTripTest : GraphStoreTestFixture() {
             // A writer that predates the sidecar re-saves graph.metadata without the binding and leaves
             // the sidecar behind: the ordinals it holds belong to another graph and must not attach.
             val metadataBytes = Files.readAllBytes(metadataFile)
+            unsealGraph(dir)
             Files.write(metadataFile, metadataBytes.copyOf(metadataBytes.size - NodeSerializer.CALL_SITE_ORDINALS_BINDING_BYTES))
             assertEquals(null, readCallSiteOrdinalBinding(metadataFile))
             fun Graph.ordinals(): List<Int?> = nodes(CallSiteNode::class.java).sortedBy { it.id.value }.map { it.ordinal }.toList()

@@ -71,6 +71,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             Value::Node(n) => Value::str(element_id(*n, ctx)),
             _ => Value::Null,
         },
+        // -- completeness: an absent fact versus one never recorded --------
+        "analysisstatus" => ctx.analysis_status(arg(args, 0)?)?,
+        "dispatchgap" => ctx.dispatch_gap(arg(args, 0)?)?,
         "graphid" => {
             if !ctx.is_cross_graph() {
                 match arg(args, 0)? {
@@ -322,7 +325,15 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             }
             let end = if args.len() > 2 {
                 let n = as_number(arg(args, 2)?)? as i64;
-                ((start + n) as usize).min(len)
+                // A negative length is an error, as in the Kotlin engine, never a slice
+                // that ends before it begins (which panicked the query worker).
+                if n < 0 {
+                    return Err(CypherError::Other(format!(
+                        "begin {start}, end {}, length {len}",
+                        start + n
+                    )));
+                }
+                (start.saturating_add(n) as usize).min(len)
             } else {
                 len
             };

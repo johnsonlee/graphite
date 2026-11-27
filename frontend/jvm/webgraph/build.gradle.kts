@@ -74,6 +74,13 @@ val graphOverrideProperties = listOf(
     "kotlin.compiler.graph.path"
 )
 
+// The writer records its version in every graph manifest (`@producer graphite-jvm <version>`).
+tasks.named<ProcessResources>("processResources") {
+    val producerVersion = project.version.toString()
+    inputs.property("producerVersion", producerVersion)
+    filesMatching("io/johnsonlee/graphite/webgraph/producer.properties") { expand("version" to producerVersion) }
+}
+
 dependencies {
     add("jmhImplementation", kotlin("test"))
     api(project(":core"))

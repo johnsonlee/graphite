@@ -58,7 +58,11 @@ impl Variant {
         let setup = || {
             for entry in std::fs::read_dir(dir).unwrap() {
                 let entry = entry.unwrap();
-                if entry.file_name() == "graph.nodedata" || !entry.file_type().unwrap().is_file() {
+                // A copy that rewrites a file is a graph written before manifests.
+                if entry.file_name() == "graph.nodedata"
+                    || entry.file_name() == "graph.manifest"
+                    || !entry.file_type().unwrap().is_file()
+                {
                     continue;
                 }
                 std::fs::copy(entry.path(), path.join(entry.file_name())).unwrap();

@@ -36,21 +36,40 @@ fn ascending_csr_preserves_complete_order_offsets_duplicates_holes_and_labels() 
 }
 
 #[test]
-fn short_and_excess_labels_keep_existing_padding_and_truncation_without_cross_load_state() {
-    let (first, expected) = mixed_fixture();
-    let short = build_forward_csr(&first, &[7, 8]).unwrap();
-    let mut expected_labels = vec![7, 8];
-    expected_labels.resize(44, 0);
-    assert_eq!(short.labels, expected_labels);
+fn short_and_excess_labels_are_refused_instead_of_padded_or_truncated() {
+    let (first, _) = mixed_fixture();
+    let short = build_forward_csr(&first, &[7, 8]).err().unwrap();
+    assert_eq!(
+        short.to_string(),
+        "corrupt graph: graph.labels holds 2 labels for 44 arcs"
+    );
     let (second, _) = mixed_fixture();
-    let long = build_forward_csr(&second, &[9; 50]).unwrap();
-    assert_eq!(long.labels, vec![9; 44]);
-    assert_inverse(&short, &build_backward_csr(&short));
-    assert_inverse(&long, &build_backward_csr(&long));
-    assert_eq!(short.targets, expected.concat());
-    assert_eq!(short.targets, long.targets);
-    assert_eq!(short.offsets, long.offsets);
-    assert_eq!(build_forward_csr(&first, &[]).unwrap().labels, vec![0; 44]);
+    let long = build_forward_csr(&second, &[9; 50]).err().unwrap();
+    assert_eq!(
+        long.to_string(),
+        "corrupt graph: graph.labels holds 50 labels for 44 arcs"
+    );
+    let empty = build_forward_csr(&first, &[]).err().unwrap();
+    assert_eq!(
+        empty.to_string(),
+        "corrupt graph: graph.labels holds 0 labels for 44 arcs"
+    );
+    let (exact, expected) = mixed_fixture();
+    let labels: Vec<u8> = (1..=44).collect();
+    let csr = build_forward_csr(&exact, &labels).unwrap();
+    assert_eq!(csr.targets, expected.concat());
+    assert_eq!(csr.labels, labels);
+    assert_inverse(&csr, &build_backward_csr(&csr));
+}
+
+#[test]
+fn an_arc_past_the_last_node_is_a_corrupt_graph_not_a_transpose_panic() {
+    assert!(check_arc_targets(3, &[0, 4, 15], 16).is_ok());
+    let error = check_arc_targets(3, &[0, 16, 99], 16).err().unwrap();
+    assert_eq!(
+        error.to_string(),
+        "corrupt graph: forward.graph gives node 3 an arc to node 16, past the graph's 16 nodes"
+    );
 }
 
 fn assert_fixture_csr(path: &Path) -> Graph {
@@ -204,4 +223,27 @@ fn persisted_reverse_csr_matches_stable_forward_edge_inversion() {
     };
     let graph = Graph::load(Path::new(&path)).unwrap();
     assert_inverse(&graph.forward, &graph.backward);
+}
+
+/// An offset past the node data names no record: the node reads as absent instead of a
+/// slice past the end of the map. Same-size damage like this passes the manifest's size
+/// check, so the reader must not trust the offset either.
+#[test]
+fn a_node_offset_past_the_node_data_names_no_record() {
+    let dir = std::env::temp_dir().join(format!("graphite-offset-bound-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let graph = serde_json::json!({"version": 1, "methods": [], "edges": [], "nodes": [
+        {"id": 0, "kind": "StringConstant", "value": "a"},
+        {"id": 1, "kind": "StringConstant", "value": "b"}
+    ]});
+    crate::interchange::import_json(graph.to_string().as_bytes(), &dir).unwrap();
+    let path = dir.join("graph.nodeoffsets");
+    let mut bytes = std::fs::read(&path).unwrap();
+    bytes[16..24].copy_from_slice(&(i64::MAX / 2).to_be_bytes());
+    std::fs::write(&path, bytes).unwrap();
+    let graph = Graph::load(&dir).unwrap();
+    assert!(graph.node(0).is_some());
+    assert!(graph.node(1).is_none(), "node 1's offset is past the data");
+    assert!(!graph.has_node(1));
+    std::fs::remove_dir_all(&dir).unwrap();
 }

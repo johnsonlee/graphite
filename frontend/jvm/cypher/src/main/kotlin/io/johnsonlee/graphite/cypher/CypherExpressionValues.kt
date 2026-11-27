@@ -6,22 +6,40 @@ internal fun addValues(left: Any, right: Any, checkCancelled: (() -> Unit)?): An
         left is List<*> && right is List<*> -> concatenateLists(left, right, checkCancelled)
         left is List<*> -> concatenateLists(left, listOf(right), checkCancelled)
         right is List<*> -> concatenateLists(listOf(left), right, checkCancelled)
-        else -> arithmeticValues(left, right) { a, b -> a + b }
+        else -> integerOrFloat(left, right, Math::addExact) { a, b -> a + b }
     }
 
-internal fun arithmeticValues(left: Any, right: Any, op: (Double, Double) -> Double): Any {
-    val l = expressionNumber(left)
-    val r = expressionNumber(right)
-    val result = op(l, r)
-    // Preserve integer type when both operands are integers
-    val integerPair = left is Int && right is Int
-    val longPair = left is Long && right is Long
-    return if (integerPair || longPair) {
-        if (result == result.toLong().toDouble()) result.toLong() else result
+private fun isInteger(value: Any): Boolean = value is Long || value is Int || value is Short || value is Byte
+
+/**
+ * openCypher arithmetic, as the Rust engine evaluates it: two integers give an integer (`7 / 2` is `3`, truncated), an overflow is an
+ * error rather than a wrapped or widened value, and anything else is computed in floating point.
+ */
+internal fun integerOrFloat(left: Any, right: Any, integer: (Long, Long) -> Long, float: (Double, Double) -> Double): Any =
+    if (isInteger(left) && isInteger(right)) {
+        try {
+            integer((left as Number).toLong(), (right as Number).toLong())
+        } catch (overflow: ArithmeticException) {
+            throw CypherException(overflow.message ?: "long overflow").apply { initCause(overflow) }
+        }
     } else {
-        result
+        float(expressionNumber(left), expressionNumber(right))
     }
-}
+
+private const val DIVISION_BY_ZERO = "Division by zero"
+
+internal fun divideExact(a: Long, b: Long): Long =
+    when {
+        b == 0L -> throw CypherException(DIVISION_BY_ZERO)
+        a == Long.MIN_VALUE && b == -1L -> throw ArithmeticException("long overflow")
+        else -> a / b
+    }
+
+internal fun remainderExact(a: Long, b: Long): Long = if (b == 0L) throw CypherException(DIVISION_BY_ZERO) else a % b
+
+internal fun divideFloat(a: Double, b: Double): Double = if (b == 0.0) throw CypherException(DIVISION_BY_ZERO) else a / b
+
+internal fun remainderFloat(a: Double, b: Double): Double = if (b == 0.0) throw CypherException(DIVISION_BY_ZERO) else a % b
 
 internal fun compareExpressionValues(a: Any, b: Any): Int =
     when {

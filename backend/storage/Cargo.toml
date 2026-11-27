@@ -12,6 +12,7 @@ sha2.workspace = true
 indexmap.workspace = true
 hashbrown = { version = "0.17.1", default-features = false }
 crc32fast = "1"
+flate2 = "1"
 rayon.workspace = true
 parking_lot.workspace = true
 serde.workspace = true

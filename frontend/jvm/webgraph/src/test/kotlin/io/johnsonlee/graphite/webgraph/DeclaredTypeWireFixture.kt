@@ -15,6 +15,8 @@ import java.util.HexFormat
 /** Independent format encoder for legacy fixtures and malformed tables that production save must reject. */
 internal object DeclaredTypeWireFixture {
     fun write(dir: Path, table: DeclaredTypeTable, version: Int, unused: List<String> = emptyList()) {
+        // A table rewritten in an earlier wire version stands for a directory an earlier writer produced, before manifests.
+        unsealGraph(dir)
         val strings = dictionary(table, unused)
         val shared = if (version >= 3) StringTable.build(strings, dir, true) else null
         val ids = strings.withIndex().associate { (id, value) -> value to (shared?.findId(value) ?: id) }

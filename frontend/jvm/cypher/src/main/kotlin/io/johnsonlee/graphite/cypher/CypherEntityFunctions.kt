@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.graph.analysisStatus
 
 internal fun entityId(value: Any?): Any? =
     when (value) {
@@ -21,6 +22,27 @@ internal fun elementId(value: Any?): String? =
         is MethodValue -> listOfNotNull(value.graphId, METHOD_LABEL, value.method.identity).joinToString(":")
         is QualifiedNode -> value.elementId
         is Node -> value.id.value.toString()
+        else -> null
+    }
+
+/**
+ * `analysisStatus(x)`: for a Method, or a CallSite's callee, the [io.johnsonlee.graphite.graph.AnalysisStatus] of its body in the
+ * graph the value came from, so a query can tell an absent edge from a body the build never read; null for any other value and for a
+ * graph without completeness evidence. The Rust engine answers the same.
+ */
+internal fun analysisStatusValue(value: Any?, graph: io.johnsonlee.graphite.graph.Graph?): String? =
+    when (value) {
+        is MethodValue -> (value.graph ?: graph)?.analysisStatus(value.method)?.name
+        is QualifiedNode -> analysisStatusValue(value.node, value.graph)
+        is io.johnsonlee.graphite.core.CallSiteNode -> graph?.analysisStatus(value.callee)?.name
+        else -> null
+    }
+
+/** `dispatchGap(callSite)`: why a call on a function value does not dispatch to every body it runs, or null. */
+internal fun dispatchGapValue(value: Any?, graph: io.johnsonlee.graphite.graph.Graph?): String? =
+    when (value) {
+        is QualifiedNode -> dispatchGapValue(value.node, value.graph)
+        is io.johnsonlee.graphite.core.CallSiteNode -> graph?.analysisCompleteness()?.callSiteGaps?.get(value.id.value)?.name
         else -> null
     }
 

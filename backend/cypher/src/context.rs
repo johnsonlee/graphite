@@ -99,6 +99,20 @@ pub trait GraphContext {
     /// `qualifiedId` name a Method by, so a bridge and its covariant override never share one.
     fn method_identity(&self, m: MethodRef) -> String;
 
+    /// `analysisStatus(x)`: for a Method, or a CallSite's callee, whether the graph holds
+    /// everything the body produces (`ANALYZED`) or why not (`EXCLUDED_BY_SCOPE`,
+    /// `EXTERNAL`, ...); null for any other value and for a graph without completeness
+    /// evidence, where an absent edge cannot be told from an unread body.
+    fn analysis_status(&self, _value: &Value) -> crate::CypherResult<Value> {
+        Ok(Value::Null)
+    }
+
+    /// `dispatchGap(callSite)`: why a call on a function value dispatches to no body, or
+    /// not only to the bodies the graph holds; null when its dispatch is complete or unknown.
+    fn dispatch_gap(&self, _value: &Value) -> crate::CypherResult<Value> {
+        Ok(Value::Null)
+    }
+
     /// Cancellation / timeout polling hook; returns Err when cancelled.
     fn check_cancelled(&self) -> crate::CypherResult<()> {
         Ok(())

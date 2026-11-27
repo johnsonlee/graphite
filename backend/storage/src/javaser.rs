@@ -498,6 +498,11 @@ impl<'a> Parser<'a> {
     }
 }
 
+/// Decodes Java's modified UTF-8 (`DataOutput.writeUTF`).
+pub fn decode_java_utf(b: &[u8]) -> String {
+    decode_modified_utf8(b)
+}
+
 fn decode_modified_utf8(b: &[u8]) -> String {
     // Modified UTF-8: like UTF-8 but NUL is encoded as C0 80 and supplementary
     // characters as surrogate pairs. Decode into UTF-16 units then to String.

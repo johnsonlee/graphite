@@ -120,6 +120,18 @@ struct InputGraph {
     edges: Vec<InputEdge>,
     #[serde(default)]
     class_origins: Vec<ClassOrigin>,
+    /// The type hierarchy: each type with its direct supertypes (`extends` and
+    /// `implements`), which the metadata stores in both directions.
+    #[serde(default)]
+    supertypes: Vec<TypeSupertypes>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TypeSupertypes {
+    #[serde(rename = "type")]
+    type_name: String,
+    supertypes: Vec<String>,
 }
 
 /// Validate a frontend JSON document, then create a new graph directory.
@@ -132,7 +144,8 @@ pub fn import_json(reader: impl Read, output: &Path) -> Result<(), ImportError> 
     std::fs::create_dir(output)?;
     let result = files
         .into_iter()
-        .try_for_each(|(name, bytes)| std::fs::write(output.join(name), bytes));
+        .try_for_each(|(name, bytes)| std::fs::write(output.join(name), bytes))
+        .and_then(|()| crate::manifest::GraphManifest::write_dir(output).map(|_| ()));
     if result.is_err() {
         let _ = std::fs::remove_dir_all(output);
     }
@@ -150,6 +163,7 @@ fn validate(g: &InputGraph) -> Result<(), ImportError> {
         || g.edges.len() > i32::MAX as usize
         || g.methods.len() > i32::MAX as usize
         || g.class_origins.len() > i32::MAX as usize
+        || g.supertypes.len() > i32::MAX as usize
     {
         return Err(invalid("graph exceeds signed 32-bit format limits"));
     }
@@ -305,6 +319,10 @@ fn graph_strings(g: &InputGraph) -> HashSet<&str> {
     }
     for origin in &g.class_origins {
         strings.extend([origin.class_name.as_str(), &origin.origin]);
+    }
+    for entry in &g.supertypes {
+        strings.insert(entry.type_name.as_str());
+        strings.extend(entry.supertypes.iter().map(String::as_str));
     }
     strings
 }
@@ -470,9 +488,26 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
     for m in &g.methods {
         method(&mut metadata, m, &dictionary);
     }
-    for _ in 0..3 {
-        int(&mut metadata, 0);
-    } // super/subtypes, enums
+    // Supertypes as given, subtypes as their inverse, both in a fixed order; no enums.
+    let mut subtypes: std::collections::BTreeMap<&str, Vec<&str>> = Default::default();
+    int(&mut metadata, g.supertypes.len());
+    for entry in &g.supertypes {
+        sid(&mut metadata, &entry.type_name);
+        int(&mut metadata, entry.supertypes.len());
+        for parent in &entry.supertypes {
+            sid(&mut metadata, parent);
+            subtypes.entry(parent).or_default().push(&entry.type_name);
+        }
+    }
+    int(&mut metadata, subtypes.len());
+    for (parent, children) in &subtypes {
+        sid(&mut metadata, parent);
+        int(&mut metadata, children.len());
+        for child in children {
+            sid(&mut metadata, child);
+        }
+    }
+    int(&mut metadata, 0); // enums
     int(&mut metadata, g.class_origins.len());
     for origin in &g.class_origins {
         sid(&mut metadata, &origin.class_name);
@@ -794,6 +829,8 @@ mod tests {
                 .collect::<Vec<_>>()
                 .join("\n");
             std::fs::write(&path, text).unwrap();
+            // The edit stands for a writer that declared another hint: seal what it wrote.
+            crate::manifest::GraphManifest::write_dir(&dir).unwrap();
         };
         let expected = crate::Graph::load(&dir).unwrap().forward.targets;
         for hint in [0, u64::from(u32::MAX)] {

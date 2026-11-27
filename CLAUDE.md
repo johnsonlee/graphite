@@ -985,8 +985,38 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   wrong class's (review of #193); the resolved call seeds by `callSite.caller`. An APK beside its
   platform jar is a single-artifact input for the graph's origin index, which stays empty, but
   the evidence names the input location each class was read from, or the platform's classes read
-  as the APK's and no scope could name them. Not done: a Rust reader of the sidecar (no consumer,
-  and it would be a new gzip dependency for a file the Rust server never opens).
+  as the APK's and no scope could name them. The Rust reader (`graphite_storage::completeness`,
+  read on first use) answers `analysisStatus(x)`/`dispatchGap(c)` in both engines: without it the
+  production query path could not tell an unread body from one that calls nothing.
+
+### A Graph Directory Is Sealed, Saved Whole, and Numbered Per Build
+
+- `GraphStore.save` truncated files in place: `save(loadMapped(dir), dir)` left a graph with no
+  nodes, and a `backward.*` transpose derived from the previous graph in that directory answered
+  the new graph's `incoming()`. The save now fills a sibling staging directory and swaps it in
+  (`GraphDirectoryPublication`), refusing a target that holds anything but graph files, so no
+  writer keeps a list of stale files to delete.
+- Every writer seals the directory with `graph.manifest` (producer, storage format, size and
+  SHA-256 per file). Readers check sizes before decoding (one `stat` per file, so loading pays
+  nothing measurable); hashing is `verify`'s job, or `GRAPHITE_VERIFY_GRAPHS=1`'s. Before it, the
+  Rust reader padded a short `graph.labels` with zeros and decoded a truncated `forward.graph`,
+  answering queries from the wrong bytes. A file derived after the save names the manifest digest
+  it was derived from instead of being listed. A test that tampers with a file to reach a
+  reader's own validation unseals the directory first (`unsealGraph`).
+- `NodeId.next()` was one process-wide counter, and every persisted index is sized by the
+  largest id: the same input built twice in one JVM, with 1,000 ids allocated in between, wrote
+  a node offset index three times the size. `JavaProjectLoader` numbers each build from 1
+  (`NodeId.numbered`), and ids handed out afterwards stay above every built id.
+
+### Two Engines Drift Where Nothing Compares Them
+
+A differential probe of the same queries through `graphite query` and `graphite.jar query`
+found the Kotlin engine answering `7 / 2` with `3.5` and `2 ^ 3` with `8`, both engines
+mishandling `Long.MAX_VALUE + 1` (one wrapped, one widened to a double), Kotlin crashing in Gson
+on `sqrt(-1)`, printing a stack trace for `CREATE` and the last line (`^`) of a regex error, and
+Rust panicking on `substring('abc', 2, -1)`. Both now follow openCypher arithmetic, fail
+overflow with `long overflow`, and share one-line messages. Run such a probe whenever one engine
+changes a value or an error, and pin the agreed answer with a test in each engine.
 
 ### Why `buildGraph()` Is Not Parallelized
 

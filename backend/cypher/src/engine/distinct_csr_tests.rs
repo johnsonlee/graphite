@@ -239,6 +239,10 @@ fn variant(graph: &Graph, ids: &[u32], damage: Damage) -> (Variant, Arc<Graph>) 
             continue;
         }
         let name = entry.file_name();
+        // A copy that rewrites files is a graph written before manifests: its seal would refuse it.
+        if name == "graph.manifest" {
+            continue;
+        }
         if name == "graph.typeindex"
             || (matches!(damage, Damage::Index) && name == "graph.callsite-string-index")
             || (matches!(damage, Damage::BadSid(_) | Damage::Truncated(_))

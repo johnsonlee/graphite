@@ -619,6 +619,7 @@ name = "graphite-storage"
 version = "2.5.0"
 dependencies = [
  "crc32fast",
+ "flate2",
  "hashbrown",
  "indexmap",
  "memchr",

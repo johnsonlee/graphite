@@ -25,8 +25,23 @@ graph-dir/
 ├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
 ├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
 ├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound through forward.properties
-└── graph.comparisons  BranchComparison data for ControlFlowEdges
+├── graph.comparisons  BranchComparison data for ControlFlowEdges
+└── graph.manifest     Written last: producer, storage format, and size + SHA-256 of every file above
 ```
+
+`graph.manifest` is the one inventory of a saved graph: `graphite-graph 1`, then
+`@producer <name> <version>` and `@storage-format <n>`, then `sha256  size  name` per file
+(the container manifest's line format, so a packed directory carries it as an ordinary
+entry and `pack` refuses files that no longer match it). Both readers check every listed
+file's presence and size before decoding, refuse a later storage format by name, and
+treat a directory without a manifest as a graph written before it. Files derived after
+the save are not listed: a persisted `backward.*` transpose records the manifest digest it
+was derived from (`graphite.graph.identity` in `backward.properties`) and is rebuilt when
+that is not the directory's current manifest, and a sealed CallSite index is never
+rewritten in place. `GraphStore.save` writes the whole directory into a sibling staging
+directory and swaps it in, so no file of an earlier graph survives beside a new one; a new
+persisted file therefore needs no deletion list, only its writer, its readers, and a name
+in `OPTIONAL_ENTRIES` (`graphite-storage`'s list of graph file names).
 
 The following query-index and backward-adjacency behavior describes the JVM reader.
 The Rust reader builds forward/backward CSR in memory, does not use `backward.*` or

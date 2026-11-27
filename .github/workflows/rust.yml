@@ -505,6 +505,13 @@ jobs:
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
 
+    # Both query CLIs over the same graph, byte for byte: values, errors, exit codes and
+    # every output format, so a value or a message one engine changes alone fails here.
+    - name: Kotlin-vs-Rust CLI differential over the fixture
+      run: |
+        python3 backend/bench/parity-cli.py "${RUNNER_TEMP}/fixture-graph" \
+          frontend/jvm/query/build/libs/graphite.jar target/release/graphite
+
     - name: Retain JVM default-policy smoke evidence
       if: always()
       uses: actions/upload-artifact@v7

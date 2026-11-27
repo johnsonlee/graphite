@@ -1000,7 +1000,11 @@ impl PartitionPlan {
                                 .map(|(_, id)| id)
                                 .collect();
                                 for (i, &id) in ids.iter().enumerate() {
-                                    rank[id as usize] = i as u32;
+                                    // A type index may name ids the graph does not hold (a
+                                    // hand-made or damaged index): they rank nowhere.
+                                    if let Some(slot) = rank.get_mut(id as usize) {
+                                        *slot = i as u32;
+                                    }
                                 }
                                 Some((rank, ids))
                             };
@@ -1706,7 +1710,13 @@ impl TargetTags {
         let mut tags = vec![NO_TAG; capacity - start];
         for (tag, ids, _) in lists {
             for &id in ids {
-                tags[id as usize - start] = tag;
+                // An id past the offset index names no node (a hand-made or damaged index).
+                if let Some(slot) = (id as usize)
+                    .checked_sub(start)
+                    .and_then(|i| tags.get_mut(i))
+                {
+                    *slot = tag;
+                }
             }
         }
         Self { start, tags }
@@ -1846,9 +1856,15 @@ mod tests {
 
     #[test]
     fn target_tags_keep_the_capacity_bound_for_indices_and_edges() {
-        assert!(
-            std::panic::catch_unwind(|| TargetTags::new(4, [(3, &[9][..], true)].into_iter()))
-                .is_err()
+        // An id past the capacity (a hand-made or damaged type index) is skipped, so the
+        // table still never grows past the offset index and the query does not panic.
+        let past = TargetTags::new(4, [(3, &[1, 9][..], true)].into_iter());
+        assert_eq!(past.get(1), 3);
+        assert_eq!(past.get(0), NO_TAG);
+        assert_eq!(
+            past.tags.len(),
+            3,
+            "bounded by the capacity, not by the stray id"
         );
         let shifted = TargetTags::new(4, [(3, &[2][..], true)].into_iter());
         assert!(std::panic::catch_unwind(|| shifted.get(4)).is_err());

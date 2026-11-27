@@ -202,6 +202,7 @@ class GraphStructureRoundTripTest : GraphStoreTestFixture() {
         try {
             GraphStore.save(DefaultGraph.Builder().build(), dir)
             Files.delete(dir.resolve("graph.resources"))
+            unsealGraph(dir)
 
             val loaded = GraphStore.load(dir)
             assertTrue(loaded.resources.unavailableReason.orEmpty().contains("rebuild this graph"))

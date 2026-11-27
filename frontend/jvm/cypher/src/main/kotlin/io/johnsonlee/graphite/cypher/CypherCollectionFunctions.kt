@@ -14,13 +14,19 @@ internal fun collectionSize(value: Any?): Int? =
 
 internal fun substringValue(args: List<Any?>): String? {
     val str = args[0] as? String ?: return null
-    val start = (args[1] as Number).toInt()
-    return if (args.size > 2) {
-        val length = (args[2] as Number).toInt()
-        str.substring(start, minOf(start + length, str.length))
-    } else {
-        str.substring(start)
-    }
+    val start = (args[1] as Number).toLong()
+    val length = str.length
+    // The bounds messages are the engines' shared text, not whatever the running JDK's String.substring says (JDK 21 changed it).
+    if (start < 0 || start > length) throw CypherException("begin $start, end $length, length $length")
+    val end =
+        if (args.size > 2) {
+            val count = (args[2] as Number).toLong()
+            if (count < 0) throw CypherException("begin $start, end ${start + count}, length $length")
+            minOf(start + count, length.toLong())
+        } else {
+            length.toLong()
+        }
+    return str.substring(start.toInt(), end.toInt())
 }
 
 internal fun reverseValue(value: Any?, checkCancelled: (() -> Unit)?): Any? =

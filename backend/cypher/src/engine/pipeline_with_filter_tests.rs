@@ -405,7 +405,11 @@ fn late_bad_callsite_sids_decline_filtered_early_stop_and_keep_eager_first_error
         std::fs::create_dir(&path).unwrap();
         for entry in std::fs::read_dir(&original.dir).unwrap() {
             let entry = entry.unwrap();
-            if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+            if entry.file_type().unwrap().is_file()
+            && entry.file_name() != "graph.nodedata"
+            // A copy that rewrites a file is a graph written before manifests.
+            && entry.file_name() != "graph.manifest"
+            {
                 std::fs::hard_link(entry.path(), path.join(entry.file_name())).unwrap();
             }
         }
@@ -490,7 +494,11 @@ fn uncertified_field_string_getters_keep_late_bad_sids_on_eager_path() {
     std::fs::create_dir(&path).unwrap();
     for entry in std::fs::read_dir(&original.dir).unwrap() {
         let entry = entry.unwrap();
-        if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+        if entry.file_type().unwrap().is_file()
+            && entry.file_name() != "graph.nodedata"
+            // A copy that rewrites a file is a graph written before manifests.
+            && entry.file_name() != "graph.manifest"
+        {
             std::fs::hard_link(entry.path(), path.join(entry.file_name())).unwrap();
         }
     }
