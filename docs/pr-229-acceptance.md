@@ -54,7 +54,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 | 3 | Data safety and corruption | Addressed, with an explicit contract: same-size damage is detected only by verification | `truncation.txt`, `bitflip-fuzz.txt`, `jvm-storage-safety.txt` |
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
 | 5 | Query service: paging, wide hierarchy, capabilities | Addressed, with stated limits | `query-service.txt` |
-| 6 | Memory/scale: process-wide ids, max-id-sized indexes | Repeated-build drift fixed. The max-id sizing is kept and pinned as a contract. Matched multi-graph performance evidence is **unavailable** | `repeated-builds.txt` |
+| 6 | Memory/scale: process-wide ids, max-id-sized indexes | Repeated-build drift fixed. The max-id sizing is kept and pinned as a contract. Matched multi-graph measurements exist for Linux and do not reproduce the review's two findings; performance is **not accepted** | `repeated-builds.txt`, `performance-linux.txt` |
 | 7 | Engineering: scheduling-sensitive tests, slow verification | Four tests made deterministic. The complete verification path is **not** faster; only the affected-change first pass is | source references below |
 | 8 | Framework-semantic extension layer | Design boundary, not implemented | contract below |
 
@@ -365,13 +365,35 @@ in one JVM, each saved in turn.
 Tests: `NodeIdNumberingTest`, `NodeIdAllocationTest`, `SparseNodeIdTest` and
 `sparse_node_ids.rs`.
 
-**Performance acceptance: unavailable.**
-- No matched CPU/RSS/heap measurement on representative persisted multi-graph workloads
-  was taken for this change.
+**Performance: measured on Linux, not accepted.** `performance-linux.txt` holds the runs
+below, with every case. They are author-run observations on a 4-vCPU cloud container; they are
+not the repository's fixture64 gates and they do not establish acceptance.
+
+The review's own measurements on macOS (in the matrix comment on #229) found a slower
+`shape-group-count` and `shape-count-traversal` tail on legacy-layout graphs in both orders, and
+a construction-fork peak RSS 27% above the base in one pair. Reproducing them here, on graphs
+the base built from the four pinned JARs, against base `70f908c`:
+
+| Measurement | Result here |
+| --- | --- |
+| 73-case pressure protocol (`local-query --workload regression`, 64 graphs per request, concurrency 4), AB and BA | no case exceeds the 100 ms / 5% latency tolerance in both orders; `shape-group-count` p50 245→236 ms (AB) and 212→222 ms (BA), p95 279→307 and 321→295: the direction follows the order |
+| Loading CPU and peak RSS, query-lifetime CPU and peak RSS | candidate within 3.3% of base in every pair (load CPU −2.5% and −3.5%; load peak RSS +0.3% and +0.1%; query-lifetime CPU +3.3% and −1.5%; peak RSS −0.4% and +0.1%) |
+| `shape-group-count` at concurrency 1, requests interleaved across live servers, three runs of fresh processes (700 paired rounds) | head minus base: −1.4 ± 1.5, −3.7 ± 1.7 and −4.8 ± 1.2 ms on about 145 ms; head is not slower |
+| Construction fork, two runs per revision | peak RSS base 2.63 and 3.06 GiB, head 2.18 and 2.48 GiB; the peak is the G1 heap (anonymous memory), and two runs of one revision differ by 14–16% |
+
+What this does and does not show:
+- The tail increase did not reproduce on this host. Two starts of the same binary differ by up
+  to 10% on this query, so a comparison with one server per arm measures the process instance
+  as much as the revision; interleaving requests across live servers removes that.
+- The construction peak did not reproduce either, and its run-to-run spread is larger than
+  the 5% and 10% limits, so neither this pair nor the review's settles it. The second pair here
+  overlapped other work on the host and is recorded as such.
+- The host is saturated at concurrency 4 (4 workers on 4 vCPU) and is not the reference
+  machine. The two findings stay open against the review's measurements until they are
+  repeated there with several server instances per arm, or on the hosted gates.
 - The hosted fixture64 gate records report-only timings, which are not acceptance evidence.
-  For example, `real64-build-save` was 369,112 ms on base and 329,897 ms on head in run
-  46001831978.
-- The single-graph numbers above show the index-size effect only.
+- One experiment came out of the investigation and was not kept (Attempt326 in
+  `docs/webgraph-optimization-attempts.md`).
 
 ## 7. Engineering: scheduling-sensitive tests and verification time
 
