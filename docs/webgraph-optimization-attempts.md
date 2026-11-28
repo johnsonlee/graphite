@@ -24120,3 +24120,42 @@ be retained in the [review325 evidence appendix](https://github.com/johnsonlee/g
 This link is pending publication while validation runs; it is not a declaration
 of acceptance. The appendix will retain failures and separate performance/resource
 conclusions rather than replacing historical measurements.
+
+### Attempt326 — one-comparison node offset check (2026-11-28, reverted)
+
+**Hypothesis.** PR #229 made `Graph::node_offset` refuse an offset past the node data
+(`stored <= 0 || stored > self.nodedata.len()`), and `nodedata.len()` goes through the mapping's
+bounds-checked slice for every node of a scan. Reading the length from a field and deciding with
+one unsigned comparison (`(stored as u64).wrapping_sub(1) >= len`) keeps the check and should
+remove that cost from `shape-group-count`, which the review of #229 measured slower on
+legacy-layout graphs.
+
+**Fixture and revisions.** 64 graphs built by the base JMH fork (`70f908c`) from the four pinned
+real JARs, legacy layout; every request spans all 64. Base `70f908c`, parent `db80380` (#229),
+candidate `db80380` plus the change. Release builds. Linux 6.18, 4 vCPU, 15 GiB.
+
+**Method.** Three servers live at once, one request at a time, server order shuffled per round;
+three runs with fresh processes (300, 200 and 200 rounds). Declared before the runs: the paired
+per-round difference, mean and standard error. Query:
+`MATCH (n:CallSite) RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 20`.
+
+| Run | Rounds | Parent − base (ms) | Candidate − base (ms) |
+|---|---:|---:|---:|
+| 1 | 300 | −1.42 ± 1.50 | −2.83 ± 1.35 |
+| 2 | 200 | −3.72 ± 1.65 | +0.53 ± 1.95 |
+| 3 | 200 | −4.82 ± 1.24 | −1.41 ± 1.40 |
+
+Base mean 149.5, 146.9 and 139.9 ms. All arms returned the same rows. Every sample is in
+`docs/pr-229-evidence/performance-linux.txt` (summary) and was kept with the run.
+
+**Result.** Correctness: unchanged (same check, same answers; storage tests pass). Latency: the
+candidate is not faster than its parent (candidate − parent: −1.4, +4.3 and +3.4 ms), and the
+parent is not slower than the base on this host, so there was no regression here for the change
+to recover. CPU and RSS: not measured for the candidate; the parent's matched loading and
+query-lifetime CPU and peak RSS are within 3.5% of the base in both orders.
+
+**Decision: reverted.** No verified benefit; the production change is not in the tree. A first,
+non-interleaved comparison (one server per arm, measured in turn) had shown the parent 8% slower
+and then the candidate both 10 ms slower and 12 ms faster than the base in two starts: on this
+query two starts of one binary differ by up to 10%, more than any arm difference. Compare
+revisions on live servers with interleaved requests, or with several instances per arm.
