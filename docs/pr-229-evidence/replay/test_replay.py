@@ -67,6 +67,64 @@ class FuzzTest(unittest.TestCase):
         self.assertEqual(self.run_fuzz("exit 101").returncode, 0)
 
 
+class SectionPropagationTest(unittest.TestCase):
+    """The real sections of replay.sh, sourced and driven with stub commands.
+
+    Each stub prints its name and takes its exit code from a queue, one code per call, so a
+    case can fail a required candidate command and pass the one after it: the case the
+    review of #229 found a `{ ...; } || handler` block reporting as success.
+    """
+
+    def run_section(self, section, codes):
+        with tempfile.TemporaryDirectory() as tmp:
+            bin_dir = os.path.join(tmp, "bin")
+            os.makedirs(bin_dir)
+            queue = os.path.join(tmp, "codes")
+            with open(queue, "w") as f:
+                f.write("\n".join(str(c) for c in codes) + "\n")
+            # One queue for every stubbed command, consumed in call order.
+            body = ('code=$(head -1 "%s"); sed -i 1d "%s"; echo "stub $(basename "$0") -> ${code:-0}"; '
+                    'exit "${code:-0}"' % (queue, queue))
+            stub(bin_dir, "python3", body)
+            graphite = stub(bin_dir, "graphite", body)
+            out = os.path.join(tmp, "out")
+            os.makedirs(os.path.join(out, "replay-logs"))
+            script = (
+                "REPLAY_SOURCE_ONLY=1 source %s\n"
+                'OUT=%s WORK=%s LOGS=%s/replay-logs HERE=%s REPO=%s\n'
+                'BASE_REV=b CAND_REV=c BASE_BIN=%s CAND_BIN=%s BASE_JAR=x CAND_JAR=x\n'
+                "%s\n"
+                "echo section-completed\n"
+            ) % (os.path.join(HERE, "replay.sh"), out, tmp, out, HERE, tmp, graphite, graphite, section)
+            env = dict(os.environ, PATH=bin_dir + os.pathsep + os.environ["PATH"])
+            return subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
+
+    def test_a_failing_candidate_bit_flip_run_fails_even_when_the_next_run_passes(self):
+        # baseline 0, candidate 3 (a crash or panic), candidate under verification 0.
+        failed = self.run_section("bitflip_section", [0, 3, 0])
+        self.assertEqual(failed.returncode, 1, failed.stderr)
+        self.assertIn("the candidate bit-flip run", failed.stderr)
+        self.assertNotIn("section-completed", failed.stdout)
+        passed = self.run_section("bitflip_section", [0, 0, 0])
+        self.assertEqual(passed.returncode, 0, passed.stderr)
+        self.assertIn("section-completed", passed.stdout)
+
+    def test_a_failing_completeness_check_fails_even_when_the_next_query_passes(self):
+        # baseline query 1 (its refusal is evidence), completeness-e2e 1, candidate query 0.
+        failed = self.run_section("completeness_section", [1, 1, 0])
+        self.assertEqual(failed.returncode, 1, failed.stderr)
+        self.assertIn("the candidate completeness check", failed.stderr)
+        self.assertNotIn("section-completed", failed.stdout)
+        passed = self.run_section("completeness_section", [1, 0, 0])
+        self.assertEqual(passed.returncode, 0, passed.stderr)
+
+    def test_a_failing_candidate_differential_fails_and_the_baselines_is_evidence(self):
+        self.assertEqual(self.run_section("differential_section", [1, 0]).returncode, 0)
+        failed = self.run_section("differential_section", [0, 1])
+        self.assertEqual(failed.returncode, 1, failed.stderr)
+        self.assertIn("the candidate CLI differential", failed.stderr)
+
+
 class ReplayTest(unittest.TestCase):
     def test_a_failed_graph_build_fails_the_replay_and_keeps_its_log(self):
         with tempfile.TemporaryDirectory() as tmp:
