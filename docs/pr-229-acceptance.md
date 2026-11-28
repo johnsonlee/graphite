@@ -8,15 +8,13 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 - **Baseline:** `70f908c` (`main` at the time of review). Base binaries were built from a
   clean worktree of that commit: `cargo build -p graphite-cli` and
   `./gradlew :query:shadowJar :explore:shadowJar`.
-- **Candidate:** the evidence files were produced with binaries built from `f026363`. The
-  commits after it change UNION paging only, which no evidence file exercises; its
-  regressions are the committed tests named in row 5.
+- **Candidate:** the evidence files were produced with binaries built from `39ae076`.
 - **Raw evidence:** `docs/pr-229-evidence/*.txt`, every file produced by one replay:
 
   ```
   docs/pr-229-evidence/replay/replay.sh \
     70f908c <base graphite> <base graphite.jar> \
-    f026363 <candidate graphite> <candidate graphite.jar> \
+    39ae076 <candidate graphite> <candidate graphite.jar> \
     frontend/jvm/core/build/libs/core-1.0.0-SNAPSHOT.jar docs/pr-229-evidence
   ```
 
@@ -30,7 +28,10 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 
   Base and candidate always ran the same input, and every graph was built by its own
   revision's frontend. Another checkout reproduces both columns by building `70f908c` and
-  the candidate and running the command above.
+  the candidate and running the command above. The replay exits 1, keeping each step's log in
+  `<out>/replay-logs`, when a setup step, the candidate differential, the candidate
+  completeness check or a candidate bit flip fails. A crash (a signal) or an unexpected exit
+  code is never counted as a clean rejection (`test_replay.py`, run in CI).
 - **Hosted benchmark timings are report-only.** They are not performance acceptance (see
   row 6).
 
@@ -161,7 +162,7 @@ Tests: `GraphMetadataRoundTripTest`,
 
 | Case | Baseline `70f908c` | Candidate |
 | --- | --- | --- |
-| `GraphStore.save(loadMapped(dir), dir)` (acme, 204 nodes, 188 edges) | nodes 204, **edges 0** (both engines) | nodes 204, edges 188 |
+| `GraphStore.save(loadMapped(dir), dir)` (acme, 204 nodes, 188 edges) | nodes 204, **edges 0** (Rust CLI); the JVM CLI fails reading it (exit 1) | nodes 204, edges 188 in both CLIs |
 | Save a graph into a directory holding another graph whose transpose was persisted | JVM engine answers **181** incoming edges from the old transpose; the oracle (Rust engine) answers 188 | 188 in both engines |
 | `graph.labels` cut by 1 byte | answers `CALL 133, DATAFLOW 30297` (oracle: 134 / 30296): a call edge silently typed as dataflow | `corrupt graph: …graph.labels: 33844 bytes, but graph.manifest lists 33845` |
 | `forward.graph` cut by 16 bytes | answers `CALL 129, DATAFLOW 30294` (edges silently lost) | refused, same message form |
@@ -381,7 +382,9 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | Expression LIMIT ended the pages | `28e761b` | route test (`LIMIT 2+6`, `LIMIT 2+1`) |
 | UNION page window per branch | `28e761b` | route test (UNION ALL, deduplicating UNION with repeats) |
 | Deduplicating UNION past the re-run cap answered a short page | `f026363` | route test (one row 17 times, every page size), `union_paging.rs` (explicit failure past the cap) |
-| A duplicate past a deduplicating UNION's page claimed a next page | the commit after `f026363` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
+| A duplicate past a deduplicating UNION's page claimed a next page | `88364ee` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
+| A raw probe on top of the distinct lookahead evaluated a row nothing needed | `39ae076` | route test (`1.0/(7-…)` UNION, page of 6, failing before with Division by zero) |
+| Evidence harness counted a crash as a rejection, ignored failed steps, trusted any listener on its port | `39ae076` | `test_replay.py` (classifier, crashing binary, failing build) |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which

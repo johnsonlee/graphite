@@ -1,13 +1,13 @@
 # Identities of this replay
 baseline revision:  70f908c
-candidate revision: f026363
+candidate revision: 39ae076
 6ccf0a87e7b83fde23b35302519210e83e69e3203ebd257c3a5c5130ab6c6d7d  /tmp/claude-0/base-target/debug/graphite
 f99e2c7daf643e759336137d010eba1340dbf83c9af2fbc95db9d1fa33a0bee6  /tmp/claude-0/base-wt/frontend/jvm/query/build/libs/graphite.jar
-b95e0da1d12f05b1d364a63d4e0387cbe5b8462f33b8759d07f59bc615829bc8  /home/user/graphite/target/debug/graphite
+a172b36a941f135d6e06d3b05751bd34584709a2142f41f0363966e8fc561465  /home/user/graphite/target/debug/graphite
 dfaa59a7763c74d895614fbe78ceb095e585799b3fec1a5c839b4a8fee7b5b40  /home/user/graphite/frontend/jvm/query/build/libs/graphite.jar
 0116f54eafa4195d7c558d87356ccd8d37f91cd83b9a530e688be463218e2bf2  /home/user/graphite/frontend/jvm/core/build/libs/core-1.0.0-SNAPSHOT.jar
-61a617acfde4a9e6c382bb4c38cc7a5a6ae2da7a8c7f99208fea7a9c4cc3dd1a  acme.jar
-acme sources: f026363a5b5b83a1456b2e2307ca1eab80dab3d6 backend/bench/fixtures/acme/src
+c0d864d340da11e7aad99877c5ba0ab4723735cce0f5571bfcc48c95cc84652e  acme.jar
+acme sources: 39ae0769762b39eaf5467466d3d90947b94293aa backend/bench/fixtures/acme/src
 openjdk version "21.0.13.0.3" 2026-10-24
 javac 21.0.13.0.3
 Linux 6.18.44-fc-v880 x86_64
