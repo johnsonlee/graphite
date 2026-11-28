@@ -354,6 +354,9 @@ graph.
   the paging contract as a property: for 120 generated UNIONs (heavy repeats, overlapping
   branches, own LIMITs, UNION and UNION ALL) every window is a prefix of the unwindowed
   result and reports a next page exactly when rows remain, with and without the probe.
+  Across two graphs with overlapping values, every window of seven UNION shapes equals the
+  unwindowed prefix row for row including each row's graph provenance (this failed while the
+  streaming path still merged a later duplicate's graph into a first occurrence).
 - **`hierarchy_walks_share_the_query_guard_and_a_visit_budget`:** 429 under a saturated
   guard, plus the budget and a cancelled token.
 - **`a_wide_hierarchy_pages_to_completion_and_stops_at_its_budget_or_deadline`:** through
@@ -366,15 +369,15 @@ graph.
 
 **Limits (stated, not hidden)**
 - **Paging window:** paging ends at row 50,000 (`maxWindow`).
-- **Duplicate-heavy UNION:** a deduplicating UNION branch is read until it yields the
-  distinct rows a page needs plus one more, the row that proves a next page, up to 8 windows
-  or 50,000 rows, whichever is more. Past that, a branch that ends in a plain `RETURN` is read
-  as distinct rows (the union removes duplicates anyway), which always establishes the page.
-  A branch with its own `ORDER BY`, `SKIP` or `LIMIT` cannot be, and still fails the query
-  (`A UNION branch repeats its rows too often to page`). No page lacks rows, and a duplicate
-  past the page never claims a next page. The distinct read evaluates every row of the
-  branch, so it is the last resort: a page established within the bounded read never
-  evaluates a row past its lookahead.
+- **Duplicate-heavy UNION:** a deduplicating UNION asks each branch for the distinct rows a
+  page needs plus one more, the row that proves a next page. A branch that ends in a plain
+  `RETURN` is deduplicated as it is read, keeping the first occurrence of each row as the
+  union itself does, so it answers in one read however often it repeats a row, and over a
+  `MATCH` the read stops at the row that completes the window. A branch with its own
+  `ORDER BY`, `SKIP`, `LIMIT` or `WITH DISTINCT` is read by row count and re-read with a
+  larger window, up to 8 windows or 50,000 rows, whichever is more; past that it fails the
+  query (`A UNION branch repeats its rows too often to page`). No page lacks rows, and a
+  duplicate past the page never claims a next page.
 - **Fanout mode:** fanout mode refuses `offset`.
 - **Hierarchy budget:** a hierarchy request examines at most 100,000 entries.
 
@@ -541,7 +544,7 @@ framework layer:
 | Deduplicating UNION past the re-run cap answered a short page | `f026363` | route test (one row 17 times, every page size), `union_paging.rs` (explicit failure past the cap) |
 | A duplicate past a deduplicating UNION's page claimed a next page | `88364ee` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
 | A raw probe on top of the distinct lookahead evaluated a row nothing needed | `39ae076` | route test (`1.0/(7-…)` UNION, page of 6, failing before with Division by zero) |
-| A plain UNION branch that repeats a row past the re-read cap failed the query (found by the author, not the review) | the commit adding the distinct last resort | `union_paging.rs`: 100,000 copies page correctly; the prefix property over 120 generated UNIONs |
+| A plain UNION branch that repeats a row past the re-read cap failed the query (found by the author, not the review) | `f77f233`, then the commit that deduplicates a plain branch as it is read | `union_paging.rs`: 100,000 copies page correctly; the prefix property over 120 generated UNIONs; the cross-graph prefix-and-provenance test |
 | Evidence harness counted a crash as a rejection, ignored failed steps, trusted any listener on its port | `39ae076` | `test_replay.py` (classifier, crashing binary, failing build) |
 | A `{ ...; } \|\| handler` block in the replay hid a failed candidate command followed by a passing one | `717b45e` | `test_replay.py` `SectionPropagationTest` (bit flip, completeness, differential; failing before) |
 | Effective heap ≤ 8 GiB not shown for every JVM of the replay | `c428401` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |

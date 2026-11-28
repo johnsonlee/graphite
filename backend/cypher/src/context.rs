@@ -113,6 +113,15 @@ pub trait GraphContext {
         Ok(Value::Null)
     }
 
+    /// Whether DISTINCT currently means "the first occurrence of each row, as it is": no
+    /// merging of the graphs later duplicates came from, so a scan may stop once it has the
+    /// rows it was asked for. True only while the engine reads a branch of a deduplicating
+    /// UNION to which it added the DISTINCT itself; a DISTINCT the query wrote keeps its
+    /// provenance.
+    fn first_occurrence_distinct(&self) -> bool {
+        false
+    }
+
     /// Cancellation / timeout polling hook; returns Err when cancelled.
     fn check_cancelled(&self) -> crate::CypherResult<()> {
         Ok(())

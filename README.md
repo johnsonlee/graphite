@@ -1149,10 +1149,10 @@ record as `RESOLUTION_FAILED`. Apple builds do not record it yet.
   mode) take `offset` beside `limit`. A truncated page answers
   `"total": {"relation": "gte"}` and `"nextOffset"`, the offset of the next page; the last
   page answers `"nextOffset": null`, and a query's own `LIMIT` (a literal, a parameter or
-  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows. A branch that
-  repeats its rows so often that 50,000 of them (or 8 pages' worth) cannot complete a page is
-  read as distinct rows instead, which is the same union; a branch with its own `ORDER BY`,
-  `SKIP` or `LIMIT` cannot be read that way, and fails the query rather than answer a page
+  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows, however often a
+  branch repeats a row. The exception is a branch with its own `ORDER BY`, `SKIP`, `LIMIT` or
+  `WITH DISTINCT`: it is read by row count, and one that repeats its rows so often that 50,000
+  of them (or 8 pages' worth) cannot complete a page fails the query rather than answer a page
   that lacks rows. A page must
   end within the first 50,000 rows of a result (`offset + limit`), since the rows before a
   page are matched to be skipped; beyond that, narrow the query (`ORDER BY` a key and

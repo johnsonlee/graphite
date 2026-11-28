@@ -77,10 +77,10 @@ fn a_duplicate_past_the_page_is_no_next_page() {
 
 #[test]
 fn a_plain_branch_pages_however_often_it_repeats_a_row() {
-    // 100,000 copies of one row exhaust the bounded re-read (98,304 rows hold one distinct row
-    // of the two the window needs). The union removes duplicates anyway, so a branch that ends
-    // in a plain RETURN is then read as distinct rows, and the page is established. Before,
-    // this query failed.
+    // The union keeps the first occurrence of each row, so a branch that ends in a plain
+    // RETURN is deduplicated as it is read: a window of n rows is n distinct rows, however
+    // often the branch repeats one. Read by row count, 100,000 copies of one row could not
+    // be paged at all: the query failed.
     let flooded = "UNWIND range(1, 100000) AS i RETURN 1 AS v UNION RETURN 2 AS v";
     let probed = Executor::new(vec![], false).with_probe();
     assert_eq!(values(&probed, flooded, 2).unwrap(), [1, 2]);
@@ -93,16 +93,16 @@ fn a_plain_branch_pages_however_often_it_repeats_a_row() {
     let first = Executor::new(vec![], false).with_probe();
     assert_eq!(values(&first, flooded, 1).unwrap(), [1]);
     assert!(first.window_cut());
-    // The distinct read is the last resort, not the first, because DISTINCT evaluates every
-    // row of a branch where a plain read over a MATCH stops at its window. The route test
-    // `cypher_pages_concatenate_to_the_whole_result_and_say_where_the_next_starts` holds that:
-    // a page established within the bounded re-read never evaluates a row past its lookahead.
+    // The read stops at the row that completes the window. Over a MATCH that is a row the
+    // page needs and none after it, which the route test
+    // `cypher_pages_concatenate_to_the_whole_result_and_say_where_the_next_starts` holds.
 }
 
 #[test]
 fn a_branch_with_its_own_limit_past_the_row_cap_fails_instead_of_answering_short() {
-    // DISTINCT cannot go inside a branch with its own LIMIT (it would apply first and choose
-    // other rows), so such a branch keeps the bounded re-read. 60,000 copies are read to the
+    // A branch with its own LIMIT cannot be deduplicated as it is read (that would apply
+    // before the LIMIT and choose other rows), so it is read by row count and re-read with a
+    // larger window when its rows repeat, up to a cap. 60,000 copies are read to the
     // branch's end within the cap (its window doubles from 3 to 98,304 rows).
     let read_through = "UNWIND range(1, 60000) AS i RETURN 1 AS v LIMIT 60000 UNION RETURN 2 AS v";
     assert_eq!(
@@ -205,4 +205,95 @@ fn every_window_of_a_union_is_a_prefix_of_its_whole_result() {
             }
         }
     }
+}
+
+/// Two graphs whose string constants repeat within a graph and across both.
+fn overlapping_graphs() -> (Vec<graphite_cypher::engine::Source>, std::path::PathBuf) {
+    let root = std::env::temp_dir().join(format!("graphite-union-paging-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    let sources = [
+        ("first", ["b", "a", "b", "c", "a", "b", "d", "c", "b", "e"]),
+        ("second", ["c", "c", "a", "f", "b", "f", "g", "a", "c", "h"]),
+    ]
+    .into_iter()
+    .map(|(id, values)| {
+        let nodes: Vec<serde_json::Value> = values
+            .iter()
+            .enumerate()
+            .map(|(i, v)| serde_json::json!({"id": i, "kind": "StringConstant", "value": v}))
+            .collect();
+        let graph = serde_json::json!({"version": 1, "methods": [], "edges": [], "nodes": nodes});
+        let dir = root.join(id);
+        std::fs::create_dir_all(&root).unwrap();
+        graphite_storage::interchange::import_json(graph.to_string().as_bytes(), &dir).unwrap();
+        graphite_cypher::engine::Source {
+            id: id.into(),
+            graph: std::sync::Arc::new(graphite_storage::Graph::load(&dir).unwrap()),
+        }
+    })
+    .collect();
+    (sources, root)
+}
+
+#[test]
+fn across_graphs_every_window_is_a_prefix_of_the_whole_result_rows_and_provenance() {
+    // The service runs every query over all loaded graphs, and each row says which graphs it
+    // came from. A window must answer the same rows as the unwindowed query, with the same
+    // provenance: a branch the union deduplicates as it reads keeps the first occurrence of
+    // each row as it is, exactly as the union does, and does not go on to collect the graphs
+    // of later duplicates the way a DISTINCT the query wrote does.
+    let (sources, root) = overlapping_graphs();
+    let executor = |probe: bool| {
+        let executor = Executor::new(sources.clone(), true);
+        if probe {
+            executor.with_probe()
+        } else {
+            executor
+        }
+    };
+    let strings = "MATCH (n:StringConstant) RETURN n.value AS v";
+    let queries = [
+        format!("{strings} UNION {strings}"),
+        format!("{strings} UNION RETURN 'zzz' AS v"),
+        format!("RETURN 'c' AS v UNION {strings} UNION RETURN 'a' AS v"),
+        format!("{strings} UNION ALL {strings}"),
+        // A DISTINCT the query wrote keeps its own reading: each row carries every graph.
+        format!("MATCH (n:StringConstant) RETURN DISTINCT n.value AS v UNION {strings}"),
+        format!("{strings} UNION MATCH (m:StringConstant) WITH DISTINCT m.value AS v RETURN v"),
+        // A branch with its own LIMIT is read by row count.
+        format!("{strings} LIMIT 7 UNION {strings}"),
+    ];
+    for query in &queries {
+        let whole = executor(false).execute(query, None).unwrap();
+        let rows: Vec<String> = whole.rows.iter().map(|row| format!("{row:?}")).collect();
+        assert!(rows.len() >= 3, "{query}");
+        for window in 1..=rows.len() + 1 {
+            for probe in [true, false] {
+                let executor = executor(probe);
+                let page = executor.execute(query, Some(window)).unwrap();
+                let page: Vec<String> = page.rows.iter().map(|row| format!("{row:?}")).collect();
+                assert_eq!(
+                    page,
+                    rows[..window.min(rows.len())],
+                    "window {window}, probe {probe}: {query}"
+                );
+                if probe {
+                    assert_eq!(
+                        executor.window_cut(),
+                        rows.len() > window,
+                        "{window}: {query}"
+                    );
+                }
+            }
+        }
+    }
+    // The provenance is part of what was compared: the first query's rows name one graph each.
+    let first = executor(false).execute(&queries[0], None).unwrap();
+    let rendered = format!("{:?}", first.rows[0]);
+    assert!(
+        rendered.contains("first") && !rendered.contains("second"),
+        "{rendered}"
+    );
+    drop(sources);
+    std::fs::remove_dir_all(&root).unwrap();
 }

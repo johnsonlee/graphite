@@ -296,11 +296,12 @@ impl Executor {
         let mut result: Option<QueryResult> = None;
         let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
-        // A UNION that removes duplicates pages over distinct rows, so a branch cut at the
-        // window's row count may hold fewer distinct rows than the page needs, and a row the
-        // probe finds past it may be one more duplicate. Such a UNION asks its branches for
+        // A UNION that removes duplicates pages over distinct rows. It asks each branch for
         // one distinct row past the page, and only the combined result says whether a next
-        // page exists.
+        // page exists. A branch it can deduplicate as it reads (`distinct_within_branch`)
+        // answers that in one read. Any other branch is cut at the window's row count, may
+        // then hold fewer distinct rows than the page needs, and is re-read with a larger
+        // window, up to a cap.
         let deduplicating = segments.iter().skip(1).any(|(_, all)| !all);
         let branches = segments.len();
         let page_rows = max_rows.map(|max| {
@@ -312,13 +313,15 @@ impl Executor {
         });
         for (i, (original, all)) in segments.into_iter().enumerate() {
             let mut factor = 1usize;
-            // Set once the bounded re-read below gave up on this branch: it is then read as
-            // distinct rows, so a window of `n` rows establishes `n` distinct ones.
-            let mut distinct_branch = false;
+            // A branch the union can deduplicate while it reads: every row its window holds
+            // is then a distinct one, so one read establishes the page.
+            let distinct_branch = deduplicating
+                && page_rows.is_some()
+                && distinct_within_branch(&mut original.clone(), self.dialect);
             let (r, cut) = loop {
                 let mut seg = original.clone();
                 if distinct_branch {
-                    distinct_within_branch(&mut seg);
+                    distinct_within_branch(&mut seg, self.dialect);
                 }
                 self.fold_constant_limit(&mut seg);
                 let window = page_rows.map(|rows| rows.saturating_mul(factor));
@@ -331,10 +334,13 @@ impl Executor {
                 } else {
                     None
                 };
-                let mut r = if let Some(row) = seed {
-                    self.run_segment_seeded(&seg, vec![row.clone()])?
-                } else {
-                    self.run_segment(&seg)?
+                let mut r = {
+                    let _first_occurrence = FirstOccurrence::set(self, distinct_branch);
+                    if let Some(row) = seed {
+                        self.run_segment_seeded(&seg, vec![row.clone()])?
+                    } else {
+                        self.run_segment(&seg)?
+                    }
                 };
                 let beyond = keep.is_some_and(|n| trim_probe(&mut r, n));
                 let cut = beyond && windowed;
@@ -357,17 +363,6 @@ impl Executor {
                         // it, or refuse rather than answer a page that lacks rows.
                         if window < union_branch_row_cap(needed) {
                             factor *= 2;
-                            continue;
-                        }
-                        // The cap is spent. The union removes duplicates anyway, so a branch
-                        // that ends in a plain RETURN can remove its own first: every row the
-                        // window then reads is a distinct one. This is the last resort and not
-                        // the first read because DISTINCT evaluates every row of the branch,
-                        // where the plain read stops at its window: a page established within
-                        // the cap never evaluates a row past its lookahead.
-                        if !distinct_branch && distinct_within_branch(&mut original.clone()) {
-                            distinct_branch = true;
-                            factor = 1;
                             continue;
                         }
                         return Err(CypherError::Other(format!(
@@ -507,8 +502,12 @@ impl Executor {
             if let Some(r) = super::fastpath::grouped_call_site_property(self, clauses)? {
                 return Ok(r);
             }
-            if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
-                return Ok(r);
+            // The dictionary fast path merges provenance and orders by value; a branch read
+            // by first occurrence takes the scan.
+            if !self.reads_first_occurrence() {
+                if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
+                    return Ok(r);
+                }
             }
             if let Some(plan) = super::ordered_property::OrderedPropertyPlan::build(clauses) {
                 if let Some(result) = plan.run(self)? {
@@ -1181,7 +1180,8 @@ impl Executor {
         // The baseline keeps scanning for exactly this reason; stopping early produced
         // rows identical in every visible column but missing a contributing graph.
         let names = items.map(item_names).unwrap_or_default();
-        let distinct_provenance = shape.distinct && self.cross;
+        let first_occurrence = self.reads_first_occurrence();
+        let distinct_provenance = shape.distinct && self.cross && !first_occurrence;
         // Provenance completion runs as a targeted second pass where it can, so the
         // first pass may stop at the limit like any other.
         let targeted = distinct_provenance
@@ -1229,7 +1229,11 @@ impl Executor {
                 let k = visible_key(&projected);
                 match seen.get(&k) {
                     Some(&at) => {
-                        merge_provenance(&mut out[at], &projected);
+                        // A branch the union deduplicates by first occurrence keeps that
+                        // occurrence as it is.
+                        if !first_occurrence {
+                            merge_provenance(&mut out[at], &projected);
+                        }
                         return Ok(true);
                     }
                     None => {
@@ -1828,22 +1832,73 @@ fn distinct_keys(rows: &[Row]) -> std::collections::HashSet<Vec<Key>> {
 /// Lowers a segment's LIMIT to `max`, or adds it; returns whether `max` is now the limit
 /// that binds the segment's trailing LIMIT (the query's own literal limit was larger, or it
 /// had none). A query limit equal to `max` binds itself: a row past it is no page.
-/// Makes a branch of a deduplicating UNION return distinct rows itself, and says whether it
-/// could. That cannot change the union: the union removes duplicates anyway, in
-/// first-occurrence order, which is the order DISTINCT keeps. Every row a window then reads
-/// from the branch is a distinct one, so a branch that fills a window of `n` rows has
-/// established `n` distinct rows, however often it repeats a row.
+/// Makes a branch of a deduplicating UNION remove its own duplicates as it is read, and says
+/// whether it could. The union keeps the first occurrence of each row anyway, so a branch
+/// that keeps the first occurrence of each of its rows (`FirstOccurrence`) contributes the
+/// same rows in the same order; every row a window reads from it is then a distinct one, a
+/// branch that fills a window of `n` rows has established `n` distinct rows, and the read
+/// stops there however often the branch repeats a row.
 ///
-/// Only a branch that ends in a plain RETURN: with its own SKIP or LIMIT, DISTINCT would apply
-/// before them and choose other rows, and with ORDER BY it could name an expression DISTINCT
-/// does not allow. Such a branch has only the bounded re-read.
-fn distinct_within_branch(seg: &mut [Clause]) -> bool {
+/// Only a branch that ends in a plain RETURN and has no DISTINCT of its own:
+/// - with its own SKIP or LIMIT, DISTINCT would apply before them and choose other rows, and
+///   with ORDER BY it could name an expression DISTINCT does not allow;
+/// - a DISTINCT the query wrote (on the RETURN or on a WITH) merges the graphs its duplicates
+///   came from, and must keep doing so, so the first-occurrence reading may not be on while
+///   it runs;
+/// - an aggregating RETURN has one row per group already.
+///
+/// Such a branch is read by row count instead, and re-read with a larger window when its
+/// rows repeat.
+fn distinct_within_branch(seg: &mut [Clause], dialect: crate::CypherDialect) -> bool {
+    let own_distinct = seg
+        .iter()
+        .any(|clause| matches!(clause, Clause::With { distinct: true, .. }));
     match seg.last_mut() {
-        Some(Clause::Return { distinct, .. }) => {
+        Some(Clause::Return {
+            distinct: distinct @ false,
+            items,
+        }) if !own_distinct
+            && !items
+                .iter()
+                .flatten()
+                .any(|item| aggregation_in_mode(&item.expr, dialect)) =>
+        {
             *distinct = true;
             true
         }
         _ => false,
+    }
+}
+
+/// Turns the first-occurrence reading of DISTINCT on for one branch run, and off again when
+/// the run ends, however it ends.
+struct FirstOccurrence<'a>(Option<&'a Executor>);
+
+impl Executor {
+    fn reads_first_occurrence(&self) -> bool {
+        self.first_occurrence_distinct
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
+impl<'a> FirstOccurrence<'a> {
+    fn set(executor: &'a Executor, on: bool) -> Self {
+        if on {
+            executor
+                .first_occurrence_distinct
+                .store(true, std::sync::atomic::Ordering::Relaxed);
+        }
+        Self(on.then_some(executor))
+    }
+}
+
+impl Drop for FirstOccurrence<'_> {
+    fn drop(&mut self) {
+        if let Some(executor) = self.0 {
+            executor
+                .first_occurrence_distinct
+                .store(false, std::sync::atomic::Ordering::Relaxed);
+        }
     }
 }
 
@@ -2970,6 +3025,9 @@ fn project_filtered(
         for r in out {
             let k = visible_key(&r);
             match seen.get(&k) {
+                // A later duplicate adds the graph it came from, except to a branch the
+                // union deduplicates by first occurrence.
+                Some(_) if ev.context().first_occurrence_distinct() => {}
                 Some(&idx) => merge_provenance(&mut dedup[idx], &r),
                 None => {
                     seen.insert(k, dedup.len());

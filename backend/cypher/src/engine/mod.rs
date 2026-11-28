@@ -214,6 +214,9 @@ pub struct Executor {
     /// Set when a segment's `max_rows` window, not the query's own LIMIT, cut its rows and
     /// the probe found a row past it; see `Executor::window_cut`.
     window_cut: std::sync::atomic::AtomicBool,
+    /// Set while a branch of a deduplicating UNION runs with a DISTINCT the engine added;
+    /// see `GraphContext::first_occurrence_distinct`.
+    pub(crate) first_occurrence_distinct: std::sync::atomic::AtomicBool,
     /// The first declared-type table this query needed and could not read. A table that fails
     /// to parse is absent for the whole process, so without this the query would answer as if
     /// the graph declared nothing; the query ends with this error instead (see
@@ -267,6 +270,7 @@ impl Executor {
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
             window_cut: std::sync::atomic::AtomicBool::new(false),
+            first_occurrence_distinct: std::sync::atomic::AtomicBool::new(false),
             declared_failure: std::sync::Mutex::new(None),
         }
     }
@@ -805,6 +809,9 @@ impl GraphContext for Executor {
         status
             .map(|s| s.map(Value::str).unwrap_or(Value::Null))
             .map_err(|e| CypherError::Other(format!("graph.completeness: {e}")))
+    }
+    fn first_occurrence_distinct(&self) -> bool {
+        self.first_occurrence_distinct.load(Ordering::Relaxed)
     }
     fn dispatch_gap(&self, value: &Value) -> CypherResult<Value> {
         let Value::Node(n) = value else {
