@@ -223,8 +223,50 @@ at run time, and the frontend follows only the bindings it can see. `ABSTRACT`, 
 JavaScript (it has no bodiless declarations, and the build has no scope or budget); the
 interchange accepts them for a frontend that needs them.
 
-The Apple frontend records no completeness evidence yet: its graphs answer `null`, and
-`GET /api/capabilities` reports `facts.completeness: false` for them.
+## The Apple frontend
+
+An Apple build (Swift, Objective-C) records the evidence in the trailer of its Graph IR
+(`Completeness` in `ir/graphite_ir.proto`), and the JVM importer persists it as
+`graph.completeness` with the graph. A reader that predates the field ignores it; a stream
+without it leaves the graph answering `null`. The frontend's facts come from the compiler's
+index, so the statuses say what the index can and cannot tell:
+
+| Case | Recorded as | A caller reads |
+|------|-------------|----------------|
+| A type declared in the indexed sources, or a module that owns free functions or top-level code | class `ANALYZED`, origin the module (none for C and Objective-C, which Clang indexes without one) | `analysisStatus` of its methods: `ANALYZED` |
+| A protocol requirement with no default implementation | method `ABSTRACT` | `ABSTRACT` |
+| An Objective-C method or C function a header declares with no definition in the indexed sources (accessors a property names and the compiler synthesizes included) | method `NO_BODY` | `NO_BODY` |
+| A callee on a class of the build that the sources never declare: a member the compiler synthesized (a memberwise initializer, a derived conformance) | method `NO_BODY` | `NO_BODY`, where the class alone would answer `UNKNOWN_MEMBER` |
+| A callee from the SDK, the standard library or another package | nothing | `EXTERNAL` |
+| A dynamically dispatched call whose named method has a body in the build, when another member of the build overrides or implements it | call site `DISPATCH_PARTIAL` | the named body is in the graph; the other may run and is not linked |
+| A dynamically dispatched call whose named method has no body in the build (a requirement, an SDK method), when a member of the build implements or overrides it | call site `DISPATCH_UNRESOLVED` | no body is linked to the call |
+
+A call site names the method the compiler resolved statically, and an Apple graph links no
+override to it. A gap is recorded exactly when the index marks the call as dynamically
+dispatched and the build holds another body the receiver could select: a member with a body
+that overrides or implements the named method under a descriptor of its own. A requirement
+and its default implementation in an extension of the protocol are one method to the graph
+(one descriptor), so the default is the named method and not "another body". A call bound
+statically (`super.f()`, a `final` or struct method) leaves no gap, and neither does a dynamic
+call nothing in the build overrides: an override outside the build is outside the scope, as
+for the JVM frontend, and the callee's own status says what the build knows of it.
+
+What the evidence does not cover:
+
+- A call on a closure or another function value has no call site in an Apple graph (the index
+  names no callee for it), so no gap can point at it.
+- A source file under the roots that the build did not compile has no index record and no
+  entry: its types are simply not classes of the build, and read as `EXTERNAL`.
+- `ANALYZED` means the calls the index resolves in the body are in the graph. Dataflow in an
+  Apple graph is limited to what the IR header's `source_dataflow` option names.
+- The gap is as coarse as the index's dynamic role: it does not ask whether the receiver's
+  static type could hold the overriding class.
+
+Committed checks: `CompletenessTests` and `ObjectiveCTests` (the frontend, on a package SwiftPM
+builds and on a Clang-indexed class), `IrCompletenessTest` (the importer: the evidence becomes
+the graph's, and evidence it cannot take at its word is refused), and
+`backend/bench/apple-completeness-e2e.py` in `apple.yml` (a real build of
+`frontend/apple/Fixtures/Dispatch`, the Rust CLI and the jar answering the same table).
 
 ## What this delivery does not do
 

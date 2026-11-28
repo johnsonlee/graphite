@@ -42,6 +42,114 @@ fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobu
   typealias Version = _2
 }
 
+public nonisolated enum GraphiteIRAnalysisStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case analyzed // = 1
+  case analyzedWithoutControlFlow // = 2
+  case abstract // = 3
+  case native // = 4
+  case noBody // = 5
+  case incomplete // = 6
+  case resolutionFailed // = 7
+  case excludedByScope // = 8
+  case notExpanded // = 9
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .analyzed
+    case 2: self = .analyzedWithoutControlFlow
+    case 3: self = .abstract
+    case 4: self = .native
+    case 5: self = .noBody
+    case 6: self = .incomplete
+    case 7: self = .resolutionFailed
+    case 8: self = .excludedByScope
+    case 9: self = .notExpanded
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .analyzed: return 1
+    case .analyzedWithoutControlFlow: return 2
+    case .abstract: return 3
+    case .native: return 4
+    case .noBody: return 5
+    case .incomplete: return 6
+    case .resolutionFailed: return 7
+    case .excludedByScope: return 8
+    case .notExpanded: return 9
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [GraphiteIRAnalysisStatus] = [
+    .unspecified,
+    .analyzed,
+    .analyzedWithoutControlFlow,
+    .abstract,
+    .native,
+    .noBody,
+    .incomplete,
+    .resolutionFailed,
+    .excludedByScope,
+    .notExpanded,
+  ]
+
+}
+
+public nonisolated enum GraphiteIRDispatchGap: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case dispatchUnresolved // = 1
+  case dispatchSaturated // = 2
+  case dispatchPartial // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .dispatchUnresolved
+    case 2: self = .dispatchSaturated
+    case 3: self = .dispatchPartial
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .dispatchUnresolved: return 1
+    case .dispatchSaturated: return 2
+    case .dispatchPartial: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [GraphiteIRDispatchGap] = [
+    .unspecified,
+    .dispatchUnresolved,
+    .dispatchSaturated,
+    .dispatchPartial,
+  ]
+
+}
+
 public nonisolated enum GraphiteIRDataFlowKind: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
@@ -497,6 +605,122 @@ public nonisolated struct GraphiteIRTrailer: Sendable {
   public var edgeCount: UInt64 = 0
 
   public var stringCount: UInt64 = 0
+
+  /// What the frontend analysed and what it could not. Absent: the frontend recorded no such
+  /// evidence, and the graph answers "not recorded" (`null`), never "analysed". Present and
+  /// empty: it recorded evidence and had no exception to report. It rides the trailer, not a
+  /// chunk of its own, because a reader that predates it ignores an unknown field and refuses
+  /// a chunk it cannot name.
+  public var completeness: GraphiteIRCompleteness {
+    get {_completeness ?? GraphiteIRCompleteness()}
+    set {_completeness = newValue}
+  }
+  /// Returns true if `completeness` has been explicitly set.
+  public var hasCompleteness: Bool {self._completeness != nil}
+  /// Clears the value of `completeness`. Subsequent reads from it will return its default value.
+  public mutating func clearCompleteness() {self._completeness = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _completeness: GraphiteIRCompleteness? = nil
+}
+
+/// The build's completeness evidence, in the vocabulary of docs/analysis-completeness.md. The
+/// importer persists it as `graph.completeness`, the file the JVM frontend writes for its own
+/// builds, so one reader answers `analysisStatus` and `dispatchGap` for every frontend.
+public nonisolated struct GraphiteIRCompleteness: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Every class (type, or module that owns free functions) the frontend read. A class named
+  /// nowhere here was not part of the build: its methods read as EXTERNAL.
+  public var classes: [GraphiteIRClassCompleteness] = []
+
+  /// Every method whose status is not ANALYZED. A method the graph holds and this list does
+  /// not is analysed, which keeps the evidence proportional to the exceptions.
+  public var methods: [GraphiteIRMethodCompleteness] = []
+
+  /// Every call site whose dispatch the graph does not close.
+  public var callSiteGaps: [GraphiteIRCallSiteDispatchGap] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct GraphiteIRClassCompleteness: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var className: String = String()
+
+  /// Where the class was read from (a module, an artifact), when the frontend knows.
+  public var origin: String {
+    get {_origin ?? String()}
+    set {_origin = newValue}
+  }
+  /// Returns true if `origin` has been explicitly set.
+  public var hasOrigin: Bool {self._origin != nil}
+  /// Clears the value of `origin`. Subsequent reads from it will return its default value.
+  public mutating func clearOrigin() {self._origin = nil}
+
+  /// ANALYZED, EXCLUDED_BY_SCOPE, NOT_EXPANDED or RESOLUTION_FAILED.
+  public var status: GraphiteIRAnalysisStatus = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _origin: String? = nil
+}
+
+public nonisolated struct GraphiteIRMethodCompleteness: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var method: GraphiteIRMethodRef {
+    get {_method ?? GraphiteIRMethodRef()}
+    set {_method = newValue}
+  }
+  /// Returns true if `method` has been explicitly set.
+  public var hasMethod: Bool {self._method != nil}
+  /// Clears the value of `method`. Subsequent reads from it will return its default value.
+  public mutating func clearMethod() {self._method = nil}
+
+  /// Any status but ANALYZED, EXCLUDED_BY_SCOPE and NOT_EXPANDED, which are a class's.
+  public var status: GraphiteIRAnalysisStatus = .unspecified
+
+  public var message: String {
+    get {_message ?? String()}
+    set {_message = newValue}
+  }
+  /// Returns true if `message` has been explicitly set.
+  public var hasMessage: Bool {self._message != nil}
+  /// Clears the value of `message`. Subsequent reads from it will return its default value.
+  public mutating func clearMessage() {self._message = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _method: GraphiteIRMethodRef? = nil
+  fileprivate var _message: String? = nil
+}
+
+public nonisolated struct GraphiteIRCallSiteDispatchGap: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The id of a CallSite node of this stream.
+  public var callSite: UInt32 = 0
+
+  public var gap: GraphiteIRDispatchGap = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1614,6 +1838,14 @@ public nonisolated struct GraphiteIRArtifactDependency: Sendable {
 
 fileprivate nonisolated let _protobuf_package = "graphite.ir.v1"
 
+nonisolated extension GraphiteIRAnalysisStatus: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ANALYSIS_STATUS_UNSPECIFIED\0\u{1}ANALYZED\0\u{1}ANALYZED_WITHOUT_CONTROL_FLOW\0\u{1}ABSTRACT\0\u{1}NATIVE\0\u{1}NO_BODY\0\u{1}INCOMPLETE\0\u{1}RESOLUTION_FAILED\0\u{1}EXCLUDED_BY_SCOPE\0\u{1}NOT_EXPANDED\0")
+}
+
+nonisolated extension GraphiteIRDispatchGap: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISPATCH_GAP_UNSPECIFIED\0\u{1}DISPATCH_UNRESOLVED\0\u{1}DISPATCH_SATURATED\0\u{1}DISPATCH_PARTIAL\0")
+}
+
 nonisolated extension GraphiteIRDataFlowKind: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DATA_FLOW_KIND_UNSPECIFIED\0\u{1}ASSIGN\0\u{1}PARAMETER_PASS\0\u{1}RETURN_VALUE\0\u{1}FIELD_STORE\0\u{1}FIELD_LOAD\0\u{1}ARRAY_STORE\0\u{1}ARRAY_LOAD\0\u{1}CAST\0\u{1}PHI\0")
 }
@@ -1968,7 +2200,7 @@ nonisolated extension GraphiteIRSource: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 nonisolated extension GraphiteIRTrailer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Trailer"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_count\0\u{3}edge_count\0\u{3}string_count\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_count\0\u{3}edge_count\0\u{3}string_count\0\u{1}completeness\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1979,12 +2211,17 @@ nonisolated extension GraphiteIRTrailer: SwiftProtobuf.Message, SwiftProtobuf._M
       case 1: try { try decoder.decodeSingularUInt64Field(value: &self.nodeCount) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.edgeCount) }()
       case 3: try { try decoder.decodeSingularUInt64Field(value: &self.stringCount) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._completeness) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.nodeCount != 0 {
       try visitor.visitSingularUInt64Field(value: self.nodeCount, fieldNumber: 1)
     }
@@ -1994,6 +2231,9 @@ nonisolated extension GraphiteIRTrailer: SwiftProtobuf.Message, SwiftProtobuf._M
     if self.stringCount != 0 {
       try visitor.visitSingularUInt64Field(value: self.stringCount, fieldNumber: 3)
     }
+    try { if let v = self._completeness {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2001,6 +2241,170 @@ nonisolated extension GraphiteIRTrailer: SwiftProtobuf.Message, SwiftProtobuf._M
     if lhs.nodeCount != rhs.nodeCount {return false}
     if lhs.edgeCount != rhs.edgeCount {return false}
     if lhs.stringCount != rhs.stringCount {return false}
+    if lhs._completeness != rhs._completeness {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension GraphiteIRCompleteness: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Completeness"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}classes\0\u{1}methods\0\u{3}call_site_gaps\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.classes) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.methods) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.callSiteGaps) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.classes.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.classes, fieldNumber: 1)
+    }
+    if !self.methods.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.methods, fieldNumber: 2)
+    }
+    if !self.callSiteGaps.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.callSiteGaps, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: GraphiteIRCompleteness, rhs: GraphiteIRCompleteness) -> Bool {
+    if lhs.classes != rhs.classes {return false}
+    if lhs.methods != rhs.methods {return false}
+    if lhs.callSiteGaps != rhs.callSiteGaps {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension GraphiteIRClassCompleteness: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ClassCompleteness"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}class_name\0\u{1}origin\0\u{1}status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.className) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._origin) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.className.isEmpty {
+      try visitor.visitSingularStringField(value: self.className, fieldNumber: 1)
+    }
+    try { if let v = self._origin {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    if self.status != .unspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: GraphiteIRClassCompleteness, rhs: GraphiteIRClassCompleteness) -> Bool {
+    if lhs.className != rhs.className {return false}
+    if lhs._origin != rhs._origin {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension GraphiteIRMethodCompleteness: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".MethodCompleteness"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}method\0\u{1}status\0\u{1}message\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._method) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._message) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._method {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.status != .unspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 2)
+    }
+    try { if let v = self._message {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: GraphiteIRMethodCompleteness, rhs: GraphiteIRMethodCompleteness) -> Bool {
+    if lhs._method != rhs._method {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs._message != rhs._message {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension GraphiteIRCallSiteDispatchGap: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CallSiteDispatchGap"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_site\0\u{1}gap\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.callSite) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.gap) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.callSite != 0 {
+      try visitor.visitSingularUInt32Field(value: self.callSite, fieldNumber: 1)
+    }
+    if self.gap != .unspecified {
+      try visitor.visitSingularEnumField(value: self.gap, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: GraphiteIRCallSiteDispatchGap, rhs: GraphiteIRCallSiteDispatchGap) -> Bool {
+    if lhs.callSite != rhs.callSite {return false}
+    if lhs.gap != rhs.gap {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

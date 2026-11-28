@@ -72,6 +72,67 @@ message Trailer {
   uint64 node_count = 1;
   uint64 edge_count = 2;
   uint64 string_count = 3;
+  // What the frontend analysed and what it could not. Absent: the frontend recorded no such
+  // evidence, and the graph answers "not recorded" (`null`), never "analysed". Present and
+  // empty: it recorded evidence and had no exception to report. It rides the trailer, not a
+  // chunk of its own, because a reader that predates it ignores an unknown field and refuses
+  // a chunk it cannot name.
+  optional Completeness completeness = 4;
+}
+
+// The build's completeness evidence, in the vocabulary of docs/analysis-completeness.md. The
+// importer persists it as `graph.completeness`, the file the JVM frontend writes for its own
+// builds, so one reader answers `analysisStatus` and `dispatchGap` for every frontend.
+message Completeness {
+  // Every class (type, or module that owns free functions) the frontend read. A class named
+  // nowhere here was not part of the build: its methods read as EXTERNAL.
+  repeated ClassCompleteness classes = 1;
+  // Every method whose status is not ANALYZED. A method the graph holds and this list does
+  // not is analysed, which keeps the evidence proportional to the exceptions.
+  repeated MethodCompleteness methods = 2;
+  // Every call site whose dispatch the graph does not close.
+  repeated CallSiteDispatchGap call_site_gaps = 3;
+}
+
+message ClassCompleteness {
+  string class_name = 1;
+  // Where the class was read from (a module, an artifact), when the frontend knows.
+  optional string origin = 2;
+  // ANALYZED, EXCLUDED_BY_SCOPE, NOT_EXPANDED or RESOLUTION_FAILED.
+  AnalysisStatus status = 3;
+}
+
+message MethodCompleteness {
+  MethodRef method = 1;
+  // Any status but ANALYZED, EXCLUDED_BY_SCOPE and NOT_EXPANDED, which are a class's.
+  AnalysisStatus status = 2;
+  optional string message = 3;
+}
+
+message CallSiteDispatchGap {
+  // The id of a CallSite node of this stream.
+  uint32 call_site = 1;
+  DispatchGap gap = 2;
+}
+
+enum AnalysisStatus {
+  ANALYSIS_STATUS_UNSPECIFIED = 0;
+  ANALYZED = 1;
+  ANALYZED_WITHOUT_CONTROL_FLOW = 2;
+  ABSTRACT = 3;
+  NATIVE = 4;
+  NO_BODY = 5;
+  INCOMPLETE = 6;
+  RESOLUTION_FAILED = 7;
+  EXCLUDED_BY_SCOPE = 8;
+  NOT_EXPANDED = 9;
+}
+
+enum DispatchGap {
+  DISPATCH_GAP_UNSPECIFIED = 0;
+  DISPATCH_UNRESOLVED = 1;
+  DISPATCH_SATURATED = 2;
+  DISPATCH_PARTIAL = 3;
 }
 
 message StringBatch {

@@ -60,6 +60,15 @@ public final class Emitter {
     private let declaredTypesByName: [String: TypeDecl]
     public private(set) var summary = EmitSummary()
     public private(set) var resourceOmissions: [AppleResources.Omission] = []
+    /// Completeness evidence (docs/analysis-completeness.md, "The Apple frontend"): the classes
+    /// recorded so far, and the methods some build member overrides or implements.
+    private var recordedClasses = Set<String>()
+    private var recordedClassIDs = Set<UInt32>()
+    private lazy var overriders: [String: [MemberDecl]] = {
+        var result: [String: [MemberDecl]] = [:]
+        for member in model.members { for usr in member.overrides { result[usr, default: []].append(member) } }
+        return result
+    }()
 
     public init(writer: IRWriter, model: IndexModel, facts: [String: SyntaxFacts], demangled: [String: String]) {
         self.writer = writer
@@ -82,6 +91,7 @@ public final class Emitter {
     }
 
     public func emit(resourceBundles: [URL] = []) throws -> EmitSummary {
+        writer.recordCompleteness()
         try emitTypes()
         try emitMembers()
         try emitTypeRelations()
@@ -371,6 +381,7 @@ public final class Emitter {
         for type in model.types where type.kind != .extension {
             let name = qualifiedName(ofType: type.symbol.usr)
             try writer.addClassOrigin(className: name, source: type.module)
+            recordAnalyzedClass(name, module: type.module)
             recordDeclaration(at: type.position, className: name, member: "<class>")
             summary.types += 1
         }
@@ -390,7 +401,18 @@ public final class Emitter {
             recordDeclaration(at: member.position, className: declaring, member: member.symbol.name)
             switch member.kind {
             case .method, .initializer, .deinitializer, .function:
-                try writer.addMethod(descriptor(for: member.symbol, module: member.module, container: member.container, at: member.position, declaredAt: member.declaration))
+                let method = descriptor(for: member.symbol, module: member.module, container: member.container, at: member.position, declaredAt: member.declaration)
+                try writer.addMethod(method)
+                // A free function's owner is its module: a class of the build like any type.
+                if member.container == nil { recordAnalyzedClass(declaring, module: member.module) }
+                let key = MethodKey(method)
+                methodKeys[member.symbol.usr] = key
+                if hasBody(member) {
+                    bodied.insert(key)
+                } else if bodiless[key] == nil {
+                    bodiless[key] = (method, isRequirement(member))
+                    bodilessOrder.append(key)
+                }
                 summary.methods += 1
             case .property:
                 var field = GraphiteIRField()
@@ -402,6 +424,91 @@ public final class Emitter {
                 try writer.addEnumValues(enumClass: declaring, enumName: member.symbol.name, values: [])
             }
         }
+        // A method is keyed by its descriptor, and two members can share one (a requirement and
+        // its default implementation in an extension of the protocol): it is without a body only
+        // when none of them has one.
+        for key in bodilessOrder where !bodied.contains(key) {
+            let (method, requirement) = bodiless[key]!
+            writer.addMethodCompleteness(
+                method: method,
+                status: requirement ? .abstract : .noBody,
+                message: requirement ? "a protocol requirement" : "declared, with no definition in the indexed sources"
+            )
+        }
+    }
+
+    // MARK: Completeness
+
+    private struct MethodKey: Hashable {
+        let owner: UInt32
+        let name: UInt32
+        let parameters: [UInt32]
+        let returns: UInt32
+
+        init(_ method: GraphiteIRMethodRef) {
+            owner = method.declaringClass.name
+            name = method.name
+            parameters = method.parameterTypes.map(\.name)
+            returns = method.returnType.name
+        }
+    }
+    /// The descriptor of every method member, by USR, and the descriptors some member gives a body.
+    private var methodKeys: [String: MethodKey] = [:]
+    private var bodied = Set<MethodKey>()
+    private var bodiless: [MethodKey: (method: GraphiteIRMethodRef, requirement: Bool)] = [:]
+    private var bodilessOrder: [MethodKey] = []
+
+    /// Clang indexes C and Objective-C without a module: a type then has no origin to name,
+    /// and a C function has no owner at all (its descriptor's class is empty), so there is no
+    /// class to record for it. The function itself is in the graph, and reads as analysed.
+    private func recordAnalyzedClass(_ name: String, module: String) {
+        guard !name.isEmpty, recordedClasses.insert(name).inserted else { return }
+        recordedClassIDs.insert(writer.intern(name))
+        writer.addClassCompleteness(className: name, origin: module.isEmpty ? nil : module, status: .analyzed)
+    }
+
+    /// A member declared by a protocol itself (not by an extension of it): a requirement.
+    private func isRequirement(_ member: MemberDecl) -> Bool {
+        member.container.flatMap { typesByUSR[$0] }?.kind == .protocol
+    }
+
+    /// Whether the build holds a body for `member`: the index defines it, and it is not a
+    /// requirement, which Swift's index reports as a definition too.
+    private func hasBody(_ member: MemberDecl) -> Bool {
+        member.hasBody && !isRequirement(member)
+    }
+
+    /// A callee the graph holds no declaration of, on a class the build read: a member the
+    /// compiler synthesized (a memberwise or default initializer, a derived conformance) or one
+    /// declared outside the indexed sources. The build has no body for it, and it says so,
+    /// where the class's status alone would answer that the class declares no such member.
+    private func recordUndeclaredCallee(_ callee: SymbolInfo, _ method: GraphiteIRMethodRef) {
+        let key = MethodKey(method)
+        guard membersByUSR[callee.usr] == nil, recordedClassIDs.contains(method.declaringClass.name),
+              !bodied.contains(key), bodiless[key] == nil else { return }
+        bodiless[key] = (method, false)
+        writer.addMethodCompleteness(
+            method: method, status: .noBody,
+            message: "not declared in the indexed sources: synthesized by the compiler, or declared elsewhere"
+        )
+    }
+
+    /// The gap of a dynamically dispatched call to `callee`, if the graph leaves one.
+    ///
+    /// The call site names the method the compiler resolved statically, and the graph links no
+    /// override to it. That is the whole story unless the build itself holds another body the
+    /// receiver could select: a member with a body that overrides or implements `callee` under
+    /// a descriptor of its own (a default implementation shares the requirement's, and is the
+    /// named method). Then the named method's body is in the graph and another may run
+    /// (`dispatchPartial`), or the named method has no body in the build and none of the
+    /// build's implementations is linked (`dispatchUnresolved`). An override outside the build
+    /// is outside the scope, as for any frontend: the callee's own status says what the build
+    /// knows of it.
+    private func dispatchGap(of callee: SymbolInfo) -> GraphiteIRDispatchGap? {
+        let named = methodKeys[callee.usr]
+        let another = (overriders[callee.usr] ?? []).contains { hasBody($0) && methodKeys[$0.symbol.usr] != named }
+        guard another else { return nil }
+        return named.map(bodied.contains) == true ? .dispatchPartial : .dispatchUnresolved
     }
 
     private func emitTypeRelations() throws {
@@ -450,11 +557,13 @@ public final class Emitter {
     private func emitCalls() throws {
         for call in model.calls {
             let callee = descriptor(for: call.callee, module: call.module)
+            recordUndeclaredCallee(call.callee, callee)
             let caller: GraphiteIRMethodRef
             if let symbol = call.caller {
                 caller = descriptor(for: symbol, module: call.module)
             } else {
                 caller = writer.methodRef(declaringClass: call.module, name: "<top-level>", parameterTypes: [], returnType: "Swift.Void")
+                recordAnalyzedClass(call.module, module: call.module)
             }
             let callerUSR = call.caller?.usr
             let flow = callerUSR.flatMap { functionFlows[$0]?.calls[call.position] }
@@ -485,6 +594,9 @@ public final class Emitter {
             site.line = Int32(call.position.line)
             site.arguments = arguments
             let id = try writer.addNode(.callSite(site))
+            if call.isDynamic, let gap = dispatchGap(of: call.callee) {
+                writer.addCallSiteGap(callSite: id, gap: gap)
+            }
             for argument in arguments {
                 try writer.addDataFlow(from: argument, to: id, .parameterPass)
             }

@@ -49,7 +49,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 
 | # | Original problem | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Model fidelity: absent fact vs unrecorded fact | Addressed for JVM-built and JavaScript-built graphs. Open for the Apple frontend, which records no evidence | `completeness.txt`; JavaScript section below |
+| 1 | Model fidelity: absent fact vs unrecorded fact | Addressed for JVM-built, JavaScript-built and Apple-built graphs, each within what its frontend can know (`docs/analysis-completeness.md`) | `completeness.txt`; JavaScript section below; `apple-completeness-e2e.py` |
 | 2 | Storage evolvability | Addressed for the inventory (manifest, producer, format, whole-directory publication) and for the node record's definition (one schema, every codec tested against it). The codecs are checked, not generated | section 2 |
 | 3 | Data safety and corruption | Addressed, with an explicit contract: same-size damage is detected only by verification | `truncation.txt`, `bitflip-fuzz.txt`, `jvm-storage-safety.txt` |
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
@@ -111,7 +111,7 @@ Both engines give the same answers (10 of 10).
 | Class never loaded (JDK, unread jar) | yes | `EXTERNAL` |
 | Class reached but past the `Reachable` budget | yes | `NOT_EXPANDED` |
 | Call on a function value resolved to nothing, saturated, or only partly | yes | `dispatchGap = DISPATCH_UNRESOLVED / SATURATED / PARTIAL` |
-| Anything from a graph built by the Apple frontend | **no** | `analysisStatus` is `null`; `facts.completeness` is `false` |
+| An Apple-built graph: a requirement, a declared-only or synthesized method, a dynamic call another body of the build could answer | yes | `ABSTRACT`, `NO_BODY`, `DISPATCH_PARTIAL` / `DISPATCH_UNRESOLVED`; a call on a closure value has no call site to carry a gap |
 
 **JavaScript-built graphs.** Reproducer: build a module that calls a body in the artifacts
 (`known`), a library binding (`JSON.stringify`), an import outside the artifacts (`missing`) and
@@ -144,8 +144,13 @@ Committed tests:
   `EXTERNAL`).
 - JavaScript resolution is static: a call the TypeScript checker resolves to a body is not a
   gap, although JavaScript can rebind a function at run time.
-- The Apple frontend records no completeness evidence. Its emitter is Swift, and the change
-  needs a toolchain this work did not have.
+- The Apple frontend now records completeness evidence (the Graph IR trailer's `Completeness`,
+  persisted by the importer): classes, protocol requirements and declared-only methods, and a
+  dispatch gap on a dynamically dispatched call another body of the build could answer. The
+  mapping and its limits are in `docs/analysis-completeness.md`, "The Apple frontend". Verified
+  here on Linux with Swift 6.1.2: the Swift suite (90 tests, 0 failures, 2 skipped as on `main`),
+  `IrCompletenessTest`, and `apple-completeness-e2e.py` (both engines answer the same 10 rows
+  for the fixture's calls). The macOS and Xcode paths run only in `apple.yml`.
 - The Kotlin CLI could not open a graph the Rust importer wrote: its loaders opened
   `graph.comparisons` unconditionally, a file outside the required list that the importer has
   never written. Both loaders now read an absent file as no comparisons; a sealed directory

@@ -71,6 +71,10 @@ public struct MemberDecl: Equatable {
     /// Where an Objective-C member defined in an `@implementation` is declared (its
     /// `@interface` or `@protocol`), the declaration Clang takes the types from.
     public var declaration: SourcePosition? = nil
+    /// False for a member the index only declares: an Objective-C method or C function of a
+    /// header with no definition in the indexed sources. A Swift protocol requirement is a
+    /// definition to the index and has no body either; its container says so.
+    public var hasBody: Bool = true
 }
 
 public struct SupertypeRelation: Equatable {
@@ -289,7 +293,7 @@ public final class IndexReader {
         }
         for usr in declaredMembers.keys.sorted() where !definedMembers.contains(usr) {
             let declared = declaredMembers[usr]!
-            IndexReader.recordDefinition(declared.symbol, occurrence: declared.occurrence, position: declared.position, into: &model)
+            IndexReader.recordDefinition(declared.symbol, occurrence: declared.occurrence, position: declared.position, defined: false, into: &model)
         }
         for index in model.members.indices {
             guard let declared = declaredMembers[model.members[index].symbol.usr], declared.position != model.members[index].position else { continue }
@@ -301,7 +305,9 @@ public final class IndexReader {
         return model
     }
 
-    private static func recordDefinition(_ symbol: SymbolInfo, occurrence: SymbolOccurrence, position: SourcePosition, into model: inout IndexModel) {
+    private static func recordDefinition(
+        _ symbol: SymbolInfo, occurrence: SymbolOccurrence, position: SourcePosition, defined: Bool = true, into model: inout IndexModel
+    ) {
         let container = occurrence.relations.first { $0.roles.contains(.childOf) }?.symbol
         let overrides = occurrence.relations.filter { $0.roles.contains(.overrideOf) }.map(\.symbol.usr)
         let module = occurrence.location.moduleName
@@ -359,7 +365,8 @@ public final class IndexReader {
             module: module,
             position: position,
             container: container?.usr,
-            overrides: overrides
+            overrides: overrides,
+            hasBody: defined
         ))
     }
 

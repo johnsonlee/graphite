@@ -103,6 +103,12 @@ class IrStream {
 
     fun chunk(c: Chunk) = apply { chunks.add(c) }
 
+    /** The stream with [completeness] in a trailer whose counts are the stream's own. */
+    fun bytes(completeness: io.johnsonlee.graphite.ir.v1.Completeness.Builder): ByteArray =
+        bytes(
+            Trailer.newBuilder().setNodeCount(nodes).setEdgeCount(edges).setStringCount(strings.size.toLong())
+                .setCompleteness(completeness).build())
+
     /** Strings first (as a frontend that interns while emitting would flush them), then the chunks, then the trailer. */
     fun bytes(trailer: Trailer? = null, withHeaderFirst: Boolean = true): ByteArray {
         val out = ByteArrayOutputStream()

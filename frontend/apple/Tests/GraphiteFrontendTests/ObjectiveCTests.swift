@@ -184,6 +184,22 @@ final class ObjectiveCTests: XCTestCase {
         XCTAssertEqual(result.summary.fields, 17)
         XCTAssertEqual(result.summary.callSites, 2)
         let decoded = try DecodedIR(url: out)
+        // Completeness evidence. Clang names no module, so a class has no origin, and a C
+        // function has no owner to record. A protocol's method is a requirement; the accessors
+        // a property names are declared and synthesized by the compiler, so the sources hold no
+        // body for them. `[self normalizeKey:]` is a message send nothing in the build overrides.
+        let evidence = decoded.trailer.completeness
+        XCTAssertTrue(decoded.trailer.hasCompleteness)
+        XCTAssertEqual(
+            evidence.classes.map { "\($0.className) \($0.hasOrigin) \($0.status)" },
+            ["LegacyPoint false analyzed", "Auditing false analyzed", "LegacyBase false analyzed", "LegacyStore false analyzed"]
+        )
+        XCTAssertEqual(evidence.methods.map { "\(decoded.signature($0.method)) \($0.status) \($0.message)" }, [
+            "Auditing.audit:(int) -> void abstract a protocol requirement",
+            "LegacyStore.wasRead() -> int noBody declared, with no definition in the indexed sources",
+            "LegacyStore.setRead:(int) -> void noBody declared, with no definition in the indexed sources",
+        ])
+        XCTAssertEqual(evidence.callSiteGaps, [])
         XCTAssertEqual(decoded.header.options["files"], "2")
         XCTAssertEqual(decoded.header.options["swift_files"], "0")
         XCTAssertEqual(decoded.header.options["objc_files"], "2")
