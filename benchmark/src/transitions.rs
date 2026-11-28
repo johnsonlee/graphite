@@ -475,14 +475,15 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
         reason: "PR #226: Constant rows that read 0 for a class literal now read its JVM descriptor (for example Ljavax/xml/validation/SchemaFactory;)",
     },
-    // PR #229 (head e430f25, base main 70f908c), run 46131454116: each build numbers its nodes from 1
-    // (NodeId.numbered). The same 73 observations, with the same four response digests, on its earlier
-    // heads c428401 (run 46091056203), 2d1a62b (run 46094928338), 7588730 (run 46122244274) and ad68bda
-    // (run 46127991835) and on runs 45833728909 and 46001831978; only the head's product identity moved
-    // with its later commits, and it is bound here.
+    // PR #229 (head d7b50af, base main b153b57), run 46136817969: each build numbers its nodes from 1
+    // (NodeId.numbered). First bound to e430f25 on main 70f908c (run 46131454116, #230); main then took
+    // #231 (docs) and #229 merged it, so both identities moved; the 73 observations did not. The same
+    // four response digests on its earlier heads against main 70f908c: c428401 (run 46091056203),
+    // 2d1a62b (run 46094928338), 7588730 (run 46122244274), ad68bda (run 46127991835), and on runs
+    // 45833728909 and 46001831978.
     Rule {
-        base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
-        head_product_identity: "0f4a0e614e6f9629a7840d78d5cf6389fe9b68b09e7a8d0d3bdeb796ff575e44",
+        base_product_identity: "4751ed7f889c20c0b9b6cc504e79da7ba58e21e06b733ab73308530925311582",
+        head_product_identity: "dddf1d272280a2b2c59e0710ae42e99e0931a4bafd6b5d389815a638cf83687e",
         case_id: "shape-id-lookup",
         base_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
         head_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
@@ -491,8 +492,8 @@ const RULES: &[Rule<'static>] = &[
         reason: "PR #229: each build numbers its nodes from 1 (NodeId.numbered); base shards continued one process-wide counter, so only fixture-android-00 held id 4101 and now each of the 64 graphs does; fixture-android-00's row is unchanged",
     },
     Rule {
-        base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
-        head_product_identity: "0f4a0e614e6f9629a7840d78d5cf6389fe9b68b09e7a8d0d3bdeb796ff575e44",
+        base_product_identity: "4751ed7f889c20c0b9b6cc504e79da7ba58e21e06b733ab73308530925311582",
+        head_product_identity: "dddf1d272280a2b2c59e0710ae42e99e0931a4bafd6b5d389815a638cf83687e",
         case_id: "shape-traverse-filtered",
         base_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
         head_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
@@ -846,23 +847,26 @@ mod tests {
 mod pr229_approval {
     use super::*;
 
-    /// main 70f908c and #229 e430f25, as run 46131454116 computed them.
-    const BASE: &str = "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75";
-    const HEAD: &str = "0f4a0e614e6f9629a7840d78d5cf6389fe9b68b09e7a8d0d3bdeb796ff575e44";
+    /// main b153b57 and #229 d7b50af (main merged), as run 46136817969 computed them.
+    const BASE: &str = "4751ed7f889c20c0b9b6cc504e79da7ba58e21e06b733ab73308530925311582";
+    /// main 70f908c, the base of every earlier head: not approved with this head.
+    const OLD_BASE: &str = "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75";
+    const HEAD: &str = "dddf1d272280a2b2c59e0710ae42e99e0931a4bafd6b5d389815a638cf83687e";
     /// #229's earlier heads c428401 (run 46091056203), db80380, 2d1a62b (run 46094928338, the pair
-    /// this approval was first bound to), 7588730 (run 46122244274) and ad68bda (run 46127991835): the
-    /// same observations, not approved.
-    const OLD_HEADS: [&str; 5] = [
+    /// this approval was first bound to), 7588730 (run 46122244274), ad68bda (run 46127991835) and
+    /// e430f25 (run 46131454116): the same observations, not approved.
+    const OLD_HEADS: [&str; 6] = [
         "05205f46e2eeddf814b656e017ae92796339e088179e9857505300cdca43bf07",
         "5f4a0a23dc8c0247784894ac07c1e23ca51e3dd9c46e96d6db94de2d70eb4a8a",
         "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
         "6f85545f52178f35a17b3c91ba71f11502924ea3c2c1ff4abcb9096e496a944e",
         "9a1798d11283006ab3f2531040c0ef3c156bf6502ff971305fe5b8a6ba7d7628",
+        "0f4a0e614e6f9629a7840d78d5cf6389fe9b68b09e7a8d0d3bdeb796ff575e44",
     ];
     const REVIEWED: [&str; 2] = ["shape-id-lookup", "shape-traverse-filtered"];
 
-    /// Every observation of run 46131454116's `results/native/semantic-transitions.json` (runs
-    /// 46094928338's, 46122244274's and 46127991835's are the same 73, row for row), in
+    /// Every observation of run 46136817969's `results/native/semantic-transitions.json` (runs
+    /// 46094928338's, 46122244274's, 46127991835's and 46131454116's are the same 73, row for row), in
     /// its order: (case, base query, head query, base response, head response) SHA-256.
     const PR229_OBSERVATIONS: &[(&str, &str, &str, &str, &str)] = &[
         (
@@ -1447,9 +1451,9 @@ mod pr229_approval {
 
     #[test]
     fn another_identity_pair_approves_nothing() {
-        let mut pairs = vec![(HEAD, BASE), (BASE, BASE)];
+        let mut pairs = vec![(HEAD, BASE), (BASE, BASE), (OLD_BASE, HEAD)];
         for old in OLD_HEADS {
-            pairs.extend([(BASE, old), (old, HEAD)]);
+            pairs.extend([(BASE, old), (OLD_BASE, old), (old, HEAD)]);
         }
         for (base, head) in pairs {
             let result = evaluate(base, head, &observations());
