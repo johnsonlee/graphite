@@ -171,6 +171,8 @@ Basis      = 直接观察(提取执行, 可选的输入内定位)
 
 两处已确认调用点属于同一调用服务 orders。即使 billing 的请求已完整采集，B2 的目标仍未决。补齐 legacy-worker 的请求只能消除该服务的采集缺口，B2 仍可能增加一个调用服务。最后两次核对假定补齐请求后没有新调用点，并已有新证据将 B2 解析到 sandbox-pay。此时还须确认服务清单完整，才能给出精确计数 1。计数函数分别返回已确认的下界和能够确立的精确值。
 
+最后两项零计数检查先在 test 中仅选择 orders，再将未检查的 legacy-worker 加入服务清单。
+
 现有拓扑按配置的 graphId 执行规则，对 (source, target, protocol) 汇总权重并去重 operation 和 evidence。可将上面的调用点结果投影到服务对，同时保留详细依据供反查；既有规则的权重仍按其原定义计算。旧工作流的每个注册图仍映射到一个服务，C4、拓扑与按 graphId 分组的 endpoints 保持既有契约。若要证明跨服务字段级数据流，还需序列化字段、协议版本以及对端解码映射等证据，单个端点匹配只能支持操作级影响。[拓扑查询契约](topology-graph.md) · [现有跨图规则示例](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 
 ## 8. 评审结论与待验证项
