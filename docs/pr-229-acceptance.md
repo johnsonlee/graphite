@@ -518,8 +518,12 @@ Neither removes or weakens a check. `:webgraph:largeCorpusTest` stays serial: it
 time whole-JAR builds and must not share the host.
 
 **Not addressed.**
-- The hosted numbers for the two changes are not in yet; the table above is a local
-  measurement, and the first CI run with them is the comparable record.
+- On hosted runners (one run each, `6925e90` before and `2f5f317` after, so run-to-run
+  variance is not separated out): the `./gradlew check` step went from 18.7 to 15.4 min with
+  the tests added since, and the unit-test job from 20.2 to 16.7 min. The CLI differential
+  step went from 3.2 to 2.8 min while growing from 228 to 238 cases, a smaller gain than the
+  local one. The Rust job as a whole went from 19.8 to 20.7 min, because it gained a check:
+  the same differential over an importer-written graph (1.4 min).
 - The benchmark job (32 min) is the longest path and is unchanged: it builds 64 graphs twice.
 - `:webgraph:test` is still bounded by the Android gate (4.5 min in one class).
 - `verify-affected.py` shortens the first feedback loop for a narrow change; it does not
