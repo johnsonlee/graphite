@@ -256,3 +256,48 @@ fn checked_range_progress_and_cancellation_remain_available_in_both_modes() {
         ));
     }
 }
+
+/// Integer arithmetic that leaves a long fails in both dialects, as `Math.addExact` does in
+/// the Kotlin engine: a wrapped value is a silently wrong answer.
+#[test]
+fn integer_overflow_is_an_error_in_both_dialects_and_division_truncates() {
+    for dialect in [Graphite, OpenCypherM23] {
+        for expression in [
+            "9223372036854775807 + 1",
+            "-9223372036854775807 - 2",
+            "9223372036854775807 * 2",
+            "(-9223372036854775807 - 1) / -1",
+        ] {
+            let error = Executor::new(vec![], false)
+                .with_dialect(dialect)
+                .execute(&format!("RETURN {expression} AS v"), None)
+                .unwrap_err();
+            assert_eq!(error.to_string(), "long overflow", "{expression}");
+        }
+        assert_eq!(value(dialect, "(-9223372036854775807 - 1) % -1"), json!(0));
+        assert_eq!(value(dialect, "7 / 2"), json!(3));
+        assert_eq!(value(dialect, "-7 / 2"), json!(-3));
+        assert_eq!(value(dialect, "7 % -3"), json!(1));
+        assert_eq!(value(dialect, "2 ^ 3"), json!(8.0));
+    }
+}
+
+#[test]
+fn substring_bounds_fail_with_the_engines_shared_message_instead_of_panicking() {
+    for (expression, message) in [
+        ("substring('abc', 5)", "begin 5, end 3, length 3"),
+        ("substring('abc', -1)", "begin -1, end 3, length 3"),
+        ("substring('abc', 2, -1)", "begin 2, end 1, length 3"),
+    ] {
+        let error = Executor::new(vec![], false)
+            .execute(&format!("RETURN {expression} AS v"), None)
+            .unwrap_err();
+        assert_eq!(error.to_string(), message, "{expression}");
+    }
+    assert_eq!(value(Graphite, "substring('abc', 1, 100)"), json!("bc"));
+    assert_eq!(
+        value(Graphite, "substring('abc', 1, 9223372036854775807)"),
+        json!("bc")
+    );
+    assert_eq!(value(Graphite, "substring('abc', 3)"), json!(""));
+}

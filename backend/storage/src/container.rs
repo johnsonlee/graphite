@@ -50,6 +50,39 @@ pub const REQUIRED_ENTRIES: [&str; 9] = [
     "graph.typeindex",
 ];
 
+/// Every file name a graph writer or reader may leave in a graph directory beside
+/// [`REQUIRED_ENTRIES`]: optional sidecars, files derived after the save (`backward.*`,
+/// `graph.nodeindex`), the frontends' fold reports and the manifest itself. Tools that
+/// must tell a graph directory from anything else ask [`is_known_graph_file`]; a new
+/// persisted file is added here once, and a sealed directory also names its files in
+/// `graph.manifest`.
+pub const OPTIONAL_ENTRIES: [&str; 20] = [
+    "graph.manifest",
+    "graph.nodeindex",
+    "graph.comparisons",
+    "graph.classoverview",
+    "graph.resources",
+    "graph.branchdefs",
+    "graph.labelprefix",
+    "graph.strings.identity",
+    "graph.types",
+    "graph.declared-keys",
+    "graph.declared-presence",
+    "graph.completeness",
+    "graph.callsite-ordinals",
+    "graph.callsite-string-index",
+    "graph.callsite-string-content.identity",
+    "graph.folds.json",
+    "graph.folds.plan.json",
+    "backward.graph",
+    "backward.offsets",
+    "backward.properties",
+];
+
+pub fn is_known_graph_file(name: &str) -> bool {
+    REQUIRED_ENTRIES.contains(&name) || OPTIONAL_ENTRIES.contains(&name)
+}
+
 /// The required entries absent from `names`, in [`REQUIRED_ENTRIES`] order.
 pub fn missing_required<'a>(names: impl Iterator<Item = &'a str>) -> Vec<&'static str> {
     let present: std::collections::HashSet<&str> = names.collect();
@@ -960,6 +993,38 @@ fn pack_files_unchecked(
             crc32: d.crc32,
             size: d.size,
         });
+    }
+    // A directory a writer sealed packs only as the files it sealed: the digests pack has
+    // just computed must be the ones the writer recorded, so a file changed or cut short
+    // after the save never reaches a container that then verifies as intact.
+    if let Some((_, sealed)) = files
+        .iter()
+        .find(|(name, _)| name == crate::manifest::FILE_NAME)
+    {
+        let bytes = std::fs::read(sealed)
+            .map_err(|e| ContainerError::Io(sealed.display().to_string(), e))?;
+        let sealed = crate::manifest::GraphManifest::parse(&bytes)
+            .map_err(|e| ContainerError::Corrupt(shown.clone(), e))?;
+        for (name, listed) in &sealed.entries {
+            match manifest.entries.get(name) {
+                Some(found) if found.size == listed.size && found.sha256 == listed.sha256 => {}
+                Some(_) => {
+                    return Err(ContainerError::Corrupt(
+                        shown,
+                        format!("{name} differs from {}", crate::manifest::FILE_NAME),
+                    ))
+                }
+                None => {
+                    return Err(ContainerError::Corrupt(
+                        shown,
+                        format!(
+                            "{name} is listed in {} but missing",
+                            crate::manifest::FILE_NAME
+                        ),
+                    ))
+                }
+            }
+        }
     }
     let text = manifest.render().into_bytes();
     let fingerprint = hex(&Sha256::digest(&text));

@@ -287,6 +287,8 @@ internal class ExploreGraphApiTest : ExploreCommandTestSupport() {
             GraphStore.save(emptyGraph, currentDir)
             GraphStore.save(emptyGraph, legacyDir)
             Files.delete(legacyDir.resolve("graph.resources"))
+            // A legacy store predates the manifest as well: a sealed graph missing a file it lists is refused at load.
+            Files.delete(legacyDir.resolve("graph.manifest"))
 
             val current = GraphStore.loadMapped(currentDir)
             try {

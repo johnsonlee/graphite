@@ -286,7 +286,11 @@ fn late_invalid_scalar_sids_keep_eager_panic_payloads_even_before_zero_limit() {
         std::fs::create_dir(&path).unwrap();
         for entry in std::fs::read_dir(source).unwrap() {
             let entry = entry.unwrap();
-            if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+            if entry.file_type().unwrap().is_file()
+                && entry.file_name() != "graph.nodedata"
+                // A copy that rewrites a file is a graph written before manifests.
+                && entry.file_name() != "graph.manifest"
+            {
                 std::fs::copy(entry.path(), path.join(entry.file_name())).unwrap();
             }
         }

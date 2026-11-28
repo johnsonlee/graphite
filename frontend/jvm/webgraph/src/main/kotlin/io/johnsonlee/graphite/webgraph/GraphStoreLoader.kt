@@ -39,12 +39,16 @@ internal fun loadEagerGraph(dir: Path): Graph {
     val labelBytes = labelsFuture.join()
 
     val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
-    val backward = lazy { loadBackwardGraph(dir, forward) }
+    // The generation this load reads: the transpose is derived from it, whatever the directory holds when it is first asked for.
+    val identity = GraphManifest.identity(dir)
+    val backward = lazy { loadBackwardGraph(dir, forward, identity) }
 
+    // Not a required file (graph-files.txt): a writer with no branch comparison to record writes none, as the importer of
+    // another frontend's graph does. A sealed directory that lists the file and lost it was refused above, by its size.
+    val comparisons = dir.resolve(GraphStore.COMPARISONS_FILE)
     val comparisonMap =
-        DataInputStream(BufferedInputStream(dir.resolve(GraphStore.COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
-        }
+        if (!Files.exists(comparisons)) emptyMap()
+        else DataInputStream(BufferedInputStream(comparisons.toFile().inputStream())).use { dis -> NodeSerializer.readComparisons(dis) }
     val comparisonLookup = MapBranchComparisonLookup(comparisonMap)
 
     val callSiteOrdinals = loadPersistedCallSiteOrdinals(dir)
@@ -73,11 +77,16 @@ internal fun loadEagerGraph(dir: Path): Graph {
                     dir, metadata, nodeCount, eagerBranchDefinitionNodeTags(nodesById))
             },
             lazy { DeclaredTypeStore.load(dir, stringTable) },
-            lazy { AnalysisCompletenessStore.load(dir) }))
+            AnalysisCompletenessStore.bind(dir).let { bound -> lazy { bound() } }))
 }
 
 @Suppress("TooGenericExceptionCaught")
-internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, persistentCallSiteStringIndex: Boolean): Graph {
+internal fun loadMappedGraph(
+    dir: Path,
+    prepareCallSiteStringIndex: Boolean,
+    persistentCallSiteStringIndex: Boolean,
+    closedMappings: ClosedGraphMappings = ClosedGraphMappings.process
+): Graph {
     require(Files.isDirectory(dir)) { graphNotDirectoryMessage(dir) }
 
     val (nodeDataVersion, nodeCount) = readGraphNodeDataHeader(dir)
@@ -100,7 +109,9 @@ internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, per
     val nodeIndex = joinGraphLoad(nodeIndexFuture)
     val methodCount = joinGraphLoad(methodCountFuture)
     val comparisonLookup = joinGraphLoad(comparisonFuture)
-    val backward = lazy { loadBackwardGraph(dir, forward) }
+    // The generation this load reads: the transpose is derived from it, whatever the directory holds when it is first asked for.
+    val identity = GraphManifest.identity(dir)
+    val backward = lazy { loadBackwardGraph(dir, forward, identity) }
     val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
     val metadata = lazy { loadGraphMetadataWithTrailer(dir, stringTable) }
     val branchDefinitions = lazy {
@@ -126,8 +137,13 @@ internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, per
                         // Query-only state: preserve the lazy reads, bindings and validation.
                         lazy { DeclaredTypeStore.load(dir, stringTable) },
                         lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) },
-                        lazy { AnalysisCompletenessStore.load(dir) })),
-            indexes = MappedIndexFiles(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE), persistentCallSiteStringIndex))
+                        AnalysisCompletenessStore.bind(dir).let { bound -> lazy { bound() } })),
+            indexes =
+                MappedIndexFiles(
+                    dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
+                    persistentCallSiteStringIndex,
+                    ClosedGraphMappings.mappableBytes(dir),
+                    closedMappings))
     if (prepareCallSiteStringIndex) {
         try {
             if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()

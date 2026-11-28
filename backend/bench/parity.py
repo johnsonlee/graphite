@@ -37,11 +37,17 @@ def strip_placeholder(o):
 
 # Rust-only additions to a Cypher response: the Kotlin server never emits them, so they
 # are dropped before comparing rather than reported as a divergence.
-RUST_ONLY = {"total"}  # {"value", "relation"}: whether rows exist past the limit
+RUST_ONLY = {
+    "total",  # {"value", "relation"}: whether rows exist past the limit
+    "offset", "nextOffset",  # paging over the server's row cap, checked by check_service
+}
 # Routes the Rust server serves and the Kotlin server never had: their OpenAPI entries
 # are dropped from the Rust document before it is compared with the baseline's, and
 # the routes themselves are checked on their own below (`check_schema`).
-RUST_ONLY_PATHS = {"/api/schema", "/api/graphs/{graphId}/schema"}
+RUST_ONLY_PATHS = {
+    "/api/schema", "/api/graphs/{graphId}/schema",
+    "/api/capabilities", "/api/hierarchy", "/api/graphs/{graphId}/hierarchy",
+}
 
 def norm(o):
     if isinstance(o, dict):
@@ -682,6 +688,58 @@ def check_schema():
 check_schema()
 
 
+# Query-service routes the Rust server adds (paging, hierarchy, capabilities): the Kotlin
+# server has none of them, so each is checked against the Rust server's own answers.
+SERVICE_CASES = [
+    ("GET", "/api/capabilities", None),
+    ("GET", "/api/graphs/app/hierarchy?type=java.lang.Object&limit=3", None),
+    ("GET", "/api/hierarchy?type=java.lang.Object&limit=3", None),
+    ("GET", "/api/graphs/missing/hierarchy?type=java.lang.Object", None),
+]
+
+def check_service():
+    global passed, failed
+    def record(label, ok, detail=""):
+        global passed, failed
+        if ok:
+            passed += 1
+        else:
+            failed += 1
+            failures.append((label, "differs", "", str(detail)[:300]))
+    for m, path, body in SERVICE_CASES:
+        ks, _ = fetch(KOTLIN, m, path, body)
+        rs, rb = fetch(RUST, m, path, body)
+        expected = 404 if "missing" in path else 200
+        record(f"{m} {path}: kotlin 404, rust {expected}", ks == 404 and rs == expected, rb)
+    # Pages of a cross-graph Cypher result concatenate to the result itself.
+    query = "MATCH (n:CallSite) RETURN n.caller_class AS c, n.callee_name AS m ORDER BY c, m"
+    whole = cypher_rows("/api/cypher?limit=60", query)
+    pages, offset = [], 0
+    while offset is not None and len(pages) < 60:
+        _, raw = fetch(RUST, "POST", "/api/cypher?limit=7", json.dumps({"query": query, "offset": offset}))
+        page = json.loads(raw)
+        pages.extend({k: v for k, v in row.items() if not k.startswith("$")} for row in page["rows"])
+        offset = page.get("nextOffset")
+    record("cypher pages concatenate to the whole result", pages[:60] == whole, pages[:3])
+    # The hierarchy walk pages the same way, and capabilities name every loaded graph.
+    def walk(limit):
+        types, offset = [], 0
+        while offset is not None:
+            _, raw = fetch(RUST, "GET", f"/api/graphs/app/hierarchy?type=java.lang.Object&depth=3&limit={limit}&offset={offset}")
+            page = json.loads(raw)
+            types.extend(t["type"] for t in page["types"])
+            offset = page["nextOffset"]
+        return types
+    record("hierarchy pages concatenate to one walk", walk(4) == walk(5000) and len(walk(5000)) > 0)
+    _, caps = fetch(RUST, "GET", "/api/capabilities")
+    _, graphs = fetch(RUST, "GET", "/api/graphs")
+    caps, graphs = json.loads(caps), json.loads(graphs)
+    record("capabilities name every loaded graph",
+           sorted(g["id"] for g in caps["graphs"]) == sorted(g["id"] for g in graphs["graphs"]), caps)
+
+check_service()
+
+
 # Dialect selection is a Rust-only additive contract. Exercise each of the six URL
 # parameters and three JSON fields separately, including body-over-URL precedence;
 # the Kotlin comparisons above retain every original request unchanged.
@@ -775,7 +833,7 @@ def spec_coverage():
         if m.lower() in ("get", "post", "put", "delete", "patch", "head")
     }
     exercised = set()
-    for m, path, _ in CASES + [(m, p, b) for m, p, b in CASES_MUTATING] + SCHEMA_CASES:
+    for m, path, _ in CASES + [(m, p, b) for m, p, b in CASES_MUTATING] + SCHEMA_CASES + SERVICE_CASES:
         p = path.split("?")[0]
         p = re.sub(r"/node/[^/]+", "/node/{id}", p)
         p = re.sub(r"/api/graphs/[^/]+/resources/.+", "/api/graphs/{graphId}/resources/{path}", p)

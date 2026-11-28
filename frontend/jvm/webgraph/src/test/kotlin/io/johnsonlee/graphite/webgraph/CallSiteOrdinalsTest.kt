@@ -76,6 +76,7 @@ class CallSiteOrdinalsTest {
             assertEquals(3, loaded[42])
             assertEquals(0, CallSiteOrdinals.load(file, ByteArray(32)).size, "bound to another graph")
             assertEquals(0, CallSiteOrdinals.load(file, null).size, "no binding")
+            unmappableFile()?.let { assertEquals(0, CallSiteOrdinals.load(it, digest).size, "a file that cannot be mapped") }
             write(sound, digest, 42, 3, 0)
             assertEquals(0, CallSiteOrdinals.load(file, digest).size, "trailing bytes")
             write(sound, digest, 42)

@@ -38,16 +38,22 @@ pub fn java_to_string(v: &Value, ctx: &dyn GraphContext) -> String {
             format!("{{{}}}", entries.join(", "))
         }
         Value::Node(n) => {
-            let mut entries = vec![
-                format!("id={}", n.id),
-                format!("type={}", ctx.node_type_name(*n)),
+            // The Kotlin node is a `LinkedHashMap`: `id` and `type` (the node's kind) first,
+            // then its properties, where `put` of a key already present replaces the value
+            // in place. A local variable's `type` property is its declared type, so it takes
+            // the kind's slot rather than printing a second `type` key.
+            let mut entries: Vec<(String, String)> = vec![
+                ("id".to_string(), n.id.to_string()),
+                ("type".to_string(), ctx.node_type_name(*n).to_string()),
             ];
             for (k, val) in ctx.node_display_properties(*n) {
-                if k == "id" {
-                    continue;
+                let rendered = java_to_string(&val, ctx);
+                match entries.iter_mut().find(|(key, _)| *key == k) {
+                    Some(entry) => entry.1 = rendered,
+                    None => entries.push((k, rendered)),
                 }
-                entries.push(format!("{k}={}", java_to_string(&val, ctx)));
             }
+            let entries: Vec<String> = entries.iter().map(|(k, v)| format!("{k}={v}")).collect();
             format!("{{{}}}", entries.join(", "))
         }
         Value::Rel(r) => {

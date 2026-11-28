@@ -498,6 +498,36 @@ impl<'a> Parser<'a> {
     }
 }
 
+/// Decodes Java's modified UTF-8 (`DataOutput.writeUTF`).
+pub fn decode_java_utf(b: &[u8]) -> String {
+    decode_modified_utf8(b)
+}
+
+/// `DataOutputStream.writeUTF`: a two-byte length, then modified UTF-8 (NUL as `C0 80`, a
+/// supplementary character as two three-byte surrogates). `None` when the encoding is longer
+/// than the 65,535 bytes the length can name, which `writeUTF` refuses too.
+pub fn encode_java_utf(s: &str) -> Option<Vec<u8>> {
+    let mut body = Vec::with_capacity(s.len());
+    for unit in s.encode_utf16() {
+        match unit {
+            0x0001..=0x007F => body.push(unit as u8),
+            0x0000 | 0x0080..=0x07FF => {
+                body.push(0xC0 | (unit >> 6) as u8);
+                body.push(0x80 | (unit & 0x3F) as u8);
+            }
+            _ => {
+                body.push(0xE0 | (unit >> 12) as u8);
+                body.push(0x80 | ((unit >> 6) & 0x3F) as u8);
+                body.push(0x80 | (unit & 0x3F) as u8);
+            }
+        }
+    }
+    let length = u16::try_from(body.len()).ok()?;
+    let mut out = length.to_be_bytes().to_vec();
+    out.extend(body);
+    Some(out)
+}
+
 fn decode_modified_utf8(b: &[u8]) -> String {
     // Modified UTF-8: like UTF-8 but NUL is encoded as C0 80 and supplementary
     // characters as surrogate pairs. Decode into UTF-16 units then to String.
@@ -543,3 +573,27 @@ pub fn read_object(data: &[u8]) -> R<Value> {
 #[cfg(test)]
 #[path = "javaser_reference_tests.rs"]
 mod reference_tests;
+
+#[cfg(test)]
+mod utf_tests {
+    use super::*;
+
+    #[test]
+    fn java_utf_round_trips_and_refuses_what_write_utf_refuses() {
+        for text in ["", "plain", "src/测试.js", "nul\u{0}inside", "🌍 and é"] {
+            let bytes = encode_java_utf(text).unwrap();
+            let length = u16::from_be_bytes([bytes[0], bytes[1]]) as usize;
+            assert_eq!(length, bytes.len() - 2, "{text:?}");
+            assert_eq!(decode_java_utf(&bytes[2..]), text);
+        }
+        // NUL is two bytes, never a zero byte; a supplementary character is two surrogates.
+        assert_eq!(encode_java_utf("\u{0}").unwrap(), [0, 2, 0xC0, 0x80]);
+        assert_eq!(
+            encode_java_utf("🌍").unwrap(),
+            [0, 6, 0xED, 0xA0, 0xBC, 0xED, 0xBC, 0x8D]
+        );
+        assert_eq!(encode_java_utf(&"x".repeat(65_535)).unwrap().len(), 65_537);
+        assert_eq!(encode_java_utf(&"x".repeat(65_536)), None);
+        assert_eq!(encode_java_utf(&"é".repeat(32_768)), None);
+    }
+}

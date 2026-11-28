@@ -627,24 +627,22 @@ impl<'a> Evaluator<'a> {
                 (Value::Int(a), Value::Int(b)) => (*a, *b),
                 _ => unreachable!(),
             };
-            return Ok(match op {
-                BinOp::Add => Value::Int(a.wrapping_add(b)),
-                BinOp::Sub => Value::Int(a.wrapping_sub(b)),
-                BinOp::Mul => Value::Int(a.wrapping_mul(b)),
-                BinOp::Div => {
-                    if b == 0 {
-                        return Err(CypherError::Runtime("Division by zero".into()));
-                    }
-                    Value::Int(a.wrapping_div(b))
-                }
-                BinOp::Mod => {
-                    if b == 0 {
-                        return Err(CypherError::Runtime("Division by zero".into()));
-                    }
-                    Value::Int(a.wrapping_rem(b))
-                }
+            if b == 0 && matches!(op, BinOp::Div | BinOp::Mod) {
+                return Err(CypherError::Runtime("Division by zero".into()));
+            }
+            // An integer result that does not fit a long is an error in both engines, never
+            // a wrapped value (Kotlin's Math.addExact and friends say "long overflow").
+            let exact = match op {
+                BinOp::Add => a.checked_add(b),
+                BinOp::Sub => a.checked_sub(b),
+                BinOp::Mul => a.checked_mul(b),
+                BinOp::Div => a.checked_div(b),
+                BinOp::Mod => a.checked_rem(b).or(Some(0)),
                 BinOp::Pow => unreachable!(),
-            });
+            };
+            return exact
+                .map(Value::Int)
+                .ok_or_else(|| CypherError::Runtime("long overflow".into()));
         }
         if !l.is_number() || !r.is_number() {
             return Ok(Value::Null);

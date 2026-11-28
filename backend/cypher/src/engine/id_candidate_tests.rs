@@ -465,7 +465,8 @@ fn variant(dir: &Path, lists: &[(u8, Vec<u32>)]) -> (Variant, Arc<Graph>) {
     std::fs::create_dir(&variant.0).unwrap();
     for entry in std::fs::read_dir(dir).unwrap() {
         let entry = entry.unwrap();
-        if entry.file_type().unwrap().is_file() {
+        // A copy that rewrites a file is a graph written before manifests.
+        if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.manifest" {
             std::fs::copy(entry.path(), variant.0.join(entry.file_name())).unwrap();
         }
     }

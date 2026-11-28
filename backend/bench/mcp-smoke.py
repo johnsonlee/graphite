@@ -105,7 +105,8 @@ def main():
     listed = stdio.request("tools/list")["result"]["tools"]
     names = [t["name"] for t in listed]
     expected = ["graphs", "openapi", "cypher", "node", "outgoing", "incoming", "annotations",
-                "endpoints", "resources", "resource", "subgraph", "overview", "c4", "schema"]
+                "endpoints", "resources", "resource", "subgraph", "overview", "c4", "schema",
+                "capabilities", "hierarchy"]
     if names != expected:
         fail(f"tools/list: {names}")
 
@@ -157,6 +158,12 @@ def main():
           text=True)
     check("schema", {"graph_id": first, "limit": 5}, "GET", f"/api/graphs/{first}/schema?limit=5")
     check("schema", {}, "GET", "/api/schema?limit=50")
+    check("capabilities", {}, "GET", "/api/capabilities")
+    check("hierarchy", {"type": "java.lang.Object", "graph_id": first, "depth": 2, "limit": 3, "offset": 3},
+          "GET", f"/api/graphs/{first}/hierarchy?type=java.lang.Object&depth=2&limit=3&offset=3")
+    check("hierarchy", {"type": "java.lang.Object"}, "GET", "/api/hierarchy?type=java.lang.Object")
+    check("cypher", {"query": "MATCH (n:CallSite) RETURN n.callee_name AS m ORDER BY m", "limit": 4, "offset": 4},
+          "POST", "/api/cypher?limit=4&offset=4", {"query": "MATCH (n:CallSite) RETURN n.callee_name AS m ORDER BY m"})
 
     # Node IDs are graph-local and the API has no all-graph node route (the Kotlin server
     # has none either), so these three tools require graph_id instead of answering 404.

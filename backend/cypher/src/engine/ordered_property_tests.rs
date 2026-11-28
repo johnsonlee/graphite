@@ -303,7 +303,11 @@ fn malformed_later_source_falls_back_without_changing_rows_or_provenance() {
         std::fs::create_dir(&directory).unwrap();
         for entry in std::fs::read_dir(source).unwrap() {
             let entry = entry.unwrap();
-            if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.typeindex" {
+            if entry.file_type().unwrap().is_file()
+                && entry.file_name() != "graph.typeindex"
+                // A copy that rewrites a file is a graph written before manifests.
+                && entry.file_name() != "graph.manifest"
+            {
                 std::fs::hard_link(entry.path(), directory.join(entry.file_name())).unwrap();
             }
         }
@@ -369,7 +373,11 @@ fn late_invalid_extra_projection_id_preserves_the_generic_panic() {
     std::fs::create_dir(&directory).unwrap();
     for entry in std::fs::read_dir(&graph.dir).unwrap() {
         let entry = entry.unwrap();
-        if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.nodedata" {
+        if entry.file_type().unwrap().is_file()
+                && entry.file_name() != "graph.nodedata"
+                // A copy that rewrites a file is a graph written before manifests.
+                && entry.file_name() != "graph.manifest"
+        {
             std::fs::hard_link(entry.path(), directory.join(entry.file_name())).unwrap();
         }
     }

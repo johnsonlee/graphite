@@ -66,6 +66,10 @@ object CypherFunctions {
             NodePropertyAccessor.getAllProperties(args[0] as Node, graph)
         } else if (name.equals("keys", ignoreCase = true)) {
             dynamicPropertyKeys(args[0], graph)
+        } else if (name.equals("analysisStatus", ignoreCase = true)) {
+            analysisStatusValue(args[0], graph)
+        } else if (name.equals("dispatchGap", ignoreCase = true)) {
+            dispatchGapValue(args[0], graph)
         } else {
             dispatch(name, args, checkCancelled)
         }

@@ -23,6 +23,7 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.HexFormat
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -175,6 +176,44 @@ class AnalysisCompletenessPersistenceTest {
         loaded(dir) { graph -> assertEquals(reachable, graph.analysisCompleteness()) }
     }
 
+    /**
+     * The file the Rust importer wrote for a JavaScript build (`graphite build --lang js` of a module that calls a body in the
+     * artifacts, a library binding, an unresolved import and a callback, beside an artifact that does not parse), byte for byte:
+     * `backend/storage/src/completeness.rs` reads the same bytes in `the_jvm_reads_the_sidecar_the_importer_writes`.
+     */
+    @Test
+    fun `the sidecar the Rust importer writes for a JavaScript build reads as the same evidence`() {
+        val dir = directory("completeness-rust-written")
+        val bytes = HexFormat.of().parseHex(
+            "4743500188a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b3781f8b08000000000000ff6d90d14a" +
+            "c3401045470b6d488b587df617fc87c96642173733cb66d224be2c167ca8da0afaffe8a6d5e08317160e87e1ceb000ffe52b" +
+            "e507979021a31b1ea984bb5f8a9dd58db41a8db00671b172d2a5c1a2d1804661cea8764bb06089859403e4968dd4de9112ac" +
+            "0335e25ab5c2b142eb52f19a7ae3da321517436c8c7882158b46ea3d72d29051af14d276b86af981a5e358535d504817ce60" +
+            "89de3b6b70ac8485b345c03040e61d6a25a13ecddc96b6f1a866135b3e1db04db537936c50db809adcf5e43c06b569e53933" +
+            "c8771fefafcfc7fbc3cb27cc61f1b6df8d783111407678da1fcf72c2bfff7a995e3ec20abe0172dfa85579010000c683ddae" +
+            "21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff"
+        )
+        Files.write(dir.resolve(AnalysisCompletenessStore.FILE_NAME), bytes)
+        Files.writeString(
+            dir.resolve("forward.properties"),
+            "graphite.nodeLayout.sha256=88a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b378\n" +
+                "graphite.completeness.sha256=c683ddae21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff\n"
+        )
+
+        val evidence = AnalysisCompletenessStore.load(dir)!!
+        assertEquals(
+            mapOf(
+                "broken.mjs" to ClassEvidence(null, AnalysisStatus.RESOLUTION_FAILED),
+                "lib.mjs" to ClassEvidence("lib.mjs", AnalysisStatus.ANALYZED),
+                "main.mjs" to ClassEvidence("main.mjs", AnalysisStatus.ANALYZED)
+            ),
+            evidence.classes
+        )
+        assertEquals(mapOf(10 to CallSiteGap.DISPATCH_UNRESOLVED, 12 to CallSiteGap.DISPATCH_UNRESOLVED), evidence.callSiteGaps)
+        assertTrue(evidence.methods.isEmpty() && evidence.artifacts.isEmpty() && evidence.duplicateClasses.isEmpty())
+        assertEquals(AnalysisIdentity(), evidence.scope, "a JavaScript build has no JVM scope")
+    }
+
     @Test
     fun `a graph without evidence writes no file and removes the one an earlier save left`() {
         val dir = directory("completeness-none")
@@ -208,6 +247,7 @@ class AnalysisCompletenessPersistenceTest {
         )
         val file = AnalysisCompletenessStore.FILE_NAME
         Files.copy(second.resolve(file), first.resolve(file), StandardCopyOption.REPLACE_EXISTING)
+        unsealGraph(first)
         assertNull(AnalysisCompletenessStore.load(first), "the node layout alone does not identify the evidence")
         loaded(first) { graph -> assertNull(graph.analysisCompleteness()) }
     }
@@ -219,6 +259,24 @@ class AnalysisCompletenessPersistenceTest {
         GraphStore.save(GraphStore.load(dir), dir)
         assertTrue(Files.isRegularFile(dir.resolve(AnalysisCompletenessStore.FILE_NAME)))
         loaded(dir) { graph -> assertEquals(completeness, graph.analysisCompleteness()) }
+    }
+
+    @Test
+    fun `a loaded graph keeps its own evidence after its directory is replaced`() {
+        val dir = directory("completeness-generation")
+        for (load in listOf<(Path) -> Graph>({ GraphStore.load(it) }, { GraphStore.loadMapped(it) })) {
+            GraphStore.save(graph(), dir)
+            val graph = load(dir)
+            try {
+                // A new save of the same path before the first status question.
+                GraphStore.save(graph(evidence = null), dir)
+                loaded(dir) { replaced -> assertNull(replaced.analysisCompleteness(), "the new graph has no evidence") }
+                assertEquals(completeness, graph.analysisCompleteness())
+                assertEquals(CallSiteGap.DISPATCH_PARTIAL, graph.analysisCompleteness()!!.callSiteGaps.getValue(5))
+            } finally {
+                (graph as? Closeable)?.close()
+            }
+        }
     }
 
     @Test
@@ -235,6 +293,7 @@ class AnalysisCompletenessPersistenceTest {
         assertFalse(Files.readAllBytes(file).contentEquals(Files.readAllBytes(foreign)))
 
         Files.copy(foreign, file, StandardCopyOption.REPLACE_EXISTING)
+        unsealGraph(first)
         assertNull(AnalysisCompletenessStore.load(first), "bound to the other graph's node layout")
         loaded(first) { assertNull(it.analysisCompleteness()) }
 
@@ -242,6 +301,7 @@ class AnalysisCompletenessPersistenceTest {
         val bytes = Files.readAllBytes(file)
         bytes[bytes.size - 40] = (bytes[bytes.size - 40].toInt() xor 1).toByte()
         Files.write(file, bytes)
+        unsealGraph(first)
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} does not match its digest",
             assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(first) }.message

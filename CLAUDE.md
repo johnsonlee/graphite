@@ -985,8 +985,144 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   wrong class's (review of #193); the resolved call seeds by `callSite.caller`. An APK beside its
   platform jar is a single-artifact input for the graph's origin index, which stays empty, but
   the evidence names the input location each class was read from, or the platform's classes read
-  as the APK's and no scope could name them. Not done: a Rust reader of the sidecar (no consumer,
-  and it would be a new gzip dependency for a file the Rust server never opens).
+  as the APK's and no scope could name them. The Rust reader (`graphite_storage::completeness`,
+  read on first use) answers `analysisStatus(x)`/`dispatchGap(c)` in both engines: without it the
+  production query path could not tell an unread body from one that calls nothing.
+
+### A Graph Directory Is Sealed, Saved Whole, and Numbered Per Build
+
+- `GraphStore.save` truncated files in place: `save(loadMapped(dir), dir)` left a graph with no
+  nodes, and a `backward.*` transpose derived from the previous graph in that directory answered
+  the new graph's `incoming()`. The save now fills a sibling staging directory and swaps it in
+  (`GraphDirectoryPublication`), refusing a target that holds anything but graph files, so no
+  writer keeps a list of stale files to delete.
+- Every writer seals the directory with `graph.manifest` (producer, storage format, size and
+  SHA-256 per file). Readers check sizes before decoding (one `stat` per file, so loading pays
+  nothing measurable); hashing is `verify`'s job, or `GRAPHITE_VERIFY_GRAPHS=1`'s. Before it, the
+  Rust reader padded a short `graph.labels` with zeros and decoded a truncated `forward.graph`,
+  answering queries from the wrong bytes. A file derived after the save names the manifest digest
+  it was derived from instead of being listed. A test that tampers with a file to reach a
+  reader's own validation unseals the directory first (`unsealGraph`).
+- `NodeId.next()` was one process-wide counter, and every persisted index is sized by the
+  largest id: the same input built twice in one JVM, with 1,000 ids allocated in between, wrote
+  a node offset index three times the size. `JavaProjectLoader` numbers each build from 1
+  (`NodeId.numbered`), and ids handed out afterwards stay above every built id.
+
+### Two Engines Drift Where Nothing Compares Them
+
+A differential probe of the same queries through `graphite query` and `graphite.jar query`
+found the Kotlin engine answering `7 / 2` with `3.5` and `2 ^ 3` with `8`, both engines
+mishandling `Long.MAX_VALUE + 1` (one wrapped, one widened to a double), Kotlin crashing in Gson
+on `sqrt(-1)`, printing a stack trace for `CREATE` and the last line (`^`) of a regex error, and
+Rust panicking on `substring('abc', 2, -1)`. Both now follow openCypher arithmetic, fail
+overflow with `long overflow`, and share one-line messages. Run such a probe whenever one engine
+changes a value or an error, and pin the agreed answer with a test in each engine.
+
+### A Test Must Be Able to Refute the Claim It Is Cited For
+
+Four review rounds of #229 found the same shape of defect: the test passed, and would have
+passed for a wrong implementation too.
+
+- The node schema's tests compared a record's length, so a schema that typed a field otherwise
+  or exchanged two fields of one encoding stayed green. Compare what a definition *says* (names,
+  types, values) to an independently written expectation, cover every variant the format has,
+  and commit the mutations that must fail (`a schema that names or types a field otherwise is
+  caught`). A claim like "every codec is held to the schema" is only as wide as the mutations
+  that refute it.
+- UNION paging was fixed three times from hand-picked cases. The contract ("every window is
+  a prefix of the unwindowed result, and reports a next page exactly when rows remain") written
+  first and checked over generated queries, with each operator chosen independently, found the
+  mixed `UNION`/`UNION ALL` defect and one `main` already had (`1 UNION 2 UNION ALL 1 UNION 3`
+  answered `3`: the merge seeded its keys on top of an earlier UNION's).
+- A write API needs its conflict rule before its first line: an extension's second annotation
+  of one name replaced the metadata entry and appended a second node. One fact in two
+  representations is written at one place, checked before either is touched. Note that the
+  metadata key is the member *name*: overloads carrying the same bytecode annotation share an
+  entry and have a node each, on `main` too.
+- A piped check reports the last command's status: `cargo clippy ... | tail` is green whatever
+  clippy said, and so is `gradlew ... | grep -v noise` red when nothing is left to print. Use
+  `set -o pipefail`, or write the log to a file and read the tool's own exit code; and read a
+  test report's timestamp and test count before calling it a pass (a failed compile or a
+  failed detekt leaves the previous run's XML in place).
+
+### A Forked Child Holds Every Descriptor Until It Execs
+
+Two flaky tests had one cause. `fork` copies the descriptor table, `O_CLOEXEC` closes the
+copies only at `exec`, and tests of one binary run on threads of one process, so while one
+test spawns a process another test's descriptors live on in the child for a moment: a freshly
+written executable is still open for writing (`ETXTBSY` on the TCK probe), and an `flock`,
+which belongs to the open file description, is still held after its owner dropped it
+(`only_one_recoverer_repairs_a_killed_publishers_exact_files`: both racing recoverers found the
+lock taken). Running the test alone never reproduces it (0 of 336); sixteen threads spawning
+`/bin/true` beside it do (48 of 60). A test must not assume a lock, or a file's write access, is
+released the instant its holder is dropped; wait for it with a deadline, and assert the
+property that holds under interference (never two winners) separately from the one that needs
+the resource free (one winner).
+
+### The Build JDK Must Not Shape a Baseline's Bytecode
+
+`GraphParityRegressionTest` failed on JDK 21 with 41 facts missing, all of
+`SwitchExample$1`: javac up to 20 lowers a switch over an enum through a synthetic
+`$SwitchMap$` class, and javac 21 and later switch on `ordinal()` directly when the enum is
+nested in the switching class, with any `--release`. The baseline records what the bytecode
+holds, so it held only under CI's JDK. The sample's enum is now a compilation unit of its own,
+which every javac lowers the same way (`javap` identical under 17 and 21). A corpus compiled
+by the build's own JDK is an input the test does not control; give it shapes every supported
+compiler lowers alike, and check a suspected compiler difference with `javap` under both.
+
+### A File Outside the Required List Is Optional for Every Reader
+
+`graph-files.txt` is the one list of required files, and both languages test their own
+constant against it, yet the JVM loaders opened `graph.comparisons` unconditionally, so
+`graphite.jar query` failed on every graph the Rust importer wrote. A list both sides agree on
+proves nothing about the readers until one side reads what the other wrote:
+`backend/storage/fixtures/importer-graph` is the importer's real output (a Rust test fails when
+its bytes move), the JVM test loads it, and CI runs the CLI differential over it. Absent means
+"none" only for a file the manifest does not list; a sealed directory that lists it and lost
+it is refused by the size check.
+
+### Graph IR Grows by Fields, Not by Chunk Kinds
+
+The IR promises that a reader ignores unknown fields, and the reader refuses a chunk whose
+`oneof` it cannot name ("IR chunk carries nothing"): a new chunk kind breaks every released
+jar, a new field of an existing message does not. Completeness evidence therefore rides the
+`Trailer`. The Swift bindings are checked in; regenerate them with the protoc the Gradle build
+pins and `protoc-gen-swift` built from the `swift-protobuf` checkout of `Package.resolved`
+(`--swift_opt=Visibility=Public`), and first confirm that pair reproduces the committed file
+from the committed proto. The Apple frontend builds and tests on Linux with the swift.org
+toolchain (`frontend/apple/swift.sh`), which is how its completeness was verified outside
+macOS; an index role or relation the model already reads (`dynamic`, `overrideOf`) may be
+unused downstream, so read the model before concluding a fact is unavailable.
+
+### A Closed Mapping Is Released by the Collector, and Removed Garbage May Have Been What Ran It
+
+The review of #229 measured the 64-graph construction fork's peak RSS 27% above the base in one
+pair and 20% below it in the next. Both described their run: the fork's peak is G1's committed
+heap, which differed by 40% between two runs of the base alone, and beneath that draw the
+candidate carried a component the base did not have (Attempt327). The fork ends by opening and
+closing every graph twice; a mapped graph's `close()` cannot unmap (JDK 17 has no supported
+call, and unmapping by hand behind a live reader reads freed memory), so its files stay mapped
+until a collection reaches the buffers. The base had been releasing them by accident: every
+load allocated arrays sized by the process-wide largest node id, humongous garbage that started
+a concurrent cycle per graph. #229 numbered each build from 1, the arrays shrank, the cycles
+stopped, and 0.5–0.8 GiB of closed graphs stayed mapped beside a heap no remark shrank.
+`ClosedGraphMappings` counts the mapped bytes of closed graphs and asks for a collection past a
+budget, as `java.nio` does for direct buffers. Lessons:
+
+- Split a peak RSS by phase and into anonymous and file-backed memory (`RssAnon` and `RssFile`
+  of `/proc/<pid>/status`, sampled beside the GC log) before reading a pair's difference. The
+  totals of base and candidate overlapped; the split showed a component only one of them had.
+- A measurement that does not reproduce on another host is still a finding to explain. The
+  first pair was set aside as noise on the strength of two Linux pairs whose totals happened to
+  favour the candidate, and whose samples were never split by phase.
+- Removing waste can remove a side effect something depended on: when a change deletes
+  allocation, ask what the collections it caused were doing for everything else.
+- Count the object that holds the resource. The first version watched the graph's context,
+  which a young collection frees while it promotes the buffers, and asked for one collection in
+  a read-back that needed several; watching the node-data buffer bounded the mappings in every
+  run. A mutation that swaps the watched object must fail a test.
+- A request to the collector needs a rate limit of its own: a caller that keeps its closed
+  graphs reachable is asked once per budget it closes, never once per close.
 
 ### Why `buildGraph()` Is Not Parallelized
 

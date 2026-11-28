@@ -7,6 +7,7 @@ import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
@@ -53,7 +54,10 @@ internal class MappedBranchComparisonLookup private constructor(
         private const val ENTRY_START = Int.SIZE_BYTES + Int.SIZE_BYTES
         private const val ENTRY_BYTES = Long.SIZE_BYTES + Int.SIZE_BYTES + Int.SIZE_BYTES
 
-        fun load(path: Path): BranchComparisonLookup {
+        /** The comparisons of the file at [path]; none when the graph's writer wrote no such file (it is not a required one). */
+        fun load(path: Path): BranchComparisonLookup = if (Files.exists(path)) read(path) else EmptyBranchComparisonLookup
+
+        private fun read(path: Path): BranchComparisonLookup {
             val count = DataInputStream(BufferedInputStream(path.toFile().inputStream())).use { dis ->
                 NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_COMPARISONS)
                 dis.readInt()

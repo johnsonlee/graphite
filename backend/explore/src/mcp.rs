@@ -109,6 +109,7 @@ pub fn tools() -> Vec<ToolDef> {
                     "graphs": {"type": "array", "items": {"type": "string"}, "description": "Explicit graph ids for /api/cypher/graphs"},
                     "mode": {"type": "string", "enum": ["cross-graph", "fanout"], "default": "cross-graph", "description": "One union query across graphs, or independent per-graph fan-out"},
                     "limit": {"type": "number", "description": "Maximum total result rows for the request"},
+                    "offset": {"type": "integer", "minimum": 0, "description": "Rows to skip: pass a response's nextOffset to fetch the next page (cross-graph mode)"},
                     "timeout_ms": {"type": "integer", "exclusiveMinimum": 0, "description": "Client timeout in milliseconds, capped by the server maximum (60 seconds by default)"},
                     "per_graph_limit": {"type": "number", "description": "Optional maximum result rows per graph for multi-graph queries"},
                     "include_graph_rows": {"type": "boolean", "default": false, "description": "Include duplicate per-graph row arrays in multi-graph responses"}
@@ -241,6 +242,26 @@ pub fn tools() -> Vec<ToolDef> {
                     "limit": {"type": "integer", "minimum": 0, "maximum": 1000, "default": 50, "description": "Maximum number of (labels)-[type]->(labels) patterns per graph, most frequent first"}
                 }),
                 &[],
+            ),
+        },
+        ToolDef {
+            name: "capabilities",
+            description: "What this server answers (dialects, pagination, Graphite functions, hierarchy bounds) and, per loaded graph, its producer, storage format and which facts were recorded, so an empty answer is not mistaken for an absent fact",
+            input_schema: schema(json!({}), &[]),
+        },
+        ToolDef {
+            name: "hierarchy",
+            description: "Walk the type hierarchy from a class or interface, bounded and resumable: subtypes or supertypes up to depth levels, at most limit types per page, continued with offset = the response's nextOffset",
+            input_schema: schema(
+                json!({
+                    "type": {"type": "string", "description": "Fully qualified type name"},
+                    "graph_id": graph_id_property("Explicit graph id; omit to walk every loaded graph"),
+                    "direction": {"type": "string", "enum": ["subtypes", "supertypes"], "default": "subtypes"},
+                    "depth": {"type": "integer", "minimum": 1, "default": 1, "description": "Levels to walk (at most 64)"},
+                    "limit": {"type": "integer", "minimum": 0, "default": 200, "description": "Types per page (at most 5000)"},
+                    "offset": {"type": "integer", "minimum": 0, "description": "Types to skip: a response's nextOffset"}
+                }),
+                &["type"],
             ),
         },
     ]
@@ -500,6 +521,21 @@ pub fn plan(tool: &str, args: &Map<String, Value>) -> Result<ApiCall, String> {
         })),
         "openapi" => Ok(ApiCall::get("/openapi.json".to_string())),
         "cypher" => plan_cypher(&a),
+        "capabilities" => Ok(ApiCall::get("/api/capabilities".to_string())),
+        "hierarchy" => {
+            let graph_id = a.string("graph_id")?;
+            let mut call = ApiCall::get(graph_api_path(graph_id.as_deref(), "/hierarchy"))
+                .param("type", a.required_string("type")?);
+            if let Some(direction) = a.string("direction")? {
+                call = call.param("direction", direction);
+            }
+            for key in ["depth", "limit", "offset"] {
+                if let Some(value) = a.number(key)? {
+                    call = call.param(key, number_text(&value));
+                }
+            }
+            Ok(call)
+        }
         "node" | "outgoing" | "incoming" => {
             let id = number_text(&a.required_number("id")?);
             // Node IDs are local to a graph and the API has no all-graph node route (the
@@ -612,6 +648,7 @@ fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
     let has_selected = selected.as_ref().is_some_and(|g| !g.is_empty());
     let mode = a.one_of("mode", &["cross-graph", "fanout"], "cross-graph")?;
     let limit = a.number("limit")?;
+    let offset = a.number("offset")?;
     let timeout_ms = a.positive_integer("timeout_ms")?;
     let per_graph_limit = a.number("per_graph_limit")?;
     let include_graph_rows = a.bool("include_graph_rows")?;
@@ -629,6 +666,9 @@ fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
     if !has_explicit_set && graph_id.is_none() && mode == "fanout" {
         return Err("fanout mode requires graphs or all_graphs=true".into());
     }
+    if mode == "fanout" && offset.is_some() {
+        return Err("offset is only valid in cross-graph mode".into());
+    }
     if mode == "cross-graph" && (per_graph_limit.is_some() || include_graph_rows) {
         return Err("per_graph_limit and include_graph_rows are only valid in fanout mode".into());
     }
@@ -639,6 +679,9 @@ fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
         }
         if let Some(limit) = &limit {
             call = call.param("limit", number_text(limit));
+        }
+        if let Some(offset) = &offset {
+            call = call.param("offset", number_text(offset));
         }
         if let Some(t) = timeout_ms {
             call = call.param("timeoutMs", t.to_string());
@@ -1270,7 +1313,9 @@ mod tests {
                 "subgraph",
                 "overview",
                 "c4",
-                "schema"
+                "schema",
+                "capabilities",
+                "hierarchy"
             ]
         );
         for tool in tools() {
@@ -1648,7 +1693,7 @@ mod tests {
             .handle(&json!({"jsonrpc": "2.0", "id": 4, "method": "tools/list"}))
             .await
             .unwrap();
-        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 14);
+        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 16);
         assert_eq!(list["result"]["tools"][0]["name"], "graphs");
         assert!(list["result"]["tools"][2]["inputSchema"]["properties"]["query"].is_object());
 
@@ -1981,7 +2026,7 @@ mod tests {
         let body: Value =
             serde_json::from_slice(&to_bytes(response.into_body(), usize::MAX).await.unwrap())
                 .unwrap();
-        assert_eq!(body["result"]["tools"].as_array().unwrap().len(), 14);
+        assert_eq!(body["result"]["tools"].as_array().unwrap().len(), 16);
 
         let accepted = app
             .clone()
@@ -2185,14 +2230,16 @@ mod tests {
     async fn every_mcp_message_counts_as_request_activity() {
         let (state, root) = empty_state(false);
         let server = McpServer::new(router(state.clone())).with_activity(state.clone());
-        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        // A frozen clock: each step is exact, however slowly the runner schedules the test.
+        state.freeze_clock();
+        state.advance_clock(std::time::Duration::from_millis(30));
         assert!(state.idle_for() >= std::time::Duration::from_millis(30));
         let pong = server
             .handle_text(r#"{"jsonrpc":"2.0","id":7,"method":"ping"}"#)
             .await
             .unwrap();
         assert!(pong.contains(r#""id":7"#), "{pong}");
-        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        assert_eq!(state.idle_for(), std::time::Duration::ZERO);
         // And one over the HTTP endpoint, mounted with the same activity.
         let app = with_mcp_route(
             router(state.clone()),
@@ -2200,7 +2247,7 @@ mod tests {
             None,
             Some(state.clone()),
         );
-        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        state.advance_clock(std::time::Duration::from_millis(30));
         assert!(state.idle_for() >= std::time::Duration::from_millis(30));
         let response = app
             .clone()
@@ -2216,19 +2263,19 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        assert_eq!(state.idle_for(), std::time::Duration::ZERO);
         // Refused or unparseable traffic is traffic: a line that fails to parse over
         // stdio, a GET the endpoint does not serve, a POST whose body is not JSON.
-        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        state.advance_clock(std::time::Duration::from_millis(30));
         assert!(state.idle_for() >= std::time::Duration::from_millis(30));
         assert!(server
             .handle_text("not json")
             .await
             .unwrap()
             .contains("Parse error"));
-        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        assert_eq!(state.idle_for(), std::time::Duration::ZERO);
         for (method, body) in [(Method::GET, ""), (Method::POST, "nope")] {
-            tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+            state.advance_clock(std::time::Duration::from_millis(30));
             assert!(state.idle_for() >= std::time::Duration::from_millis(30));
             let response = app
                 .clone()
@@ -2244,7 +2291,7 @@ mod tests {
                 .await
                 .unwrap();
             assert!(!response.status().is_success(), "{method} was refused");
-            assert!(state.idle_for() < std::time::Duration::from_millis(30));
+            assert_eq!(state.idle_for(), std::time::Duration::ZERO);
         }
         std::fs::remove_dir_all(root).ok();
     }

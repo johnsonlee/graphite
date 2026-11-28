@@ -246,7 +246,7 @@ class CypherClauseExecutionTest : CypherExecutorTestFixture() {
     fun `exponentiation operator in query`() {
         val result = executor.execute("RETURN 2 ^ 3 AS v")
         assertEquals(1, result.rows.size)
-        assertEquals(8L, result.rows[0]["v"])
+        assertEquals(8.0, result.rows[0]["v"])
     }
 
     @Test

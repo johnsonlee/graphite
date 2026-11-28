@@ -7,6 +7,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import sootup.core.inputlocation.AnalysisInputLocation
@@ -29,7 +30,8 @@ class GraphiteContextTest {
                 )
             },
             logger = { captured.add(it) },
-            resources = EmptyResourceAccessor
+            resources = EmptyResourceAccessor,
+            annotations = { _, _, _, _ -> }
         )
     }
 
@@ -85,10 +87,38 @@ class GraphiteContextTest {
         val ctx = GraphiteContext(
             methodDescriptorFactory = { expected },
             logger = {},
-            resources = EmptyResourceAccessor
+            resources = EmptyResourceAccessor,
+            annotations = { _, _, _, _ -> }
         )
 
         assertSame(expected, ctx.toMethodDescriptor(sootMethod))
+    }
+
+    @Test
+    fun `an annotation goes to the graph's writer, and one without a class, member or name is refused`() {
+        val written = mutableListOf<List<Any?>>()
+        val ctx = GraphiteContext(
+            methodDescriptorFactory = { error("unused") },
+            logger = {},
+            resources = EmptyResourceAccessor,
+            annotations = { className, memberName, annotation, values -> written += listOf(className, memberName, annotation, values) }
+        )
+
+        ctx.addMemberAnnotation("app.Routes", GraphiteContext.CLASS_MEMBER, "acme.Router", mapOf("prefix" to "/api"))
+        ctx.addMemberAnnotation("app.Routes", "list", "acme.Route")
+
+        val expected: List<List<Any?>> = listOf(
+            listOf("app.Routes", "<class>", "acme.Router", mapOf("prefix" to "/api")),
+            listOf("app.Routes", "list", "acme.Route", emptyMap<String, Any?>())
+        )
+        assertEquals(expected, written)
+        for ((className, memberName, annotation) in listOf(Triple("", "m", "a.B"), Triple("app.C", "", "a.B"), Triple("app.C", "m", ""))) {
+            val failure = assertFailsWith<IllegalArgumentException> {
+                ctx.addMemberAnnotation(className, memberName, annotation)
+            }
+            assertTrue(failure.message!!.startsWith("An annotation needs a class, a member and a name"), failure.message)
+        }
+        assertEquals(2, written.size, "nothing was written for the refused ones")
     }
 
     @Test

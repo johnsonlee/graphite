@@ -142,6 +142,13 @@ impl Snapshot {
         let directory = handle(path, true)?;
         let mut files = BTreeMap::new();
         let mut metadata_directory = None;
+        // A sealed directory names its own files; an unparsable manifest names none, and the
+        // load check below refuses the directory.
+        let sealed: Vec<String> = fs::read(path.join(graphite_storage::manifest::FILE_NAME))
+            .ok()
+            .and_then(|bytes| graphite_storage::manifest::GraphManifest::parse(&bytes).ok())
+            .map(|m| m.entries.into_keys().collect())
+            .unwrap_or_default();
         for item in fs::read_dir(path)? {
             let item = item?;
             if item.file_name() == "META-INF" {
@@ -158,7 +165,8 @@ impl Snapshot {
                 }
             } else {
                 let name = item.file_name();
-                if !known_graph_file(name.to_str().unwrap_or("")) {
+                let name_text = name.to_str().unwrap_or("");
+                if !known_graph_file(name_text) && !sealed.iter().any(|n| n == name_text) {
                     return Err(unrelated(&item.path()));
                 }
                 files.insert(PathBuf::from(name), fingerprint(&item.path())?);
@@ -220,28 +228,7 @@ fn unrelated(path: &Path) -> io::Error {
 }
 
 fn known_graph_file(name: &str) -> bool {
-    graphite_storage::container::REQUIRED_ENTRIES.contains(&name)
-        || matches!(
-            name,
-            "graph.nodeindex"
-                | "graph.comparisons"
-                | "graph.classoverview"
-                | "graph.resources"
-                | "graph.branchdefs"
-                | "graph.labelprefix"
-                | "graph.strings.identity"
-                | "graph.types"
-                | "graph.declared-keys"
-                | "graph.declared-presence"
-                | "graph.callsite-ordinals"
-                | "graph.callsite-string-index"
-                | "graph.callsite-string-content.identity"
-                | "graph.folds.json"
-                | "graph.folds.plan.json"
-                | "backward.graph"
-                | "backward.offsets"
-                | "backward.properties"
-        )
+    graphite_storage::container::is_known_graph_file(name)
 }
 
 fn fingerprint(path: &Path) -> io::Result<(Handle, [u8; 32])> {
@@ -419,9 +406,22 @@ mod tests {
         let file = out.join("graph.nodeoffsets");
         fs::write(&file, b"x").unwrap();
         let before = Snapshot::read(&out).unwrap();
-        assert!(DirectoryPublication::inspect(&out)
-            .unwrap_err()
-            .contains("could not be decoded"));
+        // The manifest names the damaged file before any reader decodes it.
+        let sealed = DirectoryPublication::inspect(&out).unwrap_err();
+        assert!(
+            sealed.contains("corrupt graph:")
+                && sealed.contains("graph.nodeoffsets: 1 bytes, but graph.manifest lists"),
+            "{sealed}"
+        );
+        before.require_unchanged(&out).unwrap();
+        // A directory written before manifests reaches the reader, whose panic is contained.
+        fs::remove_file(out.join(graphite_storage::manifest::FILE_NAME)).unwrap();
+        let before = Snapshot::read(&out).unwrap();
+        let legacy = DirectoryPublication::inspect(&out).unwrap_err();
+        assert!(
+            legacy.contains("could not be decoded") || legacy.contains("graph.nodeoffsets holds"),
+            "{legacy}"
+        );
         before.require_unchanged(&out).unwrap();
         assert_eq!(fs::read(file).unwrap(), b"x");
     }

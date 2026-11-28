@@ -83,12 +83,12 @@ internal fun buildForwardGraphData(
     return GraphStore.PrecomputedAdjacency(numNodes, targets, offsets) to labels
 }
 
-/** Build backward adjacency from forward BVGraph. */
-internal fun loadBackwardGraph(dir: Path, forward: ImmutableGraph): ImmutableGraph =
-    loadPersistedBackwardGraph(dir)
+/** Build backward adjacency from forward BVGraph; [identity] is the manifest digest the graph was loaded with. */
+internal fun loadBackwardGraph(dir: Path, forward: ImmutableGraph, identity: String?): ImmutableGraph =
+    loadPersistedBackwardGraph(dir, identity)
         ?: run {
             val backward = buildBackwardGraphFromForward(forward)
-            persistAndLoadBackwardGraph(dir, backward) ?: compressAndLoadTransientBackwardGraph(backward) ?: backward
+            persistAndLoadBackwardGraph(dir, backward, identity) ?: compressAndLoadTransientBackwardGraph(backward) ?: backward
         }
 
 /**

@@ -146,7 +146,9 @@ fn infer(expr: &Expr, scope: &Scope) -> Kind {
             "count" | "size" | "length" | "id" | "timestamp" | "tointeger" | "toint" => Kind::Int,
             "tostring" | "tolower" | "toupper" | "tolowercase" | "touppercase" | "trim"
             | "ltrim" | "rtrim" | "left" | "right" | "replace" | "substring" | "type"
-            | "elementid" | "qualifiedid" | "graphid" => Kind::String,
+            | "elementid" | "qualifiedid" | "graphid" | "analysisstatus" | "dispatchgap" => {
+                Kind::String
+            }
             "tofloat" | "avg" | "percentilecont" | "percentiledisc" | "stdev" | "stdevp" => {
                 Kind::Float
             }
@@ -240,6 +242,8 @@ fn signature(name: &str) -> Option<(usize, usize)> {
         | "elementid"
         | "qualifiedid"
         | "graphid"
+        | "analysisstatus"
+        | "dispatchgap"
         | "exists"
         | "tointeger"
         | "toint"

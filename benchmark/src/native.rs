@@ -619,6 +619,7 @@ fn stage(
         started,
         QUERY_TIMEOUT_MS,
         false,
+        PORT,
     )
 }
 
@@ -638,6 +639,9 @@ fn stage_with_timeout(
     started: Instant,
     timeout_ms: u64,
     capture_resources: bool,
+    // The server's port: `PORT` for the managed server, an ephemeral one in tests, so a
+    // test never depends on 18080 being free on the host.
+    port: u16,
 ) -> Result<Vec<Value>> {
     use std::sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -671,7 +675,7 @@ fn stage_with_timeout(
                     let mut wire_ms = None;
                     let result = (|| -> Result<Value> {
                         ensure!(started.elapsed() < SUITE_TIMEOUT, "Native suite work budget exhausted");
-                        let (bytes, ms) = request_at_timeout(client, &format!("http://127.0.0.1:{PORT}/api/cypher"), &case.query, &path, timeout_ms)?;
+                        let (bytes, ms) = request_at_timeout(client, &format!("http://127.0.0.1:{port}/api/cypher"), &case.query, &path, timeout_ms)?;
                         wire_ms = Some(ms);
                         let body = response(&bytes, ids)?;
                         validate_semantics(case, &body, node_count)?;
@@ -1506,7 +1510,9 @@ mod tests {
             atomic::{AtomicUsize, Ordering},
             Arc,
         };
-        let listener = std::net::TcpListener::bind(("127.0.0.1", PORT)).unwrap();
+        // An ephemeral port: the test must not depend on 18080 being free on the host.
+        let listener = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let port = listener.local_addr().unwrap().port();
         let active = Arc::new(AtomicUsize::new(0));
         let peak = Arc::new(AtomicUsize::new(0));
         let seen_peak = peak.clone();
@@ -1571,7 +1577,7 @@ mod tests {
             selectivity: "catalog".into(),
         }];
         let mut samples = Vec::new();
-        let result = stage(
+        let result = stage_with_timeout(
             &mut process,
             &client,
             "pressure",
@@ -1584,6 +1590,9 @@ mod tests {
             &output,
             &mut samples,
             Instant::now(),
+            QUERY_TIMEOUT_MS,
+            false,
+            port,
         )
         .unwrap();
         process.terminate().unwrap();

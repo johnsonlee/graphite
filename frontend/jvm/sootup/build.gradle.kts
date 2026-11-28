@@ -66,7 +66,9 @@ extensions.getByType(KotlinJvmProjectExtension::class.java).sourceSets
 dependencies {
     api(project(":core"))
 
-    implementation(libs.sootup.core)
+    // GraphiteExtension.visit(SootClass, ...) and GraphiteContext.toMethodDescriptor(SootMethod) are this module's
+    // extension SPI: a module that implements an extension compiles against these types, so they are API.
+    api(libs.sootup.core)
     implementation(libs.sootup.java.core)
     implementation(libs.sootup.java.bytecode.frontend)
     implementation(libs.sootup.apk.frontend)

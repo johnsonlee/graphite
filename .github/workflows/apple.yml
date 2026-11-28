@@ -126,6 +126,18 @@ jobs:
         grep -Fx '"checkout(order:method:)"' "${RUNNER_TEMP}/tool.csv"
         "${Q}" query "${G}" "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.caller_class = 'AcmeShopTool.Tool' AND c.callee_name = 'init(id:items:)' RETURN s.value" -f csv | grep -Fx '"order-1"'
 
+    # What the build analysed and what it could not, as both query engines answer it for a
+    # package whose calls cover each dispatch case (a real SwiftPM build of the fixture).
+    - name: Completeness evidence end to end (real build, both engines)
+      shell: bash
+      env:
+        GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+        GRAPHITE_FRONTEND_APPLE: frontend/apple/.build/release/graphite-frontend-apple
+      run: |
+        set -euo pipefail
+        python3 backend/bench/apple-completeness-e2e.py target/release/graphite \
+          frontend/jvm/query/build/libs/graphite.jar frontend/apple/Fixtures/Dispatch
+
     # The installed path: the tarball the publish workflow ships, served from a
     # directory over file://, installed with checksum verification into a fresh HOME,
     # found by `frontend list`, and driven by `graphite build` on the package itself

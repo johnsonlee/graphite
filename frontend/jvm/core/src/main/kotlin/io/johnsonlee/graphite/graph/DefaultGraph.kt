@@ -194,6 +194,9 @@ private constructor(
             return this
         }
 
+        override fun hasMemberAnnotation(className: String, memberName: String, annotationFqn: String): Boolean =
+            memberAnnotations["$className#$memberName"]?.containsKey(annotationFqn) == true
+
         override fun addLocalDefinitions(localNodeId: NodeId, definitions: IntArray): FullGraphBuilder {
             localDefinitions.put(localNodeId.value, definitions)
             return this

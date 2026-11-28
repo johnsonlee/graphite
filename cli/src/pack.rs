@@ -33,8 +33,8 @@ pub struct UnpackArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct VerifyArgs {
-    /// A .graphite file
-    #[arg(value_name = "ARCHIVE")]
+    /// A .graphite file, or a graph directory sealed with graph.manifest
+    #[arg(value_name = "GRAPH")]
     input: PathBuf,
     /// Print one line per entry
     #[arg(long, short = 'v')]
@@ -115,7 +115,35 @@ pub fn info(args: InfoArgs) -> Result<(), String> {
 }
 
 pub fn verify(args: VerifyArgs) -> Result<(), String> {
-    verify_file(&args.input, args.verbose)
+    if args.input.is_dir() {
+        verify_dir(&args.input)
+    } else {
+        verify_file(&args.input, args.verbose)
+    }
+}
+
+/// A graph directory is checked against the `graph.manifest` its writer sealed it with.
+fn verify_dir(dir: &Path) -> Result<(), String> {
+    let src = graphite_storage::GraphSource::open(dir).map_err(|e| e.to_string())?;
+    let manifest = graphite_storage::manifest::read(&src)?;
+    let failures = graphite_storage::manifest::verify(&src)?;
+    match manifest {
+        Some(m) if failures.is_empty() => {
+            println!(
+                "OK: {} files verified in {}\nproducer: {}\nfingerprint: {}",
+                m.entries.len(),
+                dir.display(),
+                m.producer().unwrap_or("-"),
+                m.digest
+            );
+            Ok(())
+        }
+        _ => Err(format!(
+            "{} failed verification:\n  {}",
+            dir.display(),
+            failures.join("\n  ")
+        )),
+    }
 }
 
 fn verify_file(file: &Path, verbose: bool) -> Result<(), String> {
@@ -246,6 +274,76 @@ mod tests {
             verbose: false
         })
         .is_err());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn a_sealed_directory_verifies_and_a_damaged_one_neither_verifies_nor_packs() {
+        let root = tempdir("sealed");
+        let src = root.join("g");
+        graph_fixture(&src);
+        let manifest = graphite_storage::manifest::GraphManifest::write_dir(&src).unwrap();
+        assert_eq!(manifest.entries.len(), REQUIRED_ENTRIES.len());
+        let dir = |input: &Path| VerifyArgs {
+            input: input.to_path_buf(),
+            verbose: false,
+        };
+        verify(dir(&src)).unwrap();
+        // The seal travels inside the container, and packing re-checks it.
+        pack(PackArgs {
+            inputs: vec![src.clone()],
+            output: root.join("ok.graphite"),
+        })
+        .unwrap();
+        assert!(Container::open(&root.join("ok.graphite"))
+            .unwrap()
+            .bytes(graphite_storage::manifest::FILE_NAME)
+            .is_some());
+
+        std::fs::write(src.join("graph.labels"), b"graph.labelz").unwrap();
+        let err = verify(dir(&src)).unwrap_err();
+        assert!(err.contains("failed verification"), "{err}");
+        assert!(
+            err.contains("graph.labels: expected 12 bytes sha256"),
+            "{err}"
+        );
+        let err = pack(PackArgs {
+            inputs: vec![src.clone()],
+            output: root.join("bad.graphite"),
+        })
+        .unwrap_err();
+        assert!(
+            err.ends_with("graph.labels differs from graph.manifest"),
+            "{err}"
+        );
+        assert!(!root.join("bad.graphite").exists());
+
+        std::fs::remove_file(src.join("graph.labels")).unwrap();
+        let err = pack(PackArgs {
+            inputs: vec![src.clone()],
+            output: root.join("bad.graphite"),
+        })
+        .unwrap_err();
+        assert!(err.contains("not a graph: missing graph.labels"), "{err}");
+
+        let legacy = root.join("legacy");
+        graph_fixture(&legacy);
+        let err = verify(dir(&legacy)).unwrap_err();
+        assert!(err.contains("graph.manifest: missing"), "{err}");
+        std::fs::write(legacy.join("graph.manifest"), "garbage").unwrap();
+        assert!(verify(dir(&legacy))
+            .unwrap_err()
+            .contains("has no seal line"));
+        let err = pack(PackArgs {
+            inputs: vec![legacy.clone()],
+            output: root.join("garbage.graphite"),
+        })
+        .unwrap_err();
+        assert!(err.contains("has no seal line"), "{err}");
+        // A manifest cut back to its header certified zero files before the seal.
+        std::fs::write(legacy.join("graph.manifest"), "graphite-graph 1\n").unwrap();
+        let err = verify(dir(&legacy)).unwrap_err();
+        assert!(err.contains("has no seal line"), "{err}");
         std::fs::remove_dir_all(root).unwrap();
     }
 

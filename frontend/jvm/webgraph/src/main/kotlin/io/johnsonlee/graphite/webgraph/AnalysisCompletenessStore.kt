@@ -80,11 +80,22 @@ internal object AnalysisCompletenessStore {
      * directory records no binding or no node layout, or the file is another save's: its trailer
      * is not the digest the directory recorded, or it carries another node layout.
      */
-    fun load(dir: Path): AnalysisCompleteness? {
+    fun load(dir: Path): AnalysisCompleteness? = bind(dir)()
+
+    /**
+     * Maps the evidence of [dir] as a load finds it and returns its reader, which parses on first use. The mapping pins the bytes the
+     * load saw: a directory replaced afterwards (a new save of the same path) keeps serving the loaded graph its own evidence, never
+     * the new graph's.
+     */
+    fun bind(dir: Path): () -> AnalysisCompleteness? {
         val layout = ForwardProperties.read(dir, ForwardProperties.NODE_LAYOUT_KEY)
         val binding = ForwardProperties.read(dir, ForwardProperties.COMPLETENESS_KEY)
-        val bytes = if (layout != null && binding != null) fileBytes(dir.resolve(FILE_NAME)) else null
-        return bytes?.takeIf { boundTo(it, layout!!, binding!!) }?.let(::readBound)
+        val mapped = if (layout != null && binding != null) mapFile(dir.resolve(FILE_NAME)) else null
+        return {
+            mapped?.let { buffer -> ByteArray(buffer.remaining()).also { buffer.duplicate().get(it) } }
+                ?.takeIf { boundTo(it, layout!!, binding!!) }
+                ?.let(::readBound)
+        }
     }
 
     /** Whether [bytes] is the sidecar the directory recorded: its trailer is [binding] and it carries [layout]. */
@@ -113,7 +124,14 @@ internal object AnalysisCompletenessStore {
         }
     }
 
-    private fun fileBytes(path: Path): ByteArray? = if (Files.isRegularFile(path)) Files.readAllBytes(path) else null
+    private fun mapFile(path: Path): java.nio.ByteBuffer? =
+        if (!Files.isRegularFile(path)) {
+            null
+        } else {
+            java.nio.channels.FileChannel.open(path, java.nio.file.StandardOpenOption.READ).use { channel ->
+                channel.map(java.nio.channels.FileChannel.MapMode.READ_ONLY, 0, channel.size())
+            }
+        }
 
     internal fun write(out: DataOutputStream, completeness: AnalysisCompleteness) {
         val scope = completeness.scope

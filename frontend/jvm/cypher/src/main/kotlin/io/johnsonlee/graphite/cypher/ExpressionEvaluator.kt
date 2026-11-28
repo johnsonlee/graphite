@@ -166,11 +166,11 @@ private constructor(
 
         return when (expr.op) {
             "+" -> addValues(left, right, checkCancelled)
-            "-" -> arithmeticValues(left, right) { a, b -> a - b }
-            "*" -> arithmeticValues(left, right) { a, b -> a * b }
-            "/" -> arithmeticValues(left, right) { a, b -> if (b == 0.0) throw CypherException("Division by zero") else a / b }
-            "%" -> arithmeticValues(left, right) { a, b -> a % b }
-            "^" -> arithmeticValues(left, right) { a, b -> Math.pow(a, b) }
+            "-" -> integerOrFloat(left, right, Math::subtractExact) { a, b -> a - b }
+            "*" -> integerOrFloat(left, right, Math::multiplyExact) { a, b -> a * b }
+            "/" -> integerOrFloat(left, right, ::divideExact, ::divideFloat)
+            "%" -> integerOrFloat(left, right, ::remainderExact, ::remainderFloat)
+            "^" -> Math.pow(expressionNumber(left), expressionNumber(right))
             else -> throw CypherException("Unknown operator: ${expr.op}")
         }
     }
@@ -495,7 +495,14 @@ private sealed interface CompiledCypherRegex {
 }
 
 private class JavaCypherRegex(pattern: String) : CompiledCypherRegex {
-    private val pattern = Pattern.compile(pattern)
+    // A pattern that does not compile fails the query with the one-line message the Rust engine gives, not the multi-line
+    // PatternSyntaxException text whose last line is a caret.
+    private val pattern =
+        try {
+            Pattern.compile(pattern)
+        } catch (_: java.util.regex.PatternSyntaxException) {
+            throw CypherException("Unsupported regex construct in pattern: $pattern")
+        }
 
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
         val input = checkCancelled?.let { CancellationAwareCharSequence(value, it) } ?: value

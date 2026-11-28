@@ -17,7 +17,9 @@ function records() {
   const nodes = [{ id: 0, kind: 'DoubleConstant', value: -0 }, { id: 1, kind: 'IntConstant', value: 0 },
     { id: 2, kind: 'StringConstant', value: 'abc🙂"\\\n'.repeat(32768) }];
   const edges = Array.from({ length: 2048 }, (_, i) => ({ from: i, to: i + 1, kind: 'ASSIGN' }));
-  return { version: 1, methods: [method], nodes, edges, classOrigins: [{ className: 'm', origin: 'example.js' }] };
+  return { version: 1, methods: [method], nodes, edges, classOrigins: [{ className: 'm', origin: 'example.js' }],
+    completeness: { classes: [{ className: 'm', status: 'ANALYZED' }, { className: 'broken.js', status: 'RESOLUTION_FAILED' }],
+      callSiteGaps: [{ id: 7, gap: 'DISPATCH_UNRESOLVED' }] } };
 }
 
 test('bounded short writes round-trip every array, UTF-8 data and signed zero', t => {
@@ -44,7 +46,7 @@ test('one large inline literal has linear encoder input and preserves pairs acro
   // Put the first emoji across a natural input window, then change alignment
   // repeatedly with ASCII, BMP, supplementary characters and JSON escapes.
   node.value = 'A'.repeat(Math.floor(64 * 1024 / 3) - prefix - 1) + '🙂' + 'A界🙂"\\'.repeat(256 * 1024);
-  const graph = { version: 1, methods: [], nodes: [node], edges: [], classOrigins: [] };
+  const graph = { version: 1, methods: [], nodes: [node], edges: [], classOrigins: [], completeness: { classes: [], callSiteGaps: [] } };
   const expected = JSON.stringify(graph);
   let offered = 0, largest = 0;
   const encode = TextEncoder.prototype.encodeInto;

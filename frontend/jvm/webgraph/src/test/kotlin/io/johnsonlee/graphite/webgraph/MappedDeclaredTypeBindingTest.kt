@@ -214,6 +214,7 @@ class MappedDeclaredTypeBindingTest {
     fun `a presence sidecar of another table reads as absent and a corrupted one refuses`() = fixture { dir, graph ->
         val file = dir.resolve(DeclaredPresence.FILE_NAME)
         val original = Files.readAllBytes(file)
+        unsealGraph(dir)
         Files.write(file, byteArrayOf(0, 1, 2))
         assertNull(presence(dir, graph), "a truncated header cannot carry a declaration presence answer")
         Files.write(file, original)

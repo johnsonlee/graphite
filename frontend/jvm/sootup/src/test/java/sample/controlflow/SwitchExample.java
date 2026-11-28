@@ -20,7 +20,7 @@ public class SwitchExample {
         }
     }
 
-    public String enumSwitch(Status status) {
+    public String enumSwitch(SwitchStatus status) {
         switch (status) {
             case ACTIVE: return "running";
             case INACTIVE: return "stopped";
@@ -41,6 +41,4 @@ public class SwitchExample {
         }
         return result;
     }
-
-    enum Status { ACTIVE, INACTIVE }
 }

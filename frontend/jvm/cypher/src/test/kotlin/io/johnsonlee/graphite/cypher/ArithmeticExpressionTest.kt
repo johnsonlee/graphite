@@ -42,7 +42,7 @@ class ArithmeticExpressionTest : ExpressionEvaluatorTestFixture() {
     @Test
     fun `power operator`() {
         val expr = CypherExpr.BinaryOp("^", lit(2), lit(3))
-        assertEquals(8L, eval(expr))
+        assertEquals(8.0, eval(expr), "exponentiation is always a float in openCypher")
     }
 
     @Test
@@ -246,5 +246,45 @@ class ArithmeticExpressionTest : ExpressionEvaluatorTestFixture() {
         val list2 = CypherExpr.ListLiteral(listOf(lit(2)))
         // Just ensure it doesn't throw - result is toString comparison
         eval(CypherExpr.Comparison("=", list1, list2))
+    }
+
+    @Test
+    fun `integer arithmetic that leaves a long is an error, not a wrapped or widened value`() {
+        for ((op, left, right) in listOf(
+            Triple("+", Long.MAX_VALUE, 1L),
+            Triple("-", Long.MIN_VALUE, 1L),
+            Triple("*", Long.MAX_VALUE, 2L),
+            Triple("/", Long.MIN_VALUE, -1L))) {
+            val failure = kotlin.test.assertFailsWith<CypherException> { eval(CypherExpr.BinaryOp(op, lit(left), lit(right))) }
+            assertEquals("long overflow", failure.message, "$left $op $right")
+        }
+        assertEquals(0L, eval(CypherExpr.BinaryOp("%", lit(Long.MIN_VALUE), lit(-1L))))
+        for ((op, left, right) in listOf(Triple("%", 1, 0), Triple("%", 1.0, 0.0), Triple("/", 1, 0), Triple("/", 1.0, 0.0))) {
+            val failure = assertFailsWith<CypherException> { eval(CypherExpr.BinaryOp(op, lit(left), lit(right))) }
+            assertEquals("Division by zero", failure.message, "$left $op $right")
+        }
+        assertEquals(3L, eval(CypherExpr.BinaryOp("/", lit(7), lit(2))))
+        assertEquals(1.5, eval(CypherExpr.BinaryOp("%", lit(7.5), lit(2))))
+        assertEquals(3.5, eval(CypherExpr.BinaryOp("/", lit(7), lit(2.0))))
+    }
+
+    @Test
+    fun `substring bounds fail with the message the Rust engine gives on every JDK`() {
+        for ((args, message) in listOf(
+            listOf<Any?>("abc", 5L) to "begin 5, end 3, length 3",
+            listOf<Any?>("abc", -1L) to "begin -1, end 3, length 3",
+            listOf<Any?>("abc", 2L, -1L) to "begin 2, end 1, length 3")) {
+            assertEquals(message, assertFailsWith<CypherException> { CypherFunctions.call("substring", args) }.message)
+        }
+        assertEquals("bc", CypherFunctions.call("substring", listOf("abc", 1L, 100L)))
+        assertEquals("bc", CypherFunctions.call("substring", listOf("abc", 1L, Long.MAX_VALUE)))
+        assertEquals("", CypherFunctions.call("substring", listOf("abc", 3L, Long.MAX_VALUE)))
+        assertEquals("", CypherFunctions.call("substring", listOf("abc", 3L)))
+    }
+
+    @Test
+    fun `a pattern that does not compile fails with the Rust engine's one-line message`() {
+        val failure = assertFailsWith<CypherException> { eval(CypherExpr.RegexMatch(lit("x"), lit("["))) }
+        assertEquals("Unsupported regex construct in pattern: [", failure.message)
     }
 }

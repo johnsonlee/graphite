@@ -49,6 +49,9 @@ internal class MappedGraphContext(
     internal val analysisCompleteness = sidecars.declarations.analysisCompleteness
     internal val callSiteStringIndexFile = indexes.callSiteStringIndexFile
     internal val persistentCallSiteStringIndexEnabled = indexes.persistentCallSiteStringIndexEnabled
+    internal val mappedBytes = indexes.mappedBytes
+    internal val closedMappings = indexes.closedMappings
+    internal val closed = java.util.concurrent.atomic.AtomicBoolean()
 
     internal val resources: ResourceAccessor
         get() = resourceAccessor.value

@@ -120,6 +120,165 @@ struct InputGraph {
     edges: Vec<InputEdge>,
     #[serde(default)]
     class_origins: Vec<ClassOrigin>,
+    /// The type hierarchy: each type with its direct supertypes (`extends` and
+    /// `implements`), which the metadata stores in both directions.
+    #[serde(default)]
+    supertypes: Vec<TypeSupertypes>,
+    /// What the frontend did with the code it was given (`docs/analysis-completeness.md`).
+    /// Absent: the frontend records none, and the graph answers `null` to a status question.
+    #[serde(default)]
+    completeness: Option<InputCompleteness>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct InputCompleteness {
+    /// Every class (for JavaScript, a module or a class in one) the frontend read or failed to
+    /// read. A class named nowhere here was never loaded and reads `EXTERNAL`.
+    #[serde(default)]
+    classes: Vec<ClassStatus>,
+    /// Methods whose status is not `ANALYZED`; a method of `methods` without an entry was read.
+    #[serde(default)]
+    methods: Vec<MethodStatus>,
+    /// Call sites whose callee the frontend could not resolve to a body.
+    #[serde(default)]
+    call_site_gaps: Vec<InputCallSiteGap>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct ClassStatus {
+    class_name: String,
+    status: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MethodStatus {
+    method: Method,
+    status: String,
+    #[serde(default)]
+    message: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InputCallSiteGap {
+    id: u32,
+    gap: String,
+}
+
+/// `class.name(descriptor)return`, as `MethodDesc::identity` spells a stored method.
+fn method_identity(m: &Method) -> String {
+    let mut out = format!("{}.{}(", m.declaring_class, m.name);
+    for parameter in &m.parameter_types {
+        crate::node::push_type_descriptor(parameter, &mut out);
+    }
+    out.push(')');
+    crate::node::push_type_descriptor(&m.return_type, &mut out);
+    out
+}
+
+fn validate_completeness(g: &InputGraph, c: &InputCompleteness) -> Result<(), ImportError> {
+    use crate::completeness::{GAPS, STATUSES};
+    let status = |name: &str| {
+        if STATUSES.contains(&name) {
+            Ok(())
+        } else {
+            Err(invalid(format!("unknown completeness status {name}")))
+        }
+    };
+    let mut classes = HashSet::new();
+    for class in &c.classes {
+        status(&class.status)?;
+        if !classes.insert(class.class_name.as_str()) {
+            return Err(invalid(format!(
+                "completeness names the class {} twice",
+                class.class_name
+            )));
+        }
+    }
+    let mut methods = HashSet::new();
+    for method in &c.methods {
+        status(&method.status)?;
+        let identity = method_identity(&method.method);
+        if !methods.insert(identity.clone()) {
+            return Err(invalid(format!(
+                "completeness names the method {identity} twice"
+            )));
+        }
+    }
+    let mut gaps = HashSet::new();
+    for gap in &c.call_site_gaps {
+        if !GAPS.contains(&gap.gap.as_str()) {
+            return Err(invalid(format!("unknown dispatch gap {}", gap.gap)));
+        }
+        let call_site = g
+            .nodes
+            .get(gap.id as usize)
+            .is_some_and(|record| matches!(record.node, InputNode::CallSite { .. }));
+        if !call_site || !gaps.insert(gap.id) {
+            return Err(invalid(format!(
+                "dispatch gap {} must name one call site, once",
+                gap.id
+            )));
+        }
+    }
+    Ok(())
+}
+
+/// The `graph.completeness` sidecar for `c`, bound to the node data just encoded.
+fn encode_completeness(
+    g: &InputGraph,
+    c: &InputCompleteness,
+    node_data: &[u8],
+) -> Result<Vec<u8>, ImportError> {
+    use sha2::Digest;
+    let origins: HashMap<&str, &str> = g
+        .class_origins
+        .iter()
+        .map(|o| (o.class_name.as_str(), o.origin.as_str()))
+        .collect();
+    let evidence = crate::completeness::Evidence {
+        classes: c
+            .classes
+            .iter()
+            .map(|class| {
+                (
+                    class.class_name.clone(),
+                    origins
+                        .get(class.class_name.as_str())
+                        .map(|o| o.to_string()),
+                    class.status.clone(),
+                )
+            })
+            .collect(),
+        methods: c
+            .methods
+            .iter()
+            .map(|m| {
+                (
+                    method_identity(&m.method),
+                    m.status.clone(),
+                    m.message.clone(),
+                )
+            })
+            .collect(),
+        call_site_gaps: c
+            .call_site_gaps
+            .iter()
+            .map(|gap| (gap.id, gap.gap.clone()))
+            .collect(),
+    };
+    crate::completeness::encode(&evidence, sha2::Sha256::digest(node_data).into()).map_err(invalid)
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TypeSupertypes {
+    #[serde(rename = "type")]
+    type_name: String,
+    supertypes: Vec<String>,
 }
 
 /// Validate a frontend JSON document, then create a new graph directory.
@@ -132,7 +291,8 @@ pub fn import_json(reader: impl Read, output: &Path) -> Result<(), ImportError> 
     std::fs::create_dir(output)?;
     let result = files
         .into_iter()
-        .try_for_each(|(name, bytes)| std::fs::write(output.join(name), bytes));
+        .try_for_each(|(name, bytes)| std::fs::write(output.join(name), bytes))
+        .and_then(|()| crate::manifest::GraphManifest::write_dir(output).map(|_| ()));
     if result.is_err() {
         let _ = std::fs::remove_dir_all(output);
     }
@@ -150,8 +310,12 @@ fn validate(g: &InputGraph) -> Result<(), ImportError> {
         || g.edges.len() > i32::MAX as usize
         || g.methods.len() > i32::MAX as usize
         || g.class_origins.len() > i32::MAX as usize
+        || g.supertypes.len() > i32::MAX as usize
     {
         return Err(invalid("graph exceeds signed 32-bit format limits"));
+    }
+    if let Some(completeness) = &g.completeness {
+        validate_completeness(g, completeness)?;
     }
     let valid_id = |id: u32| (id as usize) < g.nodes.len();
     for (id, record) in g.nodes.iter().enumerate() {
@@ -305,6 +469,10 @@ fn graph_strings(g: &InputGraph) -> HashSet<&str> {
     }
     for origin in &g.class_origins {
         strings.extend([origin.class_name.as_str(), &origin.origin]);
+    }
+    for entry in &g.supertypes {
+        strings.insert(entry.type_name.as_str());
+        strings.extend(entry.supertypes.iter().map(String::as_str));
     }
     strings
 }
@@ -470,9 +638,26 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
     for m in &g.methods {
         method(&mut metadata, m, &dictionary);
     }
-    for _ in 0..3 {
-        int(&mut metadata, 0);
-    } // super/subtypes, enums
+    // Supertypes as given, subtypes as their inverse, both in a fixed order; no enums.
+    let mut subtypes: std::collections::BTreeMap<&str, Vec<&str>> = Default::default();
+    int(&mut metadata, g.supertypes.len());
+    for entry in &g.supertypes {
+        sid(&mut metadata, &entry.type_name);
+        int(&mut metadata, entry.supertypes.len());
+        for parent in &entry.supertypes {
+            sid(&mut metadata, parent);
+            subtypes.entry(parent).or_default().push(&entry.type_name);
+        }
+    }
+    int(&mut metadata, subtypes.len());
+    for (parent, children) in &subtypes {
+        sid(&mut metadata, parent);
+        int(&mut metadata, children.len());
+        for child in children {
+            sid(&mut metadata, child);
+        }
+    }
+    int(&mut metadata, 0); // enums
     int(&mut metadata, g.class_origins.len());
     for origin in &g.class_origins {
         sid(&mut metadata, &origin.class_name);
@@ -520,7 +705,16 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
     if labels.is_empty() {
         labels.push(0);
     }
-    Ok(vec![
+    let mut properties = properties;
+    let completeness = match &g.completeness {
+        Some(c) => {
+            let sidecar = encode_completeness(g, c, &data)?;
+            properties.push_str(&crate::completeness::binding_properties(&sidecar));
+            Some(sidecar)
+        }
+        None => None,
+    };
+    let mut files = vec![
         ("graph.nodedata", data),
         ("graph.nodeoffsets", offsets),
         ("graph.nodeindex", index),
@@ -531,7 +725,11 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
         ("forward.graph", bits.bytes),
         ("forward.offsets", offset_bits.bytes),
         ("forward.properties", properties.into_bytes()),
-    ])
+    ];
+    if let Some(sidecar) = completeness {
+        files.push((crate::completeness::FILE_NAME, sidecar));
+    }
+    Ok(files)
 }
 
 #[derive(Default)]
@@ -681,6 +879,259 @@ mod tests {
             {"from":3,"to":0,"kind":"ASSIGN"},
             {"from":3,"to":4,"kind":"ASSIGN"}]})
     }
+    /// The graph directory committed beside the crate is what the importer writes today, so the
+    /// JVM test that reads that directory (`ImporterGraphInteropTest.kt`) reads the importer's
+    /// real output and not a copy that went stale. `GRAPHITE_UPDATE_IMPORTER_FIXTURE=1`
+    /// rewrites it after an intended change of the importer's bytes.
+    #[test]
+    fn the_committed_importer_graph_is_what_the_importer_writes() {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures");
+        let committed = fixtures.join("importer-graph");
+        let temp = Temp::new();
+        let written = temp.0.join("graph");
+        let json = std::fs::read(fixtures.join("importer-graph.json")).unwrap();
+        import_json(json.as_slice(), &written).unwrap();
+        let files = |dir: &Path| -> std::collections::BTreeMap<String, Vec<u8>> {
+            std::fs::read_dir(dir)
+                .unwrap()
+                .map(|entry| entry.unwrap())
+                .map(|entry| {
+                    let name = entry.file_name().into_string().unwrap();
+                    (name, std::fs::read(entry.path()).unwrap())
+                })
+                .collect()
+        };
+        let mut now = files(&written);
+        if std::env::var_os("GRAPHITE_UPDATE_IMPORTER_FIXTURE").is_some() {
+            let _ = std::fs::remove_dir_all(&committed);
+            std::fs::create_dir(&committed).unwrap();
+            for (name, bytes) in &now {
+                std::fs::write(committed.join(name), bytes).unwrap();
+            }
+        }
+        let mut then = files(&committed);
+        // The importer writes no branch comparisons: the file is not a required one, and a
+        // reader that insisted on it (the JVM's did) could not open this graph.
+        assert!(!now.contains_key("graph.comparisons"));
+        for required in crate::container::REQUIRED_ENTRIES {
+            assert!(now.contains_key(required), "{required}");
+        }
+        // The manifest names the producer's version, which moves with every release; it is
+        // compared by what it seals.
+        let sealed = |manifest: Vec<u8>| -> Vec<String> {
+            String::from_utf8(manifest)
+                .unwrap()
+                .lines()
+                .filter(|line| !line.starts_with('@'))
+                .map(str::to_string)
+                .collect()
+        };
+        let (now_manifest, then_manifest) = (
+            sealed(now.remove("graph.manifest").unwrap()),
+            sealed(then.remove("graph.manifest").unwrap()),
+        );
+        assert_eq!(
+            now.keys().collect::<Vec<_>>(),
+            then.keys().collect::<Vec<_>>()
+        );
+        for (name, bytes) in &now {
+            assert!(
+                bytes == &then[name],
+                "{name} differs from the committed fixture; if the change is intended, run with \
+                 GRAPHITE_UPDATE_IMPORTER_FIXTURE=1 and commit backend/storage/fixtures"
+            );
+        }
+        // The committed directory is a sealed graph in its own right.
+        assert_eq!(now_manifest, then_manifest);
+        assert_eq!(
+            crate::manifest::verify(&crate::source::GraphSource::open(&committed).unwrap())
+                .unwrap(),
+            Vec::<String>::new()
+        );
+    }
+
+    /// `fixture()` with what a frontend recorded about it.
+    fn with_completeness(completeness: serde_json::Value) -> serde_json::Value {
+        let mut graph = fixture();
+        graph["completeness"] = completeness;
+        graph
+    }
+
+    #[test]
+    fn recorded_completeness_is_persisted_bound_and_answered() {
+        let abstract_method = json!({"declaringClass":"src/测试.js", "name":"later", "parameterTypes":["int[]"], "returnType":"void"});
+        let graph = with_completeness(json!({
+            "classes": [
+                {"className": "src/测试.js", "status": "ANALYZED"},
+                {"className": "src/broken.js", "status": "RESOLUTION_FAILED"}],
+            "methods": [{"method": abstract_method, "status": "NO_BODY", "message": "declared only"}],
+            "callSiteGaps": [{"id": 3, "gap": "DISPATCH_UNRESOLVED"}]}));
+        let t = Temp::new();
+        let out = t.0.join("graph");
+        import_json(graph.to_string().as_bytes(), &out).unwrap();
+        // Sealed with the rest of the directory, and bound to this save's node data.
+        let manifest = std::fs::read_to_string(out.join("graph.manifest")).unwrap();
+        assert!(manifest.contains("graph.completeness"), "{manifest}");
+        let properties = std::fs::read_to_string(out.join("forward.properties")).unwrap();
+        let layout = {
+            use sha2::Digest;
+            let digest = sha2::Sha256::digest(std::fs::read(out.join("graph.nodedata")).unwrap());
+            digest
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>()
+        };
+        assert!(properties.contains(&format!("graphite.nodeLayout.sha256={layout}\n")));
+        assert!(
+            crate::manifest::verify(&crate::source::GraphSource::open(&out).unwrap())
+                .unwrap()
+                .is_empty()
+        );
+
+        let g = Graph::load(&out).unwrap();
+        // A method of the graph was read; a recorded method answers its record.
+        assert_eq!(
+            g.analysis_status(&g.methods()[0]).unwrap(),
+            Some("ANALYZED")
+        );
+        assert_eq!(g.dispatch_gap(3).unwrap(), Some("DISPATCH_UNRESOLVED"));
+        assert_eq!(g.dispatch_gap(2).unwrap(), None);
+        let evidence = &g.completeness().unwrap().unwrap().evidence;
+        assert_eq!(
+            evidence.status_of("src/测试.js", "src/测试.js.later([I)V", false),
+            "NO_BODY"
+        );
+        assert_eq!(
+            evidence.methods["src/测试.js.later([I)V"].1.as_deref(),
+            Some("declared only")
+        );
+        // An analysed class without the member, a class that failed, a class never loaded.
+        assert_eq!(
+            evidence.status_of("src/测试.js", "src/测试.js.nope()V", false),
+            "UNKNOWN_MEMBER"
+        );
+        assert_eq!(
+            evidence.status_of("src/broken.js", "src/broken.js.f()V", false),
+            "RESOLUTION_FAILED"
+        );
+        assert_eq!(
+            evidence.status_of("lib.js", "lib.js.f()V", false),
+            "EXTERNAL"
+        );
+        assert_eq!(
+            evidence.classes["src/测试.js"],
+            (Some("example".to_string()), "ANALYZED")
+        );
+        assert_eq!(
+            evidence.classes["src/broken.js"],
+            (None, "RESOLUTION_FAILED")
+        );
+
+        // The same evidence is the same file, whatever order the frontend listed it in.
+        let reordered = with_completeness(json!({
+            "callSiteGaps": [{"id": 3, "gap": "DISPATCH_UNRESOLVED"}],
+            "methods": [{"method": abstract_method, "status": "NO_BODY", "message": "declared only"}],
+            "classes": [
+                {"className": "src/broken.js", "status": "RESOLUTION_FAILED"},
+                {"className": "src/测试.js", "status": "ANALYZED"}]}));
+        let again = t.0.join("again");
+        import_json(reordered.to_string().as_bytes(), &again).unwrap();
+        assert_eq!(
+            std::fs::read(out.join("graph.completeness")).unwrap(),
+            std::fs::read(again.join("graph.completeness")).unwrap()
+        );
+    }
+
+    #[test]
+    fn a_graph_without_recorded_completeness_has_no_sidecar_and_answers_nothing() {
+        let t = Temp::new();
+        let out = t.0.join("graph");
+        import_json(fixture().to_string().as_bytes(), &out).unwrap();
+        assert!(!out.join("graph.completeness").exists());
+        let properties = std::fs::read_to_string(out.join("forward.properties")).unwrap();
+        assert!(!properties.contains("graphite.nodeLayout"), "{properties}");
+        let g = Graph::load(&out).unwrap();
+        assert_eq!(g.analysis_status(&g.methods()[0]).unwrap(), None);
+        assert_eq!(g.dispatch_gap(3).unwrap(), None);
+        // An empty record is still a record: every class is then one the frontend never read.
+        let empty = t.0.join("empty");
+        import_json(with_completeness(json!({})).to_string().as_bytes(), &empty).unwrap();
+        let g = Graph::load(&empty).unwrap();
+        assert_eq!(
+            g.analysis_status(&g.methods()[0]).unwrap(),
+            Some("ANALYZED")
+        );
+        assert_eq!(g.dispatch_gap(3).unwrap(), None);
+    }
+
+    #[test]
+    fn invalid_completeness_is_rejected_before_anything_is_written() {
+        let method =
+            json!({"declaringClass":"a.js", "name":"f", "parameterTypes":[], "returnType":"void"});
+        let long = "x".repeat(70_000);
+        for (completeness, expected) in [
+            (
+                json!({"classes":[{"className":"a.js","status":"FINE"}]}),
+                "unknown completeness status FINE",
+            ),
+            (
+                json!({"classes":[{"className":"a.js","status":"UNKNOWN_MEMBER"}]}),
+                "unknown completeness status UNKNOWN_MEMBER",
+            ),
+            (
+                json!({"classes":[{"className":"a.js","status":"ANALYZED"},{"className":"a.js","status":"EXTERNAL"}]}),
+                "names the class a.js twice",
+            ),
+            (
+                json!({"methods":[{"method":method,"status":"MAYBE"}]}),
+                "unknown completeness status MAYBE",
+            ),
+            (
+                json!({"methods":[{"method":method,"status":"NATIVE"},{"method":method,"status":"ABSTRACT"}]}),
+                "names the method a.js.f()V twice",
+            ),
+            (
+                json!({"callSiteGaps":[{"id":3,"gap":"LOST"}]}),
+                "unknown dispatch gap LOST",
+            ),
+            (
+                json!({"callSiteGaps":[{"id":2,"gap":"DISPATCH_PARTIAL"}]}),
+                "dispatch gap 2 must name one call site",
+            ),
+            (
+                json!({"callSiteGaps":[{"id":99,"gap":"DISPATCH_PARTIAL"}]}),
+                "dispatch gap 99 must name one call site",
+            ),
+            (
+                json!({"callSiteGaps":[{"id":3,"gap":"DISPATCH_PARTIAL"},{"id":3,"gap":"DISPATCH_PARTIAL"}]}),
+                "dispatch gap 3 must name one call site",
+            ),
+            (
+                json!({"classes":[{"className":long,"status":"ANALYZED"}]}),
+                "cannot hold a name longer than 65535 bytes",
+            ),
+        ] {
+            let t = Temp::new();
+            let out = t.0.join("graph");
+            let error = import_json(with_completeness(completeness).to_string().as_bytes(), &out)
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains(expected), "{error}");
+            assert!(!out.exists(), "{expected}");
+        }
+        // An unknown key is a document this importer does not understand.
+        let t = Temp::new();
+        let error = import_json(
+            with_completeness(json!({"scope": []}))
+                .to_string()
+                .as_bytes(),
+            &t.0.join("graph"),
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(error.contains("unknown field `scope`"), "{error}");
+    }
+
     fn assert_graph(g: &Graph) {
         assert_eq!(g.node_count(), 10);
         assert_eq!(g.node_version(), 3);
@@ -794,6 +1245,8 @@ mod tests {
                 .collect::<Vec<_>>()
                 .join("\n");
             std::fs::write(&path, text).unwrap();
+            // The edit stands for a writer that declared another hint: seal what it wrote.
+            crate::manifest::GraphManifest::write_dir(&dir).unwrap();
         };
         let expected = crate::Graph::load(&dir).unwrap().forward.targets;
         for hint in [0, u64::from(u32::MAX)] {

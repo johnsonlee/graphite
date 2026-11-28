@@ -9,7 +9,10 @@ private const val MIN_COLUMN_WIDTH = 4
 internal class QueryResultPrinter(private val gson: Gson) {
     fun print(result: CypherResult, format: String) {
         when (format.lowercase()) {
-            "json" -> println(gson.toJson(mapOf("columns" to result.columns, "rows" to result.rows, "rowCount" to result.rows.size)))
+            "json" ->
+                println(
+                    gson.toJson(
+                        mapOf("columns" to result.columns, "rows" to result.rows.map(::jsonSafe), "rowCount" to result.rows.size)))
             "csv" -> printCsv(result)
             else -> printText(result)
         }
@@ -21,6 +24,19 @@ internal class QueryResultPrinter(private val gson: Gson) {
             result.rows.forEach { row -> println(result.columns.joinToString(",") { column -> csvValue(row[column]) }) }
         }
     }
+
+    /**
+     * JSON has no NaN or infinity, and Gson refuses them: written as their Java text, as the Rust CLI writes them, so `sqrt(-1)` is
+     * `"NaN"` in both rather than a crash in one.
+     */
+    private fun jsonSafe(value: Any?): Any? =
+        when (value) {
+            is Double -> if (value.isFinite()) value else value.toString()
+            is Float -> if (value.isFinite()) value else value.toString()
+            is List<*> -> value.map(::jsonSafe)
+            is Map<*, *> -> value.mapValues { (_, v) -> jsonSafe(v) }
+            else -> value
+        }
 
     private fun csvValue(value: Any?): String = if (value is String) "\"${value.replace("\"", "\"\"")}\"" else value?.toString() ?: ""
 

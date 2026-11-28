@@ -74,6 +74,13 @@ val graphOverrideProperties = listOf(
     "kotlin.compiler.graph.path"
 )
 
+// The writer records its version in every graph manifest (`@producer graphite-jvm <version>`).
+tasks.named<ProcessResources>("processResources") {
+    val producerVersion = project.version.toString()
+    inputs.property("producerVersion", producerVersion)
+    filesMatching("io/johnsonlee/graphite/webgraph/producer.properties") { expand("version" to producerVersion) }
+}
+
 dependencies {
     add("jmhImplementation", kotlin("test"))
     api(project(":core"))
@@ -145,6 +152,10 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
 // Correctness entrypoints remain in the standalone harness JAR and are exercised by unit tests.
 // includeTests=false below prevents the reverse dependency or packaging tests into that JAR.
 sourceSets.test {
+    // The node record's one definition, which the codecs of both languages are tested against.
+    resources.srcDir(rootProject.file("backend/storage/schema"))
+    // The graph directory the Rust importer writes (`importer-graph/`), which the JVM reader must open.
+    resources.srcDir(rootProject.file("backend/storage/fixtures"))
     compileClasspath += sourceSets.named("jmh").get().output
     runtimeClasspath += sourceSets.named("jmh").get().runtimeClasspath
 }
@@ -225,6 +236,10 @@ tasks.test {
     maxHeapSize = "4g"
     // The Android fixture must prove the 4 GiB gate without inheriting heap from prior tests.
     forkEvery = 1
+    // Two classes at a time, each still in its own fresh JVM. The Android gate is one class and
+    // more than half of this task's test time; run alone it left the other classes waiting behind
+    // it, and the task took 9 minutes where 5 do. Two 4 GiB heaps stay within a 16 GiB runner.
+    maxParallelForks = 2
     exclude("**/*CorpusPerformanceGateTest.class")
     inputs.files(androidDeclaredTypesFixture).withPropertyName("androidDeclaredTypesFixture")
     doFirst {

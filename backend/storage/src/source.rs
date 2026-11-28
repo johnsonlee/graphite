@@ -82,6 +82,22 @@ impl GraphSource {
         }
     }
 
+    /// The file's size without reading it, `None` when it is absent.
+    pub fn size(&self, name: &str) -> Result<Option<u64>, IoAt> {
+        match self {
+            GraphSource::Container(c) => Ok(c.bytes(name).map(|b| b.len() as u64)),
+            GraphSource::Dir(d) => {
+                let path = d.join(name);
+                match std::fs::metadata(&path) {
+                    Ok(meta) if meta.is_file() => Ok(Some(meta.len())),
+                    Ok(_) => Ok(None),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+                    Err(e) => Err((path.display().to_string(), e)),
+                }
+            }
+        }
+    }
+
     /// The file's bytes; an absent file is a not-found error naming it.
     pub fn require(&self, name: &str) -> Result<Bytes, IoAt> {
         self.bytes(name)?.ok_or_else(|| {

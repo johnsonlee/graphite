@@ -215,6 +215,16 @@
           },
           {
             "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
             "name": "timeoutMs",
             "required": false,
             "description": "Positive client timeout in milliseconds, capped by the server maximum",
@@ -277,6 +287,16 @@
             "description": "Server-side maximum result rows",
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
             }
           },
           {
@@ -408,6 +428,16 @@
           },
           {
             "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
             "name": "timeoutMs",
             "required": false,
             "description": "Positive client timeout in milliseconds, capped by the server maximum",
@@ -479,6 +509,16 @@
             "description": "Maximum total result rows across queried graphs",
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
             }
           },
           {
@@ -848,6 +888,16 @@
           },
           {
             "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
             "name": "timeoutMs",
             "required": false,
             "description": "Positive client timeout in milliseconds, capped by the server maximum",
@@ -898,6 +948,16 @@
             "description": "Server-side maximum result rows",
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Rows to skip before the page; a truncated response's nextOffset names the next page (not in fanout mode)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
             }
           },
           {
@@ -1433,6 +1493,164 @@
             "description": "outgoing, incoming, or both",
             "schema": {
               "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/capabilities": {
+      "get": {
+        "summary": "What this server answers and what each loaded graph records (producer, storage format, facts)",
+        "responses": {
+          "200": {
+            "description": "Server and per-graph capabilities"
+          }
+        }
+      }
+    },
+    "/api/hierarchy": {
+      "get": {
+        "summary": "Walk the type hierarchy in every loaded graph, bounded and resumable per graph",
+        "responses": {
+          "200": {
+            "description": "One page per graph"
+          },
+          "400": {
+            "description": "Missing or invalid parameters"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "description": "Fully qualified class or interface name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "required": false,
+            "description": "subtypes (default) or supertypes",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "subtypes",
+                "supertypes"
+              ],
+              "default": "subtypes"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "required": false,
+            "description": "Levels to walk, 1 by default and at most 64",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "description": "Types per page, 200 by default and at most 5000",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Types to skip; a truncated response's nextOffset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/graphs/{graphId}/hierarchy": {
+      "get": {
+        "summary": "Walk the type hierarchy in one explicit graph, bounded and resumable",
+        "responses": {
+          "200": {
+            "description": "One page of types; known is false for a type the hierarchy does not name"
+          },
+          "400": {
+            "description": "Missing or invalid parameters"
+          },
+          "404": {
+            "description": "Graph not loaded"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphId",
+            "required": true,
+            "description": "Unique graph id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "description": "Fully qualified class or interface name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "required": false,
+            "description": "subtypes (default) or supertypes",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "subtypes",
+                "supertypes"
+              ],
+              "default": "subtypes"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "required": false,
+            "description": "Levels to walk, 1 by default and at most 64",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "description": "Types per page, 200 by default and at most 5000",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Types to skip; a truncated response's nextOffset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
             }
           }
         ]

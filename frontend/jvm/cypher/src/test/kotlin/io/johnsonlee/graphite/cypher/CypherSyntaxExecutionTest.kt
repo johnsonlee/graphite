@@ -123,53 +123,53 @@ class CypherSyntaxExecutionTest : CypherExecutorTestFixture() {
     }
 
     @Test
-    fun `CREATE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("CREATE (n) RETURN 1 AS x") }
+    fun `CREATE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("CREATE (n) RETURN 1 AS x") }
     }
 
     @Test
-    fun `DELETE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) DELETE n RETURN 1 AS x LIMIT 1") }
+    fun `DELETE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) DELETE n RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `DETACH DELETE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) DETACH DELETE n RETURN 1 AS x LIMIT 1") }
+    fun `DETACH DELETE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) DETACH DELETE n RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `SET throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) SET n.x = 1 RETURN 1 AS x LIMIT 1") }
+    fun `SET is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) SET n.x = 1 RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `REMOVE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) REMOVE n.x RETURN 1 AS x LIMIT 1") }
+    fun `REMOVE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) REMOVE n.x RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `MERGE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MERGE (n) RETURN 1 AS x") }
+    fun `MERGE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MERGE (n) RETURN 1 AS x") }
     }
 
     @Test
-    fun `SET with label throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) SET n:Label RETURN 1 AS x LIMIT 1") }
+    fun `SET with label is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) SET n:Label RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `SET with plus equals throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) SET n += {x: 1} RETURN 1 AS x LIMIT 1") }
+    fun `SET with plus equals is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) SET n += {x: 1} RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `SET all properties throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) SET n = {x: 1} RETURN 1 AS x LIMIT 1") }
+    fun `SET all properties is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) SET n = {x: 1} RETURN 1 AS x LIMIT 1") }
     }
 
     @Test
-    fun `REMOVE label throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n) REMOVE n:Label RETURN 1 AS x LIMIT 1") }
+    fun `REMOVE label is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n) REMOVE n:Label RETURN 1 AS x LIMIT 1") }
     }
 
     @Test

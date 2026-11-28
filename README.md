@@ -163,6 +163,12 @@ The native `graphite query`, `serve`, and `mcp` commands support two dialects:
 graphite query app.graphite 'MATCH (n) RETURN count(n)' --dialect opencypher-m23
 ```
 
+In both dialects and both engines, integer arithmetic stays integral (`7 / 2` is `3`,
+`7 % -3` is `1`, `2 ^ 3` is the float `8.0`) and an integer result that does not fit a
+64-bit long fails the query with `long overflow` rather than wrapping or turning into a
+float. JSON output writes non-finite floats as the strings `"NaN"`, `"Infinity"` and
+`"-Infinity"`.
+
 For HTTP queries, set the JSON field `"dialect": "opencypher-m23"` or the
 `dialect=opencypher-m23` URL parameter. The MCP `cypher` tool accepts the same
 `dialect` argument. Selection also applies to cross-graph and fanout queries;
@@ -1069,6 +1075,40 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 Replacing a served graph is then one atomic `rename` of a new file over the old: the
 server's mapping stays bound to the old inode until the last in-flight query finishes.
 
+#### Graph directories: manifest, producer and integrity
+
+Every writer (the JVM saver, `graphite.jar build`/`import`, and the JSON importer) seals
+a graph directory with `graph.manifest`, written last: the container manifest's
+`sha256  size  name` line per file, preceded by `@producer graphite-jvm 2.x.y` (or
+`graphite-rust …`) and `@storage-format 1`, and closed by `@seal <sha256>`, the SHA-256 of
+every line before it. A reader that meets a later storage format refuses it by name instead
+of misreading it, and a manifest that is cut short or edited, or that does not list every
+file a graph needs, is refused rather than taken as the inventory of fewer files.
+
+- **Saving is all or nothing.** `GraphStore.save` writes into a sibling staging directory
+  and only then takes the target's place, so `save(loadMapped(dir), dir)` no longer
+  truncates the files the source graph maps, no file of an earlier graph (such as a
+  derived `backward.*` transpose) survives beside a new one, and a failed save leaves the
+  earlier graph. A target holding anything but graph files is refused, never replaced, and so
+  is a target that cannot be renamed (a mount point): replacing its files one by one could
+  lose the earlier graph, so the save asks for a directory below it.
+- **What is detected, and when.** By default both readers check the manifest's seal and
+  every listed file's size before decoding anything, so a truncated, partially copied,
+  extended or replaced file fails the load with
+  `corrupt graph: <file>: N bytes, but graph.manifest lists M`. Damage that keeps a file's
+  size (a flipped bit) is **not** detected by default: the load succeeds, a damaged record
+  that does not decode fails the query that reads it with an error naming the graph (the
+  process does not abort), and one that does decode can answer wrongly. Detecting it needs
+  every byte hashed: `graphite verify <dir>` does that, `GRAPHITE_VERIFY_GRAPHS=1` makes
+  `query`, `serve` and `mcp` do it on load, and `graphite pack` refuses a sealed directory
+  whose files no longer match. A directory without a manifest (written before it existed,
+  or whose manifest was deleted) loads as before, without any of these checks.
+
+```bash
+graphite verify saved-graph/              # SHA-256 of every file against graph.manifest; prints the producer
+GRAPHITE_VERIFY_GRAPHS=1 graphite serve saved-graph/
+```
+
 ## Analysis Capabilities
 
 | Capability | Description |
@@ -1084,20 +1124,97 @@ server's mapping stays bound to the old inode until the last in-flight query fin
 | Cypher queries | `graph.query("MATCH ...")` -- read-oriented Cypher subset |
 | Resource access | Files inside JAR/WAR/fat JAR (nested JARs) |
 
+## Absent facts versus unrecorded facts
+
+The graph is a projection of the bytecode the build read: a method without outgoing
+calls may call nothing, or its body may never have been read (outside the scope, never
+loaded, failed to resolve). Graphs the JVM frontend builds record which, and both query
+engines answer it:
+
+```cypher
+MATCH (c:CallSite {caller_class: 'com.acme.Checkout'})
+RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c) AS gap
+```
+
+`analysisStatus(x)` takes a `Method` or a `CallSite` (its callee) and returns `ANALYZED`,
+`ANALYZED_WITHOUT_CONTROL_FLOW`, `ABSTRACT`, `NATIVE`, `NO_BODY`, `INCOMPLETE`,
+`RESOLUTION_FAILED`, `EXCLUDED_BY_SCOPE`, `NOT_EXPANDED`, `EXTERNAL` or `UNKNOWN_MEMBER`;
+`dispatchGap(c)` says why a call on a function value is not fully resolved. Both are
+`null` for a graph without completeness evidence, which `GET /api/capabilities` reports
+per graph (`facts.completeness`), so a client never reads `null` as "complete". JVM and
+JavaScript builds record this evidence; for JavaScript, a call whose callee resolves to no
+body in the artifacts is `DISPATCH_UNRESOLVED` and an artifact that does not parse is on
+record as `RESOLUTION_FAILED`. Apple builds do not record it yet.
+
+## Query service: paging, hierarchy and capabilities
+
+- **Paging.** `/api/cypher`, `/api/graphs/{id}/cypher` and `/api/cypher/graphs` (cross-graph
+  mode) take `offset` beside `limit`. A truncated page answers
+  `"total": {"relation": "gte"}` and `"nextOffset"`, the offset of the next page; the last
+  page answers `"nextOffset": null`, and a query's own `LIMIT` (a literal, a parameter or
+  arithmetic of them) ends the pages. A `UNION` pages over its combined, deduplicated rows, however often a
+  branch repeats a row; a `UNION ALL` branch after the last `UNION` keeps every row. The exception is a branch with its own `ORDER BY`, `SKIP`, `LIMIT` or
+  `WITH DISTINCT`: it is read by row count, and one that repeats its rows so often that 50,000
+  of them (or 8 pages' worth) cannot complete a page fails the query rather than answer a page
+  that lacks rows. A page must
+  end within the first 50,000 rows of a result (`offset + limit`), since the rows before a
+  page are matched to be skipped; beyond that, narrow the query (`ORDER BY` a key and
+  `WHERE key > last`). Use `ORDER BY` for pages that do not depend on the engine's row order.
+  The MCP `cypher` tool takes `offset` too.
+- **Hierarchy.** `GET /api/graphs/{id}/hierarchy?type=T&direction=subtypes|supertypes&depth=N&limit=M&offset=K`
+  (and `/api/hierarchy` for every graph, the MCP `hierarchy` tool) walks the type
+  hierarchy breadth first in a fixed order and stops at the page, so every subtype of
+  `java.lang.Object` is a series of pages rather than a path query that runs into the
+  timeout. `known: false` says the hierarchy does not name the type. A walk runs as a Cypher
+  query does, under the concurrency limit, deadline and cancellation, and examines at most
+  100,000 hierarchy entries per request.
+- **Capabilities.** `GET /api/capabilities` (MCP `capabilities`) names the dialects,
+  paging bounds, Graphite functions and hierarchy bounds the server supports, and for
+  every loaded graph its producer, storage format and which facts it recorded.
+
 ## Extension Mechanism
+
+Graphite deliberately has no layer that encodes framework semantics (Spring, Dagger,
+Android lifecycles, …) into the graph model: the model stays language- and
+framework-neutral, and framework knowledge enters as data. There are three places for it:
+a JVM `GraphiteExtension` adds annotations and metadata while the graph is built (below);
+a frontend that emits the JSON interchange (`graphite import`) can record any nodes,
+edges and `supertypes`; and queries combine that data at read time (the C4 architecture
+view is inferred this way). A framework rule that needs new node kinds or new
+edge semantics is a change to the model, made in the frontends and both engines.
 
 Pluggable via `GraphiteExtension` SPI (ServiceLoader):
 
 ```kotlin
-class MyExtension : GraphiteExtension {
+class RouterExtension : GraphiteExtension {
     override fun visit(sootClass: SootClass, context: GraphiteContext) {
-        // Extract domain-specific metadata during graph building
-        context.addMemberAnnotation(className, memberName, annotationFqn, values)
+        // State what the framework knows and the bytecode does not say.
+        val className = sootClass.type.fullyQualifiedName
+        if (className.endsWith("Routes")) {
+            context.addMemberAnnotation(className, GraphiteContext.CLASS_MEMBER, "acme.Router", mapOf("prefix" to "/api"))
+        }
     }
 }
 ```
 
 Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
+
+`addMemberAnnotation(className, memberName, annotationFqn, values)` records the fact exactly
+as an annotation the bytecode carries: it is persisted with the graph, read by
+`Graph.memberAnnotations`, matched in Cypher as an `Annotation` node
+(`MATCH (a:Annotation) WHERE a.name = 'acme.Router' RETURN a.class, a.member`), and seen by
+every view derived from annotations, such as the endpoints view when the name is one of the
+Spring mapping annotations. `annotationFqn` is the name queries match and need not be a class
+that exists. An extension is called once per application class, after the class's methods and
+fields; it cannot add node kinds or edges.
+
+A member holds one annotation of a name. Recording a name the member already has, from the
+bytecode or from an earlier call by any extension, throws `IllegalArgumentException` and writes
+nothing; a class named before the build has read it is checked again once every class is
+read, and a name its bytecode carries fails the build. To add to what an annotation says (a
+route with its placeholders resolved), record the result under a name of your own on the same
+member. An extension module compiles against `io.johnsonlee.graphite:sootup`, which exposes the
+SootUp types of the SPI (`SootClass`, `SootMethod`).
 
 ## Kotlin Dependencies
 

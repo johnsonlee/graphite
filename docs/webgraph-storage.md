@@ -25,8 +25,33 @@ graph-dir/
 ├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
 ├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
 ├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound through forward.properties
-└── graph.comparisons  BranchComparison data for ControlFlowEdges
+├── graph.comparisons  BranchComparison data for ControlFlowEdges; a writer with none to record (the Rust importer) writes no file, and both readers read that as none
+└── graph.manifest     Written last: producer, storage format, and size + SHA-256 of every file above
 ```
+
+`graph.manifest` is the one inventory of a saved graph: `graphite-graph 1`, then
+`@producer <name> <version>` and `@storage-format <n>`, then `sha256  size  name` per file
+(the container manifest's line format, so a packed directory carries it as an ordinary
+entry and `pack` refuses files that no longer match it), and last `@seal <sha256>`, the
+SHA-256 of every byte before that line. The inventory must list every file each writer
+produces (`REQUIRED_FILES` in both readers: `forward.graph`, `forward.offsets`,
+`forward.properties`, `graph.labels`, `graph.metadata`, `graph.nodedata`,
+`graph.nodeoffsets`, `graph.strings`, `graph.typeindex`; the list is defined once, in
+`backend/storage/schema/graph-files.txt`, and both readers are tested against it), so a manifest cut at a line
+boundary, down to its header, fails instead of certifying the files it still names. Both
+readers check the seal and every listed file's presence and size before decoding, refuse a
+later storage format by name, and treat a directory without a manifest as a graph written
+before it. Files derived after
+the save are not listed: a persisted `backward.*` transpose records the manifest digest it
+was derived from (`graphite.graph.identity` in `backward.properties`) and is rebuilt when
+that is not the directory's current manifest, and a sealed CallSite index is never
+rewritten in place. `GraphStore.save` writes the whole directory into a sibling staging
+directory and swaps it in, so no file of an earlier graph survives beside a new one. A
+target that cannot be renamed (a mount point) is refused and keeps its graph: emptying it
+and moving files in one by one would delete the earlier graph first, and a directory left
+half way would have no manifest and read as a legacy graph. A new
+persisted file therefore needs no deletion list, only its writer, its readers, and a name
+in `OPTIONAL_ENTRIES` (`graphite-storage`'s list of graph file names).
 
 The following query-index and backward-adjacency behavior describes the JVM reader.
 The Rust reader builds forward/backward CSR in memory, does not use `backward.*` or
@@ -609,3 +634,19 @@ Adding precomputed caches to reduce time tends to increase memory — violating 
 ## Optimization Attempt Log
 
 The chronological record of each WebGraph optimization attempt now lives in [webgraph-optimization-attempts.md](webgraph-optimization-attempts.md).
+
+## The node record's definition
+
+The layout of a `graph.nodedata` record is stated once, in
+`backend/storage/schema/node-records.txt`: the tag and name of every node kind, its fields in
+order and the encoding of each, plus golden records against a fixed string table (one per
+kind, and variants that reach every tagged value and both cases of every optional field).
+The codecs are still written by hand, in two languages, and each is tested against that file:
+the JVM writer and reader and the build spill (`NodeRecordSchemaTest`), the Rust reader, the
+JSON importer's writer and the readers at fixed byte offsets (`node_schema_tests.rs`). To add a
+field, change the schema line and the golden record of its kind, then every codec; a codec left
+behind fails its test. The tests read each golden record by the schema alone and compare its
+fields, by name, type and value, to the node they spell out, so the schema line itself is
+checked, not only the record's length. A change of layout is a change of storage format: bump
+`NodeSerializer.FORMAT_VERSION` and the version the Rust reader accepts, and keep reading the
+earlier one.

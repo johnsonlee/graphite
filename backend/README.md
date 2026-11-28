@@ -76,7 +76,7 @@ ordinary queries gain no new default work limit.
 ```bash
 cargo test                              # unit tests
 cd bench && python3 parity.py           # 150 differential tests against the Kotlin server
-cd bench && python3 parity-cli.py       # 148 byte-level tests of `graphite query`
+cd bench && python3 parity-cli.py       # byte-level tests of `graphite query`
 cd bench && python3 bench.py            # latency comparison
 ```
 

@@ -42,6 +42,10 @@ pub enum GraphError {
     CallSiteIndex(String),
     #[error(transparent)]
     Container(#[from] crate::container::ContainerError),
+    /// The files are not the graph that was saved: a file is missing, cut short or
+    /// inconsistent with another, or the manifest names a newer storage format.
+    #[error("corrupt graph: {0}")]
+    Integrity(String),
 }
 
 impl From<SourceError> for GraphError {
@@ -267,6 +271,24 @@ pub struct Graph {
     call_site_scalar_validity: std::sync::OnceLock<bool>,
     /// One lazily built column per entry of [`crate::columns::RAW_STRING_FIELDS`].
     string_columns: Vec<std::sync::OnceLock<crate::columns::StringColumn>>,
+    /// The build's completeness evidence (`graph.completeness`), read on first use: no
+    /// query but a status question needs it.
+    completeness: std::sync::OnceLock<Result<Option<CompletenessIndex>, String>>,
+    /// The evidence file as the load mapped it, so a later read cannot pick up another
+    /// generation of the directory.
+    completeness_source: Result<Option<crate::completeness::Bound>, String>,
+    /// The inventory the writer sealed the graph with; `None` for a graph written before it.
+    manifest: Option<crate::manifest::GraphManifest>,
+}
+
+/// One type a hierarchy walk reached: its name, its level, and the type it was reached from.
+pub type HierarchyEntry = (String, usize, String);
+
+/// The completeness evidence with the method identities the graph holds, so a callee's
+/// status distinguishes a method the build read from one it never saw.
+pub struct CompletenessIndex {
+    pub evidence: crate::completeness::Completeness,
+    methods_in_graph: std::collections::HashSet<String>,
 }
 
 impl Graph {
@@ -274,6 +296,16 @@ impl Graph {
     pub fn load(path: &Path) -> Result<Graph, GraphError> {
         let dir = path.to_path_buf();
         let src = GraphSource::open(path)?;
+        // Before anything is decoded: a file the manifest lists at another size is not the
+        // file that was saved, and decoding it would answer from the wrong bytes.
+        let manifest = crate::manifest::check_sizes(&src).map_err(GraphError::Integrity)?;
+        // Same-size damage needs every byte hashed: opt in where startup time allows it.
+        if crate::manifest::verify_on_load() {
+            let failures = crate::manifest::verify(&src).map_err(GraphError::Integrity)?;
+            if !failures.is_empty() {
+                return Err(GraphError::Integrity(failures.join("; ")));
+            }
+        }
         let io = |(path, e)| GraphError::Io(path, e);
         // Parallel-ish: strings and bvgraph are the heavy ones.
         let (strings, bv) = rayon::join(
@@ -298,12 +330,25 @@ impl Graph {
         check_header(read_i32_at(&node_offsets, 0), MAGIC_NODEOFFSETS)
             .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
+        if node_offsets.len() < 8 + node_capacity * 8 {
+            return Err(GraphError::Integrity(format!(
+                "graph.nodeoffsets holds {} bytes for {node_capacity} node ids",
+                node_offsets.len()
+            )));
+        }
 
         let (type_index, type_index_sorted) =
             load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
 
         let labels = src.require("graph.labels").map_err(io)?;
-        let forward = build_forward_csr(&bv, &labels)?;
+        // The compressed graph is decoded without bounds proofs; damaged bytes that pass the
+        // size check surface as a decoding panic, which is a corrupt graph, not a crash.
+        let forward = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            build_forward_csr(&bv, &labels)
+        }))
+        .map_err(|_| {
+            GraphError::Integrity("forward.graph or forward.offsets does not decode".to_string())
+        })??;
         // The CSR owns its copied labels; release the source map before further loading.
         drop(labels);
         drop(bv);
@@ -393,6 +438,9 @@ impl Graph {
             string_columns: (0..crate::columns::RAW_STRING_FIELDS.len())
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
+            completeness: std::sync::OnceLock::new(),
+            completeness_source: crate::completeness::bind(&src),
+            manifest,
         };
         // A summary that is bound but does not describe these nodes (a partition count that is
         // not the tag's node count, a first id no node of the tag has) is refused, and the
@@ -426,6 +474,157 @@ impl Graph {
             graph.call_site_index = Some(built);
         }
         Ok(graph)
+    }
+
+    /// The build's completeness evidence; `Ok(None)` for a graph whose frontend recorded none,
+    /// which answers no status rather than one it cannot know.
+    pub fn completeness(&self) -> Result<Option<&CompletenessIndex>, String> {
+        self.completeness
+            .get_or_init(|| {
+                let Some(bound) = self.completeness_source.as_ref().map_err(Clone::clone)? else {
+                    return Ok(None);
+                };
+                Ok(bound.parse()?.map(|evidence| CompletenessIndex {
+                    evidence,
+                    methods_in_graph: self
+                        .metadata
+                        .methods
+                        .iter()
+                        .map(|m| m.identity(&self.strings))
+                        .collect(),
+                }))
+            })
+            .as_ref()
+            .map(Option::as_ref)
+            .map_err(Clone::clone)
+    }
+
+    /// The manifest the graph was sealed with: its producer, format and files.
+    pub fn manifest(&self) -> Option<&crate::manifest::GraphManifest> {
+        self.manifest.as_ref()
+    }
+
+    /// The optional files this graph holds, which name the facts its writer recorded: the
+    /// manifest's list for a sealed graph, else what the directory or container holds.
+    pub fn recorded_files(&self) -> Vec<String> {
+        if let Some(manifest) = &self.manifest {
+            return manifest.entries.keys().cloned().collect();
+        }
+        let Ok(src) = GraphSource::open(&self.dir) else {
+            return Vec::new();
+        };
+        crate::container::REQUIRED_ENTRIES
+            .iter()
+            .chain(crate::container::OPTIONAL_ENTRIES.iter())
+            .filter(|name| matches!(src.size(name), Ok(Some(_))))
+            .map(|name| name.to_string())
+            .collect()
+    }
+
+    /// Breadth-first walk of the type hierarchy from `root`, `subtypes` or supertypes,
+    /// at most `depth` levels, skipping the first `offset` types and returning at most
+    /// `limit`: each `(type, depth, parent)`, in a fixed order (by level, then by name),
+    /// and whether a type exists past the page. `Ok(None)` when `root` is not a type the
+    /// hierarchy index names.
+    ///
+    /// A level is ordered whole before the page is cut from it, so a wide level costs its
+    /// width whatever the page size: `visit` is called for every hierarchy entry the walk
+    /// examines (the root lookup's, then each child's), and the first error it returns
+    /// stops the walk. The caller bounds the work there, with a budget, a deadline or
+    /// cancellation.
+    pub fn type_hierarchy<E>(
+        &self,
+        root: &str,
+        subtypes: bool,
+        depth: usize,
+        offset: usize,
+        limit: usize,
+        visit: &mut impl FnMut() -> Result<(), E>,
+    ) -> Result<Option<(Vec<HierarchyEntry>, bool)>, E> {
+        let (pairs, index) = if subtypes {
+            (&self.metadata.subtypes, &self.metadata.subtypes_index)
+        } else {
+            (&self.metadata.supertypes, &self.metadata.supertypes_index)
+        };
+        let mut root_id = None;
+        'lookup: for (key, values) in self
+            .metadata
+            .subtypes
+            .iter()
+            .chain(self.metadata.supertypes.iter())
+        {
+            for id in std::iter::once(key).chain(values.iter()) {
+                visit()?;
+                if self.strings.get(*id as usize) == root {
+                    root_id = Some(*id);
+                    break 'lookup;
+                }
+            }
+        }
+        let Some(root_id) = root_id else {
+            return Ok(None);
+        };
+        let mut seen = std::collections::HashSet::from([root_id]);
+        let mut level = vec![root_id];
+        let mut skipped = 0usize;
+        let mut out = Vec::new();
+        for d in 1..=depth {
+            let mut next: Vec<(StrId, StrId)> = Vec::new();
+            for parent in &level {
+                if let Some(&i) = index.get(parent) {
+                    for child in &pairs[i].1 {
+                        visit()?;
+                        if seen.insert(*child) {
+                            next.push((*child, *parent));
+                        }
+                    }
+                }
+            }
+            next.sort_by(|a, b| {
+                self.strings
+                    .get(a.0 as usize)
+                    .cmp(self.strings.get(b.0 as usize))
+            });
+            for (child, parent) in &next {
+                if skipped < offset {
+                    skipped += 1;
+                    continue;
+                }
+                if out.len() == limit {
+                    return Ok(Some((out, true)));
+                }
+                out.push((
+                    self.strings.get(*child as usize).to_string(),
+                    d,
+                    self.strings.get(*parent as usize).to_string(),
+                ));
+            }
+            if next.is_empty() {
+                break;
+            }
+            level = next.into_iter().map(|(child, _)| child).collect();
+        }
+        Ok(Some((out, false)))
+    }
+
+    /// The analysis status of `method` (see `AnalysisStatus` in the JVM core): whether the
+    /// graph holds everything its body produces, and if not, why. `None` without evidence.
+    pub fn analysis_status(&self, method: &MethodDesc) -> Result<Option<&'static str>, String> {
+        Ok(self.completeness()?.map(|index| {
+            let identity = method.identity(&self.strings);
+            index.evidence.status_of(
+                self.strings.get(method.declaring_class as usize),
+                &identity,
+                index.methods_in_graph.contains(&identity),
+            )
+        }))
+    }
+
+    /// Why the dispatch of the call on a function value `id` is incomplete, if it is.
+    pub fn dispatch_gap(&self, id: NodeId) -> Result<Option<&str>, String> {
+        Ok(self
+            .completeness()?
+            .and_then(|index| index.evidence.call_site_gaps.get(&id).map(String::as_str)))
     }
 
     /// Decoding inputs are immutable once loaded; derived indexes rely on them.
@@ -854,7 +1053,9 @@ impl Graph {
             return None;
         }
         let stored = read_i64_at(&self.node_offsets, 8 + i * 8);
-        if stored == 0 {
+        // An offset past the node data is damage the size check cannot see (a flipped bit):
+        // it names no record, rather than a slice past the end of the map.
+        if stored <= 0 || stored as u64 > self.nodedata.len() as u64 {
             None
         } else {
             Some((stored - 1) as usize)
@@ -1345,22 +1546,39 @@ fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Result<Csr, GraphError> {
     offsets.push(0u32);
     for node in 0..n {
         bv.successors_into_with_prefix(node, &mut buf, &offsets, &targets);
+        check_arc_targets(node, &buf, n)?;
         let end = csr_offset(targets.len() as u64 + buf.len() as u64)?;
         targets.extend_from_slice(&buf);
         offsets.push(end);
     }
-    let mut lab = Vec::with_capacity(targets.len());
-    if labels.len() >= targets.len() {
-        lab.extend_from_slice(&labels[..targets.len()]);
-    } else {
-        lab.extend_from_slice(labels);
-        lab.resize(targets.len(), 0);
+    // One label per arc: a label file of another length belongs to another graph or was
+    // cut short, and padding it would type the remaining arcs as data flow.
+    // A graph without arcs keeps a one-byte label file, since an empty file cannot be mapped.
+    let empty_placeholder = targets.is_empty() && labels.len() <= 1;
+    if labels.len() != targets.len() && !empty_placeholder {
+        return Err(GraphError::Integrity(format!(
+            "graph.labels holds {} labels for {} arcs",
+            labels.len(),
+            targets.len()
+        )));
     }
+    let lab = labels[..targets.len()].to_vec();
     Ok(Csr {
         offsets,
         targets,
         labels: lab,
     })
+}
+
+/// An arc to a node the graph does not hold decodes from damaged bytes; it would index past
+/// every per-node array, beginning with the transpose's offsets.
+fn check_arc_targets(node: usize, row: &[u32], nodes: usize) -> Result<(), GraphError> {
+    match row.iter().find(|&&target| target as usize >= nodes) {
+        Some(target) => Err(GraphError::Integrity(format!(
+            "forward.graph gives node {node} an arc to node {target}, past the graph's {nodes} nodes"
+        ))),
+        None => Ok(()),
+    }
 }
 
 fn build_backward_csr(fwd: &Csr) -> Csr {
@@ -1725,7 +1943,9 @@ mod declared_key_tests {
         std::fs::create_dir_all(&root).unwrap();
         for entry in std::fs::read_dir(&graph.dir).unwrap() {
             let entry = entry.unwrap();
-            if entry.file_type().unwrap().is_file() {
+            // The copy rewrites sidecars to reach the reader's own binding checks: as a graph
+            // written before manifests, whose seal would refuse the rewritten files first.
+            if entry.file_type().unwrap().is_file() && entry.file_name() != "graph.manifest" {
                 std::fs::copy(entry.path(), root.join(entry.file_name())).unwrap();
             }
         }

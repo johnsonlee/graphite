@@ -36,6 +36,7 @@ public final class IRWriter {
     private var classOrigins: [GraphiteIRClassOrigin] = []
     private var enumValues: [GraphiteIREnumValueEntry] = []
     private var artifacts: [GraphiteIRArtifactDependency] = []
+    private var completeness: GraphiteIRCompleteness?
     private var finished = false
 
     public private(set) var nodeCount: UInt64 = 0
@@ -160,6 +161,44 @@ public final class IRWriter {
         if artifacts.count >= IRWriter.batchSize { try flushArtifacts() }
     }
 
+    // MARK: Completeness
+
+    /// States that this build records completeness evidence, whether or not it has any
+    /// exception to report. A stream whose writer never says so carries none, and the graph
+    /// answers "not recorded" rather than "analysed".
+    public func recordCompleteness() {
+        if completeness == nil { completeness = GraphiteIRCompleteness() }
+    }
+
+    /// A class (a type, or a module that owns free functions) the frontend read.
+    public func addClassCompleteness(className: String, origin: String?, status: GraphiteIRAnalysisStatus) {
+        recordCompleteness()
+        var entry = GraphiteIRClassCompleteness()
+        entry.className = className
+        if let origin { entry.origin = origin }
+        entry.status = status
+        completeness!.classes.append(entry)
+    }
+
+    /// A method whose status is not `analyzed`.
+    public func addMethodCompleteness(method: GraphiteIRMethodRef, status: GraphiteIRAnalysisStatus, message: String? = nil) {
+        recordCompleteness()
+        var entry = GraphiteIRMethodCompleteness()
+        entry.method = method
+        entry.status = status
+        if let message { entry.message = message }
+        completeness!.methods.append(entry)
+    }
+
+    /// A call site, by the id ``addNode(_:)`` returned for it, whose dispatch the graph does not close.
+    public func addCallSiteGap(callSite: UInt32, gap: GraphiteIRDispatchGap) {
+        recordCompleteness()
+        var entry = GraphiteIRCallSiteDispatchGap()
+        entry.callSite = callSite
+        entry.gap = gap
+        completeness!.callSiteGaps.append(entry)
+    }
+
     /// Flushes every pending batch, writes the trailer and closes the file.
     public func finish() throws {
         guard !finished else { return }
@@ -175,6 +214,7 @@ public final class IRWriter {
         trailer.nodeCount = nodeCount
         trailer.edgeCount = edgeCount
         trailer.stringCount = stringCount
+        if let completeness { trailer.completeness = completeness }
         try write(chunk: .trailer(trailer))
         try handle.close()
         finished = true

@@ -193,10 +193,80 @@ whose trailer is not the one the directory recorded, or that carries another nod
 another save's and reads as absent. A bound file that no longer hashes, is cut short, has bytes
 after its last entry, or names a status this reader does not know is corruption after binding
 and throws rather than answers. A loaded graph that has not read its evidence yet reads it before
-a save into its own directory removes the file.
-Both JVM loads read it on the first call for it and never before; the Rust reader does not read
-it. Status and role codes index a name table the file carries, so a value added later still reads
+a save into its own directory replaces the directory.
+Both JVM loads read it on the first call for it and never before, and so does the Rust reader
+(`graphite_storage::completeness`), which answers `analysisStatus(x)` and `dispatchGap(c)` in the
+Rust engine as the Kotlin engine answers them from `Graph.analysisStatus`. Status and role codes index a name table the file carries, so a value added later still reads
 as itself.
+
+## The JavaScript frontend
+
+A JavaScript build records the same evidence in the same file, so one reader answers for both
+frontends. The frontend lists what it did in the `completeness` section of its JSON interchange
+(`classes`, `methods`, `callSiteGaps`) and the Rust importer writes `graph.completeness` from it,
+bound to that save's node data, before it seals the directory. An interchange without the
+section writes no file, and the graph answers `null`.
+
+What the statuses mean for compiled JavaScript:
+
+| Case | Recorded as | A caller reads |
+|------|-------------|----------------|
+| A module, a class or an object literal whose function bodies were read | class `ANALYZED` | `analysisStatus` of its methods: `ANALYZED` |
+| An artifact that does not parse (the build warns and goes on) | class `RESOLUTION_FAILED`, named by its module path | a call that would have reached it is a dispatch gap; the class is on record as failed, not as calling nothing |
+| A callee that is a JavaScript library binding (`JSON.stringify`, `Array.prototype.map`) | nothing: its owner is not a class of the build | `EXTERNAL` |
+| A callee outside the artifacts (`node_modules`, an unresolved import) or a value nothing binds (a callback parameter, a computed member) | call site `DISPATCH_UNRESOLVED` | `dispatchGap`: `DISPATCH_UNRESOLVED`; `analysisStatus`: `EXTERNAL` |
+
+The gap set is exactly the calls whose `CALL` edge is `isDynamic`. A call the TypeScript checker
+resolves to a body is not a gap, and that resolution is static: JavaScript can rebind a function
+at run time, and the frontend follows only the bindings it can see. `ABSTRACT`, `NATIVE`,
+`NO_BODY`, `INCOMPLETE`, `EXCLUDED_BY_SCOPE` and `NOT_EXPANDED` do not arise for compiled
+JavaScript (it has no bodiless declarations, and the build has no scope or budget); the
+interchange accepts them for a frontend that needs them.
+
+## The Apple frontend
+
+An Apple build (Swift, Objective-C) records the evidence in the trailer of its Graph IR
+(`Completeness` in `ir/graphite_ir.proto`), and the JVM importer persists it as
+`graph.completeness` with the graph. A reader that predates the field ignores it; a stream
+without it leaves the graph answering `null`. The frontend's facts come from the compiler's
+index, so the statuses say what the index can and cannot tell:
+
+| Case | Recorded as | A caller reads |
+|------|-------------|----------------|
+| A type declared in the indexed sources, or a module that owns free functions or top-level code | class `ANALYZED`, origin the module (none for C and Objective-C, which Clang indexes without one) | `analysisStatus` of its methods: `ANALYZED` |
+| A protocol requirement with no default implementation | method `ABSTRACT` | `ABSTRACT` |
+| An Objective-C method or C function a header declares with no definition in the indexed sources (accessors a property names and the compiler synthesizes included) | method `NO_BODY` | `NO_BODY` |
+| A callee on a class of the build that the sources never declare: a member the compiler synthesized (a memberwise initializer, a derived conformance) | method `NO_BODY` | `NO_BODY`, where the class alone would answer `UNKNOWN_MEMBER` |
+| A callee from the SDK, the standard library or another package | nothing | `EXTERNAL` |
+| A dynamically dispatched call whose named method has a body in the build, when another member of the build overrides or implements it | call site `DISPATCH_PARTIAL` | the named body is in the graph; the other may run and is not linked |
+| A dynamically dispatched call whose named method has no body in the build (a requirement, an SDK method), when a member of the build implements or overrides it | call site `DISPATCH_UNRESOLVED` | no body is linked to the call |
+
+A call site names the method the compiler resolved statically, and an Apple graph links no
+override to it. A gap is recorded exactly when the index marks the call as dynamically
+dispatched and the build holds another body the receiver could select: a member with a body
+that overrides or implements the named method under a descriptor of its own. A requirement
+and its default implementation in an extension of the protocol are one method to the graph
+(one descriptor), so the default is the named method and not "another body". A call bound
+statically (`super.f()`, a `final` or struct method) leaves no gap, and neither does a dynamic
+call nothing in the build overrides: an override outside the build is outside the scope, as
+for the JVM frontend, and the callee's own status says what the build knows of it.
+
+What the evidence does not cover:
+
+- A call on a closure or another function value has no call site in an Apple graph (the index
+  names no callee for it), so no gap can point at it.
+- A source file under the roots that the build did not compile has no index record and no
+  entry: its types are simply not classes of the build, and read as `EXTERNAL`.
+- `ANALYZED` means the calls the index resolves in the body are in the graph. Dataflow in an
+  Apple graph is limited to what the IR header's `source_dataflow` option names.
+- The gap is as coarse as the index's dynamic role: it does not ask whether the receiver's
+  static type could hold the overriding class.
+
+Committed checks: `CompletenessTests` and `ObjectiveCTests` (the frontend, on a package SwiftPM
+builds and on a Clang-indexed class), `IrCompletenessTest` (the importer: the evidence becomes
+the graph's, and evidence it cannot take at its word is refused), and
+`backend/bench/apple-completeness-e2e.py` in `apple.yml` (a real build of
+`frontend/apple/Fixtures/Dispatch`, the Rust CLI and the jar answering the same table).
 
 ## What this delivery does not do
 

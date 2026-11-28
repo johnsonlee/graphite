@@ -86,6 +86,9 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
             emitDeclarations(classes)
             val extensionContext = emitBodies(classes)
             resolveDeferredCalls(extensionContext)
+            // Extensions wrote while classes were still being read; their annotations enter the
+            // graph now, against everything the bytecode recorded.
+            metadata.commitExtensionAnnotations()
         } finally {
             view.closeDexBodies(dexBodies)
         }
@@ -136,10 +139,12 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
         var pass2Count = 0
         // Pass 2: Filtered classes — methods + fields + extensions
         // Methods before fields (fields check fieldNodes map for duplicates)
+        metadata.openExtensionAnnotations()
         val extensionContext = GraphiteContext(
             methodDescriptorFactory = descriptors::toMethodDescriptor,
             logger = declarations::log,
-            resources = resourceAccessor
+            resources = resourceAccessor,
+            annotations = metadata::stageExtensionAnnotation
         )
         classes.forEach { sootClass ->
             val className = sootClass.type.fullyQualifiedName

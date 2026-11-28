@@ -49,7 +49,7 @@ private const val MAX_DANGLING_NODE_EXAMPLES = 5
 data class IrSummary(val header: Header, val nodeCount: Long, val edgeCount: Long, val stringCount: Long)
 
 /** A malformed or truncated IR stream. */
-class IrFormatException(message: String) : RuntimeException(message)
+class IrFormatException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
 
 /**
  * Reads a Graph IR stream (see `ir/graphite_ir.proto`) into a [Graph] through a [FullGraphBuilder], so an imported graph is the same object
@@ -63,6 +63,8 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
 
     private val strings = ArrayList<String>()
     private val referenced = HashSet<Int>()
+    /** The IR ids of the call sites read so far, for the evidence the trailer may hold about them. */
+    private val callSites = java.util.BitSet()
     private var header: Header? = null
     private var nodeCount = 0L
     private var edgeCount = 0L
@@ -81,6 +83,11 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
         checkStreamEnd(input)
         check(tail, head)
         checkReferences()
+        // The frontend's own account of what it analysed; a stream without one leaves the graph answering "not recorded".
+        if (tail.hasCompleteness()) {
+            builder.setAnalysisCompleteness(
+                readCompleteness(tail.completeness, ::method) { id -> if (id >= 0 && callSites.get(id)) nodeId(id) else null })
+        }
         return builder.build() to IrSummary(head, nodeCount, edgeCount, strings.size.toLong())
     }
 
@@ -214,6 +221,7 @@ class IrReader(private val builder: FullGraphBuilder = DefaultGraph.Builder()) {
                     if (n.resourceValue.hasProfile()) n.resourceValue.profile else null)
             io.johnsonlee.graphite.ir.v1.Node.KindCase.CALL_SITE -> {
                 val c = n.callSite
+                callSites.set(n.id)
                 CallSiteNode(
                     id,
                     method(c.caller),

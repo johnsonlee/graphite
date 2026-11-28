@@ -24,6 +24,8 @@ internal val scalarFunctions: Map<String, CypherScalarFunction> =
         "elementid" to { args, _ -> elementId(args[0]) },
         "qualifiedid" to { args, _ -> elementId(args[0]) },
         "graphid" to { args, _ -> graphId(args[0]) },
+        "analysisstatus" to { args, _ -> analysisStatusValue(args[0], null) },
+        "dispatchgap" to { args, _ -> dispatchGapValue(args[0], null) },
         "coalesce" to { args, _ -> coalesce(args) },
         "timestamp" to { _, _ -> System.currentTimeMillis() },
         "tointeger" to { args, _ -> integerValue(args[0]) },

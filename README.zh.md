@@ -690,6 +690,30 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 
 替换正在提供服务的图，只需通过一次原子的 `rename`，用新文件覆盖旧文件：服务端的内存映射会一直绑定旧 inode，直到最后一个正在执行的查询完成。
 
+#### 图目录：清单、生产者与完整性
+
+所有写入方（JVM 保存、`graphite.jar build`/`import`、JSON 导入）最后都会写入 `graph.manifest`：先是 `@producer graphite-jvm 2.x.y`（或 `graphite-rust …`）与 `@storage-format 1`，再逐个文件列出 `sha256  size  name`，最后一行 `@seal <sha256>` 是之前所有行的 SHA-256。读取方遇到更新的存储格式时会按名称拒绝，而不是误读；被截断或改动过、或未列出图所需全部文件的清单也会被拒绝，而不会被当作一份文件更少的清单。
+
+- **保存要么完整、要么不发生。** `GraphStore.save` 先写入同级的暂存目录，再整体替换目标目录：`save(loadMapped(dir), dir)` 不再截断源图正在映射的文件，旧图遗留的文件（例如派生的 `backward.*`）不会残留在新图旁边，保存失败时保留原图。目标目录中若有图文件以外的内容，会拒绝替换；无法重命名的目标（例如挂载点）同样会被拒绝，因为逐个替换文件可能丢失原图，请改为保存到其下的子目录。
+- **能检测到什么、何时检测。** 默认情况下，两套读取器在解码前检查清单的 seal 与每个文件的大小，截断、复制不完整、被追加或被替换的文件会报 `corrupt graph: <文件>: N bytes, but graph.manifest lists M`。大小不变的损坏（例如翻转一位）默认**不会**被检测到：加载会成功；无法解码的损坏记录会让读取它的查询报错并指明图（进程不会崩溃），能解码的则可能给出错误答案。要检测这类损坏需要计算每个字节的哈希：`graphite verify <目录>`、在加载时校验的 `GRAPHITE_VERIFY_GRAPHS=1`（`query`、`serve`、`mcp`），以及会拒绝与清单不符目录的 `graphite pack`。没有清单的目录（清单出现之前写的，或清单被删除）照常加载，不做上述任何检查。
+
+## 事实不存在与未被记录
+
+图是构建时读取的字节码的投影：一个方法没有调用边，可能是它确实不调用任何方法，也可能是它的方法体从未被读取（不在范围内、未加载、解析失败）。JVM 前端会记录是哪一种，两个查询引擎都能回答：
+
+```cypher
+MATCH (c:CallSite {caller_class: 'com.acme.Checkout'})
+RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c) AS gap
+```
+
+`analysisStatus(x)` 接受 `Method` 或 `CallSite`（取其被调方法），返回 `ANALYZED`、`EXCLUDED_BY_SCOPE`、`EXTERNAL`、`UNKNOWN_MEMBER` 等状态；`dispatchGap(c)` 说明函数值调用为何没有完全解析。没有完整性证据的图返回 `null`，`GET /api/capabilities` 的 `facts.completeness` 会说明这一点，客户端不会把 `null` 误读为"完整"。JVM 和 JavaScript 构建都会记录这份证据：对 JavaScript，被调方在产物中解析不到方法体的调用标为 `DISPATCH_UNRESOLVED`，无法解析的产物文件记为 `RESOLUTION_FAILED`。Apple 构建暂不记录。
+
+## 查询服务：分页、层级与能力
+
+- **分页。** `/api/cypher`、`/api/graphs/{id}/cypher` 与 `/api/cypher/graphs`（cross-graph 模式）在 `limit` 之外支持 `offset`。被截断的页返回 `"total": {"relation": "gte"}` 和下一页的 `"nextOffset"`，最后一页返回 `"nextOffset": null`，查询自身的 `LIMIT`（字面量、参数或它们的算术表达式）也会结束分页；`UNION` 按合并、去重后的结果分页，分支里同一行重复多少次都不影响；最后一个 `UNION` 之后的 `UNION ALL` 分支保留每一行。例外是自带 `ORDER BY`、`SKIP`、`LIMIT` 或 `WITH DISTINCT` 的分支：这类分支按行数读取，如果重复过多、读取 50,000 行（或 8 页的量）仍凑不满一页，查询会报错，而不会返回缺行的页。由于页之前的行需要先匹配再跳过，一页必须落在结果的前 50,000 行之内（`offset + limit`）；超出时请收窄查询（按某个键 `ORDER BY`，再用 `WHERE key > 上一页最后的值`）。需要稳定分页时请使用 `ORDER BY`。MCP `cypher` 工具同样支持 `offset`。
+- **层级。** `GET /api/graphs/{id}/hierarchy?type=T&direction=subtypes|supertypes&depth=N&limit=M&offset=K`（以及覆盖所有图的 `/api/hierarchy`、MCP `hierarchy` 工具）按固定顺序广度优先遍历类型层级，并在页满时停止，因此 `java.lang.Object` 的全部子类型是一系列分页，而不是一条跑到超时的路径查询。`known: false` 表示层级索引中没有该类型。遍历与 Cypher 查询一样受并发上限、超时与取消约束，每个请求最多检查 100,000 个层级条目。
+- **能力。** `GET /api/capabilities`（MCP `capabilities`）列出服务支持的方言、分页上限、Graphite 函数和层级上限，以及每个已加载图的生产者、存储格式和记录了哪些事实。
+
 ## 分析能力
 
 | 能力 | 说明 |
@@ -707,16 +731,25 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 
 ## 扩展机制
 
+Graphite 有意不提供把框架语义（Spring、Dagger、Android 生命周期等）编码进图模型的扩展层：图模型保持与语言、框架无关，框架知识以数据的形式进入。可以放在三个地方：JVM `GraphiteExtension` 在构图时添加注解和元数据（见下文）；输出 JSON 交换格式的前端（`graphite import`）可以记录任意节点、边和 `supertypes`；查询在读取时组合这些数据（C4 架构视图就是这样推断出来的）。需要新的节点类型或边语义的框架规则，属于模型变更，需要同时修改各前端和两套引擎。
+
 通过 `GraphiteExtension` SPI（ServiceLoader）实现可插拔扩展：
 
 ```kotlin
-class MyExtension : GraphiteExtension {
+class RouterExtension : GraphiteExtension {
     override fun visit(sootClass: SootClass, context: GraphiteContext) {
-        // Extract domain-specific metadata during graph building
-        context.addMemberAnnotation(className, memberName, annotationFqn, values)
+        // 写入框架知道、而字节码没有表达的事实。
+        val className = sootClass.type.fullyQualifiedName
+        if (className.endsWith("Routes")) {
+            context.addMemberAnnotation(className, GraphiteContext.CLASS_MEMBER, "acme.Router", mapOf("prefix" to "/api"))
+        }
     }
 }
 ```
+
+`addMemberAnnotation(className, memberName, annotationFqn, values)` 写入的事实与字节码自带的注解完全一样：随图持久化，可通过 `Graph.memberAnnotations` 读取，在 Cypher 中作为 `Annotation` 节点匹配（`MATCH (a:Annotation) WHERE a.name = 'acme.Router' RETURN a.class, a.member`），也会被所有基于注解推导的视图看到（例如名称是 Spring 映射注解时的 endpoints 视图）。`annotationFqn` 是查询匹配用的名称，不要求是真实存在的类。扩展对每个应用类调用一次，在该类的方法和字段处理之后；它不能新增节点类型或边。
+
+一个成员上同名注解只有一条。如果成员上已经有这个名称（来自字节码，或任何扩展之前的调用），再次写入会抛出 `IllegalArgumentException`，且不写入任何数据；如果写入时目标类还没被读到，构建会在读完所有类之后再检查一次，字节码里确实带有同名注解时构建失败。想补充某个注解的信息（例如解析完占位符的路由），请在同一成员上用自己的注解名记录。扩展模块只需依赖 `io.johnsonlee.graphite:sootup`，SPI 用到的 SootUp 类型（`SootClass`、`SootMethod`）由它一并提供。
 
 在 `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension` 中注册。
 

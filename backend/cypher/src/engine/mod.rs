@@ -211,6 +211,12 @@ pub struct Executor {
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
     poll: AtomicU64,
+    /// Set when a segment's `max_rows` window, not the query's own LIMIT, cut its rows and
+    /// the probe found a row past it; see `Executor::window_cut`.
+    window_cut: std::sync::atomic::AtomicBool,
+    /// Set while a branch of a deduplicating UNION runs with a DISTINCT the engine added;
+    /// see `GraphContext::first_occurrence_distinct`.
+    pub(crate) first_occurrence_distinct: std::sync::atomic::AtomicBool,
     /// The first declared-type table this query needed and could not read. A table that fails
     /// to parse is absent for the whole process, so without this the query would answer as if
     /// the graph declared nothing; the query ends with this error instead (see
@@ -263,6 +269,8 @@ impl Executor {
             partition: true,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
+            window_cut: std::sync::atomic::AtomicBool::new(false),
+            first_occurrence_distinct: std::sync::atomic::AtomicBool::new(false),
             declared_failure: std::sync::Mutex::new(None),
         }
     }
@@ -390,6 +398,14 @@ impl Executor {
     pub fn without_partitioning(mut self) -> Self {
         self.partition = false;
         self
+    }
+
+    /// Whether a query this executor ran with a `max_rows` window had a row past that window
+    /// that its own LIMIT did not exclude: the next page of the same query exists. Read with
+    /// the probe (`with_probe`), which supplies the one row past the window; `QueryResult::more`
+    /// alone also reports a row past the query's own LIMIT, which is no page.
+    pub fn window_cut(&self) -> bool {
+        self.window_cut.load(Ordering::Relaxed)
     }
 
     /// Report whether more rows exist beyond a LIMIT (`QueryResult::more`), at the cost
@@ -769,6 +785,42 @@ impl GraphContext for Executor {
             .get(m.index as usize)
             .map(|md| md.identity(g.strings()))
             .unwrap_or_default()
+    }
+    fn analysis_status(&self, value: &Value) -> CypherResult<Value> {
+        let status = match value {
+            Value::Method(m) => {
+                let g = self.graph(m.source);
+                match g.methods().get(m.index as usize) {
+                    Some(md) => g.analysis_status(md),
+                    None => Ok(None),
+                }
+            }
+            Value::Node(n) => {
+                let g = self.graph(n.source);
+                match g.node(n.id).map(|node| node.kind) {
+                    Some(graphite_storage::NodeKind::CallSite { callee, .. }) => {
+                        g.analysis_status(&callee)
+                    }
+                    _ => Ok(None),
+                }
+            }
+            _ => Ok(None),
+        };
+        status
+            .map(|s| s.map(Value::str).unwrap_or(Value::Null))
+            .map_err(|e| CypherError::Other(format!("graph.completeness: {e}")))
+    }
+    fn first_occurrence_distinct(&self) -> bool {
+        self.first_occurrence_distinct.load(Ordering::Relaxed)
+    }
+    fn dispatch_gap(&self, value: &Value) -> CypherResult<Value> {
+        let Value::Node(n) = value else {
+            return Ok(Value::Null);
+        };
+        self.graph(n.source)
+            .dispatch_gap(n.id)
+            .map(|gap| gap.map(Value::str).unwrap_or(Value::Null))
+            .map_err(|e| CypherError::Other(format!("graph.completeness: {e}")))
     }
     fn check_cancelled(&self) -> CypherResult<()> {
         self.tick()

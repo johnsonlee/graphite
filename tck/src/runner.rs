@@ -375,14 +375,38 @@ struct Probe {
     input: Option<ChildStdin>,
     lines: Receiver<Result<String, String>>,
 }
+
+/// Spawns, retrying while the executable is busy. A binary written moments before (a
+/// freshly built probe, a test's script) can still be open for writing in a child another
+/// thread is forking, until that child execs; `exec` then fails with ETXTBSY however long
+/// the writer has been done. The window is the fork-to-exec gap, so a few short retries end it.
+fn spawn_retrying_busy(
+    mut spawn: impl FnMut() -> std::io::Result<std::process::Child>,
+) -> std::io::Result<std::process::Child> {
+    let mut attempt = 0;
+    loop {
+        match spawn() {
+            Err(error)
+                if error.kind() == std::io::ErrorKind::ExecutableFileBusy && attempt < 50 =>
+            {
+                attempt += 1;
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            result => return result,
+        }
+    }
+}
+
 impl Probe {
     fn new(binary: &Path) -> Result<Self> {
-        let mut child = Command::new(binary)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::inherit())
-            .spawn()
-            .context("start TCK probe")?;
+        let mut child = spawn_retrying_busy(|| {
+            Command::new(binary)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::inherit())
+                .spawn()
+        })
+        .context("start TCK probe")?;
         let input = child.stdin.take();
         let stdout = child
             .stdout
@@ -994,6 +1018,31 @@ exit 9"#,
             .infrastructure_errors
             .iter()
             .any(|error| error.contains("probe exited unsuccessfully")));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn a_busy_executable_is_retried_and_any_other_failure_is_not() {
+        let mut calls = 0;
+        let mut child = spawn_retrying_busy(|| {
+            calls += 1;
+            if calls < 3 {
+                Err(std::io::Error::from(std::io::ErrorKind::ExecutableFileBusy))
+            } else {
+                Command::new("true").spawn()
+            }
+        })
+        .unwrap();
+        assert!(child.wait().unwrap().success());
+        assert_eq!(calls, 3);
+        let mut calls = 0;
+        let error = spawn_retrying_busy(|| {
+            calls += 1;
+            Err(std::io::Error::from(std::io::ErrorKind::NotFound))
+        })
+        .unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(calls, 1);
     }
 
     #[test]

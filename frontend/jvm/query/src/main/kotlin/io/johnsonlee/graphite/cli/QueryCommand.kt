@@ -24,7 +24,10 @@ class QueryCommand : Callable<Int> {
 
     override fun call(): Int =
         runCliCommand(verbose) {
-            if (!java.nio.file.Files.isDirectory(graphDir)) {
+            if (!java.nio.file.Files.exists(graphDir)) {
+                // The Rust CLI's words for a path that names nothing.
+                commandError("No such graph: $graphDir")
+            } else if (!java.nio.file.Files.isDirectory(graphDir)) {
                 commandError("Not a directory: $graphDir")
             } else {
                 executeQuery()

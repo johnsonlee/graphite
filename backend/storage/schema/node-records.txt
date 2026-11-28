@@ -1,0 +1,135 @@
+# The node record of graph.nodedata, storage format 3: the one definition of its layout.
+#
+# Every codec of the record is tested against this file, so a field added to one of them and
+# not to the others fails in CI: the JVM writer and reader (NodeRecordCodec.kt), the JVM build
+# spill (MmapGraphBuilder.kt, same fields, its own string encoding), the Rust reader
+# (node.rs), the Rust writer (interchange.rs) and the readers at fixed byte offsets
+# (columns.rs RAW_STRING_FIELDS). See NodeRecordSchemaTest.kt and node_schema_tests.rs.
+#
+# A record is: id:i32 tag:u8, then the kind's fields in order. Everything is big-endian.
+#
+#   kind <tag> <Kind> <field>:<encoding> ...
+#
+# Encodings:
+#   i32 i64 f32 f64   fixed width
+#   bool              one byte, 0 or 1
+#   sid               i32 index into graph.strings
+#   sid?              bool; a sid follows when it is 1
+#   i32?              i32, -1 when absent
+#   ids               i32 count, then that many i32 node ids
+#   method            class:sid name:sid, i32 count and that many parameter-type sids, return:sid
+#   value             one tagged value (the `value` lines below)
+#   values            i32 count, then that many tagged values
+#   pairs             i32 count, then that many (sid, value)
+#
+# Not in the record: a call site's ordinal and origin (graph.callsite-ordinals), type
+# arguments of a type (graph.types), and a method's node identity.
+
+kind 0 IntConstant value:i32
+kind 1 StringConstant value:sid
+kind 2 LongConstant value:i64
+kind 3 FloatConstant value:f32
+kind 4 DoubleConstant value:f64
+kind 5 BooleanConstant value:bool
+kind 6 NullConstant
+kind 7 EnumConstant enum_type:sid name:sid args:values
+kind 8 LocalVariable name:sid type:sid method:method
+kind 9 Field class:sid name:sid type:sid is_static:bool
+kind 10 Parameter index:i32 type:sid method:method
+kind 11 Return method:method actual_type:sid?
+kind 12 CallSite caller:method callee:method line:i32? receiver:i32? arguments:ids
+kind 13 Annotation name:sid class:sid member:sid values:pairs
+kind 14 ResourceValue path:sid key:sid value:value format:sid profile:sid?
+kind 15 ResourceFile path:sid source:sid format:sid profile:sid?
+kind 16 ClassConstant value:sid
+
+# A tagged value is tag:u8, then:
+value 0 Int i32
+value 1 Long i64
+value 2 String sid
+value 3 Float f32
+value 4 Double f64
+value 5 Boolean bool
+value 6 Null
+value 7 EnumRef sid sid
+value 8 List values
+
+# Golden records, as the JVM writer encodes them against the string table below (graph.strings
+# is sorted, so these are the ids of exactly these strings): `golden <node id> <hex>`. Records
+# 0-16 are one node of every kind, the node's id being its tag; 17 and up are the variants that
+# reach what those do not, so that together the records hold every tagged value and an absent
+# and a present case of every optional field. Both test suites spell the values out as nodes and
+# compare each record's fields, read by the kind and value lines above, to those nodes by name,
+# type and value; a kind line that names or types a field otherwise fails both.
+#   0 -42   1 "hello"   2 1234567890123   3 1.5   4 -2.25   5 true   6 (null)
+#   7 sample.Color.RED with arguments [7, "label", null]
+#   8 local tmp:int in run   9 static field sample.Owner.count:int
+#   10 parameter 1 (java.lang.String) of run   11 return of run, actual type java.lang.String
+#   12 run calls helper at line 17, no receiver, arguments are nodes 3 and 5
+#   13 @sample.Tag on sample.Owner.run with value="x", weights=[1L, 2L], level=sample.Color.RED
+#   14 app.yml mode=true (yaml, profile dev)   15 app.yml from classpath (yaml, no profile)
+#   16 the class literal Lsample/Owner;
+#   17 -1 (an int, not an absent one)
+#   18 sample.Color.RED with arguments [7, 2L, "label", 0.5f, 1.0e10, false, null,
+#      sample.Color.RED, [1.5f, [], -2.25]]
+#   19 return of helper, no actual type
+#   20 helper calls run, no line, receiver is node 9, no arguments
+#   21 app.yml count=2.5 (yaml, no profile)   22 app.yml from classpath (yaml, profile dev)
+#   23 @sample.Tag on sample.Owner.count with level=0.25f, mode=0.003, weights=[false, null],
+#      label=[]
+#   24 false   25 @sample.Tag on sample.Owner.run with no values
+#   26 instance field sample.Owner.tmp:java.lang.String
+# where run is sample.Owner.run(int, java.lang.String): java.lang.String
+# and helper is sample.Owner.helper(): void.
+
+string 0 Lsample/Owner;
+string 1 RED
+string 2 app.yml
+string 3 classpath
+string 4 count
+string 5 dev
+string 6 hello
+string 7 helper
+string 8 int
+string 9 java.lang.String
+string 10 label
+string 11 level
+string 12 mode
+string 13 run
+string 14 sample.Color
+string 15 sample.Owner
+string 16 sample.Tag
+string 17 tmp
+string 18 value
+string 19 void
+string 20 weights
+string 21 x
+string 22 yaml
+
+golden 0 0000000000ffffffd6
+golden 1 000000010100000006
+golden 2 00000002020000011f71fb04cb
+golden 3 00000003033fc00000
+golden 4 0000000404c002000000000000
+golden 5 000000050501
+golden 6 0000000606
+golden 7 00000007070000000e00000001000000030000000007020000000a06
+golden 8 000000080800000011000000080000000f0000000d00000002000000080000000900000009
+golden 9 00000009090000000f000000040000000801
+golden 10 0000000a0a00000001000000090000000f0000000d00000002000000080000000900000009
+golden 11 0000000b0b0000000f0000000d000000020000000800000009000000090100000009
+golden 12 0000000c0c0000000f0000000d000000020000000800000009000000090000000f00000007000000000000001300000011ffffffff000000020000000300000005
+golden 13 0000000d0d000000100000000f0000000d000000030000001202000000150000001408000000020100000000000000010100000000000000020000000b070000000e00000001
+golden 14 0000000e0e000000020000000c0501000000160100000005
+golden 15 0000000f0f00000002000000030000001600
+golden 16 000000101000000000
+golden 17 0000001100ffffffff
+golden 18 00000012070000000e00000001000000090000000007010000000000000002020000000a033f000000044202a05f20000000050006070000000e000000010800000003033fc00000080000000004c002000000000000
+golden 19 000000130b0000000f00000007000000000000001300
+golden 20 000000140c0000000f0000000700000000000000130000000f0000000d00000002000000080000000900000009ffffffff0000000900000000
+golden 21 000000150e00000002000000040440040000000000000000001600
+golden 22 000000160f0000000200000003000000160100000005
+golden 23 000000170d000000100000000f00000004000000040000000b033e8000000000000c043f689374bc6a7efa0000001408000000020500060000000a0800000000
+golden 24 000000180500
+golden 25 000000190d000000100000000f0000000d00000000
+golden 26 0000001a090000000f000000110000000900

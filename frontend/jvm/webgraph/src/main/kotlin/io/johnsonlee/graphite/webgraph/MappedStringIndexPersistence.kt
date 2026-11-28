@@ -53,7 +53,10 @@ internal fun MappedGraphContext.mappedCallSiteStringIndexView(workConsumer: Grap
 
 internal fun MappedGraphContext.close() {
     clearStringPropertyIndexes()
-    // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
+    // A mapped buffer is unmapped by the collector, not here: the graph's mappings are counted until it does (ClosedGraphMappings).
+    // What is watched is the node data, the first and largest file a graph maps, not this context: a collection that promotes
+    // the buffers and frees the context leaves every file mapped.
+    if (closed.compareAndSet(false, true)) closedMappings.closed(mappedNodeData, mappedBytes)
 }
 
 internal fun MappedGraphContext.clearStringPropertyIndexes() {
@@ -132,6 +135,8 @@ internal fun MappedGraphContext.persistPreparedCallSiteStringIndex(): Boolean =
     synchronized(callSiteStringIndexLock) {
         val index = callSiteStringIndex ?: return@synchronized false
         if (callSiteStringIndexLoadedFromPersistence && Files.isRegularFile(callSiteStringIndexFile)) return@synchronized true
+        // A file the manifest seals is part of the saved graph: replacing it would make the next load refuse the graph.
+        if (GraphManifest.seals(callSiteStringIndexFile.parent, callSiteStringIndexFile.fileName.toString())) return@synchronized false
         var temporary: Path? = null
         try {
             temporary = Files.createTempFile(callSiteStringIndexFile.parent, callSiteStringIndexFile.fileName.toString(), ".tmp")

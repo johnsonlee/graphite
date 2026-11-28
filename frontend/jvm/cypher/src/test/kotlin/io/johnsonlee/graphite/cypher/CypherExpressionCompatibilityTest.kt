@@ -30,11 +30,9 @@ class CypherExpressionCompatibilityTest : CypherCompatibilityTestFixture() {
 
     @Test
     fun `expression - division`() {
-        val result = executor.execute("RETURN 10 / 3")
-        assertEquals(1, result.rows.size)
-        // Integer division in Cypher may produce double
-        val value = (result.rows[0].values.first() as Number).toDouble()
-        assertTrue(value > 3.0 && value < 4.0, "10/3 should be ~3.33")
+        val result = executor.execute("RETURN 10 / 3, 10.0 / 4, -7 / 2, 7 % -3")
+        // openCypher, as the Rust engine: two integers divide to a truncated integer.
+        assertEquals(listOf<Any>(3L, 2.5, -3L, 1L), result.rows[0].values.toList())
     }
 
     @Test
@@ -149,22 +147,22 @@ class CypherExpressionCompatibilityTest : CypherCompatibilityTestFixture() {
     }
 
     @Test
-    fun `write - CREATE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("CREATE (n:Test {name: 'test'})") }
+    fun `write - CREATE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("CREATE (n:Test {name: 'test'})") }
     }
 
     @Test
-    fun `write - DELETE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n:IntConstant) DELETE n") }
+    fun `write - DELETE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n:IntConstant) DELETE n") }
     }
 
     @Test
-    fun `write - SET throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n:IntConstant) SET n.value = 1") }
+    fun `write - SET is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n:IntConstant) SET n.value = 1") }
     }
 
     @Test
-    fun `write - REMOVE throws NotImplementedError`() {
-        assertFailsWith<NotImplementedError> { executor.execute("MATCH (n:IntConstant) REMOVE n.value") }
+    fun `write - REMOVE is refused as immutable`() {
+        assertRefusedAsImmutable { executor.execute("MATCH (n:IntConstant) REMOVE n.value") }
     }
 }

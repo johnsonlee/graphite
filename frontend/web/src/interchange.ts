@@ -42,8 +42,8 @@ function writeRecords(fd: number, graph: SourceGraph): void {
       if (read < window.length || used === buffer.length) flush();
     }
   }
-  function array<T>(field: string, values: readonly T[], encode: (value: T) => string): void {
-    emit(`,"${field}":[`);
+  function array<T>(field: string, values: readonly T[], encode: (value: T) => string, separator = ','): void {
+    emit(`${separator}"${field}":[`);
     for (const [i, value] of values.entries()) {
       if (i) emit(',');
       emit(encode(value));
@@ -55,7 +55,10 @@ function writeRecords(fd: number, graph: SourceGraph): void {
   array('nodes', graph.nodes, encodeNode);
   array('edges', graph.edges, JSON.stringify);
   array('classOrigins', graph.classOrigins, JSON.stringify);
-  emit('}');
+  emit(',"completeness":{');
+  array('classes', graph.completeness.classes, JSON.stringify, '');
+  array('callSiteGaps', graph.completeness.callSiteGaps, JSON.stringify);
+  emit('}}');
   flush();
 }
 

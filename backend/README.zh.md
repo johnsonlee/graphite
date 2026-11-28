@@ -57,7 +57,7 @@ cargo build --release
 ```bash
 cargo test                              # 单元测试
 cd bench && python3 parity.py           # 与 Kotlin 服务比较的 150 项差异测试
-cd bench && python3 parity-cli.py       # graphite query 的 148 项字节级测试
+cd bench && python3 parity-cli.py       # graphite query 的字节级测试
 cd bench && python3 bench.py            # 延迟比较
 ```
 
