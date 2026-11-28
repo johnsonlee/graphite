@@ -474,6 +474,29 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
         reason: "PR #226: Constant rows that read 0 for a class literal now read its JVM descriptor (for example Ljavax/xml/validation/SchemaFactory;)",
     },
+    // PR #229 (head 2d1a62b, base main 70f908c), run 46091056203 on c428401: each build numbers its
+    // nodes from 1 (NodeId.numbered). 2d1a62b changes only docs/pr-229-* from c428401, and its
+    // product identity is bound here; the same four response digests on runs 45833728909 and 46001831978.
+    Rule {
+        base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
+        head_product_identity: "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
+        case_id: "shape-id-lookup",
+        base_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+        head_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+        base_response_sha256: "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6",
+        head_response_sha256: "0389b15588eeb74fee5beea7dd9d8e671465883ce83bf1f940a6e955894a331f",
+        reason: "PR #229: each build numbers its nodes from 1 (NodeId.numbered); base shards continued one process-wide counter, so only fixture-android-00 held id 4101 and now each of the 64 graphs does; fixture-android-00's row is unchanged",
+    },
+    Rule {
+        base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
+        head_product_identity: "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
+        case_id: "shape-traverse-filtered",
+        base_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+        head_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+        base_response_sha256: "8931dd2e91cc80779b6aaf0ab3fc8d9b800d51e55e5a585eb2a20b7a56e7a870",
+        head_response_sha256: "448d1bad5acc64dfd5859735c6914ab3b3062a66fb7eba453b1b831e3d3647e7",
+        reason: "PR #229: each build numbers its nodes from 1; the same 200 nodes of the same two graphs, fixture-android-00's ids unchanged and every fixture-android-01 id 360266 lower, the id range fixture-android-00 used of the base's shared counter",
+    },
 ];
 
 fn digest(value: &str, bytes: usize) -> bool {
