@@ -24146,7 +24146,8 @@ per-round difference, mean and standard error. Query:
 | 3 | 200 | −4.82 ± 1.24 | −1.41 ± 1.40 |
 
 Base mean 149.5, 146.9 and 139.9 ms. All arms returned the same rows. Every sample is in
-`docs/pr-229-evidence/performance-linux.txt` (summary) and was kept with the run.
+`docs/pr-229-evidence/performance-linux.txt` at commit `ad68bda` of PR #229 (summary; the
+evidence directory is not part of the repository's tree) and was kept with the run.
 
 **Result.** Correctness: unchanged (same check, same answers; storage tests pass). Latency: the
 candidate is not faster than its parent (candidate − parent: −1.4, +4.3 and +3.4 ms), and the

@@ -9,7 +9,11 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
   clean worktree of that commit: `cargo build -p graphite-cli` and
   `./gradlew :query:shadowJar :explore:shadowJar`.
 - **Candidate:** the evidence files were produced with binaries built from `717b45e` (the product code of `39ae076`; the commit in between changes only the replay harness).
-- **Raw evidence:** `docs/pr-229-evidence/*.txt`, every file produced by one replay:
+- **Raw evidence:** the `*.txt` files this document names, every one produced by one replay.
+  The evidence and the replay harness are not part of the repository's tree: they are records
+  of this PR, not product. They stay readable in PR #229's own history, under
+  `docs/pr-229-evidence/` at commit `ad68bda` (every path below is relative to that
+  directory at that commit):
 
   ```
   docs/pr-229-evidence/replay/replay.sh \
@@ -20,7 +24,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 
   `identities.txt` records the full SHA-256 of both binaries, both jars, the input jar and
   the compiled acme fixture, plus the JDK and kernel the replay ran on. The harnesses it
-  runs are committed beside it:
+  runs are kept beside it:
   - `fuzz.py`: per-flip offset, bit, outcome and exit code of every query asked; each flip
     is derived from `file:k`, so any one flip replays on its own;
   - `repeated-builds.jsh`;
@@ -43,7 +47,8 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
   `<out>/replay-logs`, when a setup step, the candidate differential, the candidate
   completeness check or a candidate bit flip fails. A crash (a signal) or an unexpected exit
   code is never counted as a clean rejection, and neither is a JVM above the heap ceiling
-  (`test_replay.py`, run in CI).
+  (`test_replay.py`, the harness's own tests, kept with it; they ran in CI while the harness
+  was in the tree).
 - **Hosted benchmark timings are report-only.** They are not performance acceptance (see
   row 6).
 

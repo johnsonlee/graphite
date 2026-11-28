@@ -451,8 +451,6 @@ jobs:
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: |
         python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
-        # The acceptance-evidence replay: exit-status classification and fail-closed steps.
-        python3 -m unittest discover -s docs/pr-229-evidence/replay -p 'test_*.py' -v
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture
       run: |
