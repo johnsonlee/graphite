@@ -71,48 +71,14 @@ RETURN DISTINCT graphId(a) AS callerGraph, graphId(b) AS otherGraph
 
 ### 通过公开 CLI 复现保存、重新加载与查询
 
-下面的检查编译两个同名重载，JVM descriptor 分别为 `([B)V` 和 `([[B)V`，所属声明都是 `com.example.ByteArrays`。投影到虚拟 `Method` 节点时，必须保留两个参数类型列表及各自的数组维数。样例还包含一个字面量实参和一个打包的 properties 文件，并在已保存的归档上执行 README 的数据流与资源查询。在仓库根目录运行以下命令，需要 Python 3、JDK 17 和带配套 JVM 前端的 CLI。核对特定构建时，可用 `GRAPHITE_BIN` 指定可执行文件的绝对路径。
+保存并重开样例 JAR 后，以下查询结果应保持一致。两个重载均属于 `com.example.ByteArrays`，描述符分别是 `([B)V` 和 `([[B)V`。[可执行验收用例](../examples/universal-schema/logical-model.doctest)
 
-```sh
-python3 -m doctest docs/universal-schema-logical-model.zh.md
-```
-
-```pycon
->>> import json, os, subprocess, tempfile
->>> from pathlib import Path
->>> tmp = tempfile.TemporaryDirectory()
->>> work = Path(tmp.name)
->>> def run(*args):
-...     return subprocess.run(args, cwd=work, capture_output=True, text=True,
-...                           check=True, env={**os.environ, "JAVA_TOOL_OPTIONS": "-Xmx4g"}).stdout
->>> source = """package com.example;
-... public class ByteArrays {
-...     public static void radixSort(byte[] values) {}
-...     public static void radixSort(byte[][] values) {}
-...     public static void consume(int value) {}
-...     public static void example() { consume(17); }
-... }"""
->>> _ = (work / "ByteArrays.java").write_text(source)
->>> _ = run("javac", "--release", "17", "-d", "classes", "ByteArrays.java")
->>> _ = (work / "classes/application.properties").write_text("feature.mode=canary\n")
->>> _ = run("jar", "--create", "--file", "app.jar", "-C", "classes", ".")
->>> cli = os.getenv("GRAPHITE_BIN", "graphite")
->>> _ = run(cli, "build", "app.jar", "-o", "app.graphite", "--include", "com.example")
->>> def query(cypher):
-...     result = json.loads(run(cli, "query", "--format", "json", "app.graphite", cypher))
-...     assert result["rowCount"] == len(result["rows"])
-...     return result["columns"], result["rows"]
->>> query("MATCH (m:Method) WHERE m.class = 'com.example.ByteArrays' AND m.name = 'radixSort' RETURN m.parameter_types AS parameters ORDER BY parameters")
-(['parameters'], [{'parameters': ['byte[]']}, {'parameters': ['byte[][]']}])
->>> query("MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode) WHERE cs.callee_class =~ 'com.example.*' RETURN c.value, cs.callee_name")
-(['c.value', 'cs.callee_name'], [{'c.value': 17, 'cs.callee_name': 'consume'}])
->>> query('MATCH (r:ResourceValue {key: "feature.mode"}) RETURN r.path, r.value')
-(['r.path', 'r.value'], [])
->>> query("MATCH (f:ResourceFile {path: 'application.properties'}) RETURN f.path, f.format")
-(['f.path', 'f.format'], [{'f.path': 'application.properties', 'f.format': 'properties'}])
->>> tmp.cleanup()
-
-```
+| Cypher | 预期结果 |
+| --- | --- |
+| `MATCH (m:Method) WHERE m.class = 'com.example.ByteArrays' AND m.name = 'radixSort' RETURN m.parameter_types AS parameters ORDER BY parameters` | `["byte[]"]`, `["byte[][]"]` |
+| `MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode) WHERE cs.callee_class =~ 'com.example.*' RETURN c.value, cs.callee_name` | `17`, `consume` |
+| `MATCH (r:ResourceValue {key: "feature.mode"}) RETURN r.path, r.value` | 0 行 |
+| `MATCH (f:ResourceFile {path: 'application.properties'}) RETURN f.path, f.format` | `application.properties`, `properties` |
 
 数据流结果要求模型保留整数类型、有方向的数据流路径及调用点的被调用方属性。资源结果区分了此 JVM 输入上的两项观察：文件已被记录，JVM 前端没有将该键的内容建成 `ResourceValue`。虽然源文件含有 `feature.mode`，按键查询仍需保留公开投影的零行结果。该检查使用 Graphite 2.18.0 实际运行。仓库另有可执行示例 `bash examples/quickstart/run.sh`，其结果为 `{"flag":42,"method":"enableFeature"}` 和 `{"caller":"demo.Checkout.startCheckout()"}`。类字面量测试在已保存的目录与归档上检查较新的读取器，包括区分类字面量描述符与文本相同的字符串。[README 查询](../README.md#query-resources-with-cypher) · [快速示例](../examples/quickstart/run.sh) · [JVM 资源契约](../frontend/jvm/sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ResourceConfigLinkingTest.kt) · [类字面量查询](../backend/cypher/tests/class_constant.rs)
 
@@ -199,79 +165,15 @@ Basis      = 直接观察(提取执行, 可选的输入内定位)
 
 样例将协议、动词和路径固定为 HTTP `POST /refunds`。列出的请求都有独立的调用点证据，SDK 的包含关系不能提供这项证据。每个路由表项列出该环境与别名的**全部**适用目标，每个提供方表项列出该服务版本与操作的**全部** handler。空集合证明该范围内无匹配，缺少表项则表示范围未知。部分采集若已得到候选，须保留已有候选及依据，并将枚举标为未完成。下面的小样例仅使用完整表项或缺失表项。
 
-解析器只采用一条确定性规则：按所选别名找到目标服务，再匹配目标服务提供的操作。规则约定的适用范围排除了回退路由、重写和运行时覆盖。要确认绑定，须有已知请求，完整覆盖适用路由和提供方，并在应用全部规则后恰有一个符合条件的 handler。确认绑定的依据可追溯至调用点、所用路由及提供方表项、相应覆盖声明和解析规则。歧义候选各自保留，若缺失的事实可能改变答案，则调用点仍未决。生产解析器需用自己的规则与覆盖证据建立这些条件。在仓库根目录运行 `python3 -m doctest docs/universal-schema-logical-model.zh.md` 可核对样例。
+解析器只采用一条确定性规则：按所选别名找到目标服务，再匹配目标服务提供的操作。规则约定的适用范围排除了回退路由、重写和运行时覆盖。要确认绑定，须有已知请求，完整覆盖适用路由和提供方，并在应用全部规则后恰有一个符合条件的 handler。确认绑定的依据可追溯至调用点、所用路由及提供方表项、相应覆盖声明和解析规则。歧义候选各自保留，若缺失的事实可能改变答案，则调用点仍未决。生产解析器需用自己的规则与覆盖证据建立这些条件。[绑定与计数验收用例](../examples/universal-schema/logical-model.doctest)
 
-```pycon
->>> inventory = {'orders', 'billing', 'payments', 'sandbox-pay', 'legacy-worker'}
->>> requests = [('orders', 'C7', 'pay'), ('orders', 'C8', 'pay'), ('billing', 'B2', None)]
->>> routes = {('staging', 'pay'): {'payments'}, ('test', 'pay'): {'sandbox-pay'}}
->>> providers = {'payments': {'H1'}, 'sandbox-pay': {'H2'}}
->>> target = ('payments', 'H1')
->>> def resolve(environment, alias, routes, providers):
-...     key = (environment, alias)
-...     if alias is None or key not in routes:
-...         return set(), None
-...     destinations = routes[key]
-...     candidates = {(service, handler) for service in destinations
-...                   for handler in providers.get(service, set())}
-...     return candidates, destinations - providers.keys()
->>> def callers(environment, target, requests, routes, providers):
-...     confirmed, unresolved = set(), set()
-...     for service, site, alias in requests:
-...         candidates, gaps = resolve(environment, alias, routes, providers)
-...         if gaps == set() and candidates == {target}:
-...             confirmed.add((service, site))
-...         elif gaps is None or target[0] in gaps or target in candidates:
-...             unresolved.add((service, site))
-...     return confirmed, unresolved
->>> known_sites = requests[:2]
->>> callers('test', target, known_sites, routes, providers)
-(set(), set())
->>> callers('staging', target, known_sites[:1], {}, providers)
-(set(), {('orders', 'C7')})
->>> callers('staging', target, known_sites[:1], {('staging', 'pay'): set()}, providers)
-(set(), set())
->>> callers('staging', target, known_sites[:1], routes, {})
-(set(), {('orders', 'C7')})
->>> ambiguous = {('staging', 'pay'): {'payments', 'sandbox-pay'}}
->>> callers('staging', target, known_sites[:1], ambiguous, {'payments': {'H1'}})
-(set(), {('orders', 'C7')})
->>> sorted(resolve('staging', 'pay', ambiguous, providers)[0])
-[('payments', 'H1'), ('sandbox-pay', 'H2')]
->>> callers('staging', target, known_sites[:1], ambiguous, providers)
-(set(), {('orders', 'C7')})
->>> confirmed, unresolved = callers('staging', target, requests, routes, providers)
->>> sorted(confirmed), sorted(unresolved)
-([('orders', 'C7'), ('orders', 'C8')], [('billing', 'B2')])
->>> def distinct_callers(confirmed, unresolved, missing_requests, inventory_complete):
-...     known = {service for service, site in confirmed}
-...     possible = missing_requests | {service for service, site in unresolved}
-...     exact = inventory_complete and possible <= known
-...     return len(known), len(known) if exact else None
->>> covered_requests = {'orders', 'billing', 'payments', 'sandbox-pay'}
->>> missing_requests = inventory - covered_requests
->>> distinct_callers(confirmed, unresolved, missing_requests, True)
-(1, None)
->>> distinct_callers(confirmed, unresolved, set(), True)
-(1, None)
->>> resolved_requests = known_sites + [('billing', 'B2', 'sandbox')]
->>> complete_routes = {**routes, ('staging', 'sandbox'): {'sandbox-pay'}}
->>> found, pending = callers('staging', target, resolved_requests, complete_routes, providers)
->>> distinct_callers(found, pending, set(), False)
-(1, None)
->>> distinct_callers(found, pending, set(), True)
-(1, 1)
->>> no_sites, open_sites = callers('test', target, known_sites, routes, providers)
->>> distinct_callers(no_sites, open_sites, set(), True)
-(0, 0)
->>> distinct_callers(no_sites, open_sites, {'legacy-worker'}, True)
-(0, None)
-
-```
-
-两处已确认调用点属于同一调用服务 orders。即使 billing 的请求已完整采集，B2 的目标仍未决。补齐 legacy-worker 的请求只能消除该服务的采集缺口，B2 仍可能增加一个调用服务。使用已解析请求列表的检查假定补齐请求后没有新调用点，并已有新证据将 B2 解析到 sandbox-pay。此时还须确认服务清单完整，才能给出精确计数 1。计数函数分别返回已确认的下界和能够确立的精确值。
-
-最后两项零计数检查先在 test 中仅选择 orders，再将未检查的 legacy-worker 加入服务清单。
+| 条件 | 对 payments/H1 的结论 |
+| --- | --- |
+| staging 路由和提供方均完整，C7、C8 唯一绑定 H1 | 两个已确认调用点来自一个服务 orders。B2 的目标未知，legacy-worker 未采集，服务总数未知。 |
+| C7 的适用路由表缺失，或目标服务的提供方清单缺失 | C7 未决。若完整路由表明确给出零个目标，则可排除 C7。 |
+| 两条适用路由分别指向 H1 和 H2 | 两个候选均保留。即使只观察到 H1，只要另一目标的提供方清单缺失，C7 仍未决。 |
+| B2 已解析到 sandbox-pay，补采请求后未发现新增调用点 | 若服务清单完整，精确计数为 1；清单开放时，只能确认下界为 1。 |
+| 在 test 中仅检查 orders，路由指向 sandbox-pay | 对该范围的精确计数为 0。加入未采集的 legacy-worker 后，已确认数仍为 0，精确总数未知。 |
 
 现有拓扑按配置的 graphId 执行规则，对 (source, target, protocol) 汇总权重并去重 operation 和 evidence。可将上面的调用点结果投影到服务对，同时保留详细依据供反查；既有规则的权重仍按其原定义计算。旧工作流的每个注册图仍映射到一个服务，C4、拓扑与按 graphId 分组的 endpoints 保持既有契约。若要证明跨服务字段级数据流，还需序列化字段、协议版本以及对端解码映射等证据，单个端点匹配只能支持操作级影响。[拓扑查询契约](topology-graph.md) · [现有跨图规则示例](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 

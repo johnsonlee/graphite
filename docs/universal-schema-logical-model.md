@@ -71,48 +71,14 @@ For service topology, the existing README `--topology` rule takes the caller fro
 
 ### Reproduce a save, reopen and query through the public CLI
 
-The following check compiles two overloads with the same name and different JVM descriptors, `([B)V` and `([[B)V`. Both have the owner `com.example.ByteArrays`. Mapping the declarations to virtual `Method` nodes must preserve both type lists and their array ranks. The fixture also carries a literal argument and a packaged properties file. It exercises the README's dataflow and resource queries against the saved archive. Run from the repository root with Python 3, JDK 17 and an installed CLI with its matching JVM frontend. Set `GRAPHITE_BIN` to an absolute executable path when testing a particular build.
+After saving and reopening the fixture JAR, the following query results must survive. Both overloads belong to `com.example.ByteArrays` and have descriptors `([B)V` and `([[B)V`, respectively. [Executable acceptance cases](../examples/universal-schema/logical-model.doctest)
 
-```sh
-python3 -m doctest docs/universal-schema-logical-model.md
-```
-
-```pycon
->>> import json, os, subprocess, tempfile
->>> from pathlib import Path
->>> tmp = tempfile.TemporaryDirectory()
->>> work = Path(tmp.name)
->>> def run(*args):
-...     return subprocess.run(args, cwd=work, capture_output=True, text=True,
-...                           check=True, env={**os.environ, "JAVA_TOOL_OPTIONS": "-Xmx4g"}).stdout
->>> source = """package com.example;
-... public class ByteArrays {
-...     public static void radixSort(byte[] values) {}
-...     public static void radixSort(byte[][] values) {}
-...     public static void consume(int value) {}
-...     public static void example() { consume(17); }
-... }"""
->>> _ = (work / "ByteArrays.java").write_text(source)
->>> _ = run("javac", "--release", "17", "-d", "classes", "ByteArrays.java")
->>> _ = (work / "classes/application.properties").write_text("feature.mode=canary\n")
->>> _ = run("jar", "--create", "--file", "app.jar", "-C", "classes", ".")
->>> cli = os.getenv("GRAPHITE_BIN", "graphite")
->>> _ = run(cli, "build", "app.jar", "-o", "app.graphite", "--include", "com.example")
->>> def query(cypher):
-...     result = json.loads(run(cli, "query", "--format", "json", "app.graphite", cypher))
-...     assert result["rowCount"] == len(result["rows"])
-...     return result["columns"], result["rows"]
->>> query("MATCH (m:Method) WHERE m.class = 'com.example.ByteArrays' AND m.name = 'radixSort' RETURN m.parameter_types AS parameters ORDER BY parameters")
-(['parameters'], [{'parameters': ['byte[]']}, {'parameters': ['byte[][]']}])
->>> query("MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode) WHERE cs.callee_class =~ 'com.example.*' RETURN c.value, cs.callee_name")
-(['c.value', 'cs.callee_name'], [{'c.value': 17, 'cs.callee_name': 'consume'}])
->>> query('MATCH (r:ResourceValue {key: "feature.mode"}) RETURN r.path, r.value')
-(['r.path', 'r.value'], [])
->>> query("MATCH (f:ResourceFile {path: 'application.properties'}) RETURN f.path, f.format")
-(['f.path', 'f.format'], [{'f.path': 'application.properties', 'f.format': 'properties'}])
->>> tmp.cleanup()
-
-```
+| Cypher | Expected result |
+| --- | --- |
+| `MATCH (m:Method) WHERE m.class = 'com.example.ByteArrays' AND m.name = 'radixSort' RETURN m.parameter_types AS parameters ORDER BY parameters` | `["byte[]"]`, `["byte[][]"]` |
+| `MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode) WHERE cs.callee_class =~ 'com.example.*' RETURN c.value, cs.callee_name` | `17`, `consume` |
+| `MATCH (r:ResourceValue {key: "feature.mode"}) RETURN r.path, r.value` | 0 rows |
+| `MATCH (f:ResourceFile {path: 'application.properties'}) RETURN f.path, f.format` | `application.properties`, `properties` |
 
 For the dataflow result, the model must preserve a typed integer, the directed dataflow path, and the call site's callee properties. The resource results distinguish two observations on this JVM input. The file was recorded. The JVM frontend did not turn its contents into a `ResourceValue` for the key. Returning zero key rows preserves that public projection even though the source file contains `feature.mode`. This check ran with Graphite 2.18.0. The repository's separate quickstart, `bash examples/quickstart/run.sh`, returned `{"flag":42,"method":"enableFeature"}` and `{"caller":"demo.Checkout.startCheckout()"}`. The class-literal tests exercise newer readers on a saved directory and a packed graph, including the distinction between the literal descriptor and a string containing the same text. [README queries](../README.md#query-resources-with-cypher) · [Quickstart](../examples/quickstart/run.sh) · [JVM resource contract](../frontend/jvm/sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ResourceConfigLinkingTest.kt) · [Class-literal queries](../backend/cypher/tests/class_constant.rs)
 
@@ -199,77 +165,15 @@ The system view selects one revision of each service. Both orders and billing pa
 
 The example fixes the protocol, verb and path to HTTP `POST /refunds`. Every listed request has independent call-site evidence. SDK membership supplies none. A route entry enumerates **all** applicable destinations for that environment and alias. A provider entry enumerates **all** handlers for that service revision and operation. An empty set certifies no match in that scope. An absent entry leaves the scope unknown. A partial extraction with known candidates must retain those candidates as evidence and leave enumeration open. The small fixture below uses complete entries or missing entries.
 
-The resolver has one deterministic rule: follow the selected alias and match the operation at its destinations. Its declared scope excludes fallback routes, rewrites and runtime overrides. A definite binding requires a known request, complete applicable routing and provider evidence, and exactly one admissible handler after applying all rules. The basis for that binding identifies the site, matching route and provider entries, their coverage claims and the rule applied. Ambiguous candidates remain visible. A missing fact that could change the answer leaves the site unresolved. Production resolvers must establish these conditions from their own rules and coverage. Run `python3 -m doctest docs/universal-schema-logical-model.md` to check the example.
+The resolver has one deterministic rule: follow the selected alias and match the operation at its destinations. Its declared scope excludes fallback routes, rewrites and runtime overrides. A definite binding requires a known request, complete applicable routing and provider evidence, and exactly one admissible handler after applying all rules. The basis for that binding identifies the site, matching route and provider entries, their coverage claims and the rule applied. Ambiguous candidates remain visible. A missing fact that could change the answer leaves the site unresolved. Production resolvers must establish these conditions from their own rules and coverage. [Binding and counting acceptance cases](../examples/universal-schema/logical-model.doctest)
 
-```pycon
->>> inventory = {'orders', 'billing', 'payments', 'sandbox-pay', 'legacy-worker'}
->>> requests = [('orders', 'C7', 'pay'), ('orders', 'C8', 'pay'), ('billing', 'B2', None)]
->>> routes = {('staging', 'pay'): {'payments'}, ('test', 'pay'): {'sandbox-pay'}}
->>> providers = {'payments': {'H1'}, 'sandbox-pay': {'H2'}}
->>> target = ('payments', 'H1')
->>> def resolve(environment, alias, routes, providers):
-...     key = (environment, alias)
-...     if alias is None or key not in routes:
-...         return set(), None
-...     destinations = routes[key]
-...     candidates = {(service, handler) for service in destinations
-...                   for handler in providers.get(service, set())}
-...     return candidates, destinations - providers.keys()
->>> def callers(environment, target, requests, routes, providers):
-...     confirmed, unresolved = set(), set()
-...     for service, site, alias in requests:
-...         candidates, gaps = resolve(environment, alias, routes, providers)
-...         if gaps == set() and candidates == {target}:
-...             confirmed.add((service, site))
-...         elif gaps is None or target[0] in gaps or target in candidates:
-...             unresolved.add((service, site))
-...     return confirmed, unresolved
->>> known_sites = requests[:2]
->>> callers('test', target, known_sites, routes, providers)
-(set(), set())
->>> callers('staging', target, known_sites[:1], {}, providers)
-(set(), {('orders', 'C7')})
->>> callers('staging', target, known_sites[:1], {('staging', 'pay'): set()}, providers)
-(set(), set())
->>> callers('staging', target, known_sites[:1], routes, {})
-(set(), {('orders', 'C7')})
->>> ambiguous = {('staging', 'pay'): {'payments', 'sandbox-pay'}}
->>> callers('staging', target, known_sites[:1], ambiguous, {'payments': {'H1'}})
-(set(), {('orders', 'C7')})
->>> sorted(resolve('staging', 'pay', ambiguous, providers)[0])
-[('payments', 'H1'), ('sandbox-pay', 'H2')]
->>> callers('staging', target, known_sites[:1], ambiguous, providers)
-(set(), {('orders', 'C7')})
->>> confirmed, unresolved = callers('staging', target, requests, routes, providers)
->>> sorted(confirmed), sorted(unresolved)
-([('orders', 'C7'), ('orders', 'C8')], [('billing', 'B2')])
->>> def distinct_callers(confirmed, unresolved, missing_requests, inventory_complete):
-...     known = {service for service, site in confirmed}
-...     possible = missing_requests | {service for service, site in unresolved}
-...     exact = inventory_complete and possible <= known
-...     return len(known), len(known) if exact else None
->>> covered_requests = {'orders', 'billing', 'payments', 'sandbox-pay'}
->>> missing_requests = inventory - covered_requests
->>> distinct_callers(confirmed, unresolved, missing_requests, True)
-(1, None)
->>> distinct_callers(confirmed, unresolved, set(), True)
-(1, None)
->>> resolved_requests = known_sites + [('billing', 'B2', 'sandbox')]
->>> complete_routes = {**routes, ('staging', 'sandbox'): {'sandbox-pay'}}
->>> found, pending = callers('staging', target, resolved_requests, complete_routes, providers)
->>> distinct_callers(found, pending, set(), False)
-(1, None)
->>> distinct_callers(found, pending, set(), True)
-(1, 1)
->>> no_sites, open_sites = callers('test', target, known_sites, routes, providers)
->>> distinct_callers(no_sites, open_sites, set(), True)
-(0, 0)
->>> distinct_callers(no_sites, open_sites, {'legacy-worker'}, True)
-(0, None)
-
-```
-
-The two confirmed sites count as one caller, orders. Billing remains unresolved even when its request collection is complete. Collecting all legacy-worker requests would close that service’s gap, yet B2 could still add a caller. The checks using the resolved request list assume the completed request inventory added no sites and new evidence resolves B2 to sandbox-pay. An exact count of one then depends on the service inventory itself being complete. The final zero-count checks select orders alone in test, then extend that inventory with the unexamined legacy-worker. The count function returns the confirmed lower bound followed by the exact count when established.
+| Condition | Conclusion for payments/H1 |
+| --- | --- |
+| Complete staging routes and provider inventory bind C7 and C8 uniquely to H1 | Two confirmed sites belong to one service, orders. B2 has an unknown destination and legacy-worker has uncollected requests, so the total service count is unknown. |
+| C7’s applicable route table or the destination’s provider inventory is missing | C7 is unresolved. A complete route table with zero destinations excludes C7. |
+| Two applicable routes lead to H1 and H2 | Retain both candidates. Even if only H1 has been observed, C7 remains unresolved while the other destination’s provider inventory is missing. |
+| B2 resolves to sandbox-pay and completing request collection adds no sites | With a complete service inventory the exact count is one. With an open inventory only the lower bound of one is established. |
+| Only orders is in scope in test, where the route leads to sandbox-pay | The exact count for that scope is zero. Adding the unexamined legacy-worker leaves zero confirmed and the exact total unknown. |
 
 The existing topology runs rules over the configured graphIds, aggregates weights by (source, target, protocol) and deduplicates operation and evidence. The call-site results above can be projected onto service pairs while retaining the detailed evidence for inspection. Existing rules keep their original weight calculations. Each graph registered through the legacy workflow still maps to one service. C4, topology and endpoints grouped by graphId retain their existing contracts. Establishing field-level dataflow across services also requires evidence about serialized fields, protocol versions and the peer’s decoding map. An endpoint match alone supports only operation-level impact. [Topology query contract](topology-graph.md) · [Existing cross-graph rule example](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 
