@@ -1181,15 +1181,27 @@ edge semantics is a change to the model, made in the frontends and both engines.
 Pluggable via `GraphiteExtension` SPI (ServiceLoader):
 
 ```kotlin
-class MyExtension : GraphiteExtension {
+class RouterExtension : GraphiteExtension {
     override fun visit(sootClass: SootClass, context: GraphiteContext) {
-        // Extract domain-specific metadata during graph building
-        context.addMemberAnnotation(className, memberName, annotationFqn, values)
+        // State what the framework knows and the bytecode does not say.
+        val className = sootClass.type.fullyQualifiedName
+        if (className.endsWith("Routes")) {
+            context.addMemberAnnotation(className, GraphiteContext.CLASS_MEMBER, "acme.Router", mapOf("prefix" to "/api"))
+        }
     }
 }
 ```
 
 Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
+
+`addMemberAnnotation(className, memberName, annotationFqn, values)` records the fact exactly
+as an annotation the bytecode carries: it is persisted with the graph, read by
+`Graph.memberAnnotations`, matched in Cypher as an `Annotation` node
+(`MATCH (a:Annotation) WHERE a.name = 'acme.Router' RETURN a.class, a.member`), and seen by
+every view derived from annotations, such as the endpoints view when the name is one of the
+Spring mapping annotations. `annotationFqn` is the name queries match and need not be a class
+that exists. An extension is called once per application class, after the class's methods and
+fields; it cannot add node kinds or edges.
 
 ## Kotlin Dependencies
 

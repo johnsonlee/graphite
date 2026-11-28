@@ -139,7 +139,8 @@ internal class GraphConstruction(private val context: SootUpAdapter) {
         val extensionContext = GraphiteContext(
             methodDescriptorFactory = descriptors::toMethodDescriptor,
             logger = declarations::log,
-            resources = resourceAccessor
+            resources = resourceAccessor,
+            annotations = metadata::recordAnnotation
         )
         classes.forEach { sootClass ->
             val className = sootClass.type.fullyQualifiedName

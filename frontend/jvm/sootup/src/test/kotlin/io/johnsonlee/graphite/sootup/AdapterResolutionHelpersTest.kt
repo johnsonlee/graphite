@@ -146,6 +146,41 @@ internal class AdapterResolutionHelpersTest : AdapterTestFixtures() {
     }
 
     @Test
+    fun `an extension's annotation enters the graph as an annotation of the bytecode does`() {
+        val routes = FakeSootClass(identifierFactory.getClassType("sample.fake.Routes"))
+        val extension = object : GraphiteExtension {
+            override fun visit(sootClass: SootClass, context: GraphiteContext) {
+                val className = sootClass.type.fullyQualifiedName
+                context.addMemberAnnotation(
+                    className, GraphiteContext.CLASS_MEMBER, "acme.Router",
+                    mapOf("prefix" to "/api", "weight" to 3, "tags" to listOf("a", "b"), "blank" to "", "opaque" to StringBuilder("x"))
+                )
+                context.addMemberAnnotation(className, "list", "acme.Route")
+            }
+        }
+        val adapter = SootUpAdapter(
+            view = FakeView(listOf(routes), identifierFactory),
+            config = LoaderConfig(includePackages = listOf("sample.fake"), buildCallGraph = false),
+            extensions = listOf(extension),
+            resourceAccessor = EmptyResourceAccessor,
+            inputLocationSources = emptyMap(),
+            graphBuilder = DefaultGraph.Builder()
+        )
+
+        val graph = adapter.buildGraph()
+
+        // Values are normalized as a bytecode annotation's are: an empty one is dropped, an object is its text.
+        val router = mapOf("prefix" to "/api", "weight" to 3, "tags" to listOf("a", "b"), "blank" to null, "opaque" to "x")
+        assertEquals(mapOf("acme.Router" to router), graph.memberAnnotations("sample.fake.Routes", "<class>"))
+        assertEquals(mapOf("acme.Route" to emptyMap<String, Any?>()), graph.memberAnnotations("sample.fake.Routes", "list"))
+        val nodes = graph.nodes(io.johnsonlee.graphite.core.AnnotationNode::class.java).toList()
+        assertEquals(
+            setOf(Triple("acme.Router", "<class>", router), Triple("acme.Route", "list", emptyMap())),
+            nodes.filter { it.className == "sample.fake.Routes" }.map { Triple(it.name, it.memberName, it.values) }.toSet()
+        )
+    }
+
+    @Test
     fun `build graph reports progress for large class sets`() {
         val logs = mutableListOf<String>()
         val classes = (1..500).map {

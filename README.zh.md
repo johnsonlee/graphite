@@ -734,13 +734,18 @@ Graphite 有意不提供把框架语义（Spring、Dagger、Android 生命周期
 通过 `GraphiteExtension` SPI（ServiceLoader）实现可插拔扩展：
 
 ```kotlin
-class MyExtension : GraphiteExtension {
+class RouterExtension : GraphiteExtension {
     override fun visit(sootClass: SootClass, context: GraphiteContext) {
-        // Extract domain-specific metadata during graph building
-        context.addMemberAnnotation(className, memberName, annotationFqn, values)
+        // 写入框架知道、而字节码没有表达的事实。
+        val className = sootClass.type.fullyQualifiedName
+        if (className.endsWith("Routes")) {
+            context.addMemberAnnotation(className, GraphiteContext.CLASS_MEMBER, "acme.Router", mapOf("prefix" to "/api"))
+        }
     }
 }
 ```
+
+`addMemberAnnotation(className, memberName, annotationFqn, values)` 写入的事实与字节码自带的注解完全一样：随图持久化，可通过 `Graph.memberAnnotations` 读取，在 Cypher 中作为 `Annotation` 节点匹配（`MATCH (a:Annotation) WHERE a.name = 'acme.Router' RETURN a.class, a.member`），也会被所有基于注解推导的视图看到（例如名称是 Spring 映射注解时的 endpoints 视图）。`annotationFqn` 是查询匹配用的名称，不要求是真实存在的类。扩展对每个应用类调用一次，在该类的方法和字段处理之后；它不能新增节点类型或边。
 
 在 `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension` 中注册。
 

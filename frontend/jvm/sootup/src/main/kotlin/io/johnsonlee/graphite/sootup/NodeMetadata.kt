@@ -56,20 +56,28 @@ internal class NodeMetadata(private val context: SootUpAdapter) {
             val fullName = getAnnotationFullName(annot)
             if (fullName.isEmpty()) continue
 
-            val values = getAnnotationValues(annot)
-            val cleanValues = mutableMapOf<String, Any?>()
-            for ((key, value) in values) {
-                cleanValues[key] = normalizeAnnotationValue(value)
-            }
-            graphBuilder.addMemberAnnotation(className, memberName, fullName, cleanValues)
-            graphBuilder.addNode(AnnotationNode(
-                id = NodeId.next(),
-                name = fullName,
-                className = className,
-                memberName = memberName,
-                values = cleanValues
-            ))
+            recordAnnotation(className, memberName, fullName, getAnnotationValues(annot))
         }
+    }
+
+    /**
+     * Records the annotation [fullName] on [memberName] of [className] (`<class>` for the class itself), as member metadata and as
+     * an [AnnotationNode]: the one way an annotation enters the graph, for the ones the bytecode carries and for the ones a
+     * [GraphiteExtension] adds. Values are normalized to what the graph persists.
+     */
+    fun recordAnnotation(className: String, memberName: String, fullName: String, values: Map<String, Any?>) {
+        val cleanValues = mutableMapOf<String, Any?>()
+        for ((key, value) in values) {
+            cleanValues[key] = normalizeAnnotationValue(value)
+        }
+        graphBuilder.addMemberAnnotation(className, memberName, fullName, cleanValues)
+        graphBuilder.addNode(AnnotationNode(
+            id = NodeId.next(),
+            name = fullName,
+            className = className,
+            memberName = memberName,
+            values = cleanValues
+        ))
     }
 
     fun normalizeAnnotationValue(value: Any?): Any? = when (value) {

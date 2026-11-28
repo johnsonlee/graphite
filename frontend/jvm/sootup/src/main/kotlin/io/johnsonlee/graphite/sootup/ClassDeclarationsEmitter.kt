@@ -53,7 +53,7 @@ internal class ClassDeclarationsEmitter(private val context: SootUpAdapter) {
         try {
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
                 val className = sootClass.type.fullyQualifiedName
-                metadata.extractAnnotations(sootClass.annotations, className, "<class>")
+                metadata.extractAnnotations(sootClass.annotations, className, GraphiteContext.CLASS_MEMBER)
                 sootClass.fields.inDeterministicOrder().forEach { field ->
                     metadata.extractAnnotations(field.annotations, className, field.name)
                 }

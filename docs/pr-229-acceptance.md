@@ -56,7 +56,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 | 5 | Query service: paging, wide hierarchy, capabilities | Addressed, with stated limits | `query-service.txt` |
 | 6 | Memory/scale: process-wide ids, max-id-sized indexes | Repeated-build drift fixed. The max-id sizing is kept and pinned as a contract. Matched multi-graph measurements exist for Linux and do not reproduce the review's two findings; performance is **not accepted** | `repeated-builds.txt`, `performance-linux.txt` |
 | 7 | Engineering: scheduling-sensitive tests, slow verification | Four tests made deterministic. The complete verification path is **not** faster; only the affected-change first pass is | source references below |
-| 8 | Framework-semantic extension layer | Design boundary, not implemented | contract below |
+| 8 | Framework-semantic extension layer | The documented extension write API now exists (it did not). A framework layer remains a design boundary, not implemented | section 8 |
 
 ---
 
@@ -426,17 +426,31 @@ parallel. Some plans:
 
 ## 8. Framework-semantic extension boundary
 
-This is a **design boundary**. This PR adds no framework-semantic layer, and documenting the
-boundary is not counted as an implementation.
+**Reproducer (baseline source, `70f908c`).** The README told an extension to call
+`context.addMemberAnnotation(...)`, and the SPI's own documentation named
+`GraphiteContext.writer`. Neither existed: `GraphiteContext` offered `toMethodDescriptor`, `log`
+and `resources`, so an extension could read a class and write nothing. The extension mechanism
+carried no framework knowledge into any graph.
 
-The supported extension contract:
-- the `GraphiteExtension` SPI in `:sootup` (endpoint and annotation processing per class);
-- fold rules (`docs/constant-folding.md`);
-- Cypher queries over the persisted node schema.
+**Candidate.** `GraphiteContext.addMemberAnnotation(className, memberName, annotationFqn,
+values)` records a fact through the one path a bytecode annotation takes
+(`NodeMetadata.recordAnnotation`): member metadata plus an `Annotation` node, normalized,
+persisted, and visible to `Graph.memberAnnotations`, to Cypher and to the views derived from
+annotations. A context without a class, member or name is refused.
 
-Framework semantics beyond those (for example, dependency-injection wiring or
-routing tables as first-class facts) remain the extension's or the query's job (README,
-"Extension Mechanism").
+Committed tests: `GraphiteContextTest` (the writer receives the fact; an incomplete one is
+refused and writes nothing) and `AdapterResolutionHelpersTest` (an extension's annotations on a
+class and on a member are in the built graph, as metadata and as nodes, with the values a
+bytecode annotation would have).
+
+**Still a design boundary.** This is the write half of the documented contract, not a
+framework layer:
+- an extension adds annotations; it cannot add node kinds or edges, and the JavaScript and
+  Apple frontends have no extension point;
+- dependency-injection wiring, routing tables and lifecycles are not first-class facts. A
+  query or an extension derives them, as the endpoints view derives routes from mapping
+  annotations (README, "Extension Mechanism");
+- no extension ships with Graphite.
 
 ---
 
