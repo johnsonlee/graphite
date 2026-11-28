@@ -143,7 +143,7 @@ fn every_window_of_a_union_is_a_prefix_of_its_whole_result() {
         state ^= state << 17;
         state % bound
     };
-    let mut list = |length: u64, domain: u64, next: &mut dyn FnMut(u64) -> u64| {
+    let list = |length: u64, domain: u64, next: &mut dyn FnMut(u64) -> u64| {
         let items: Vec<String> = (0..length).map(|_| next(domain).to_string()).collect();
         format!("[{}]", items.join(","))
     };
