@@ -151,11 +151,17 @@ class HeapTest(unittest.TestCase):
         self.assertIn("FAIL: jvm-1.log logged no Heap Max Capacity", silent.stdout)
         self.assertEqual(self.heap({}).returncode, 1, "no JVM logged at all")
 
-    def bound(self, heap, then=""):
-        script = ('REPLAY_SOURCE_ONLY=1 source %s\nHEAP_LOGS=%s\nREPLAY_HEAP=\"%s\" bound_jvm_heap\n'
-                  'echo "opts=$JAVA_TOOL_OPTIONS"\n%s\n') % (
+    def bound(self, heap, then="", inherited=None):
+        """Runs the real guard with REPLAY_HEAP=heap, then `then`, under an inherited
+        _JAVA_OPTIONS (absent when None)."""
+        script = ('REPLAY_SOURCE_ONLY=1 source %s\nHEAP_LOGS=%s\nREPLAY_HEAP="%s" bound_jvm_heap\n'
+                  'echo "opts=$_JAVA_OPTIONS"\n%s\n') % (
                       os.path.join(HERE, "replay.sh"), self.logs, heap, then)
-        return subprocess.run(["bash", "-c", script], capture_output=True, text=True)
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS")}
+        if inherited is not None:
+            env["_JAVA_OPTIONS"] = inherited
+        return subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -174,12 +180,41 @@ class HeapTest(unittest.TestCase):
         self.assertIn("opts=-Xmx8g -Xlog:gc+init=info:file=%s/jvm-%%p-%%t.log" % self.logs,
                       accepted.stdout)
 
+    def test_an_inherited_heap_option_is_overridden_before_any_jvm_starts(self):
+        # Review of #229: an inherited _JAVA_OPTIONS=-Xmx9g outranked the bound the guard put in
+        # JAVA_TOOL_OPTIONS, so a JVM could run above the ceiling. The guard alone, no JVM
+        # started: the bound is the last option of _JAVA_OPTIONS, which a JVM reads last.
+        guarded = self.bound("4g", inherited="-XX:+UnlockDiagnosticVMOptions -Xmx9g")
+        self.assertEqual(guarded.returncode, 0, guarded.stderr)
+        opts = guarded.stdout.split("opts=", 1)[1].splitlines()[0].split()
+        self.assertEqual(opts[:3], ["-XX:+UnlockDiagnosticVMOptions", "-Xmx9g", "-Xmx4g"])
+        heap_flags = [o for o in opts if o.startswith(("-Xmx", "-XX:MaxHeapSize"))]
+        self.assertEqual(heap_flags[-1], "-Xmx4g", "the bound is the last heap option")
+
+    def test_identities_keep_only_the_heap_options_of_an_inherited_java_tool_options(self):
+        script = ('REPLAY_SOURCE_ONLY=1 source %s\ncd %s\n'
+                  'heap_options "-Dhttps.proxyPort=1 -Dh=127.*|* -Xmx2g -XX:MaxRAMPercentage=50"\n'
+                  'heap_options "-Dx=1"\nheap_options ""\n') % (
+                      os.path.join(HERE, "replay.sh"), HERE)
+        ran = subprocess.run(["bash", "-c", script], capture_output=True, text=True)
+        self.assertEqual(ran.returncode, 0, ran.stderr)
+        self.assertEqual(ran.stdout.split("\n")[:3], ["-Xmx2g -XX:MaxRAMPercentage=50 ", "none", "none"])
+
     @unittest.skipUnless(shutil.which("java"), "needs a JVM")
-    def test_a_real_jvm_logs_the_heap_it_got_and_a_later_xmx_wins(self):
-        ran = self.bound("2g", 'java -version 2>/dev/null; java -Xmx1g -version 2>/dev/null; '
-                               'python3 %s "$HEAP_LOGS"' % os.path.join(HERE, "heap.py"))
+    def test_every_inherited_or_later_heap_option_yields_to_the_bound(self):
+        # Small sizes, so no JVM in this test reserves a large heap: the bound is 64m and every
+        # other heap option asks for more, through each place a JVM reads one.
+        ran = self.bound(
+            "64m",
+            'java -version 2>/dev/null; '
+            'java -Xmx1g -version 2>/dev/null; '
+            'java -XX:MaxHeapSize=1g -version 2>/dev/null; '
+            'JAVA_TOOL_OPTIONS=-Xmx256m java -version 2>/dev/null; '
+            'JDK_JAVA_OPTIONS=-Xmx512m java -version 2>/dev/null; '
+            'python3 %s "$HEAP_LOGS"' % os.path.join(HERE, "heap.py"),
+            inherited="-Xmx128m")
         self.assertEqual(ran.returncode, 0, ran.stdout + ran.stderr)
-        self.assertIn("== 2 JVMs: 1 x 1073741824 bytes, 1 x 2147483648 bytes", ran.stdout)
+        self.assertIn("== 5 JVMs: 5 x 67108864 bytes", ran.stdout)
 
 
 class ReplayTest(unittest.TestCase):

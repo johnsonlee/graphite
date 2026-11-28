@@ -27,13 +27,15 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
   - `save-into.jsh`;
   - `heap.py`: the effective heap of every JVM the replay started.
 
-  Every JVM is bounded. The replay exports `JAVA_TOOL_OPTIONS=-Xmx4g` (`REPLAY_HEAP`,
-  refused above `8g`), and each JVM logs the `Heap Max Capacity` it actually got, after
-  any later `-Xmx` (`-Xlog:gc+init`). Those JVMs are `java`, `javac`, `jar`, `jshell` with
-  its remote VM, and the frontend that `graphite build` starts. `jvm-heap.txt` lists one
-  line per JVM. The replay fails when any JVM ran above 8 GiB or logged nothing. The CLI's
-  own frontend-version and fold-plan probes set `-Xmx256m` in code (`cli/src/main.rs`,
-  `cli/src/fold.rs`) and are not logged.
+  Every JVM is bounded before it starts. The replay appends `-Xmx4g` (`REPLAY_HEAP`,
+  refused above `8g`) to `_JAVA_OPTIONS`, which HotSpot reads after `JAVA_TOOL_OPTIONS`,
+  `JDK_JAVA_OPTIONS` and the command line. The last heap option wins, so the bound holds
+  over any heap option a JVM inherited or was started with: an inherited `-Xmx9g`, jshell's
+  `-R-Xmx3g`, and the CLI's `-Xmx256m` probes. Each JVM also logs the `Heap Max Capacity`
+  it actually got (`-Xlog:gc+init`). Those JVMs are `java`, `javac`, `jar`, `jshell` with
+  its remote VM, the frontend that `graphite build` starts, and the CLI's frontend-version
+  and fold-plan probes. `jvm-heap.txt` lists one line per JVM. The replay fails when any
+  JVM ran above 8 GiB or logged nothing.
 
   Base and candidate always ran the same input, and every graph was built by its own
   revision's frontend. Another checkout reproduces both columns by building `70f908c` and
@@ -396,7 +398,8 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | A raw probe on top of the distinct lookahead evaluated a row nothing needed | `39ae076` | route test (`1.0/(7-…)` UNION, page of 6, failing before with Division by zero) |
 | Evidence harness counted a crash as a rejection, ignored failed steps, trusted any listener on its port | `39ae076` | `test_replay.py` (classifier, crashing binary, failing build) |
 | A `{ ...; } \|\| handler` block in the replay hid a failed candidate command followed by a passing one | `717b45e` | `test_replay.py` `SectionPropagationTest` (bit flip, completeness, differential; failing before) |
-| Effective heap ≤ 8 GiB not shown for every JVM of the replay | the commit adding `heap.py` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |
+| Effective heap ≤ 8 GiB not shown for every JVM of the replay | `c428401` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |
+| An inherited `_JAVA_OPTIONS` heap outranked the replay's bound | the commit moving the bound to `_JAVA_OPTIONS` | `HeapTest` (guard alone with `-Xmx9g` inherited; real JVMs asking for more through every source get 64 MiB; failing before) |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which

@@ -1,11 +1,11 @@
-"""The effective heap of every JVM a replay started, from the logs JAVA_TOOL_OPTIONS asked for.
+"""The effective heap of every JVM a replay started, from the logs _JAVA_OPTIONS asked for.
 
     heap.py <log-dir>
 
-replay.sh exports `JAVA_TOOL_OPTIONS=-Xmx<n> -Xlog:gc+init=info:file=<log-dir>/jvm-%p-%t.log`,
-so every JVM that reads it (java, javac, jar, jshell and its remote VM, the frontend a
-`graphite build` starts) writes the `Heap Max Capacity` it actually got, after every other
-heap option it was given (`-R-Xmx3g`, `_JAVA_OPTIONS`). Prints one line per JVM and a summary;
+replay.sh appends `-Xmx<n> -Xlog:gc+init=info:file=<log-dir>/jvm-%p-%t.log` to _JAVA_OPTIONS,
+which every JVM reads last (java, javac, jar, jshell and its remote VM, the frontend a
+`graphite build` starts, the CLI's probes), so each writes the `Heap Max Capacity` it actually
+got after every heap option it inherited or was given. Prints one line per JVM and a summary;
 exit 1 when no JVM logged, when a log has no capacity, or when any capacity exceeds 8 GiB.
 """
 import os
@@ -27,7 +27,7 @@ def main(argv):
     if len(argv) != 2:
         raise SystemExit(__doc__)
     names = sorted(n for n in os.listdir(argv[1]) if n.endswith(".log"))
-    print("# Effective JVM heap of every JVM that read the replay's JAVA_TOOL_OPTIONS")
+    print("# Effective JVM heap of every JVM that read the replay's _JAVA_OPTIONS")
     print("# (-Xlog:gc+init; ceiling 8 GiB = %d bytes)" % CEILING)
     failures, seen = [], {}
     for name in names:

@@ -234,61 +234,61 @@ cli parity: 168 passed, 60 failed of 228
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2598) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: c"
+    stderr: b"thread 'main' (13273) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f json: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2628) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: c"
+    stderr: b"thread 'main' (13303) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f csv: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2658) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: c"
+    stderr: b"thread 'main' (13333) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f CSV: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2689) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: c"
+    stderr: b"thread 'main' (13363) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f bogus: RETURN substring('abc', 2, -1) AS x
   kotlin: exit=1
     stderr: b'Error: Range [2, 1) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2719) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: c"
+    stderr: b"thread 'main' (13393) panicked at backend/cypher/src/semantics.rs:854:36:\nslice index starts at 2 but ends at 1\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: "
 
 --- query -f text: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2749) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pani"
+    stderr: b"thread 'main' (13423) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f json: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2779) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pani"
+    stderr: b"thread 'main' (13457) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f csv: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2812) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pani"
+    stderr: b"thread 'main' (13490) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f CSV: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2842) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pani"
+    stderr: b"thread 'main' (13520) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f bogus: RETURN substring('abc', 1, 9223372036854775807) AS x, substr
   kotlin: exit=1
     stderr: b'Error: Range [1, 0) out of bounds for length 3\n'
   rust: exit=101
-    stderr: b"thread 'main' (2873) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pani"
+    stderr: b"thread 'main' (13550) panicked at backend/cypher/src/functions.rs:325:18:\nattempt to add with overflow\nstack backtrace:\n   0: __rustc::rust_begin_unwind\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5\n   1: core::panicking::panic_fmt\n             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14\n   2: core::pan"
 
 --- query -f text: MATCH (n) DELETE n
   kotlin: exit=1

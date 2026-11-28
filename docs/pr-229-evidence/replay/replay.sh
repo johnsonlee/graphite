@@ -22,10 +22,12 @@
 # Every required command is checked on its own (`required`), never by a handler on the
 # block around it: `{ ...; } || handler` turns errexit off for the whole block, so a failed
 # command followed by a passing one would leave the block, and the replay, successful.
-# Every JVM the replay starts is bounded: JAVA_TOOL_OPTIONS sets -Xmx$REPLAY_HEAP (default 4g,
-# refused above 8g) and asks each JVM to log the heap it actually got; heap.py reads those logs
-# into jvm-heap.txt and fails the replay when a JVM ran above 8 GiB or did not log. The CLI's own
-# probes (frontend version, fold plan) replace JAVA_TOOL_OPTIONS with -Xmx256m and are not logged.
+# Every JVM the replay starts is bounded before it starts: -Xmx$REPLAY_HEAP (default 4g, refused
+# above 8g) is appended to _JAVA_OPTIONS, which a JVM reads after JAVA_TOOL_OPTIONS,
+# JDK_JAVA_OPTIONS and its command line, so the bound is the last heap option every JVM sees and
+# wins over any it inherited or was started with. Each JVM also logs the heap it actually got;
+# heap.py reads those logs into jvm-heap.txt and fails the replay when a JVM ran above 8 GiB or
+# did not log.
 #
 # Sourced with REPLAY_SOURCE_ONLY=1, the script defines its sections without running them,
 # which is how test_replay.py drives each one with failing stubs.
@@ -51,7 +53,11 @@ rev_bin() { [ "$1" = base ] && echo "$BASE_BIN" || echo "$CAND_BIN"; }
 rev_jar() { [ "$1" = base ] && echo "$BASE_JAR" || echo "$CAND_JAR"; }
 rev_id() { [ "$1" = base ] && echo "baseline $BASE_REV" || echo "candidate $CAND_REV"; }
 quiet() { grep -v '^Picked up ' || true; }
-# Bounds every JVM's heap and has each log the heap it got, in $HEAP_LOGS.
+# Bounds every JVM's heap and has each log the heap it got, in $HEAP_LOGS. HotSpot applies
+# JAVA_TOOL_OPTIONS, then the command line (JDK_JAVA_OPTIONS included), then _JAVA_OPTIONS, and
+# the last heap option wins: appended to _JAVA_OPTIONS, the bound holds over an inherited
+# -Xmx9g, a -Xmx or -XX:MaxHeapSize on a command line, jshell's -R-Xmx3g and the CLI's -Xmx256m
+# probes. A larger inherited -Xms makes the JVM refuse to start rather than run above it.
 bound_jvm_heap() {
   local heap=${REPLAY_HEAP:-4g} n unit
   [[ $heap =~ ^([0-9]+)([mMgG])$ ]] || fail "REPLAY_HEAP=$heap is not <n>m or <n>g"
@@ -60,7 +66,16 @@ bound_jvm_heap() {
   [ "$n" -le 8192 ] || fail "REPLAY_HEAP=$heap exceeds the 8 GiB heap ceiling"
   [[ $HEAP_LOGS != *[[:space:]]* ]] || fail "the heap log directory $HEAP_LOGS holds whitespace"
   rm -rf "$HEAP_LOGS"; mkdir -p "$HEAP_LOGS"
-  export JAVA_TOOL_OPTIONS="-Xmx$heap -Xlog:gc+init=info:file=$HEAP_LOGS/jvm-%p-%t.log"
+  INHERITED_JAVA_OPTIONS=${_JAVA_OPTIONS:-}
+  export _JAVA_OPTIONS="${INHERITED_JAVA_OPTIONS:+$INHERITED_JAVA_OPTIONS }-Xmx$heap -Xlog:gc+init=info:file=$HEAP_LOGS/jvm-%p-%t.log"
+}
+heap_options() { # options -> the ones that can set a heap, or "none"
+  local found="" opt; local -a opts
+  read -ra opts <<< "$1"   # split on blanks only: no globbing of `127.*`
+  for opt in ${opts[@]+"${opts[@]}"}; do
+    [[ $opt =~ ^(-Xm[sx]|-XX:(.*Heap.*|.*RAM.*|VMOptionsFile|Flags)=) ]] && found+="$opt "
+  done
+  echo "${found:-none}"
 }
 heap_section() {
   python3 "$HERE/heap.py" "$HEAP_LOGS" > "$OUT/jvm-heap.txt" \
@@ -78,8 +93,10 @@ identities() {
     echo "candidate revision: $CAND_REV"
     sha256sum "$BASE_BIN" "$BASE_JAR" "$CAND_BIN" "$CAND_JAR" "$INPUT" "$WORK/acme.jar" | sed "s|$WORK/||"
     echo "acme sources: $(cd "$REPO" && git rev-parse HEAD 2>/dev/null) backend/bench/fixtures/acme/src"
-    echo "JAVA_TOOL_OPTIONS (every JVM): $JAVA_TOOL_OPTIONS" | sed "s|$OUT/||"
-    echo "_JAVA_OPTIONS (inherited): ${_JAVA_OPTIONS:-}"
+    echo "_JAVA_OPTIONS (every JVM, read last): $_JAVA_OPTIONS" | sed "s|$OUT/||"
+    echo "_JAVA_OPTIONS (inherited): $INHERITED_JAVA_OPTIONS"
+    # Only the heap-related options: the rest is the host's (proxy, trust store) and not evidence.
+    echo "JAVA_TOOL_OPTIONS (inherited), heap options: $(heap_options "${JAVA_TOOL_OPTIONS:-}")"
     { java -version 2>&1 || true; } | quiet | head -1
     javac -version 2>&1 | quiet
     uname -srm

@@ -15,7 +15,7 @@ t,n
 "CONTROL_FLOW",3415
 "DATAFLOW",30297
 ### candidate 717b45e: graph.labels cut by 1 bytes
-Error: corrupt graph: /tmp/tmp.BBKoASRiR9/trunc/graph.labels: 33844 bytes, but graph.manifest lists 33845; the graph was modified or cut short
+Error: corrupt graph: /tmp/tmp.qWLFQNjfDb/trunc/graph.labels: 33844 bytes, but graph.manifest lists 33845; the graph was modified or cut short
 exit=1
 ### baseline 70f908c: graph.nodedata cut by 64 bytes
 t,n
@@ -23,7 +23,7 @@ t,n
 "CONTROL_FLOW",3415
 "DATAFLOW",30296
 ### candidate 717b45e: graph.nodedata cut by 64 bytes
-Error: corrupt graph: /tmp/tmp.BBKoASRiR9/trunc/graph.nodedata: 1359392 bytes, but graph.manifest lists 1359456; the graph was modified or cut short
+Error: corrupt graph: /tmp/tmp.qWLFQNjfDb/trunc/graph.nodedata: 1359392 bytes, but graph.manifest lists 1359456; the graph was modified or cut short
 exit=1
 ### baseline 70f908c: forward.graph cut by 16 bytes
 t,n
@@ -31,5 +31,5 @@ t,n
 "CONTROL_FLOW",3415
 "DATAFLOW",30294
 ### candidate 717b45e: forward.graph cut by 16 bytes
-Error: corrupt graph: /tmp/tmp.BBKoASRiR9/trunc/forward.graph: 38485 bytes, but graph.manifest lists 38501; the graph was modified or cut short
+Error: corrupt graph: /tmp/tmp.qWLFQNjfDb/trunc/forward.graph: 38485 bytes, but graph.manifest lists 38501; the graph was modified or cut short
 exit=1
