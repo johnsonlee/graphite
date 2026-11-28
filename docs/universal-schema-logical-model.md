@@ -4,11 +4,13 @@ English | [简体中文](universal-schema-logical-model.zh.md)
 
 Design review draft. The [product scope agreed in #231](universal-schema-scope.md) governs this proposal. The compatibility baseline is the [README at 70f908cf](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md). The names below describe logical roles. Cypher labels, file formats, indexes and network APIs are separate design decisions.
 
-## 1. What should users be able to trace?
+## 1. Start with the program questions Graphite must answer
 
-Starting with an IPA, a user can find an extension, locate its executable image and ask which libraries that image declares it will load. Working backward from a refund API takes the user through service versions, routing configuration and client operations to individual call sites. Both paths require **identifiable objects, relationships with precise meanings, evidence for connections across boundaries, and a way to explain how much of the question the answer covers**.
+**Preserving the full supported scope is the first acceptance condition.** Take a JAR with two overloads of `radixSort`, one taking `byte[]` and the other `byte[][]`. A user who can distinguish those declarations today must still find both after saving and reopening the graph. Their owners, descriptors and public query results must survive the round trip. The same obligation applies across the supported inputs and interfaces in §5. An intentional semantic change requires the explicit review defined in #231.
 
-Each graph should publish facts that can be interpreted independently. An analysis over several selected graphs can then establish conditional relationships while preserving each graph's identities and conclusions. The same rule applies when a user adds a dSYM or changes the service routing configuration. The explicit references and namespaced definitions from #169 could express this model. Its record layout and codec remain separate choices. [Earlier prototype #169](https://github.com/johnsonlee/graphite/pull/169)
+**Single-artifact and whole-system analysis are both first-class use cases.** A service maintainer changing the payments refund API needs to find the call sites that could be affected across the system. Two services may package the same SDK. Attributing a refund call to one of them requires evidence from its code and from the routing configuration for the selected environment. Reporting that no other service calls the API also requires knowing which services and calls the analysis covered.
+
+Those questions determine the model. Each graph publishes scoped objects and facts with evidence. A system view connects facts across selected graphs under explicit conditions while preserving their original identities. We first check that model against supported inputs (§5) and a cross-service query (§6). Then we use prospective IPA, ELF and Mach-O inputs to test its extension boundaries (§7). The explicit references and namespaced definitions in #169 are one way to express the model. Physical design is a later decision. [Earlier prototype #169](https://github.com/johnsonlee/graphite/pull/169)
 
 ## 2. Objects, scope and identity
 
@@ -73,27 +75,7 @@ For each query, determine the object domain and required facts, then combine cov
 
 Check compatibility for the public projections of the Kotlin library, CLI, both existing engines, REST, MCP and Explorer against the same inputs, build options and legacy graphs. Compare original fact kinds, identifiers, properties and values, order and multiplicity, errors and coverage gaps. Intentional changes to public results still require individual declaration and review under #231. The table gives counterexamples for testing the model. Full product compatibility is an implementation acceptance criterion.
 
-## 6. Three boundaries illustrated by native samples
-
-### IPA and Mach-O: membership, load requests and candidate bindings
-
-We built an arm64 iOS executable named Demo and a dynamic library named Pay in a temporary directory. Demo’s C entry point references the external function `pay`, which the library defines. We put both binaries in a ZIP with an IPA member layout. The following observations come from independent tools. We checked package layout and static metadata only. We did not install or execute the sample. [Apple QA1798, Checking Distribution Entitlements (IPA inspection example)](https://developer.apple.com/library/archive/qa/qa1798/_index.html)
-
-| Tool observation | Fact in the model |
-| --- | --- |
-| `unzip -Z1 demo.ipa` lists `Payload/Demo.app/Demo` and `Payload/Demo.app/Frameworks/Pay.framework/Pay`. | Two member occurrences, each with its own content and image representation. |
-| `otool -l` on Demo shows `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` and `LC_RPATH @executable_path/Frameworks`. | The main image declares a dependency and supplies its own search condition. Its separate load request for a system library can remain an external reference. |
-| `otool -D` on Pay gives the same install name. Its `nm -gU` output includes a definition of `_pay`. Demo’s `nm -u` output includes an undefined `_pay`. | The search condition, member location, architecture and library identity support a static candidate. The symbol reference and export each stand on their own. The two symbol tables alone cannot locate a call site or establish execution. |
-
-**Counterfactual checks.** If Pay is removed from the package, Demo still declares its load request and the packaged candidate disappears. Adding a framework that matches none of Demo’s load requests can add facts about the framework and its package membership. Demo’s candidates stay the same. In a multi-architecture Mach-O, arm64 and x86_64 each have their own address domain and build UUID. Matching a dSYM by architecture and UUID adds source associations only to the corresponding slice. A matching filename with a different UUID cannot establish a binding. The last two cases follow from the specification. [Apple’s build UUID and dSYM rules](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
-
-### ELF: one number can denote two kinds of location
-
-We compiled the same Demo source to an AArch64 ELF object. `readelf -h` reported ELF64 and type REL. `readelf -Ws` showed a defined main and an undefined pay. `readelf -rW` showed an R_AARCH64_CALL26 relocation referencing pay at offset 0x10 in .text. The answer is “this object has a relocation reference to pay at .text+0x10.” Here `readelf -SW` places .text at file offset 0x40. Section offset 0x10 therefore identifies file byte 0x50, while file offset 0x10 identifies a byte in the ELF header. The number 0x10 needs a coordinate domain as well as an object identity. This sample supplies neither a dependency library name nor a final load address. [ELF relocation specification](https://gabi.xinuos.com/elf/06-reloc.html)
-
-Consider two further cases for a loadable ELF. If a PT_LOAD segment has file size 0x100 and memory size 0x180, segment-relative offset 0x120 falls in its zero-initialized region. It has an image location with no corresponding file byte. If the same shared library is supplied as a standalone file and as an APK member, its content should yield the same dynamic dependency requests. Which library a request resolves to still depends on the selected search context. Local function names can be unknown in a stripped input while fully read dynamic dependencies remain queryable. [ELF loading specification](https://gabi.xinuos.com/elf/07-pheader.html)
-
-## 7. Cross-service query: who could a refund API change affect?
+## 6. Cross-service query: who could a refund API change affect?
 
 The system view selects one revision of each service. Both orders and billing package the same SDK. Two call sites in orders request `POST /refunds` through the alias `pay`. At B2 in billing the operation is known, but the destination expression could not be resolved. The inventory includes legacy-worker, whose requests were never collected. The question is which services have a statically bound call to the payments handler H1 under staging.
 
@@ -173,8 +155,28 @@ The two confirmed sites count as one caller, orders. Billing remains unresolved 
 
 The existing topology runs rules over the configured graphIds, aggregates weights by (source, target, protocol) and deduplicates operation and evidence. The call-site results above can be projected onto service pairs while retaining the detailed evidence for inspection. Existing rules keep their original weight calculations. Each graph registered through the legacy workflow still maps to one service. C4, topology and endpoints grouped by graphId retain their existing contracts. Establishing field-level dataflow across services also requires evidence about serialized fields, protocol versions and the peer’s decoding map. An endpoint match alone supports only operation-level impact. [Topology query contract](topology-graph.md) · [Existing cross-graph rule example](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 
+## 7. Three boundaries illustrated by native samples
+
+### IPA and Mach-O: membership, load requests and candidate bindings
+
+We built an arm64 iOS executable named Demo and a dynamic library named Pay in a temporary directory. Demo’s C entry point references the external function `pay`, which the library defines. We put both binaries in a ZIP with an IPA member layout. The following observations come from independent tools. We checked package layout and static metadata only. We did not install or execute the sample. [Apple QA1798, Checking Distribution Entitlements (IPA inspection example)](https://developer.apple.com/library/archive/qa/qa1798/_index.html)
+
+| Tool observation | Fact in the model |
+| --- | --- |
+| `unzip -Z1 demo.ipa` lists `Payload/Demo.app/Demo` and `Payload/Demo.app/Frameworks/Pay.framework/Pay`. | Two member occurrences, each with its own content and image representation. |
+| `otool -l` on Demo shows `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` and `LC_RPATH @executable_path/Frameworks`. | The main image declares a dependency and supplies its own search condition. Its separate load request for a system library can remain an external reference. |
+| `otool -D` on Pay gives the same install name. Its `nm -gU` output includes a definition of `_pay`. Demo’s `nm -u` output includes an undefined `_pay`. | The search condition, member location, architecture and library identity support a static candidate. The symbol reference and export each stand on their own. The two symbol tables alone cannot locate a call site or establish execution. |
+
+**Counterfactual checks.** If Pay is removed from the package, Demo still declares its load request and the packaged candidate disappears. Adding a framework that matches none of Demo’s load requests can add facts about the framework and its package membership. Demo’s candidates stay the same. In a multi-architecture Mach-O, arm64 and x86_64 each have their own address domain and build UUID. Matching a dSYM by architecture and UUID adds source associations only to the corresponding slice. A matching filename with a different UUID cannot establish a binding. The last two cases follow from the specification. [Apple’s build UUID and dSYM rules](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
+
+### ELF: one number can denote two kinds of location
+
+We compiled the same Demo source to an AArch64 ELF object. `readelf -h` reported ELF64 and type REL. `readelf -Ws` showed a defined main and an undefined pay. `readelf -rW` showed an R_AARCH64_CALL26 relocation referencing pay at offset 0x10 in .text. The answer is “this object has a relocation reference to pay at .text+0x10.” Here `readelf -SW` places .text at file offset 0x40. Section offset 0x10 therefore identifies file byte 0x50, while file offset 0x10 identifies a byte in the ELF header. The number 0x10 needs a coordinate domain as well as an object identity. This sample supplies neither a dependency library name nor a final load address. [ELF relocation specification](https://gabi.xinuos.com/elf/06-reloc.html)
+
+Consider two further cases for a loadable ELF. If a PT_LOAD segment has file size 0x100 and memory size 0x180, segment-relative offset 0x120 falls in its zero-initialized region. It has an image location with no corresponding file byte. If the same shared library is supplied as a standalone file and as an APK member, its content should yield the same dynamic dependency requests. Which library a request resolves to still depends on the selected search context. Local function names can be unknown in a stripped input while fully read dynamic dependencies remain queryable. [ELF loading specification](https://gabi.xinuos.com/elf/07-pheader.html)
+
 ## 8. Review conclusions and open questions
 
-The baseline cases require independent declarations, value roles and coverage by fact family. The native samples require a coordinate domain for each location and separate facts for membership, references and bindings. The multi-service query requires attribution, environment, evidence for the applied rules and inventory completeness within its scope. Each constraint can be tested by observing how the answer changes.
+The baseline cases require independent declarations, value roles and coverage by fact family. The multi-service query requires attribution, environment, evidence for the applied rules and inventory completeness within its scope. The native samples require a coordinate domain for each location and separate facts for membership, references and bindings. Each constraint can be tested by observing how the answer changes.
 
-This review checked existing repository cases, inspected native samples with independent tools and ran the multi-service relational example above. These checks establish what the logical model can express. Implementation acceptance still needs real multi-bundle IPAs, paired extraction from universal Mach-O binaries and their dSYMs, stripped ELF shared libraries and end-to-end compatibility of production queries. Reviewers should test whether the identity and coverage conditions for each common predicate are precise enough, and whether the evidence available in each domain can satisfy the confirmed-binding rule in §3. The refund case in §7 exercises that rule for one routing model. Other domains may still need their own predicates and resolution rules.
+This review checked existing repository cases, inspected native samples with independent tools and ran the multi-service relational example above. These checks establish what the logical model can express. Implementation acceptance still needs real multi-bundle IPAs, paired extraction from universal Mach-O binaries and their dSYMs, stripped ELF shared libraries and end-to-end compatibility of production queries. Reviewers should test whether the identity and coverage conditions for each common predicate are precise enough, and whether the evidence available in each domain can satisfy the confirmed-binding rule in §3. The refund case in §6 exercises that rule for one routing model. Other domains may still need their own predicates and resolution rules.

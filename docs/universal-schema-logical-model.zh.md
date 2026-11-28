@@ -4,11 +4,13 @@
 
 状态：设计评审稿。依据已合并的 [#231 产品范围](universal-schema-scope.zh.md)，兼容基线采用 [70f908cf 的 README](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md)。下文的名字描述逻辑角色；Cypher 标签、文件格式、索引和网络 API 另行设计。
 
-## 1. 模型要让用户沿什么线索查下去？
+## 1. 从 Graphite 必须回答的程序问题出发
 
-从一份 IPA 出发，用户可以先找到扩展，再找到扩展自己的可执行映像，最后问这个映像声明加载了哪些库。从一个退款接口反向查找，则要经过服务版本、路由配置、客户端操作，最后落到调用点。两条路径的共同需要是：**对象要能定位，关系要有明确含义，跨边界的对应要有依据，结果要能说明覆盖范围。**
+**第一项验收条件是完整保住已经支持的能力。** 以一个 JAR 为例，其中有两个 `radixSort` 重载，分别接收 `byte[]` 和 `byte[][]`。用户今天能区分这两个声明，保存并重开图后也必须能查到两者。声明的归属、描述符和公开查询结果都应经得起往返。第 5 节列出的各类现有输入和接口都适用这项要求；有意变更语义须按 #231 明确声明并评审。
 
-因此建议让每张图发布一批可独立解释的事实。在选定多张图后，分析可以提出有条件的关联，同时保留各图原来的身份和结论。补入 dSYM 或切换服务路由配置都适用这个规则。#169 中的显式引用、带命名空间的定义可用于表达此模型；接受本草案不要求采用其记录布局或 codec。[历史原型 #169](https://github.com/johnsonlee/graphite/pull/169)
+**单个产物和整个微服务系统都是一等使用场景。** 支付服务修改退款接口时，维护者需要定位整个系统内可能受影响的调用点。两个服务可以打包同一份 SDK；判断其中一个服务存在退款调用，需要该服务的代码证据和所选环境的路由配置。要进一步断言其他服务都没有调用，还必须知道分析覆盖了哪些服务和调用。
+
+这两类问题决定模型需要表达什么。每张图发布有作用域的对象和有依据的事实；系统视图在明确条件下关联所选图的事实，并保留它们原有的身份。先用现有输入（第 5 节）和跨服务查询（第 6 节）检验模型，再用目标输入 IPA、ELF 和 Mach-O 检验扩展边界（第 7 节）。#169 的显式引用和带命名空间的定义是表达模型的一种方式，物理方案留待后续设计。[历史原型 #169](https://github.com/johnsonlee/graphite/pull/169)
 
 ## 2. 对象、作用域和身份
 
@@ -73,27 +75,7 @@ Basis      = 直接观察(提取执行, 可选的输入内定位)
 
 兼容性按同一输入、构建选项和旧图核对 Kotlin 库、CLI、两个既有引擎以及 REST、MCP、Explorer 的公开投影。原始事实种类、标识、属性和值、顺序与重复、错误和覆盖缺口都属于对照范围。有意改变公开结果仍需按 #231 逐项声明和评审。上表是模型的反例集，产品级全量对照属于实现验收。
 
-## 6. 用原生样本核对三类边界
-
-### IPA 与 Mach-O：包含、装载请求、候选绑定
-
-在临时目录构建了 arm64 iOS 主程序 Demo 及动态库 Pay。Demo 的 C 入口引用外部函数 `pay`，库定义该函数；将两份二进制放入具有 IPA 成员布局的 ZIP。下面是独立工具实际读到的记录及其对应关系。样本只检验包布局与静态元数据，未安装或执行。[Apple QA1798《Checking Distribution Entitlements》中的 IPA 检查示例](https://developer.apple.com/library/archive/qa/qa1798/_index.html)
-
-| 工具观察 | 模型中的事实 |
-| --- | --- |
-| `unzip -Z1 demo.ipa` 列出 `Payload/Demo.app/Demo` 和 `Payload/Demo.app/Frameworks/Pay.framework/Pay` | 两次成员出现、两份内容、两个独立映像表示。 |
-| 对 Demo 执行 `otool -l` 读到 `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` 及 `LC_RPATH @executable_path/Frameworks` | 主映像声明依赖，另有属于该映像的搜索条件。其对系统库的另一项装载请求可以保持外部引用。 |
-| 对 Pay 执行 `otool -D` 得到同一 install name；`nm -gU` 有 `_pay` 的定义；Demo 的 `nm -u` 有未定义的 `_pay` | 应用搜索条件、包内位置、架构和库身份支持一个静态候选。符号引用与导出各自成立；仅凭两张符号表无法定位具体调用点或断言实际执行。 |
-
-**反事实检验。** 移除包内 Pay，Demo 的装载请求仍成立，包内候选消失。另放入一个与 Demo 现有装载请求均不匹配的 framework，可增加该库自身的事实及包内成员关系，Demo 的候选集保持不变。对多架构 Mach-O，arm64 和 x86_64 各有自己的地址域及 build UUID；补入 dSYM 时按架构与 UUID 匹配，只给相应 slice 增加源码关联。文件名相同但 UUID 不同不能建立绑定。后两项为规范推演。[Apple 的 build UUID 与 dSYM 规范](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
-
-### ELF：同一个数字可以是两种位置
-
-将同一 Demo 源编译为 AArch64 ELF 对象。实际执行 `readelf -h`、`readelf -Ws`、`readelf -rW`，分别得到 ELF64、类型 REL；已定义的 main 与未定义的 pay；以及位于 .text 偏移 0x10、引用 pay 的 R_AARCH64_CALL26 重定位。答案是“此对象的 .text+0x10 有一个对 pay 的重定位引用”。`readelf -SW` 显示 .text 从文件偏移 0x40 开始。因此，节内偏移 0x10 指向文件偏移 0x50 处的字节，而文件偏移 0x10 指向 ELF 头中的一个字节。要解释 0x10，既需要对象身份，也需要坐标域。此样本没有给出依赖库名，也没有最终装载地址。[ELF 重定位规范](https://gabi.xinuos.com/elf/06-reloc.html)
-
-对可装载 ELF 再做两个边界推演。若 PT_LOAD 的文件长度为 0x100、内存长度为 0x180，则段内偏移 0x120 落在零初始化区：它有映像位置，没有对应文件字节。若同一共享库以独立文件和 APK 成员两种方式输入，按同一内容所读出的动态依赖请求应一致；匹配到哪一份库仍取决于此次选择的搜索上下文。stripped 输入的局部函数名可以未知，同时已完整读取的动态依赖仍可查询。[ELF 装载规范](https://gabi.xinuos.com/elf/07-pheader.html)
-
-## 7. 跨服务查询：退款接口变更会影响谁？
+## 6. 跨服务查询：退款接口变更会影响谁？
 
 系统视图为每个服务选定一个版本。orders 和 billing 都打包了同一 SDK。orders 的两个调用点通过别名 `pay` 请求 `POST /refunds`。billing 的 B2 已知请求相同操作，但目标表达式未能解析。清单还包含未采集请求的 legacy-worker。问题是在 staging 环境中，哪些服务有静态绑定至 payments 的 H1 handler 的调用？
 
@@ -175,8 +157,28 @@ Basis      = 直接观察(提取执行, 可选的输入内定位)
 
 现有拓扑按配置的 graphId 执行规则，对 (source, target, protocol) 汇总权重并去重 operation 和 evidence。可将上面的调用点结果投影到服务对，同时保留详细依据供反查；既有规则的权重仍按其原定义计算。旧工作流的每个注册图仍映射到一个服务，C4、拓扑与按 graphId 分组的 endpoints 保持既有契约。若要证明跨服务字段级数据流，还需序列化字段、协议版本以及对端解码映射等证据，单个端点匹配只能支持操作级影响。[拓扑查询契约](topology-graph.md) · [现有跨图规则示例](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 
+## 7. 用原生样本核对三类边界
+
+### IPA 与 Mach-O：包含、装载请求、候选绑定
+
+在临时目录构建了 arm64 iOS 主程序 Demo 及动态库 Pay。Demo 的 C 入口引用外部函数 `pay`，库定义该函数；将两份二进制放入具有 IPA 成员布局的 ZIP。下面是独立工具实际读到的记录及其对应关系。样本只检验包布局与静态元数据，未安装或执行。[Apple QA1798《Checking Distribution Entitlements》中的 IPA 检查示例](https://developer.apple.com/library/archive/qa/qa1798/_index.html)
+
+| 工具观察 | 模型中的事实 |
+| --- | --- |
+| `unzip -Z1 demo.ipa` 列出 `Payload/Demo.app/Demo` 和 `Payload/Demo.app/Frameworks/Pay.framework/Pay` | 两次成员出现、两份内容、两个独立映像表示。 |
+| 对 Demo 执行 `otool -l` 读到 `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` 及 `LC_RPATH @executable_path/Frameworks` | 主映像声明依赖，另有属于该映像的搜索条件。其对系统库的另一项装载请求可以保持外部引用。 |
+| 对 Pay 执行 `otool -D` 得到同一 install name；`nm -gU` 有 `_pay` 的定义；Demo 的 `nm -u` 有未定义的 `_pay` | 应用搜索条件、包内位置、架构和库身份支持一个静态候选。符号引用与导出各自成立；仅凭两张符号表无法定位具体调用点或断言实际执行。 |
+
+**反事实检验。** 移除包内 Pay，Demo 的装载请求仍成立，包内候选消失。另放入一个与 Demo 现有装载请求均不匹配的 framework，可增加该库自身的事实及包内成员关系，Demo 的候选集保持不变。对多架构 Mach-O，arm64 和 x86_64 各有自己的地址域及 build UUID；补入 dSYM 时按架构与 UUID 匹配，只给相应 slice 增加源码关联。文件名相同但 UUID 不同不能建立绑定。后两项为规范推演。[Apple 的 build UUID 与 dSYM 规范](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
+
+### ELF：同一个数字可以是两种位置
+
+将同一 Demo 源编译为 AArch64 ELF 对象。实际执行 `readelf -h`、`readelf -Ws`、`readelf -rW`，分别得到 ELF64、类型 REL；已定义的 main 与未定义的 pay；以及位于 .text 偏移 0x10、引用 pay 的 R_AARCH64_CALL26 重定位。答案是“此对象的 .text+0x10 有一个对 pay 的重定位引用”。`readelf -SW` 显示 .text 从文件偏移 0x40 开始。因此，节内偏移 0x10 指向文件偏移 0x50 处的字节，而文件偏移 0x10 指向 ELF 头中的一个字节。要解释 0x10，既需要对象身份，也需要坐标域。此样本没有给出依赖库名，也没有最终装载地址。[ELF 重定位规范](https://gabi.xinuos.com/elf/06-reloc.html)
+
+对可装载 ELF 再做两个边界推演。若 PT_LOAD 的文件长度为 0x100、内存长度为 0x180，则段内偏移 0x120 落在零初始化区：它有映像位置，没有对应文件字节。若同一共享库以独立文件和 APK 成员两种方式输入，按同一内容所读出的动态依赖请求应一致；匹配到哪一份库仍取决于此次选择的搜索上下文。stripped 输入的局部函数名可以未知，同时已完整读取的动态依赖仍可查询。[ELF 装载规范](https://gabi.xinuos.com/elf/07-pheader.html)
+
 ## 8. 评审结论与待验证项
 
-基线案例迫使模型保留独立声明、值角色和按事实族划分的覆盖；原生样本迫使位置带坐标域，并把包含、引用和绑定分开；多服务查询则要求把归属、环境、规则依据和清单完整性纳入查询范围。这些是可以用结果差异检验的模型约束。
+基线案例迫使模型保留独立声明、值角色和按事实族划分的覆盖；多服务查询要求把归属、环境、规则依据和清单完整性纳入查询范围；原生样本要求位置带坐标域，并把包含、引用和绑定分开。这些是可以用结果差异检验的模型约束。
 
-本轮验证包括核对仓库已有案例、独立读取原生样本，以及执行上面的多服务关系推演。它验证逻辑表达能力。真实 IPA 多 bundle、universal Mach-O 与配套 dSYM 的成对提取、stripped ELF 共享库，以及生产查询端到端兼容仍待实现验收。本轮评审应检验各公共谓词的身份与覆盖条件是否足够精确，以及每个领域可提供的证据能否满足第 3 节的确定绑定规则。第 7 节的退款用例检验了该规则在一种路由模型中的应用。其他领域仍可能需要各自的谓词与解析规则。
+本轮验证包括核对仓库已有案例、独立读取原生样本，以及执行上面的多服务关系推演。它验证逻辑表达能力。真实 IPA 多 bundle、universal Mach-O 与配套 dSYM 的成对提取、stripped ELF 共享库，以及生产查询端到端兼容仍待实现验收。本轮评审应检验各公共谓词的身份与覆盖条件是否足够精确，以及每个领域可提供的证据能否满足第 3 节的确定绑定规则。第 6 节的退款用例检验了该规则在一种路由模型中的应用。其他领域仍可能需要各自的谓词与解析规则。
