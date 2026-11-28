@@ -4,6 +4,7 @@
 """
 import importlib.util
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -123,6 +124,62 @@ class SectionPropagationTest(unittest.TestCase):
         failed = self.run_section("differential_section", [0, 1])
         self.assertEqual(failed.returncode, 1, failed.stderr)
         self.assertIn("the candidate CLI differential", failed.stderr)
+
+
+class HeapTest(unittest.TestCase):
+    """Every JVM of a replay runs within the 8 GiB heap ceiling, and its log proves it."""
+
+    def heap(self, logs):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, text in logs.items():
+                with open(os.path.join(tmp, name), "w") as f:
+                    f.write(text)
+            return subprocess.run([sys.executable, os.path.join(HERE, "heap.py"), tmp],
+                                  capture_output=True, text=True)
+
+    def test_each_jvm_must_log_a_capacity_within_the_ceiling(self):
+        line = "[0.032s][info][gc,init] Heap Max Capacity: %s\n"
+        ok = self.heap({"jvm-1.log": line % "4G", "jvm-2.log": line % "3G", "jvm-3.log": line % "8G"})
+        self.assertEqual(ok.returncode, 0, ok.stdout)
+        self.assertIn("== 3 JVMs: 1 x 3221225472 bytes, 1 x 4294967296 bytes, 1 x 8589934592 bytes",
+                      ok.stdout)
+        over = self.heap({"jvm-1.log": line % "4G", "jvm-2.log": line % "8193M"})
+        self.assertEqual(over.returncode, 1)
+        self.assertIn("FAIL: jvm-2.log ran with 8590983168 bytes", over.stdout)
+        silent = self.heap({"jvm-1.log": "[0.01s][info][gc,init] Version: 21\n"})
+        self.assertEqual(silent.returncode, 1)
+        self.assertIn("FAIL: jvm-1.log logged no Heap Max Capacity", silent.stdout)
+        self.assertEqual(self.heap({}).returncode, 1, "no JVM logged at all")
+
+    def bound(self, heap, then=""):
+        script = ('REPLAY_SOURCE_ONLY=1 source %s\nHEAP_LOGS=%s\nREPLAY_HEAP=\"%s\" bound_jvm_heap\n'
+                  'echo "opts=$JAVA_TOOL_OPTIONS"\n%s\n') % (
+                      os.path.join(HERE, "replay.sh"), self.logs, heap, then)
+        return subprocess.run(["bash", "-c", script], capture_output=True, text=True)
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.logs = os.path.join(self.tmp.name, "jvm-heap")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_the_replay_heap_is_refused_above_the_ceiling(self):
+        for heap in ("9g", "8193m", "8 g", "lots"):
+            refused = self.bound(heap)
+            self.assertEqual(refused.returncode, 1, heap)
+            self.assertIn("REPLAY_HEAP=%s" % heap, refused.stderr)
+        accepted = self.bound("8g")
+        self.assertEqual(accepted.returncode, 0, accepted.stderr)
+        self.assertIn("opts=-Xmx8g -Xlog:gc+init=info:file=%s/jvm-%%p-%%t.log" % self.logs,
+                      accepted.stdout)
+
+    @unittest.skipUnless(shutil.which("java"), "needs a JVM")
+    def test_a_real_jvm_logs_the_heap_it_got_and_a_later_xmx_wins(self):
+        ran = self.bound("2g", 'java -version 2>/dev/null; java -Xmx1g -version 2>/dev/null; '
+                               'python3 %s "$HEAP_LOGS"' % os.path.join(HERE, "heap.py"))
+        self.assertEqual(ran.returncode, 0, ran.stdout + ran.stderr)
+        self.assertIn("== 2 JVMs: 1 x 1073741824 bytes, 1 x 2147483648 bytes", ran.stdout)
 
 
 class ReplayTest(unittest.TestCase):

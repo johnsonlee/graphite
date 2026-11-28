@@ -24,14 +24,24 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
   - `fuzz.py`: per-flip offset, bit, outcome and exit code of every query asked; each flip
     is derived from `file:k`, so any one flip replays on its own;
   - `repeated-builds.jsh`;
-  - `save-into.jsh`.
+  - `save-into.jsh`;
+  - `heap.py`: the effective heap of every JVM the replay started.
+
+  Every JVM is bounded. The replay exports `JAVA_TOOL_OPTIONS=-Xmx4g` (`REPLAY_HEAP`,
+  refused above `8g`), and each JVM logs the `Heap Max Capacity` it actually got, after
+  any later `-Xmx` (`-Xlog:gc+init`). Those JVMs are `java`, `javac`, `jar`, `jshell` with
+  its remote VM, and the frontend that `graphite build` starts. `jvm-heap.txt` lists one
+  line per JVM. The replay fails when any JVM ran above 8 GiB or logged nothing. The CLI's
+  own frontend-version and fold-plan probes set `-Xmx256m` in code (`cli/src/main.rs`,
+  `cli/src/fold.rs`) and are not logged.
 
   Base and candidate always ran the same input, and every graph was built by its own
   revision's frontend. Another checkout reproduces both columns by building `70f908c` and
   the candidate and running the command above. The replay exits 1, keeping each step's log in
   `<out>/replay-logs`, when a setup step, the candidate differential, the candidate
   completeness check or a candidate bit flip fails. A crash (a signal) or an unexpected exit
-  code is never counted as a clean rejection (`test_replay.py`, run in CI).
+  code is never counted as a clean rejection, and neither is a JVM above the heap ceiling
+  (`test_replay.py`, run in CI).
 - **Hosted benchmark timings are report-only.** They are not performance acceptance (see
   row 6).
 
@@ -385,6 +395,8 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | A duplicate past a deduplicating UNION's page claimed a next page | `88364ee` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
 | A raw probe on top of the distinct lookahead evaluated a row nothing needed | `39ae076` | route test (`1.0/(7-…)` UNION, page of 6, failing before with Division by zero) |
 | Evidence harness counted a crash as a rejection, ignored failed steps, trusted any listener on its port | `39ae076` | `test_replay.py` (classifier, crashing binary, failing build) |
+| A `{ ...; } \|\| handler` block in the replay hid a failed candidate command followed by a passing one | `717b45e` | `test_replay.py` `SectionPropagationTest` (bit flip, completeness, differential; failing before) |
+| Effective heap ≤ 8 GiB not shown for every JVM of the replay | the commit adding `heap.py` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which

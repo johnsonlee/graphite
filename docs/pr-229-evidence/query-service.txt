@@ -1,5 +1,5 @@
 # HTTP on the acme graph, each revision's own server on a free port (identities.txt)
-## baseline 70f908c (server pid 22035)
+## baseline 70f908c (server pid 11821)
 GET /api/capabilities -> 404
     
 GET /api/graphs/acme/hierarchy?type=java.lang.Object&limit=3 -> 404
@@ -10,7 +10,7 @@ GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY
     {"columns":["v"],"rows":[{"v":"<clinit>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}}],"rowCount":5,"graphCount":1,"total":{"value":6,"relation":"gte"}}
 GET /api/cypher?query=MATCH%20(n:Method)%20RETURN%20n.name%20AS%20v%20ORDER%20BY%20v&limit=5&offset=10000000 -> 200
     {"columns":["v"],"rows":[{"v":"<clinit>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}},{"v":"<init>","$metadata":{"graphIds":["acme"]}}],"rowCount":5,"graphCount":1,"total":{"value":6,"relation":"gte"}}
-## candidate 717b45e (server pid 22069)
+## candidate 717b45e (server pid 11855)
 GET /api/capabilities -> 200
     {
   "server": {

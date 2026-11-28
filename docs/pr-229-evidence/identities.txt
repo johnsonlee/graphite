@@ -6,8 +6,10 @@ f99e2c7daf643e759336137d010eba1340dbf83c9af2fbc95db9d1fa33a0bee6  /tmp/claude-0/
 a172b36a941f135d6e06d3b05751bd34584709a2142f41f0363966e8fc561465  /home/user/graphite/target/debug/graphite
 dfaa59a7763c74d895614fbe78ceb095e585799b3fec1a5c839b4a8fee7b5b40  /home/user/graphite/frontend/jvm/query/build/libs/graphite.jar
 0116f54eafa4195d7c558d87356ccd8d37f91cd83b9a530e688be463218e2bf2  /home/user/graphite/frontend/jvm/core/build/libs/core-1.0.0-SNAPSHOT.jar
-949f7efa26f9e48594a2adc37f601833928f2660cb43137a841e5ca3bf19091f  acme.jar
-acme sources: 717b45eddf06ffd6454250e233877aa4189eca29 backend/bench/fixtures/acme/src
+1d84d97a926edefcefca5933d1fb15c652bcaa3b36e099e3a606c47ca7e1e0c4  acme.jar
+acme sources: 5f2b766f58a3bb54c7fe04c0b20addbd4e6153d2 backend/bench/fixtures/acme/src
+JAVA_TOOL_OPTIONS (every JVM): -Xmx4g -Xlog:gc+init=info:file=replay-logs/jvm-heap/jvm-%p-%t.log
+_JAVA_OPTIONS (inherited): -XX:+UnlockDiagnosticVMOptions -XX:DisableIntrinsic=_base64_encodeBlock,_base64_decodeBlock
 openjdk version "21.0.13.0.3" 2026-10-24
 javac 21.0.13.0.3
 Linux 6.18.44-fc-v880 x86_64

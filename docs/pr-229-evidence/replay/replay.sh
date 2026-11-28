@@ -22,6 +22,11 @@
 # Every required command is checked on its own (`required`), never by a handler on the
 # block around it: `{ ...; } || handler` turns errexit off for the whole block, so a failed
 # command followed by a passing one would leave the block, and the replay, successful.
+# Every JVM the replay starts is bounded: JAVA_TOOL_OPTIONS sets -Xmx$REPLAY_HEAP (default 4g,
+# refused above 8g) and asks each JVM to log the heap it actually got; heap.py reads those logs
+# into jvm-heap.txt and fails the replay when a JVM ran above 8 GiB or did not log. The CLI's own
+# probes (frontend version, fold plan) replace JAVA_TOOL_OPTIONS with -Xmx256m and are not logged.
+#
 # Sourced with REPLAY_SOURCE_ONLY=1, the script defines its sections without running them,
 # which is how test_replay.py drives each one with failing stubs.
 set -euo pipefail
@@ -46,6 +51,21 @@ rev_bin() { [ "$1" = base ] && echo "$BASE_BIN" || echo "$CAND_BIN"; }
 rev_jar() { [ "$1" = base ] && echo "$BASE_JAR" || echo "$CAND_JAR"; }
 rev_id() { [ "$1" = base ] && echo "baseline $BASE_REV" || echo "candidate $CAND_REV"; }
 quiet() { grep -v '^Picked up ' || true; }
+# Bounds every JVM's heap and has each log the heap it got, in $HEAP_LOGS.
+bound_jvm_heap() {
+  local heap=${REPLAY_HEAP:-4g} n unit
+  [[ $heap =~ ^([0-9]+)([mMgG])$ ]] || fail "REPLAY_HEAP=$heap is not <n>m or <n>g"
+  n=${BASH_REMATCH[1]} unit=${BASH_REMATCH[2]}
+  [[ $unit == [gG] ]] && n=$((n * 1024))
+  [ "$n" -le 8192 ] || fail "REPLAY_HEAP=$heap exceeds the 8 GiB heap ceiling"
+  [[ $HEAP_LOGS != *[[:space:]]* ]] || fail "the heap log directory $HEAP_LOGS holds whitespace"
+  rm -rf "$HEAP_LOGS"; mkdir -p "$HEAP_LOGS"
+  export JAVA_TOOL_OPTIONS="-Xmx$heap -Xlog:gc+init=info:file=$HEAP_LOGS/jvm-%p-%t.log"
+}
+heap_section() {
+  python3 "$HERE/heap.py" "$HEAP_LOGS" > "$OUT/jvm-heap.txt" \
+    || fail "a JVM ran above the 8 GiB heap ceiling or logged no heap (see jvm-heap.txt)"
+}
 count_backward() { ls "$1" | grep -c '^backward\.' || true; }
 
 identities() {
@@ -58,6 +78,8 @@ identities() {
     echo "candidate revision: $CAND_REV"
     sha256sum "$BASE_BIN" "$BASE_JAR" "$CAND_BIN" "$CAND_JAR" "$INPUT" "$WORK/acme.jar" | sed "s|$WORK/||"
     echo "acme sources: $(cd "$REPO" && git rev-parse HEAD 2>/dev/null) backend/bench/fixtures/acme/src"
+    echo "JAVA_TOOL_OPTIONS (every JVM): $JAVA_TOOL_OPTIONS" | sed "s|$OUT/||"
+    echo "_JAVA_OPTIONS (inherited): ${_JAVA_OPTIONS:-}"
     { java -version 2>&1 || true; } | quiet | head -1
     javac -version 2>&1 | quiet
     uname -srm
@@ -251,7 +273,9 @@ main() {
   SERVER=""
   mkdir -p "$OUT"
   rm -rf "$LOGS"; mkdir -p "$LOGS"
+  HEAP_LOGS="$LOGS/jvm-heap"
   trap finish EXIT
+  bound_jvm_heap
   identities
   graphs
   truncation_section
@@ -261,6 +285,7 @@ main() {
   storage_section
   completeness_section
   service_section
+  heap_section
   echo "replayed into $OUT"
 }
 
