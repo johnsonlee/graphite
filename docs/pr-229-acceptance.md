@@ -8,13 +8,13 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 - **Baseline:** `70f908c` (`main` at the time of review). Base binaries were built from a
   clean worktree of that commit: `cargo build -p graphite-cli` and
   `./gradlew :query:shadowJar :explore:shadowJar`.
-- **Candidate:** the evidence files were produced with binaries built from `39ae076`.
+- **Candidate:** the evidence files were produced with binaries built from `717b45e` (the product code of `39ae076`; the commit in between changes only the replay harness).
 - **Raw evidence:** `docs/pr-229-evidence/*.txt`, every file produced by one replay:
 
   ```
   docs/pr-229-evidence/replay/replay.sh \
     70f908c <base graphite> <base graphite.jar> \
-    39ae076 <candidate graphite> <candidate graphite.jar> \
+    717b45e <candidate graphite> <candidate graphite.jar> \
     frontend/jvm/core/build/libs/core-1.0.0-SNAPSHOT.jar docs/pr-229-evidence
   ```
 

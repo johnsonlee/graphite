@@ -14,7 +14,7 @@ graph.nodedata flip  6 offset 386992 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  7 offset 382457 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  8 offset 552194 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  9 offset 1131607 bit 3: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 10 offset 949859 bit 0: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (9394) panicked at backend/storage/src/strings.rs:194:37:"
+graph.nodedata flip 10 offset 949859 bit 0: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (1748) panicked at backend/storage/src/strings.rs:194:37:"
 graph.nodedata flip 11 offset 1055440 bit 7: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 12 offset 242908 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 13 offset 58658 bit 0: ok; q0=0; q1=0; q2=0; q3=0
@@ -23,51 +23,51 @@ graph.nodedata flip 15 offset 23204 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 16 offset 319811 bit 0: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 17 offset 1327674 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 18 offset 1193016 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 19 offset 877511 bit 7: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (9575) panicked at backend/storage/src/strings.rs:194:37:"
+graph.nodedata flip 19 offset 877511 bit 7: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (1931) panicked at backend/storage/src/strings.rs:194:37:"
 graph.nodedata flip 20 offset 1306043 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 21 offset 959371 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 22 offset 657921 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 23 offset 1321152 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 24 offset 629873 bit 6: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (9675) panicked at backend/storage/src/strings.rs:194:37:"
+graph.nodedata flip 24 offset 629873 bit 6: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (2031) panicked at backend/storage/src/strings.rs:194:37:"
 graph.nodedata flip 25 offset 671257 bit 6: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 26 offset 865860 bit 1: PANIC; q0=101 "thread 'main' (9700) panicked at backend/storage/src/strings.rs:194:37:"
+graph.nodedata flip 26 offset 865860 bit 1: PANIC; q0=101 "thread 'main' (2056) panicked at backend/storage/src/strings.rs:194:37:"
 graph.nodedata flip 27 offset 30135 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 28 offset 683710 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 29 offset 310281 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 == graph.nodedata: {'PANIC': 4, 'ok': 26}
 graph.nodeoffsets flip  0 offset 51349 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip  1 offset 8998 bit 4: PANIC; q0=101 "thread 'main' (9785) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip  1 offset 8998 bit 4: PANIC; q0=101 "thread 'main' (2141) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip  2 offset 215745 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  3 offset 84011 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  4 offset 15426 bit 1: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  5 offset 168365 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  6 offset 131600 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  7 offset 45323 bit 5: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip  8 offset 22722 bit 4: PANIC; q0=101 "thread 'main' (9910) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip  8 offset 22722 bit 4: PANIC; q0=101 "thread 'main' (2267) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip  9 offset 40722 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 10 offset 29534 bit 2: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip 11 offset 95250 bit 7: PANIC; q0=101 "thread 'main' (9955) panicked at backend/storage/src/io.rs:85:28:"
-graph.nodeoffsets flip 12 offset 24351 bit 7: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (9975) panicked at backend/storage/src/strings.rs:194:37:"
-graph.nodeoffsets flip 13 offset 29112 bit 7: PANIC; q0=101 "thread 'main' (9980) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 11 offset 95250 bit 7: PANIC; q0=101 "thread 'main' (2312) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 12 offset 24351 bit 7: PANIC; q0=0; q1=0; q2=0; q3=101 "thread 'main' (2332) panicked at backend/storage/src/strings.rs:194:37:"
+graph.nodeoffsets flip 13 offset 29112 bit 7: PANIC; q0=101 "thread 'main' (2337) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip 14 offset 43885 bit 3: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip 15 offset 3131 bit 6: PANIC; q0=101 "thread 'main' (10005) panicked at backend/storage/src/io.rs:85:28:"
-graph.nodeoffsets flip 16 offset 156907 bit 3: PANIC; q0=101 "thread 'main' (10010) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 15 offset 3131 bit 6: PANIC; q0=101 "thread 'main' (2362) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 16 offset 156907 bit 3: PANIC; q0=101 "thread 'main' (2367) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip 17 offset 166482 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 18 offset 215677 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 19 offset 108951 bit 4: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip 20 offset 79204 bit 6: PANIC; q0=101 "thread 'main' (10075) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 20 offset 79204 bit 6: PANIC; q0=101 "thread 'main' (2435) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip 21 offset 113276 bit 0: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 22 offset 64068 bit 0: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 23 offset 203247 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 24 offset 114484 bit 6: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip 25 offset 81266 bit 0: PANIC; q0=101 "thread 'main' (10163) panicked at backend/storage/src/io.rs:85:28:"
+graph.nodeoffsets flip 25 offset 81266 bit 0: PANIC; q0=101 "thread 'main' (2520) panicked at backend/storage/src/io.rs:85:28:"
 graph.nodeoffsets flip 26 offset 208484 bit 7: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 27 offset 136737 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 28 offset 192736 bit 0: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 29 offset 225841 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 == graph.nodeoffsets: {'PANIC': 9, 'ok': 21}
 forward.graph flip  0 offset 29989 bit 2: ok; q0=0; q1=0; q2=0; q3=0
-forward.graph flip  1 offset 829 bit 3: PANIC; q0=101 "thread 'main' (10268) panicked at backend/storage/src/graph.rs:1381:16:"
+forward.graph flip  1 offset 829 bit 3: PANIC; q0=101 "thread 'main' (2625) panicked at backend/storage/src/graph.rs:1381:16:"
 forward.graph flip  2 offset 22280 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip  3 offset 780 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip  4 offset 20418 bit 5: ok; q0=0; q1=0; q2=0; q3=0
@@ -81,13 +81,13 @@ forward.graph flip 11 offset 14999 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 12 offset 19623 bit 1: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 13 offset 5848 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 14 offset 30308 bit 3: ok; q0=0; q1=0; q2=0; q3=0
-forward.graph flip 15 offset 29360 bit 4: PANIC; q0=101 "thread 'main' (10533) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.graph flip 15 offset 29360 bit 4: PANIC; q0=101 "thread 'main' (2903) panicked at backend/storage/src/bvgraph.rs:318:17:"
 forward.graph flip 16 offset 27213 bit 6: ok; q0=0; q1=0; q2=0; q3=0
-forward.graph flip 17 offset 4231 bit 0: PANIC; q0=101 "thread 'main' (10558) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.graph flip 17 offset 4231 bit 0: PANIC; q0=101 "thread 'main' (2928) panicked at backend/storage/src/bvgraph.rs:318:17:"
 forward.graph flip 18 offset 25880 bit 7: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 19 offset 23654 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 20 offset 22086 bit 5: ok; q0=0; q1=0; q2=0; q3=0
-forward.graph flip 21 offset 19248 bit 0: PANIC; q0=101 "thread 'main' (10623) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.graph flip 21 offset 19248 bit 0: PANIC; q0=101 "thread 'main' (2993) panicked at backend/storage/src/bvgraph.rs:318:17:"
 forward.graph flip 22 offset 9355 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 23 offset 5929 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 24 offset 31267 bit 7: ok; q0=0; q1=0; q2=0; q3=0
@@ -97,36 +97,36 @@ forward.graph flip 27 offset 22520 bit 1: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 28 offset 12805 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 forward.graph flip 29 offset 24290 bit 1: ok; q0=0; q1=0; q2=0; q3=0
 == forward.graph: {'PANIC': 4, 'ok': 26}
-forward.offsets flip  0 offset 16710 bit 0: PANIC; q0=101 "thread 'main' (10789) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  1 offset 20779 bit 1: PANIC; q0=101 "thread 'main' (10794) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  2 offset 21090 bit 5: PANIC; q0=101 "thread 'main' (10799) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  3 offset 4240 bit 6: PANIC; q0=101 "thread 'main' (10804) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip  4 offset 14818 bit 0: PANIC; q0=101 "thread 'main' (10809) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  5 offset 6143 bit 1: PANIC; q0=101 "thread 'main' (10814) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip  6 offset 22493 bit 7: PANIC; q0=101 "thread 'main' (10819) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  7 offset 16409 bit 4: PANIC; q0=101 "thread 'main' (10824) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  8 offset 22259 bit 2: PANIC; q0=101 "thread 'main' (10829) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip  9 offset 7756 bit 0: PANIC; q0=101 "thread 'main' (10834) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 10 offset 6663 bit 1: PANIC; q0=101 "thread 'main' (10839) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 11 offset 12772 bit 2: PANIC; q0=101 "thread 'main' (10844) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 12 offset 22061 bit 2: PANIC; q0=101 "thread 'main' (10849) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip 13 offset 22686 bit 3: PANIC; q0=101 "thread 'main' (10854) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 14 offset 22891 bit 2: PANIC; q0=101 "thread 'main' (10859) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip 15 offset 6635 bit 2: PANIC; q0=101 "thread 'main' (10864) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip 16 offset 8460 bit 5: PANIC; q0=101 "thread 'main' (10869) panicked at backend/storage/src/bvgraph.rs:304:17:"
-forward.offsets flip 17 offset 22293 bit 6: PANIC; q0=101 "thread 'main' (10874) panicked at backend/storage/src/bvgraph.rs:304:17:"
-forward.offsets flip 18 offset 20998 bit 5: PANIC; q0=101 "thread 'main' (10879) panicked at backend/storage/src/bvgraph.rs:324:21:"
-forward.offsets flip 19 offset 11835 bit 2: PANIC; q0=101 "thread 'main' (10884) panicked at backend/storage/src/bvgraph.rs:304:17:"
-forward.offsets flip 20 offset 13298 bit 6: PANIC; q0=101 "thread 'main' (10889) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 21 offset 4879 bit 5: PANIC; q0=101 "thread 'main' (10894) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 22 offset 15015 bit 3: PANIC; q0=101 "thread 'main' (10899) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 23 offset 6477 bit 4: PANIC; q0=101 "thread 'main' (10904) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 24 offset 13692 bit 4: PANIC; q0=101 "thread 'main' (10909) panicked at backend/storage/src/bvgraph.rs:304:17:"
-forward.offsets flip 25 offset 11408 bit 4: PANIC; q0=101 "thread 'main' (10914) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 26 offset 4076 bit 1: PANIC; q0=101 "thread 'main' (10919) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 27 offset 8613 bit 4: PANIC; q0=101 "thread 'main' (10924) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 28 offset 7051 bit 6: PANIC; q0=101 "thread 'main' (10929) panicked at backend/storage/src/bvgraph.rs:318:17:"
-forward.offsets flip 29 offset 1046 bit 2: PANIC; q0=101 "thread 'main' (10934) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  0 offset 16710 bit 0: PANIC; q0=101 "thread 'main' (3193) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  1 offset 20779 bit 1: PANIC; q0=101 "thread 'main' (3198) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  2 offset 21090 bit 5: PANIC; q0=101 "thread 'main' (3203) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  3 offset 4240 bit 6: PANIC; q0=101 "thread 'main' (3208) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip  4 offset 14818 bit 0: PANIC; q0=101 "thread 'main' (3213) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  5 offset 6143 bit 1: PANIC; q0=101 "thread 'main' (3218) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip  6 offset 22493 bit 7: PANIC; q0=101 "thread 'main' (3223) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  7 offset 16409 bit 4: PANIC; q0=101 "thread 'main' (3228) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  8 offset 22259 bit 2: PANIC; q0=101 "thread 'main' (3233) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip  9 offset 7756 bit 0: PANIC; q0=101 "thread 'main' (3238) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 10 offset 6663 bit 1: PANIC; q0=101 "thread 'main' (3243) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 11 offset 12772 bit 2: PANIC; q0=101 "thread 'main' (3248) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 12 offset 22061 bit 2: PANIC; q0=101 "thread 'main' (3253) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip 13 offset 22686 bit 3: PANIC; q0=101 "thread 'main' (3258) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 14 offset 22891 bit 2: PANIC; q0=101 "thread 'main' (3263) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip 15 offset 6635 bit 2: PANIC; q0=101 "thread 'main' (3268) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip 16 offset 8460 bit 5: PANIC; q0=101 "thread 'main' (3273) panicked at backend/storage/src/bvgraph.rs:304:17:"
+forward.offsets flip 17 offset 22293 bit 6: PANIC; q0=101 "thread 'main' (3278) panicked at backend/storage/src/bvgraph.rs:304:17:"
+forward.offsets flip 18 offset 20998 bit 5: PANIC; q0=101 "thread 'main' (3283) panicked at backend/storage/src/bvgraph.rs:324:21:"
+forward.offsets flip 19 offset 11835 bit 2: PANIC; q0=101 "thread 'main' (3288) panicked at backend/storage/src/bvgraph.rs:304:17:"
+forward.offsets flip 20 offset 13298 bit 6: PANIC; q0=101 "thread 'main' (3293) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 21 offset 4879 bit 5: PANIC; q0=101 "thread 'main' (3298) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 22 offset 15015 bit 3: PANIC; q0=101 "thread 'main' (3303) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 23 offset 6477 bit 4: PANIC; q0=101 "thread 'main' (3308) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 24 offset 13692 bit 4: PANIC; q0=101 "thread 'main' (3313) panicked at backend/storage/src/bvgraph.rs:304:17:"
+forward.offsets flip 25 offset 11408 bit 4: PANIC; q0=101 "thread 'main' (3318) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 26 offset 4076 bit 1: PANIC; q0=101 "thread 'main' (3323) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 27 offset 8613 bit 4: PANIC; q0=101 "thread 'main' (3328) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 28 offset 7051 bit 6: PANIC; q0=101 "thread 'main' (3333) panicked at backend/storage/src/bvgraph.rs:318:17:"
+forward.offsets flip 29 offset 1046 bit 2: PANIC; q0=101 "thread 'main' (3338) panicked at backend/storage/src/bvgraph.rs:318:17:"
 == forward.offsets: {'PANIC': 30}
 graph.labels flip  0 offset 14794 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.labels flip  1 offset 23349 bit 6: ok; q0=0; q1=0; q2=0; q3=0
@@ -161,36 +161,36 @@ graph.labels flip 29 offset 25942 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 == graph.labels: {'ok': 30}
 graph.typeindex flip  0 offset 42624 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.typeindex flip  1 offset 88175 bit 7: error; q0=1 'Error: Corrupt type index: node 34860 of tag 12 has no node record'
-graph.typeindex flip  2 offset 73069 bit 2: PANIC; q0=0; q1=101 "thread 'main' (11574) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip  2 offset 73069 bit 2: PANIC; q0=0; q1=101 "thread 'main' (3973) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip  3 offset 11928 bit 7: ok; q0=0; q1=0; q2=0; q3=0
-graph.typeindex flip  4 offset 118433 bit 4: PANIC; q0=0; q1=101 "thread 'main' (11604) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip  4 offset 118433 bit 4: PANIC; q0=0; q1=101 "thread 'main' (4003) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip  5 offset 98768 bit 7: ok; q0=0; q1=0; q2=0; q3=0
-graph.typeindex flip  6 offset 71858 bit 5: PANIC; q0=0; q1=101 "thread 'main' (11634) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip  6 offset 71858 bit 5: PANIC; q0=0; q1=101 "thread 'main' (4033) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip  7 offset 26968 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.typeindex flip  8 offset 23064 bit 3: ok; q0=0; q1=0; q2=0; q3=0
-graph.typeindex flip  9 offset 71825 bit 5: PANIC; q0=0; q1=101 "thread 'main' (11684) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip  9 offset 71825 bit 5: PANIC; q0=0; q1=101 "thread 'main' (4086) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 10 offset 92045 bit 7: error; q0=1 'Error: Corrupt type index: node 2147490490 of tag 12 has no node record'
-graph.typeindex flip 11 offset 74769 bit 2: PANIC; q0=0; q1=101 "thread 'main' (11699) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 12 offset 7993 bit 6: PANIC; q0=0; q1=101 "thread 'main' (11709) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 11 offset 74769 bit 2: PANIC; q0=0; q1=101 "thread 'main' (4101) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 12 offset 7993 bit 6: PANIC; q0=0; q1=101 "thread 'main' (4111) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 13 offset 101506 bit 4: error; q0=1 'Error: Corrupt type index: node 1064024 of tag 12 has no node record'
-graph.typeindex flip 14 offset 120617 bit 6: PANIC; q0=0; q1=101 "thread 'main' (11724) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 14 offset 120617 bit 6: PANIC; q0=0; q1=101 "thread 'main' (4126) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 15 offset 106182 bit 2: error; q0=1 'Error: Corrupt type index: node 282587 of tag 12 has no node record'
 graph.typeindex flip 16 offset 102374 bit 6: error; q0=1 'Error: Corrupt type index: node 4210579 of tag 12 has no node record'
-graph.typeindex flip 17 offset 56598 bit 0: PANIC; q0=0; q1=101 "thread 'main' (11744) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 17 offset 56598 bit 0: PANIC; q0=0; q1=101 "thread 'main' (4146) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 18 offset 101320 bit 1: ok; q0=0; q1=0; q2=0; q3=0
 graph.typeindex flip 19 offset 98866 bit 5: error; q0=1 'Error: Corrupt type index: node 2109751 of tag 12 has no node record'
-graph.typeindex flip 20 offset 70601 bit 6: PANIC; q0=0; q1=101 "thread 'main' (11779) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 20 offset 70601 bit 6: PANIC; q0=0; q1=101 "thread 'main' (4181) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 21 offset 18760 bit 6: ok; q0=0; q1=0; q2=0; q3=0
-graph.typeindex flip 22 offset 18581 bit 3: PANIC; q0=0; q1=101 "thread 'main' (11809) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 23 offset 60045 bit 5: PANIC; q0=0; q1=101 "thread 'main' (11819) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 24 offset 83166 bit 0: PANIC; q0=0; q1=101 "thread 'main' (11829) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 25 offset 36086 bit 7: PANIC; q0=0; q1=101 "thread 'main' (11839) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 26 offset 36925 bit 1: PANIC; q0=0; q1=101 "thread 'main' (11849) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 27 offset 38189 bit 2: PANIC; q0=0; q1=101 "thread 'main' (11859) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
-graph.typeindex flip 28 offset 65690 bit 4: PANIC; q0=0; q1=101 "thread 'main' (11869) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 22 offset 18581 bit 3: PANIC; q0=0; q1=101 "thread 'main' (4211) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 23 offset 60045 bit 5: PANIC; q0=0; q1=101 "thread 'main' (4221) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 24 offset 83166 bit 0: PANIC; q0=0; q1=101 "thread 'main' (4231) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 25 offset 36086 bit 7: PANIC; q0=0; q1=101 "thread 'main' (4241) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 26 offset 36925 bit 1: PANIC; q0=0; q1=101 "thread 'main' (4251) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 27 offset 38189 bit 2: PANIC; q0=0; q1=101 "thread 'main' (4261) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
+graph.typeindex flip 28 offset 65690 bit 4: PANIC; q0=0; q1=101 "thread 'main' (4271) panicked at backend/cypher/src/engine/partition.rs:1003:41:"
 graph.typeindex flip 29 offset 88714 bit 4: error; q0=1 'Error: Corrupt type index: node 1051742 of tag 12 has no node record'
 == graph.typeindex: {'PANIC': 16, 'error': 7, 'ok': 7}
-## candidate 39ae076
+## candidate 717b45e
 # query 0: MATCH (c:CallSite) RETURN c.callee_class AS k, count(*) AS n ORDER BY n DESC, k LIMIT 3
 # query 1: MATCH (a)-[r]->(b) RETURN type(r) AS t, count(*) AS n ORDER BY t
 # query 2: MATCH (n) RETURN labels(n)[0] AS l, count(*) AS c ORDER BY l
@@ -205,7 +205,7 @@ graph.nodedata flip  6 offset 386992 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  7 offset 382457 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  8 offset 552194 bit 5: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip  9 offset 1131607 bit 3: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 10 offset 949859 bit 0: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/strings.rs:194:37:'
+graph.nodedata flip 10 offset 949859 bit 0: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/strings.rs:194:37:'
 graph.nodedata flip 11 offset 1055440 bit 7: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 12 offset 242908 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 13 offset 58658 bit 0: ok; q0=0; q1=0; q2=0; q3=0
@@ -214,20 +214,20 @@ graph.nodedata flip 15 offset 23204 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 16 offset 319811 bit 0: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 17 offset 1327674 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 18 offset 1193016 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 19 offset 877511 bit 7: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/strings.rs:194:37:'
+graph.nodedata flip 19 offset 877511 bit 7: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/strings.rs:194:37:'
 graph.nodedata flip 20 offset 1306043 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 21 offset 959371 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 22 offset 657921 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 23 offset 1321152 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 24 offset 629873 bit 6: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/strings.rs:194:37:'
+graph.nodedata flip 24 offset 629873 bit 6: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/strings.rs:194:37:'
 graph.nodedata flip 25 offset 671257 bit 6: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodedata flip 26 offset 865860 bit 1: error; q0=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/strings.rs:194:37:'
+graph.nodedata flip 26 offset 865860 bit 1: error; q0=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/strings.rs:194:37:'
 graph.nodedata flip 27 offset 30135 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 28 offset 683710 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodedata flip 29 offset 310281 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 == graph.nodedata: {'error': 4, 'ok': 26}
 graph.nodeoffsets flip  0 offset 51349 bit 0: ok; q0=0; q1=0; q2=0; q3=0
-graph.nodeoffsets flip  1 offset 8998 bit 4: error; q0=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/io.rs:85:28:'
+graph.nodeoffsets flip  1 offset 8998 bit 4: error; q0=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/io.rs:85:28:'
 graph.nodeoffsets flip  2 offset 215745 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  3 offset 84011 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip  4 offset 15426 bit 1: ok; q0=0; q1=0; q2=0; q3=0
@@ -238,7 +238,7 @@ graph.nodeoffsets flip  8 offset 22722 bit 4: error; q0=1 'Error: Corrupt type i
 graph.nodeoffsets flip  9 offset 40722 bit 6: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 10 offset 29534 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 11 offset 95250 bit 7: error; q0=1 'Error: Corrupt type index: node 11905 of tag 12 has no node record'
-graph.nodeoffsets flip 12 offset 24351 bit 7: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.OGEmHHRXi2/fz: panicked at backend/storage/src/strings.rs:194:37:'
+graph.nodeoffsets flip 12 offset 24351 bit 7: error; q0=0; q1=0; q2=0; q3=1 'Error: the query stopped while reading /tmp/tmp.5l8lYC8V6i/fz: panicked at backend/storage/src/strings.rs:194:37:'
 graph.nodeoffsets flip 13 offset 29112 bit 7: error; q0=1 'Error: Corrupt type index: node 3638 of tag 12 has no node record'
 graph.nodeoffsets flip 14 offset 43885 bit 3: ok; q0=0; q1=0; q2=0; q3=0
 graph.nodeoffsets flip 15 offset 3131 bit 6: error; q0=1 'Error: Corrupt type index: node 390 of tag 12 has no node record'
@@ -381,7 +381,7 @@ graph.typeindex flip 27 offset 38189 bit 2: ok; q0=0; q1=0; q2=0; q3=0
 graph.typeindex flip 28 offset 65690 bit 4: ok; q0=0; q1=0; q2=0; q3=0
 graph.typeindex flip 29 offset 88714 bit 4: error; q0=1 'Error: Corrupt type index: node 1051742 of tag 12 has no node record'
 == graph.typeindex: {'error': 7, 'ok': 23}
-## candidate 39ae076, GRAPHITE_VERIFY_GRAPHS=1
+## candidate 717b45e, GRAPHITE_VERIFY_GRAPHS=1
 # query 0: MATCH (c:CallSite) RETURN c.callee_class AS k, count(*) AS n ORDER BY n DESC, k LIMIT 3
 # query 1: MATCH (a)-[r]->(b) RETURN type(r) AS t, count(*) AS n ORDER BY t
 # query 2: MATCH (n) RETURN labels(n)[0] AS l, count(*) AS c ORDER BY l

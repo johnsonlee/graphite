@@ -5,7 +5,7 @@ g00: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
 g01: graph.nodeoffsets 495328 bytes; nodes,minId,maxId 30957,30958,61914
 g02: graph.nodeoffsets 742984 bytes; nodes,minId,maxId 30957,61915,92871
 g03: graph.nodeoffsets 990640 bytes; nodes,minId,maxId 30957,92872,123828
-## candidate 39ae076
+## candidate 717b45e
 built 4
 g00: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957
 g01: graph.nodeoffsets 247672 bytes; nodes,minId,maxId 30957,1,30957

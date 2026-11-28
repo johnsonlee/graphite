@@ -13,7 +13,7 @@ backward.* left after the save, before any query: 3 files
 expected (Rust CLI, transpose built in memory): 188
 JVM CLI: 181
 
-## candidate 39ae076
+## candidate 717b45e
 ### 1. save(loadMapped(acme), acme)
 before: nodes 204; edges "CONTROL_FLOW",5 "DATAFLOW",183 
 saved ds-cand/acme into ds-cand/acme
