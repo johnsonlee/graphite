@@ -18,6 +18,7 @@ pub struct Observation {
     pub head_response_sha256: String,
 }
 
+#[derive(Clone, Copy)]
 struct Rule<'a> {
     base_product_identity: &'a str,
     head_product_identity: &'a str,
@@ -832,5 +833,694 @@ mod tests {
         );
         assert_eq!(evaluate(BASE, HEAD, &[])["approved"], false);
         assert_eq!(evaluate("*", HEAD, &changes)["approved"], false);
+    }
+}
+
+/// The approval of #229's node-numbering transitions against the observations they were
+/// reviewed on, so that a copied identity or digest, or a lost rule, fails here and not first
+/// on #229's gate. The fixture lives in this file because it is the policy file product
+/// identities exclude: anywhere else it would move `main`'s identity and void the rules.
+#[cfg(test)]
+mod pr229_approval {
+    use super::*;
+
+    /// main 70f908c and #229 2d1a62b, as run 46094928338 computed them.
+    const BASE: &str = "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75";
+    const HEAD: &str = "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c";
+    /// #229's previous head c428401 (run 46091056203): the same observations, not approved.
+    const OLD_HEAD: &str = "05205f46e2eeddf814b656e017ae92796339e088179e9857505300cdca43bf07";
+    const REVIEWED: [&str; 2] = ["shape-id-lookup", "shape-traverse-filtered"];
+
+    /// Every observation of run 46094928338's `results/native/semantic-transitions.json`, in
+    /// its order: (case, base query, head query, base response, head response) SHA-256.
+    const PR229_OBSERVATIONS: &[(&str, &str, &str, &str, &str)] = &[
+        (
+            "zero/global-wide-four-properties",
+            "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+            "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+        ),
+        (
+            "zero/global-wide-class-pair",
+            "ef4c26381ee3ca2c22c7292db0841cfee24107e8f077b9566947de7f3685390c",
+            "ef4c26381ee3ca2c22c7292db0841cfee24107e8f077b9566947de7f3685390c",
+            "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7",
+            "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7",
+        ),
+        (
+            "zero/global-wide-name-pair",
+            "4a48b6deb2b4ef6c0dd39f795e2a6aa5c460decd41deaeb1ce50d0af8e435e10",
+            "4a48b6deb2b4ef6c0dd39f795e2a6aa5c460decd41deaeb1ce50d0af8e435e10",
+            "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786",
+            "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786",
+        ),
+        (
+            "zero/global-wide-caller-class",
+            "5f32ffe3fb97dcd13a79848547ff658647011e8b030e2e5c1e6452867d48f11b",
+            "5f32ffe3fb97dcd13a79848547ff658647011e8b030e2e5c1e6452867d48f11b",
+            "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad",
+            "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad",
+        ),
+        (
+            "zero/global-wide-callee-class",
+            "b412eba1d5bd22e7213dd5763f16b4d2a40a8e62fda5d895b81abe306a385936",
+            "b412eba1d5bd22e7213dd5763f16b4d2a40a8e62fda5d895b81abe306a385936",
+            "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf",
+            "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf",
+        ),
+        (
+            "zero/global-wide-provenance",
+            "3053f76c30ef6b34fce6665a2ab104bad26223f9133374648cbb041a0d146c95",
+            "3053f76c30ef6b34fce6665a2ab104bad26223f9133374648cbb041a0d146c95",
+            "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d",
+            "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d",
+        ),
+        (
+            "zero/global-wide-aliased",
+            "527ad441f0549171fd87e2bf859b2308597c9f288c18261665c6448c6f6c7628",
+            "527ad441f0549171fd87e2bf859b2308597c9f288c18261665c6448c6f6c7628",
+            "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56",
+            "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56",
+        ),
+        (
+            "zero/global-wide-parameterized-as-literal",
+            "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+            "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+        ),
+        (
+            "zero/global-wide-wrapped-case-insensitive",
+            "2e7f93cc0c6eec576d9d944ee20c919cb84b2808b8ba325548774313454391aa",
+            "2e7f93cc0c6eec576d9d944ee20c919cb84b2808b8ba325548774313454391aa",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+        ),
+        (
+            "zero/global-wide-wrapped-case-insensitive-distinct",
+            "622509a701664d150f7b13727b708ba964e18fa724881aac7c843e82bde147d7",
+            "622509a701664d150f7b13727b708ba964e18fa724881aac7c843e82bde147d7",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+            "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+        ),
+        (
+            "targeted/global-wide-four-properties",
+            "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+            "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+        ),
+        (
+            "targeted/global-wide-class-pair",
+            "c33e6c0c08430e24c4ca2964a5190f8a37d4ff0b4f78f22bf00dbf5b094b7fbf",
+            "c33e6c0c08430e24c4ca2964a5190f8a37d4ff0b4f78f22bf00dbf5b094b7fbf",
+            "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387",
+            "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387",
+        ),
+        (
+            "targeted/global-wide-name-pair",
+            "de8626633e1fd4dcf762378eb1253e970a0b1bff702af5b2ae7a9953399376da",
+            "de8626633e1fd4dcf762378eb1253e970a0b1bff702af5b2ae7a9953399376da",
+            "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65",
+            "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65",
+        ),
+        (
+            "targeted/global-wide-caller-class",
+            "c9c91490c15858149b5a58b5e4f43f8eca87968afa840986db99014b7944a920",
+            "c9c91490c15858149b5a58b5e4f43f8eca87968afa840986db99014b7944a920",
+            "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639",
+            "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639",
+        ),
+        (
+            "targeted/global-wide-callee-class",
+            "8f4498c2adbdaa8f5440eb9f24a26394eaab17a0b1a188989fa725df13a98992",
+            "8f4498c2adbdaa8f5440eb9f24a26394eaab17a0b1a188989fa725df13a98992",
+            "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749",
+            "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749",
+        ),
+        (
+            "targeted/global-wide-provenance",
+            "5aa97e0c6166666786be117e31790a1e30409d75bf87399287b3fc20327297dd",
+            "5aa97e0c6166666786be117e31790a1e30409d75bf87399287b3fc20327297dd",
+            "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6",
+            "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6",
+        ),
+        (
+            "targeted/global-wide-aliased",
+            "83c20a970dcd7896eaeec945b36451899075a7914eb1295e221497fe05698ba4",
+            "83c20a970dcd7896eaeec945b36451899075a7914eb1295e221497fe05698ba4",
+            "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da",
+            "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da",
+        ),
+        (
+            "targeted/global-wide-parameterized-as-literal",
+            "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+            "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+        ),
+        (
+            "targeted/global-wide-wrapped-case-insensitive",
+            "edebb9d7124e6cada82afac83073ef8b0764f2bea86916e9837fb873e9183414",
+            "edebb9d7124e6cada82afac83073ef8b0764f2bea86916e9837fb873e9183414",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+        ),
+        (
+            "targeted/global-wide-wrapped-case-insensitive-distinct",
+            "bf01a2a49ca94096b77ce775ef11826c1b6e40d1360c7111204c39f01469287d",
+            "bf01a2a49ca94096b77ce775ef11826c1b6e40d1360c7111204c39f01469287d",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+            "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+        ),
+        (
+            "dense/global-wide-four-properties",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+        ),
+        (
+            "dense/global-wide-class-pair",
+            "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+            "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+            "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e",
+            "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e",
+        ),
+        (
+            "dense/global-wide-name-pair",
+            "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+            "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+            "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d",
+            "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d",
+        ),
+        (
+            "dense/global-wide-caller-class",
+            "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+            "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+            "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb",
+            "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb",
+        ),
+        (
+            "dense/global-wide-callee-class",
+            "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+            "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+            "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c",
+            "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c",
+        ),
+        (
+            "dense/global-wide-provenance",
+            "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+            "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+            "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+            "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+        ),
+        (
+            "dense/global-wide-aliased",
+            "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+            "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+            "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de",
+            "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de",
+        ),
+        (
+            "dense/global-wide-parameterized-as-literal",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+        ),
+        (
+            "dense/global-wide-wrapped-case-insensitive",
+            "c694284650250788593ed94a73dd8330c1ceef5c2bb1f782fad6e368db527c00",
+            "c694284650250788593ed94a73dd8330c1ceef5c2bb1f782fad6e368db527c00",
+            "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+            "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+        ),
+        (
+            "dense/global-wide-wrapped-case-insensitive-distinct",
+            "f12c63bd0251fe4ade8df81bd787fdf0eace1ca13c9a36483086c0d9689a1e26",
+            "f12c63bd0251fe4ade8df81bd787fdf0eace1ca13c9a36483086c0d9689a1e26",
+            "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+            "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+        ),
+        (
+            "localized-early/global-wide-four-properties",
+            "607aa55d80fa9ccb9f13e5b9107f14f6cba16e7f863c862cd5d53f1c23059f8e",
+            "607aa55d80fa9ccb9f13e5b9107f14f6cba16e7f863c862cd5d53f1c23059f8e",
+            "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed",
+            "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed",
+        ),
+        (
+            "localized-middle/global-wide-four-properties",
+            "4302637c07bc770cb08aadcff9c2d05b3312f014291a4ecac2ef15301220944a",
+            "4302637c07bc770cb08aadcff9c2d05b3312f014291a4ecac2ef15301220944a",
+            "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670",
+            "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670",
+        ),
+        (
+            "localized-late/global-wide-four-properties",
+            "3f2bfcd26d97a468911e9a5e37cf43b027c3baf23e58b93140db62bc18ee70b8",
+            "3f2bfcd26d97a468911e9a5e37cf43b027c3baf23e58b93140db62bc18ee70b8",
+            "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49",
+            "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49",
+        ),
+        (
+            "broad-all-64/global-wide-four-properties",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+            "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+        ),
+        (
+            "schema-label-histogram",
+            "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+            "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+            "af893672357699830c1a555c8cb0586e68a18310c3171bb14db7db4d819ed6c7",
+            "af893672357699830c1a555c8cb0586e68a18310c3171bb14db7db4d819ed6c7",
+        ),
+        (
+            "schema-key-histogram",
+            "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+            "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+            "882fdcb99b731cc8ba239aaa640a4d22803ea8f29d5d2b28c11b79fb5f9aad79",
+            "882fdcb99b731cc8ba239aaa640a4d22803ea8f29d5d2b28c11b79fb5f9aad79",
+        ),
+        (
+            "schema-relationship-histogram",
+            "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+            "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+            "b989ecf27a50d74f82af0b16739dbdc613823db7a7ddb2f9dc7fe7f3df4c1557",
+            "b989ecf27a50d74f82af0b16739dbdc613823db7a7ddb2f9dc7fe7f3df4c1557",
+        ),
+        (
+            "shape-wide-contains",
+            "93876fd68d6103ec49088d957d5b2ed4e16967ff5d6a31754ea673d0034c6bb3",
+            "93876fd68d6103ec49088d957d5b2ed4e16967ff5d6a31754ea673d0034c6bb3",
+            "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4",
+            "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4",
+        ),
+        (
+            "shape-label-scan-callsite",
+            "ef3fc90c8f8245ade483b1319504b7e05761870e686ec771fc8ca4a32ee8b22b",
+            "ef3fc90c8f8245ade483b1319504b7e05761870e686ec771fc8ca4a32ee8b22b",
+            "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813",
+            "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813",
+        ),
+        (
+            "shape-label-scan-method",
+            "a4ab145c29a44c9c73521f428689997a587818dcf860d28614d2483aeb853895",
+            "a4ab145c29a44c9c73521f428689997a587818dcf860d28614d2483aeb853895",
+            "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241",
+            "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241",
+        ),
+        (
+            "shape-label-scan-constant",
+            "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+            "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+            "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
+            "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
+        ),
+        (
+            "shape-label-scan-field",
+            "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+            "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+            "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b",
+            "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b",
+        ),
+        (
+            "shape-all-nodes",
+            "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+            "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+            "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+            "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+        ),
+        (
+            "shape-equality",
+            "c43182394f50246b2e9c89319e8f166065491b976966d716f9b2b7c879bff260",
+            "c43182394f50246b2e9c89319e8f166065491b976966d716f9b2b7c879bff260",
+            "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521",
+            "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521",
+        ),
+        (
+            "shape-inequality",
+            "220a040b7e8b1d70fb8f38185f0fd7bfa838ae906f8d945af4ba3398630c684d",
+            "220a040b7e8b1d70fb8f38185f0fd7bfa838ae906f8d945af4ba3398630c684d",
+            "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+            "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+        ),
+        (
+            "shape-id-lookup",
+            "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+            "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+            "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6",
+            "0389b15588eeb74fee5beea7dd9d8e671465883ce83bf1f940a6e955894a331f",
+        ),
+        (
+            "shape-in-list",
+            "ee43ec33151492de0a432600d1b22750f534e6a2940f235a15840b5887a57e80",
+            "ee43ec33151492de0a432600d1b22750f534e6a2940f235a15840b5887a57e80",
+            "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94",
+            "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94",
+        ),
+        (
+            "shape-null-check",
+            "7600ed77337a5ce0060e5030848b905cdd6a0d7970b25942cca4592fc0c66300",
+            "7600ed77337a5ce0060e5030848b905cdd6a0d7970b25942cca4592fc0c66300",
+            "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+            "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+        ),
+        (
+            "shape-regex",
+            "dbb2006f6ec42c960f06b6bf16cad9d7a4f2f93c0b21153799485e12e35fea95",
+            "dbb2006f6ec42c960f06b6bf16cad9d7a4f2f93c0b21153799485e12e35fea95",
+            "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9",
+            "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9",
+        ),
+        (
+            "shape-one-hop",
+            "fe48eaa25cafe412b60316026609aa73a6035358ba4fa88cb578f55c86ceda5b",
+            "fe48eaa25cafe412b60316026609aa73a6035358ba4fa88cb578f55c86ceda5b",
+            "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8",
+            "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8",
+        ),
+        (
+            "shape-one-hop-typed",
+            "bf6f5042d8cf8a082930407b2eb4ec09b8d5008ddbb9a0ed6df5444317fb4a1f",
+            "bf6f5042d8cf8a082930407b2eb4ec09b8d5008ddbb9a0ed6df5444317fb4a1f",
+            "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053",
+            "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053",
+        ),
+        (
+            "shape-two-hop",
+            "2fc55556115e8aa917aa4638706649cb645453c06d0c17f0ac39350b60202d23",
+            "2fc55556115e8aa917aa4638706649cb645453c06d0c17f0ac39350b60202d23",
+            "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59",
+            "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59",
+        ),
+        (
+            "shape-incoming",
+            "7fa551be7b95270423109861b0cb77b358417bc9cd734eaaf13006d64604a40d",
+            "7fa551be7b95270423109861b0cb77b358417bc9cd734eaaf13006d64604a40d",
+            "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1",
+            "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1",
+        ),
+        (
+            "shape-var-length",
+            "bbca77bd13a3c89dd634a3c4818730ffc1d4a1203bcfce37bfcbec4764dae24c",
+            "bbca77bd13a3c89dd634a3c4818730ffc1d4a1203bcfce37bfcbec4764dae24c",
+            "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+            "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+        ),
+        (
+            "shape-path",
+            "3f07a6904220fc88bcaad6d93152d16f3c10a6f6bf7ad7f1f718f3ca03e93ddb",
+            "3f07a6904220fc88bcaad6d93152d16f3c10a6f6bf7ad7f1f718f3ca03e93ddb",
+            "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b",
+            "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b",
+        ),
+        (
+            "shape-traverse-filtered",
+            "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+            "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+            "8931dd2e91cc80779b6aaf0ab3fc8d9b800d51e55e5a585eb2a20b7a56e7a870",
+            "448d1bad5acc64dfd5859735c6914ab3b3062a66fb7eba453b1b831e3d3647e7",
+        ),
+        (
+            "shape-count-all",
+            "586fa3f5cb7871402ce88be4dc31639cdd552857589b6a998c8be6002b7d0db5",
+            "586fa3f5cb7871402ce88be4dc31639cdd552857589b6a998c8be6002b7d0db5",
+            "0bf8a659f9dba13fc7953d50fed7c72a27e49b731bbf5745d7f9151147aea7bc",
+            "0bf8a659f9dba13fc7953d50fed7c72a27e49b731bbf5745d7f9151147aea7bc",
+        ),
+        (
+            "shape-count-label",
+            "c610b36404891c86d63224dcdc151687ef70f50828493c03013ffe046c487ddc",
+            "c610b36404891c86d63224dcdc151687ef70f50828493c03013ffe046c487ddc",
+            "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62",
+            "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62",
+        ),
+        (
+            "shape-group-count",
+            "7f71983908cab00265b8280df5a69a87e94aa2a7fa926d2798c99bcb25fea9a8",
+            "7f71983908cab00265b8280df5a69a87e94aa2a7fa926d2798c99bcb25fea9a8",
+            "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+            "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+        ),
+        (
+            "shape-distinct",
+            "d61e543f7fc136a73d16b035c114634cea576eb2e81cb676de247132f16562ea",
+            "d61e543f7fc136a73d16b035c114634cea576eb2e81cb676de247132f16562ea",
+            "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4",
+            "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4",
+        ),
+        (
+            "shape-collect",
+            "920a011a3f0fd70b86c8e96978ec8828fd67b07c4b21f46b1ae0dce3adac6261",
+            "920a011a3f0fd70b86c8e96978ec8828fd67b07c4b21f46b1ae0dce3adac6261",
+            "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+            "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+        ),
+        (
+            "shape-count-traversal",
+            "0c0eb528ce456f3b8a996edfec5f51ada004216adf66e0261d67696a81ec6801",
+            "0c0eb528ce456f3b8a996edfec5f51ada004216adf66e0261d67696a81ec6801",
+            "1fd1901075bd8b865cbbb9da03147a619373f9ade33c574c301cf03f239878a7",
+            "1fd1901075bd8b865cbbb9da03147a619373f9ade33c574c301cf03f239878a7",
+        ),
+        (
+            "shape-order-by",
+            "88cb04da13ed7fcb5a8eb263eda499cad1bedb7808f5cf3eef0d6826e0e29744",
+            "88cb04da13ed7fcb5a8eb263eda499cad1bedb7808f5cf3eef0d6826e0e29744",
+            "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+            "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+        ),
+        (
+            "shape-order-by-desc",
+            "5027d879d533d800096e2d9fbaeecb7a409f5a8744a27401dc97f82cb2f17ad0",
+            "5027d879d533d800096e2d9fbaeecb7a409f5a8744a27401dc97f82cb2f17ad0",
+            "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+            "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+        ),
+        (
+            "shape-skip",
+            "2a7f57057d9f6182cd0b65fc3ced3f7a4bb1952cffcc074bae52f551c4abc680",
+            "2a7f57057d9f6182cd0b65fc3ced3f7a4bb1952cffcc074bae52f551c4abc680",
+            "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b",
+            "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b",
+        ),
+        (
+            "shape-function-calls",
+            "7cc12fdd157088ab19b33a3d6b3c735b0e990668e9eb535388edf239f0885fcc",
+            "7cc12fdd157088ab19b33a3d6b3c735b0e990668e9eb535388edf239f0885fcc",
+            "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5",
+            "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5",
+        ),
+        (
+            "shape-case-expr",
+            "a239e4bd5ce026f72684b26c46cb4c9e101cc800ef31fe48a5fab4b1cb73509a",
+            "a239e4bd5ce026f72684b26c46cb4c9e101cc800ef31fe48a5fab4b1cb73509a",
+            "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2",
+            "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2",
+        ),
+        (
+            "shape-coalesce",
+            "059f17f974f39b2c1bc00f1fe3782592e0b67f83a2b38f29a25b366ef431022e",
+            "059f17f974f39b2c1bc00f1fe3782592e0b67f83a2b38f29a25b366ef431022e",
+            "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1",
+            "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1",
+        ),
+        (
+            "shape-labels-fn",
+            "958b0c85ff86238ef3cbba0891181b49bc9b6782936597d4e746d02d87d11917",
+            "958b0c85ff86238ef3cbba0891181b49bc9b6782936597d4e746d02d87d11917",
+            "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c",
+            "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c",
+        ),
+        (
+            "shape-with-filter",
+            "1100d048a0d279d87643fd15810de59ad71187854262f28e9a14571dbe7ac26d",
+            "1100d048a0d279d87643fd15810de59ad71187854262f28e9a14571dbe7ac26d",
+            "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+            "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+        ),
+        (
+            "shape-with-aggregate",
+            "be7b22e552251ee59d665d048dc80bab6a3beb13634f31a375dffc0ba04b1d32",
+            "be7b22e552251ee59d665d048dc80bab6a3beb13634f31a375dffc0ba04b1d32",
+            "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+            "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+        ),
+        (
+            "shape-cartesian",
+            "c4e256ff0ca5177f28608ede80ddceb5090cd36052a228756ee7b3e3c124009d",
+            "c4e256ff0ca5177f28608ede80ddceb5090cd36052a228756ee7b3e3c124009d",
+            "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6",
+            "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6",
+        ),
+        (
+            "shape-union",
+            "a61e7b84e438e36530b5357b395bb8144e49a95aa0dc50e1f0e1b66844d441f8",
+            "a61e7b84e438e36530b5357b395bb8144e49a95aa0dc50e1f0e1b66844d441f8",
+            "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852",
+            "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852",
+        ),
+    ];
+
+    fn observations() -> Vec<Observation> {
+        PR229_OBSERVATIONS
+            .iter()
+            .map(|&(case, base_query, head_query, base, head)| Observation {
+                case_id: case.into(),
+                base_query_sha256: base_query.into(),
+                head_query_sha256: head_query.into(),
+                base_response_sha256: base.into(),
+                head_response_sha256: head.into(),
+            })
+            .collect()
+    }
+
+    fn errors(result: &Value) -> Vec<String> {
+        result["errors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|error| error.as_str().unwrap().to_owned())
+            .collect()
+    }
+
+    /// Flips the last hex digit of a digest: still a well-formed SHA-256, another value.
+    fn altered(digest: &str) -> String {
+        let (head, last) = digest.split_at(digest.len() - 1);
+        format!("{head}{}", if last == "0" { "1" } else { "0" })
+    }
+
+    #[test]
+    fn the_fixture_is_the_run_seventy_three_cases_two_of_them_different() {
+        let observations = observations();
+        assert_eq!(observations.len(), 73);
+        let unique: BTreeSet<_> = observations.iter().map(|o| o.case_id.as_str()).collect();
+        assert_eq!(unique.len(), 73);
+        let different: Vec<_> = observations
+            .iter()
+            .filter(|o| {
+                o.base_query_sha256 != o.head_query_sha256
+                    || o.base_response_sha256 != o.head_response_sha256
+            })
+            .map(|o| o.case_id.as_str())
+            .collect();
+        assert_eq!(different, REVIEWED);
+        assert!(observations
+            .iter()
+            .all(|o| o.base_query_sha256 == o.head_query_sha256));
+    }
+
+    #[test]
+    fn the_reviewed_pair_approves_two_transitions_and_seventy_one_exact_cases() {
+        let result = evaluate(BASE, HEAD, &observations());
+        assert_eq!(result["approved"], true, "{:?}", errors(&result));
+        assert_eq!(result["exact"], false);
+        let cases = result["cases"].as_array().unwrap();
+        let reviewed: Vec<_> = cases
+            .iter()
+            .filter(|case| case["mode"] == "reviewed-transition")
+            .map(|case| case["caseId"].as_str().unwrap())
+            .collect();
+        assert_eq!(reviewed, REVIEWED);
+        assert_eq!(
+            cases.iter().filter(|case| case["mode"] == "exact").count(),
+            71
+        );
+        assert!(cases.iter().all(|case| case["approved"] == true));
+    }
+
+    #[test]
+    fn another_identity_pair_approves_nothing() {
+        for (base, head) in [
+            (BASE, OLD_HEAD),
+            (HEAD, BASE),
+            (OLD_HEAD, HEAD),
+            (BASE, BASE),
+        ] {
+            let result = evaluate(base, head, &observations());
+            assert_eq!(result["approved"], false, "{base} -> {head}");
+            let errors = errors(&result);
+            assert_eq!(errors.len(), 2, "{errors:?}");
+            for (error, case) in errors.iter().zip(REVIEWED) {
+                assert_eq!(
+                    error,
+                    &format!(
+                        "{case}: No compiled-in transition approves this directed source and case difference"
+                    )
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn a_changed_query_or_response_is_not_the_reviewed_transition() {
+        type Field = fn(&mut Observation) -> &mut String;
+        let fields: [Field; 4] = [
+            |o| &mut o.base_query_sha256,
+            |o| &mut o.head_query_sha256,
+            |o| &mut o.base_response_sha256,
+            |o| &mut o.head_response_sha256,
+        ];
+        for case in REVIEWED {
+            for field in fields {
+                let mut observations = observations();
+                let observation = observations.iter_mut().find(|o| o.case_id == case).unwrap();
+                let value = field(observation);
+                *value = altered(value);
+                let result = evaluate(BASE, HEAD, &observations);
+                assert_eq!(result["approved"], false, "{case}");
+                assert_eq!(
+                    errors(&result),
+                    [format!(
+                        "{case}: Observed query or complete typed response differs from reviewed expectation"
+                    )]
+                );
+            }
+        }
+        // A reviewed case that is missing, and an exact case that changes, fail too.
+        let without: Vec<_> = observations()
+            .into_iter()
+            .filter(|o| o.case_id != REVIEWED[0])
+            .collect();
+        assert_eq!(
+            errors(&evaluate(BASE, HEAD, &without)),
+            [format!(
+                "Missing observation for reviewed transition: {}",
+                REVIEWED[0]
+            )]
+        );
+        let mut drifted = observations();
+        drifted[0].head_response_sha256 = altered(&drifted[0].head_response_sha256);
+        let result = evaluate(BASE, HEAD, &drifted);
+        assert_eq!(result["approved"], false);
+        assert_eq!(errors(&result).len(), 1);
+    }
+
+    #[test]
+    fn each_rule_is_needed() {
+        let ours = |rule: &Rule<'_>| {
+            rule.base_product_identity == BASE && rule.head_product_identity == HEAD
+        };
+        assert_eq!(RULES.iter().filter(|rule| ours(rule)).count(), 2);
+        for case in REVIEWED {
+            let rules: Vec<Rule<'_>> = RULES
+                .iter()
+                .copied()
+                .filter(|rule| !(ours(rule) && rule.case_id == case))
+                .collect();
+            let result = evaluate_rules(BASE, HEAD, &observations(), &rules);
+            assert_eq!(result["approved"], false, "{case}");
+            assert_eq!(
+                errors(&result),
+                [format!(
+                    "{case}: No compiled-in transition approves this directed source and case difference"
+                )]
+            );
+        }
     }
 }
