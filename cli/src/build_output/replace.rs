@@ -561,8 +561,25 @@ mod tests {
                 child.kill().unwrap();
                 child.wait().unwrap();
                 let lock = output.with_added_extension("lock");
-                let locked = File::open(&lock).unwrap();
-                locked.try_lock().unwrap();
+                // The lock on a claim can outlive its holder for a moment. flock belongs to
+                // the open file description, and a process that another test of this binary
+                // forks holds a copy of every descriptor until it execs, the descriptor a
+                // `recover` just returned from included. `recover` declines while anything
+                // holds the lock, which is its contract, so this test waits for the lock
+                // where it used to assume it free the instant a holder was dropped: that
+                // failed once in CI and 48 of 60 times under 16 threads spawning processes.
+                let deadline = Instant::now() + Duration::from_secs(15);
+                let locked = loop {
+                    let file = File::open(&lock).unwrap();
+                    if file.try_lock().is_ok() {
+                        break file;
+                    }
+                    assert!(
+                        Instant::now() < deadline,
+                        "the claim's lock never came free"
+                    );
+                    std::thread::sleep(Duration::from_millis(1));
+                };
                 assert!(!recover(&output), "another recoverer holds the same inode");
                 drop(locked);
 
@@ -588,11 +605,23 @@ mod tests {
                     barrier.wait();
                     recover(&output)
                 };
-                let (a, b) = std::thread::scope(|t| {
-                    let first = t.spawn(race);
-                    let second = race();
-                    (first.join().unwrap(), second)
-                });
+                // Never two winners; and one, once nothing else holds the lock (see above).
+                let (a, b) = loop {
+                    let (a, b) = std::thread::scope(|t| {
+                        let first = t.spawn(race);
+                        let second = race();
+                        (first.join().unwrap(), second)
+                    });
+                    assert!(!(a && b), "two recoverers won {window} {with_sidecar}");
+                    if a || b {
+                        break (a, b);
+                    }
+                    assert!(
+                        Instant::now() < deadline,
+                        "no recoverer won {window} {with_sidecar}"
+                    );
+                    std::thread::sleep(Duration::from_millis(1));
+                };
                 assert_ne!(a, b, "exactly one recoverer wins {window} {with_sidecar}");
                 assert!(!lock.exists());
                 let report = Container::open(&output).unwrap().verify().unwrap();

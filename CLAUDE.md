@@ -1045,6 +1045,20 @@ passed for a wrong implementation too.
   test report's timestamp and test count before calling it a pass (a failed compile or a
   failed detekt leaves the previous run's XML in place).
 
+### A Forked Child Holds Every Descriptor Until It Execs
+
+Two flaky tests had one cause. `fork` copies the descriptor table, `O_CLOEXEC` closes the
+copies only at `exec`, and tests of one binary run on threads of one process, so while one
+test spawns a process another test's descriptors live on in the child for a moment: a freshly
+written executable is still open for writing (`ETXTBSY` on the TCK probe), and an `flock`,
+which belongs to the open file description, is still held after its owner dropped it
+(`only_one_recoverer_repairs_a_killed_publishers_exact_files`: both racing recoverers found the
+lock taken). Running the test alone never reproduces it (0 of 336); sixteen threads spawning
+`/bin/true` beside it do (48 of 60). A test must not assume a lock, or a file's write access, is
+released the instant its holder is dropped; wait for it with a deadline, and assert the
+property that holds under interference (never two winners) separately from the one that needs
+the resource free (one winner).
+
 ### The Build JDK Must Not Shape a Baseline's Bytecode
 
 `GraphParityRegressionTest` failed on JDK 21 with 41 facts missing, all of

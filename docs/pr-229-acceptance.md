@@ -55,7 +55,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
 | 5 | Query service: paging, wide hierarchy, capabilities | Addressed, with stated limits | `query-service.txt` |
 | 6 | Memory/scale: process-wide ids, max-id-sized indexes | Repeated-build drift fixed. The max-id sizing is kept and pinned as a contract. Matched multi-graph measurements exist for Linux and do not reproduce the review's two findings; performance is **not accepted** | `repeated-builds.txt`, `performance-linux.txt` |
-| 7 | Engineering: scheduling-sensitive tests, slow verification | Five tests made deterministic. The complete path is measured per job and task; its two serial stages run in parallel now (locally 9.4→7.2 min and 2.1→1.1 min), hosted numbers pending | section 7 |
+| 7 | Engineering: scheduling-sensitive tests, slow verification | Six tests made deterministic. The complete path is measured per job and task; its two serial stages run in parallel now (locally 9.4→7.2 min and 2.1→1.1 min), hosted numbers pending | section 7 |
 | 8 | Framework-semantic extension layer | The documented extension write API now exists (it did not). A framework layer remains a design boundary, not implemented | section 8 |
 
 ---
@@ -475,6 +475,7 @@ What this does and does not show:
 | `tck/src/runner.rs` probe start | `ETXTBSY`: a freshly written probe binary still open in a child another test thread was forking | `spawn_retrying_busy` retries the spawn (10 ms, at most 50 times); test included |
 | `benchmark/src/native.rs` stage test | bound the fixed port 18080, so it failed whenever anything else held it (a local server, a parallel test) | the stage takes its port; the test binds an ephemeral one |
 | C4 warm-up route tests (`routes.rs`) | waited on real idleness time (`C4_WARM_QUIET`) | `freeze_clock` / `advance_clock` drive the idleness clock |
+| `only_one_recoverer_repairs_a_killed_publishers_exact_files` (`cli`, `replace.rs`) | assumed the claim's `flock` free the instant its holder was dropped; a process another test thread forks keeps a copy of the locked descriptor until it execs, so both racing recoverers found the lock held (once in CI on `b57577d`; 48 of 60 runs with 16 threads spawning processes, 0 of 336 run alone) | waits for the lock where it took it for granted, and asserts what `recover` promises: never two winners, and one once nothing else holds the lock. 0 of 60 under the same pressure. `recover` itself is unchanged: declining while the lock is held is its contract |
 
 **Verification time.** `.github/scripts/verify-affected.py` maps the changed files to the
 crates and Gradle projects that can observe them, and runs the Rust and JVM groups in
