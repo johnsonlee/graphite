@@ -475,12 +475,13 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "e5733b9b2410aa383ad45bac0f4c9886057e59a4caa2b4699f5f66fe7ee7112c",
         reason: "PR #226: Constant rows that read 0 for a class literal now read its JVM descriptor (for example Ljavax/xml/validation/SchemaFactory;)",
     },
-    // PR #229 (head 2d1a62b, base main 70f908c), run 46091056203 on c428401: each build numbers its
-    // nodes from 1 (NodeId.numbered). 2d1a62b changes only docs/pr-229-* from c428401, and its
-    // product identity is bound here; the same four response digests on runs 45833728909 and 46001831978.
+    // PR #229 (head 7588730, base main 70f908c), run 46122244274: each build numbers its nodes from 1
+    // (NodeId.numbered). The same 73 observations, with the same four response digests, on its earlier
+    // heads c428401 (run 46091056203), 2d1a62b (run 46094928338) and on runs 45833728909 and
+    // 46001831978; only the head's product identity moved with its later commits, and it is bound here.
     Rule {
         base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
-        head_product_identity: "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
+        head_product_identity: "6f85545f52178f35a17b3c91ba71f11502924ea3c2c1ff4abcb9096e496a944e",
         case_id: "shape-id-lookup",
         base_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
         head_query_sha256: "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
@@ -490,7 +491,7 @@ const RULES: &[Rule<'static>] = &[
     },
     Rule {
         base_product_identity: "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75",
-        head_product_identity: "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
+        head_product_identity: "6f85545f52178f35a17b3c91ba71f11502924ea3c2c1ff4abcb9096e496a944e",
         case_id: "shape-traverse-filtered",
         base_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
         head_query_sha256: "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
@@ -844,14 +845,20 @@ mod tests {
 mod pr229_approval {
     use super::*;
 
-    /// main 70f908c and #229 2d1a62b, as run 46094928338 computed them.
+    /// main 70f908c and #229 7588730, as run 46122244274 computed them.
     const BASE: &str = "981eeea3494460f75577260a8beb9296aceafa3c64e37ba96f3e055ff1c0ca75";
-    const HEAD: &str = "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c";
-    /// #229's previous head c428401 (run 46091056203): the same observations, not approved.
-    const OLD_HEAD: &str = "05205f46e2eeddf814b656e017ae92796339e088179e9857505300cdca43bf07";
+    const HEAD: &str = "6f85545f52178f35a17b3c91ba71f11502924ea3c2c1ff4abcb9096e496a944e";
+    /// #229's earlier heads c428401 (run 46091056203), db80380 and 2d1a62b (run 46094928338, the pair
+    /// this approval was first bound to): the same observations, not approved.
+    const OLD_HEADS: [&str; 3] = [
+        "05205f46e2eeddf814b656e017ae92796339e088179e9857505300cdca43bf07",
+        "5f4a0a23dc8c0247784894ac07c1e23ca51e3dd9c46e96d6db94de2d70eb4a8a",
+        "eba350a9a104a1ea4597428d76b6e1f34c3d30b6909f9bc9225845136546c51c",
+    ];
     const REVIEWED: [&str; 2] = ["shape-id-lookup", "shape-traverse-filtered"];
 
-    /// Every observation of run 46094928338's `results/native/semantic-transitions.json`, in
+    /// Every observation of run 46122244274's `results/native/semantic-transitions.json` (run
+    /// 46094928338's are the same 73, row for row), in
     /// its order: (case, base query, head query, base response, head response) SHA-256.
     const PR229_OBSERVATIONS: &[(&str, &str, &str, &str, &str)] = &[
         (
@@ -1436,12 +1443,11 @@ mod pr229_approval {
 
     #[test]
     fn another_identity_pair_approves_nothing() {
-        for (base, head) in [
-            (BASE, OLD_HEAD),
-            (HEAD, BASE),
-            (OLD_HEAD, HEAD),
-            (BASE, BASE),
-        ] {
+        let mut pairs = vec![(HEAD, BASE), (BASE, BASE)];
+        for old in OLD_HEADS {
+            pairs.extend([(BASE, old), (old, HEAD)]);
+        }
+        for (base, head) in pairs {
             let result = evaluate(base, head, &observations());
             assert_eq!(result["approved"], false, "{base} -> {head}");
             let errors = errors(&result);
