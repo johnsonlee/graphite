@@ -199,6 +199,33 @@ Both JVM loads read it on the first call for it and never before, and so does th
 Rust engine as the Kotlin engine answers them from `Graph.analysisStatus`. Status and role codes index a name table the file carries, so a value added later still reads
 as itself.
 
+## The JavaScript frontend
+
+A JavaScript build records the same evidence in the same file, so one reader answers for both
+frontends. The frontend lists what it did in the `completeness` section of its JSON interchange
+(`classes`, `methods`, `callSiteGaps`) and the Rust importer writes `graph.completeness` from it,
+bound to that save's node data, before it seals the directory. An interchange without the
+section writes no file, and the graph answers `null`.
+
+What the statuses mean for compiled JavaScript:
+
+| Case | Recorded as | A caller reads |
+|------|-------------|----------------|
+| A module, a class or an object literal whose function bodies were read | class `ANALYZED` | `analysisStatus` of its methods: `ANALYZED` |
+| An artifact that does not parse (the build warns and goes on) | class `RESOLUTION_FAILED`, named by its module path | a call that would have reached it is a dispatch gap; the class is on record as failed, not as calling nothing |
+| A callee that is a JavaScript library binding (`JSON.stringify`, `Array.prototype.map`) | nothing: its owner is not a class of the build | `EXTERNAL` |
+| A callee outside the artifacts (`node_modules`, an unresolved import) or a value nothing binds (a callback parameter, a computed member) | call site `DISPATCH_UNRESOLVED` | `dispatchGap`: `DISPATCH_UNRESOLVED`; `analysisStatus`: `EXTERNAL` |
+
+The gap set is exactly the calls whose `CALL` edge is `isDynamic`. A call the TypeScript checker
+resolves to a body is not a gap, and that resolution is static: JavaScript can rebind a function
+at run time, and the frontend follows only the bindings it can see. `ABSTRACT`, `NATIVE`,
+`NO_BODY`, `INCOMPLETE`, `EXCLUDED_BY_SCOPE` and `NOT_EXPANDED` do not arise for compiled
+JavaScript (it has no bodiless declarations, and the build has no scope or budget); the
+interchange accepts them for a frontend that needs them.
+
+The Apple frontend records no completeness evidence yet: its graphs answer `null`, and
+`GET /api/capabilities` reports `facts.completeness: false` for them.
+
 ## What this delivery does not do
 
 - The roots of a `Reachable` expansion are application classes, by name prefix, not entry

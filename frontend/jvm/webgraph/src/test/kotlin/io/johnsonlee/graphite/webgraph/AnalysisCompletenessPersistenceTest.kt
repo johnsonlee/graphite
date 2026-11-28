@@ -23,6 +23,7 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.HexFormat
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -173,6 +174,44 @@ class AnalysisCompletenessPersistenceTest {
         )
         GraphStore.save(graph(reachable), dir)
         loaded(dir) { graph -> assertEquals(reachable, graph.analysisCompleteness()) }
+    }
+
+    /**
+     * The file the Rust importer wrote for a JavaScript build (`graphite build --lang js` of a module that calls a body in the
+     * artifacts, a library binding, an unresolved import and a callback, beside an artifact that does not parse), byte for byte:
+     * `backend/storage/src/completeness.rs` reads the same bytes in `the_jvm_reads_the_sidecar_the_importer_writes`.
+     */
+    @Test
+    fun `the sidecar the Rust importer writes for a JavaScript build reads as the same evidence`() {
+        val dir = directory("completeness-rust-written")
+        val bytes = HexFormat.of().parseHex(
+            "4743500188a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b3781f8b08000000000000ff6d90d14a" +
+            "c3401045470b6d488b587df617fc87c96642173733cb66d224be2c167ca8da0afaffe8a6d5e08317160e87e1ceb000ffe52b" +
+            "e507979021a31b1ea984bb5f8a9dd58db41a8db00671b172d2a5c1a2d1804661cea8764bb06089859403e4968dd4de9112ac" +
+            "0335e25ab5c2b142eb52f19a7ae3da321517436c8c7882158b46ea3d72d29051af14d276b86af981a5e358535d504817ce60" +
+            "89de3b6b70ac8485b345c03040e61d6a25a13ecddc96b6f1a866135b3e1db04db537936c50db809adcf5e43c06b569e53933" +
+            "c8771fefafcfc7fbc3cb27cc61f1b6df8d783111407678da1fcf72c2bfff7a995e3ec20abe0172dfa85579010000c683ddae" +
+            "21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff"
+        )
+        Files.write(dir.resolve(AnalysisCompletenessStore.FILE_NAME), bytes)
+        Files.writeString(
+            dir.resolve("forward.properties"),
+            "graphite.nodeLayout.sha256=88a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b378\n" +
+                "graphite.completeness.sha256=c683ddae21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff\n"
+        )
+
+        val evidence = AnalysisCompletenessStore.load(dir)!!
+        assertEquals(
+            mapOf(
+                "broken.mjs" to ClassEvidence(null, AnalysisStatus.RESOLUTION_FAILED),
+                "lib.mjs" to ClassEvidence("lib.mjs", AnalysisStatus.ANALYZED),
+                "main.mjs" to ClassEvidence("main.mjs", AnalysisStatus.ANALYZED)
+            ),
+            evidence.classes
+        )
+        assertEquals(mapOf(10 to CallSiteGap.DISPATCH_UNRESOLVED, 12 to CallSiteGap.DISPATCH_UNRESOLVED), evidence.callSiteGaps)
+        assertTrue(evidence.methods.isEmpty() && evidence.artifacts.isEmpty() && evidence.duplicateClasses.isEmpty())
+        assertEquals(AnalysisIdentity(), evidence.scope, "a JavaScript build has no JVM scope")
     }
 
     @Test

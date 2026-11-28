@@ -704,7 +704,7 @@ MATCH (c:CallSite {caller_class: 'com.acme.Checkout'})
 RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c) AS gap
 ```
 
-`analysisStatus(x)` 接受 `Method` 或 `CallSite`（取其被调方法），返回 `ANALYZED`、`EXCLUDED_BY_SCOPE`、`EXTERNAL`、`UNKNOWN_MEMBER` 等状态；`dispatchGap(c)` 说明函数值调用为何没有完全解析。没有完整性证据的图返回 `null`，`GET /api/capabilities` 的 `facts.completeness` 会说明这一点，客户端不会把 `null` 误读为"完整"。
+`analysisStatus(x)` 接受 `Method` 或 `CallSite`（取其被调方法），返回 `ANALYZED`、`EXCLUDED_BY_SCOPE`、`EXTERNAL`、`UNKNOWN_MEMBER` 等状态；`dispatchGap(c)` 说明函数值调用为何没有完全解析。没有完整性证据的图返回 `null`，`GET /api/capabilities` 的 `facts.completeness` 会说明这一点，客户端不会把 `null` 误读为"完整"。JVM 和 JavaScript 构建都会记录这份证据：对 JavaScript，被调方在产物中解析不到方法体的调用标为 `DISPATCH_UNRESOLVED`，无法解析的产物文件记为 `RESOLUTION_FAILED`。Apple 构建暂不记录。
 
 ## 查询服务：分页、层级与能力
 

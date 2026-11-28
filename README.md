@@ -1138,7 +1138,10 @@ RETURN c.callee_class, c.callee_name, analysisStatus(c) AS status, dispatchGap(c
 `RESOLUTION_FAILED`, `EXCLUDED_BY_SCOPE`, `NOT_EXPANDED`, `EXTERNAL` or `UNKNOWN_MEMBER`;
 `dispatchGap(c)` says why a call on a function value is not fully resolved. Both are
 `null` for a graph without completeness evidence, which `GET /api/capabilities` reports
-per graph (`facts.completeness`), so a client never reads `null` as "complete".
+per graph (`facts.completeness`), so a client never reads `null` as "complete". JVM and
+JavaScript builds record this evidence; for JavaScript, a call whose callee resolves to no
+body in the artifacts is `DISPATCH_UNRESOLVED` and an artifact that does not parse is on
+record as `RESOLUTION_FAILED`. Apple builds do not record it yet.
 
 ## Query service: paging, hierarchy and capabilities
 

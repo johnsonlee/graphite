@@ -37,6 +37,13 @@ pub const STATUSES: [&str; 10] = [
     "NOT_EXPANDED",
     "EXTERNAL",
 ];
+/// The artifact roles and dispatch gaps the JVM frontend names, in its order.
+pub const ROLES: [&str; 3] = ["APPLICATION", "LIBRARY", "PLATFORM"];
+pub const GAPS: [&str; 3] = [
+    "DISPATCH_UNRESOLVED",
+    "DISPATCH_SATURATED",
+    "DISPATCH_PARTIAL",
+];
 pub const UNKNOWN_MEMBER: &str = "UNKNOWN_MEMBER";
 pub const ANALYZED: &str = "ANALYZED";
 pub const EXTERNAL: &str = "EXTERNAL";
@@ -128,6 +135,115 @@ pub fn load(src: &GraphSource) -> Result<Option<Completeness>, String> {
         Some(bound) => bound.parse(),
         None => Ok(None),
     }
+}
+
+/// What a frontend other than the JVM's recorded, for [`encode`]: the importer of the JSON
+/// interchange writes the JVM's own sidecar, so one reader answers for every frontend.
+#[derive(Debug, Default)]
+pub struct Evidence {
+    /// (class name, origin, status), a status of [`STATUSES`].
+    pub classes: Vec<(String, Option<String>, String)>,
+    /// (method identity, status, message), for methods whose status is not `ANALYZED`.
+    pub methods: Vec<(String, String, Option<String>)>,
+    /// (call-site node id, gap), a gap of [`GAPS`].
+    pub call_site_gaps: Vec<(u32, String)>,
+}
+
+/// The bytes of a `graph.completeness` holding `evidence`, bound to the node layout digest
+/// `layout`, as `AnalysisCompletenessStore.save` writes them. The last 32 bytes are the binding
+/// `forward.properties` records. Entries are written in name and id order, so the same evidence
+/// is the same file. An unknown status or gap, or a name `writeUTF` cannot hold, is an error.
+pub fn encode(evidence: &Evidence, layout: [u8; DIGEST]) -> Result<Vec<u8>, String> {
+    fn utf(out: &mut Vec<u8>, s: &str) -> Result<(), String> {
+        let bytes = crate::javaser::encode_java_utf(s).ok_or_else(|| {
+            let prefix: String = s.chars().take(60).collect();
+            format!("{FILE_NAME} cannot hold a name longer than 65535 bytes: {prefix}...")
+        })?;
+        out.extend(bytes);
+        Ok(())
+    }
+    fn optional(out: &mut Vec<u8>, s: Option<&str>) -> Result<(), String> {
+        out.push(u8::from(s.is_some()));
+        s.map_or(Ok(()), |s| utf(out, s))
+    }
+    fn strings(out: &mut Vec<u8>, values: &[&str]) -> Result<(), String> {
+        count(out, values.len())?;
+        values.iter().try_for_each(|v| utf(out, v))
+    }
+    fn count(out: &mut Vec<u8>, n: usize) -> Result<(), String> {
+        let n = i32::try_from(n).map_err(|_| format!("{FILE_NAME} holds too many entries"))?;
+        out.extend(n.to_be_bytes());
+        Ok(())
+    }
+    fn code(names: &[&str], name: &str, what: &str) -> Result<u8, String> {
+        names
+            .iter()
+            .position(|known| *known == name)
+            .map(|i| i as u8)
+            .ok_or_else(|| format!("{FILE_NAME} does not know the {what} '{name}'"))
+    }
+
+    let mut classes: Vec<_> = evidence.classes.iter().collect();
+    classes.sort();
+    let mut methods: Vec<_> = evidence.methods.iter().collect();
+    methods.sort();
+    let mut gaps: Vec<_> = evidence.call_site_gaps.iter().collect();
+    gaps.sort();
+
+    let mut p = Vec::new();
+    // The build's scope, which only the JVM frontend has: no packages, no libraries, no budget.
+    strings(&mut p, &[])?;
+    strings(&mut p, &[])?;
+    p.push(0);
+    strings(&mut p, &[])?;
+    optional(&mut p, None)?;
+    strings(&mut p, &[])?;
+    strings(&mut p, &[])?;
+    p.extend((-1i32).to_be_bytes());
+    strings(&mut p, &[])?;
+    let mut statuses = STATUSES.to_vec();
+    statuses.push(UNKNOWN_MEMBER);
+    strings(&mut p, &statuses)?;
+    strings(&mut p, &ROLES)?;
+    strings(&mut p, &GAPS)?;
+    count(&mut p, 0)?; // artifacts
+    count(&mut p, classes.len())?;
+    for (name, origin, status) in classes {
+        utf(&mut p, name)?;
+        optional(&mut p, origin.as_deref())?;
+        p.push(code(&STATUSES, status, "status")?);
+    }
+    count(&mut p, methods.len())?;
+    for (identity, status, message) in methods {
+        utf(&mut p, identity)?;
+        p.push(code(&STATUSES, status, "status")?);
+        optional(&mut p, message.as_deref())?;
+    }
+    count(&mut p, 0)?; // duplicate classes
+    count(&mut p, gaps.len())?;
+    for (id, gap) in gaps {
+        let id = i32::try_from(*id).map_err(|_| format!("{FILE_NAME} cannot name node {id}"))?;
+        p.extend(id.to_be_bytes());
+        p.push(code(&GAPS, gap, "dispatch gap")?);
+    }
+
+    let mut out = MAGIC_VERSION.to_be_bytes().to_vec();
+    out.extend_from_slice(&layout);
+    let mut gz = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+    std::io::Write::write_all(&mut gz, &p).map_err(|e| e.to_string())?;
+    out.extend(gz.finish().map_err(|e| e.to_string())?);
+    let digest = Sha256::digest(&out);
+    out.extend_from_slice(&digest);
+    Ok(out)
+}
+
+/// The two `forward.properties` lines that bind `sidecar` (the bytes [`encode`] returned).
+pub fn binding_properties(sidecar: &[u8]) -> String {
+    format!(
+        "{LAYOUT_KEY}={}\n{BINDING_KEY}={}\n",
+        hex(&sidecar[4..HEADER]),
+        hex(&sidecar[sidecar.len() - DIGEST..])
+    )
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -381,6 +497,95 @@ mod tests {
         );
         assert_eq!(graph.dispatch_gap(42).unwrap(), Some("DISPATCH_PARTIAL"));
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// The file the importer wrote for a JavaScript build, byte for byte; the JVM reads the same
+    /// bytes in `AnalysisCompletenessPersistenceTest` ("the sidecar the Rust importer writes").
+    const IMPORTER_WRITTEN: &str = "4743500188a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b3781f8b08000000000000ff6d90d14a\
+             c3401045470b6d488b587df617fc87c96642173733cb66d224be2c167ca8da0afaffe8a6d5e08317160e87e1ceb000ffe52b\
+             e507979021a31b1ea984bb5f8a9dd58db41a8db00671b172d2a5c1a2d1804661cea8764bb06089859403e4968dd4de9112ac\
+             0335e25ab5c2b142eb52f19a7ae3da321517436c8c7882158b46ea3d72d29051af14d276b86af981a5e358535d504817ce60\
+             89de3b6b70ac8485b345c03040e61d6a25a13ecddc96b6f1a866135b3e1db04db537936c50db809adcf5e43c06b569e53933\
+             c8771fefafcfc7fbc3cb27cc61f1b6df8d783111407678da1fcf72c2bfff7a995e3ec20abe0172dfa85579010000c683ddae\
+             21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff";
+    const IMPORTER_LAYOUT: &str =
+        "88a96348ffcd89a085b33ef1583d3e96dc9c1f7dd79bb072cbf8af5b9934b378";
+    const IMPORTER_BINDING: &str =
+        "c683ddae21844f8c50b254e63284b045ccac93d014742e09fefb48ebd04ce5ff";
+
+    #[test]
+    fn the_jvm_reads_the_sidecar_the_importer_writes() {
+        let bytes: Vec<u8> = (0..IMPORTER_WRITTEN.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&IMPORTER_WRITTEN[i..i + 2], 16).unwrap())
+            .collect();
+        assert_eq!(
+            binding_properties(&bytes),
+            format!("{LAYOUT_KEY}={IMPORTER_LAYOUT}\n{BINDING_KEY}={IMPORTER_BINDING}\n")
+        );
+        let read = parse(&bytes, IMPORTER_LAYOUT, IMPORTER_BINDING)
+            .unwrap()
+            .unwrap();
+        let evidence = Evidence {
+            classes: vec![
+                ("main.mjs".into(), Some("main.mjs".into()), ANALYZED.into()),
+                ("broken.mjs".into(), None, "RESOLUTION_FAILED".into()),
+                ("lib.mjs".into(), Some("lib.mjs".into()), ANALYZED.into()),
+            ],
+            methods: vec![],
+            call_site_gaps: vec![
+                (12, "DISPATCH_UNRESOLVED".into()),
+                (10, "DISPATCH_UNRESOLVED".into()),
+            ],
+        };
+        // What this encoder writes for that evidence reads as the fixture reads.
+        let layout: [u8; DIGEST] = bytes[4..HEADER].try_into().unwrap();
+        let written = encode(&evidence, layout).unwrap();
+        let binding = hex(&written[written.len() - DIGEST..]);
+        assert_eq!(
+            parse(&written, IMPORTER_LAYOUT, &binding).unwrap().unwrap(),
+            read
+        );
+        assert_eq!(read.classes.len(), 3);
+        assert_eq!(read.class_status("broken.mjs"), "RESOLUTION_FAILED");
+        assert_eq!(read.classes["lib.mjs"], (Some("lib.mjs".into()), ANALYZED));
+        assert_eq!(read.call_site_gaps[&10], "DISPATCH_UNRESOLVED");
+        assert_eq!(read.call_site_gaps.len(), 2);
+        assert!(read.methods.is_empty() && read.artifacts.is_empty());
+        // A status or a gap the format does not name, and a node id it cannot hold, are refused.
+        for (bad, message) in [
+            (
+                Evidence {
+                    classes: vec![("a".into(), None, "UNKNOWN_MEMBER".into())],
+                    ..Evidence::default()
+                },
+                "does not know the status 'UNKNOWN_MEMBER'",
+            ),
+            (
+                Evidence {
+                    methods: vec![("a.f()V".into(), "DONE".into(), None)],
+                    ..Evidence::default()
+                },
+                "does not know the status 'DONE'",
+            ),
+            (
+                Evidence {
+                    call_site_gaps: vec![(1, "LOST".into())],
+                    ..Evidence::default()
+                },
+                "does not know the dispatch gap 'LOST'",
+            ),
+            (
+                Evidence {
+                    call_site_gaps: vec![(u32::MAX, "DISPATCH_PARTIAL".into())],
+                    ..Evidence::default()
+                },
+                "cannot name node 4294967295",
+            ),
+        ] {
+            let error = encode(&bad, layout).unwrap_err();
+            assert!(error.contains(message), "{error}");
+        }
     }
 
     #[test]

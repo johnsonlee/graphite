@@ -1056,6 +1056,46 @@ test('invalid imported JS is skipped without pulling in modules reachable only f
   const graph=analyze(path.join(root,'entry.mjs'), text=>warnings.push(text));
   assert.ok(warnings.some(text=>text.includes('broken.mjs')));
   assert.deepEqual(graph.classOrigins.map(o=>o.origin).sort(), ['entry.mjs','good.mjs']);
+  // The artifact that did not parse is recorded as such, never as a module that calls nothing.
+  assert.deepEqual(graph.completeness.classes, [
+    { className: 'entry.mjs', status: 'ANALYZED' },
+    { className: 'good.mjs', status: 'ANALYZED' },
+    { className: 'broken.mjs', status: 'RESOLUTION_FAILED' },
+  ]);
+  assert.deepEqual(graph.completeness.callSiteGaps, []);
+});
+
+test('completeness names every analysed owner and every call that resolves to no body', t => {
+  const root = fixture(t, {
+    'main.mjs': [
+      'import { known } from "./lib.mjs";',
+      'import { missing } from "absent-package";',
+      'class Box { get() { return 1; } }',
+      'export function run(callback) {',
+      '  known(1);',                    // a body in the artifacts
+      '  JSON.stringify({});',          // a library binding: external, but resolved
+      '  missing(2);',                  // a module outside the artifacts
+      '  callback(3);',                 // a function value nothing binds
+      '  return new Box().get();',
+      '}',
+    ].join('\n'),
+    'lib.mjs': 'export function known(x) { return x; }',
+  });
+  const graph = analyze(path.join(root, 'main.mjs'));
+  assert.deepEqual(graph.completeness.classes.map(c => `${c.className} ${c.status}`).sort(),
+    ['lib.mjs ANALYZED', 'main.mjs ANALYZED', 'main.mjs.Box ANALYZED']);
+  const calls = new Map(graph.nodes.filter(n => n.kind === 'CallSite').map(n => [n.id, n]));
+  const gaps = graph.completeness.callSiteGaps;
+  assert.ok(gaps.every(g => g.gap === 'DISPATCH_UNRESOLVED' && calls.has(g.id)));
+  // Exactly the calls the CALL edge marks dynamic, and each of them names no analysed body.
+  const dynamic = graph.edges.filter(e => e.kind === 'CALL' && e.isDynamic).map(e => e.from).sort((a, b) => a - b);
+  assert.deepEqual(gaps.map(g => g.id).sort((a, b) => a - b), dynamic);
+  assert.deepEqual(gaps.map(g => calls.get(g.id).callee.name).sort(), ['callback', 'missing']);
+  const resolved = [...calls.values()].filter(c => !gaps.some(g => g.id === c.id)).map(c => c.callee.name).sort();
+  assert.deepEqual(resolved, ['constructor', 'get', 'known', 'stringify']);
+  const analysed = new Set(graph.completeness.classes.map(c => c.className));
+  for (const call of calls.values())
+    if (call.callee.name === 'stringify') assert.ok(!analysed.has(call.callee.declaringClass), call.callee.declaringClass);
 });
 
 test('property reads keep short key locations for wrapper bodies, long chains and computed keys', t => {

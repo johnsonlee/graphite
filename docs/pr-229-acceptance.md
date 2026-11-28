@@ -49,7 +49,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 
 | # | Original problem | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Model fidelity: absent fact vs unrecorded fact | Addressed for JVM-built graphs. Open for the JavaScript and Apple frontends, which record no evidence | `completeness.txt` |
+| 1 | Model fidelity: absent fact vs unrecorded fact | Addressed for JVM-built and JavaScript-built graphs. Open for the Apple frontend, which records no evidence | `completeness.txt`; JavaScript section below |
 | 2 | Storage evolvability | Partially addressed: one file inventory, producer and format, whole-directory publication. The node codec is still hand-written in both engines | source references below |
 | 3 | Data safety and corruption | Addressed, with an explicit contract: same-size damage is detected only by verification | `truncation.txt`, `bitflip-fuzz.txt`, `jvm-storage-safety.txt` |
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
@@ -111,13 +111,44 @@ Both engines give the same answers (10 of 10).
 | Class never loaded (JDK, unread jar) | yes | `EXTERNAL` |
 | Class reached but past the `Reachable` budget | yes | `NOT_EXPANDED` |
 | Call on a function value resolved to nothing, saturated, or only partly | yes | `dispatchGap = DISPATCH_UNRESOLVED / SATURATED / PARTIAL` |
-| Anything from a graph built by the JavaScript or Apple frontend | **no** | `analysisStatus` is `null`; `facts.completeness` is `false` |
+| Anything from a graph built by the Apple frontend | **no** | `analysisStatus` is `null`; `facts.completeness` is `false` |
+
+**JavaScript-built graphs.** Reproducer: build a module that calls a body in the artifacts
+(`known`), a library binding (`JSON.stringify`), an import outside the artifacts (`missing`) and
+a callback parameter, beside an artifact that does not parse, with `graphite build --lang js`;
+then `MATCH (c:CallSite) RETURN c.callee_name, analysisStatus(c), dispatchGap(c)`.
+
+| | Result |
+| --- | --- |
+| Baseline (`70f908c`) | `Unknown function: analysisStatus`; the build warns about the unparsable artifact and the graph keeps no trace of it |
+| Before this change (`db80380`) | every status `null` (`facts.completeness: false`) |
+| Candidate | `known` `ANALYZED`; `stringify` `EXTERNAL`; `missing` and `callback` `EXTERNAL` with `DISPATCH_UNRESOLVED`; the unparsable module on record as `RESOLUTION_FAILED` |
+
+How: the frontend lists what it did in a `completeness` section of its JSON interchange and the
+Rust importer writes the JVM's `graph.completeness` from it, bound to that save's node data and
+sealed with the directory (`docs/analysis-completeness.md`, "The JavaScript frontend").
+
+Committed tests:
+- `frontend/web/test/cli-integration.mjs`: the reproducer through the real CLI (frontend → saved
+  graph → query), run by `typescript.yml`.
+- `frontend/web/test/analyzer.test.mjs`: the gap set is exactly the `isDynamic` calls; an
+  unparsable artifact is `RESOLUTION_FAILED`.
+- Rust `interchange.rs`: persisted, bound and answered; no section, no file; ten invalid
+  sections rejected before anything is written.
+- Rust `completeness.rs` and Kotlin `AnalysisCompletenessPersistenceTest`: both read the same
+  bytes, the file the importer wrote for that reproducer.
 
 **Not addressed.**
 - Facts the JVM projection never models, such as reflective targets or the effect of a
   native method, are named only as far as the statuses above name them (`NATIVE`,
   `EXTERNAL`).
-- The JavaScript and Apple frontends record no completeness evidence.
+- JavaScript resolution is static: a call the TypeScript checker resolves to a body is not a
+  gap, although JavaScript can rebind a function at run time.
+- The Apple frontend records no completeness evidence. Its emitter is Swift, and the change
+  needs a toolchain this work did not have.
+- The Kotlin CLI cannot open a graph the Rust importer wrote (it needs `graph.comparisons`,
+  which the importer has never written), so the Kotlin engine answers these statuses only for
+  JVM-built graphs.
 - The library from #169 is not used by this PR and is not evidence for it.
 
 ## 2. Storage evolvability

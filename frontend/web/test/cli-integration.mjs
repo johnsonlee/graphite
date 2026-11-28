@@ -27,6 +27,37 @@ try {
   const result = JSON.parse(run(['query', graph, "MATCH (p:Parameter)-[r]->(v:LocalVariable) WHERE v.name = 'cur' RETURN r.kind AS kind", '--format', 'json']).stdout);
   assert.deepEqual(result.rows, [{ kind: 'ARRAY_LOAD' }]);
 
+  // Completeness, frontend to saved graph to query: a body that was read, a library callee,
+  // calls that resolve to no body, and an artifact that does not parse.
+  {
+    const completenessApp = path.join(dir, 'completeness-app');
+    fs.mkdirSync(completenessApp);
+    fs.writeFileSync(path.join(completenessApp, 'main.mjs'), [
+      'import { known } from "./lib.mjs";',
+      'import "./broken.mjs";',
+      'import { missing } from "absent-package";',
+      'export function run(callback) { known(1); JSON.stringify({}); missing(2); return callback(3); }',
+    ].join('\n'));
+    fs.writeFileSync(path.join(completenessApp, 'lib.mjs'), 'export function known(x) { return x; }');
+    fs.writeFileSync(path.join(completenessApp, 'broken.mjs'), 'function broken( {');
+    const complete = path.join(dir, 'complete.graphite');
+    assert.match(run(['build', '--lang', 'js', completenessApp, '-o', complete]).stderr, /skipped 1 unparsable JavaScript artifact/);
+    run(['verify', complete]);
+    const rows = query => JSON.parse(run(['query', complete, query, '--format', 'json']).stdout).rows;
+    assert.deepEqual(rows('MATCH (c:CallSite) RETURN c.callee_name AS callee, analysisStatus(c) AS status, dispatchGap(c) AS gap ORDER BY callee'), [
+      { callee: 'callback', status: 'EXTERNAL', gap: 'DISPATCH_UNRESOLVED' },
+      { callee: 'known', status: 'ANALYZED' },
+      { callee: 'missing', status: 'EXTERNAL', gap: 'DISPATCH_UNRESOLVED' },
+      { callee: 'stringify', status: 'EXTERNAL' },
+    ]);
+    const unpackedComplete = path.join(dir, 'complete-files');
+    run(['unpack', complete, unpackedComplete]);
+    assert.ok(fs.existsSync(path.join(unpackedComplete, 'graph.completeness')));
+    assert.match(fs.readFileSync(path.join(unpackedComplete, 'graph.manifest'), 'utf8'), /graph\.completeness/);
+    // The graph above, built before this evidence existed, answered null to every status.
+    assert.deepEqual(rows('MATCH (c:CallSite) WHERE analysisStatus(c) IS NULL RETURN count(*) AS unknown'), [{ unknown: 0 }]);
+  }
+
   // A bare output selects an archive and leaves an existing sibling directory alone.
   // Compare actual values and both published files after failed rebuilds.
   const rebuildInput = path.join(dir, 'rebuild.js');

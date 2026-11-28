@@ -29,6 +29,14 @@ export interface SourceGraph {
   nodes: GraphNode[];
   edges: GraphEdge[];
   classOrigins: { className: string; origin: string }[];
+  /** What this frontend did with the code it was given (docs/analysis-completeness.md). */
+  completeness: Completeness;
+}
+export interface Completeness {
+  /** Every module and class whose bodies were read (ANALYZED), and every artifact that did not parse (RESOLUTION_FAILED). */
+  classes: { className: string; status: 'ANALYZED' | 'RESOLUTION_FAILED' }[];
+  /** Calls whose callee resolved to no body in the artifacts and to no library binding. */
+  callSiteGaps: { id: number; gap: 'DISPATCH_UNRESOLVED' }[];
 }
 type UndefinedState = 'always' | 'never' | 'maybe';
 interface ArgumentValue { id: number; state: UndefinedState }
@@ -113,8 +121,10 @@ export function project(input: string, warn: (message: string) => void = console
     const allowed = selected.has(key(file)) || (key(path.dirname(file)) === libraryDir && /^lib(?:\..+)?\.d\.ts$/i.test(path.basename(file)));
     return allowed && !skipped.has(key(file)) ? read(file, ...args) : undefined;
   };
+  // Artifacts that did not parse, by the module path their methods would have carried.
+  const unparsed: string[] = [];
   const result = (program: ts.Program) => ({
-    program, root, sources: program.getSourceFiles().filter(file => selected.has(key(file.fileName))),
+    program, root, unparsed, sources: program.getSourceFiles().filter(file => selected.has(key(file.fileName))),
   });
   const program = ts.createProgram(roots, options, host);
   const optionErrors = program.getOptionsDiagnostics();
@@ -135,6 +145,7 @@ ${formatDiagnostics(syntactic)}`);
   warn(`Warning: skipped ${skipped.size} unparsable JavaScript artifact(s) out of ${selected.size}.`);
   for (const [key, errors] of skipped) {
     selected.delete(key);
+    unparsed.push(path.relative(root, errors[0]!.file!.fileName).split(path.sep).join('/'));
     warn(formatDiagnostics(errors.slice(0, 1)).trimEnd());
   }
   return result(ts.createProgram(valid, options, host));
@@ -171,13 +182,15 @@ function visitTree(root: ts.Node, context: Context, visit: (n: ts.Node, scope: C
 
 /** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
 export function analyze(input: string, warn: (message: string) => void = console.warn): SourceGraph {
-  const { program, root, sources } = project(input, warn);
-  return new Analyzer(program, root, sources, warn).run();
+  const { program, root, sources, unparsed } = project(input, warn);
+  return new Analyzer(program, root, sources, warn, unparsed).run();
 }
 
 class Analyzer {
   private checker: ts.TypeChecker;
-  private graph: SourceGraph = { version: 1, methods: [], nodes: [], edges: [], classOrigins: [] };
+  private graph: SourceGraph = {
+    version: 1, methods: [], nodes: [], edges: [], classOrigins: [], completeness: { classes: [], callSiteGaps: [] },
+  };
   private contexts = new Map<ts.Node, Context>();
   private descriptors = new Map<ts.SignatureDeclaration, Method>();
   private implicitConstructors = new Map<ts.ClassLikeDeclaration, Method>();
@@ -207,7 +220,8 @@ class Analyzer {
   private origins = new Set<string>();
   private methodKeys = new Set<string>();
   private sources: ts.SourceFile[];
-  constructor(private program: ts.Program, private root: string, sources: ts.SourceFile[], private warn: (message: string) => void) {
+  constructor(private program: ts.Program, private root: string, sources: ts.SourceFile[], private warn: (message: string) => void,
+              private unparsed: readonly string[] = []) {
     this.checker = program.getTypeChecker();
     this.sources = sources.sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
   }
@@ -315,6 +329,7 @@ class Analyzer {
     if (!this.origins.has(method.declaringClass)) {
       this.origins.add(method.declaringClass);
       this.graph.classOrigins.push({ className: encoded.declaringClass, origin: this.text(origin) });
+      this.graph.completeness.classes.push({ className: encoded.declaringClass, status: 'ANALYZED' });
     }
   }
   private name(n: ts.Node & { name: ts.DeclarationName }): string;
@@ -925,6 +940,8 @@ class Analyzer {
         line: n.getSourceFile().getLineAndCharacterOfPosition(n.getStart()).line + 1,
         ...(receiver === undefined ? {} : { receiver }), arguments: args });
       this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: target.dynamic });
+      // A dynamic callee names no body: the graph holds nothing of what this call runs.
+      if (target.dynamic) this.graph.completeness.callSiteGaps.push({ id, gap: 'DISPATCH_UNRESOLVED' });
       const rest = target.context?.restIndex;
       args.forEach((argument, index) => {
         this.edge(argument, id, 'PARAMETER_PASS');
@@ -1031,6 +1048,8 @@ class Analyzer {
         if (updated !== undefined && updated !== context.parameters[index]) this.edge(updated, context.parameters[index]!, 'PARAMETER_PASS');
       });
     }
+    for (const module of [...this.unparsed].sort())
+      this.graph.completeness.classes.push({ className: this.text(module), status: 'RESOLUTION_FAILED' });
     if (this.droppedEdges.size) {
       this.warn(`Warning: conflicting v3 relationships on ${this.droppedEdges.size} node pair(s).`);
       for (const [index, dropped] of this.droppedEdges) {

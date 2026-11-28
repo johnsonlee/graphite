@@ -219,6 +219,12 @@ and `for (cur of list) {}` produce flow from `list` to `cur`. The graph stores
 ARRAY_LOAD for that pair. Identical edges are deduplicated without warning.
 The importer rejects interchange files containing conflicting relationships.
 
+The interchange also carries what the frontend did with its input, as a `completeness` section:
+the modules and classes whose bodies it read, the artifacts that did not parse, and the calls
+whose callee resolved to no body. The importer persists it as `graph.completeness`, so
+`analysisStatus(x)` and `dispatchGap(c)` answer for a JavaScript graph; see
+[analysis-completeness.md](analysis-completeness.md#the-javascript-frontend).
+
 Targets from TypeScript’s standard library use the global symbol and namespace
 under `external:typescript/lib`. For example, `new Error("e")` has
 `callee_class = 'external:typescript/lib.ErrorConstructor'`, and
