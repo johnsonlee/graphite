@@ -152,6 +152,8 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
 // Correctness entrypoints remain in the standalone harness JAR and are exercised by unit tests.
 // includeTests=false below prevents the reverse dependency or packaging tests into that JAR.
 sourceSets.test {
+    // The node record's one definition, which the codecs of both languages are tested against.
+    resources.srcDir(rootProject.file("backend/storage/schema"))
     compileClasspath += sourceSets.named("jmh").get().output
     runtimeClasspath += sourceSets.named("jmh").get().runtimeClasspath
 }

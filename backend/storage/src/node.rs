@@ -864,6 +864,10 @@ fn ordinal_entry_id(entry: &[u8; CALL_SITE_ORDINAL_ENTRY_BYTES]) -> NodeId {
 }
 
 #[cfg(test)]
+#[path = "node_schema_tests.rs"]
+mod schema_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 

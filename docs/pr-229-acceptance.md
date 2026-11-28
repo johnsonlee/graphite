@@ -50,7 +50,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 | # | Original problem | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Model fidelity: absent fact vs unrecorded fact | Addressed for JVM-built and JavaScript-built graphs. Open for the Apple frontend, which records no evidence | `completeness.txt`; JavaScript section below |
-| 2 | Storage evolvability | Partially addressed: one file inventory, producer and format, whole-directory publication. The node codec is still hand-written in both engines | source references below |
+| 2 | Storage evolvability | Addressed for the inventory (manifest, producer, format, whole-directory publication) and for the node record's definition (one schema, every codec tested against it). The codecs are checked, not generated | section 2 |
 | 3 | Data safety and corruption | Addressed, with an explicit contract: same-size damage is detected only by verification | `truncation.txt`, `bitflip-fuzz.txt`, `jvm-storage-safety.txt` |
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
 | 5 | Query service: paging, wide hierarchy, capabilities | Addressed, with stated limits | `query-service.txt` |
@@ -192,11 +192,41 @@ Tests: `GraphMetadataRoundTripTest`,
 `the_hierarchy_walk_is_bounded_resumable_and_says_when_a_type_is_unknown`, and
 `a_wide_hierarchy_pages_to_completion_and_stops_at_its_budget_or_deadline`.
 
+**One definition of the node record, and every codec held to it.** At the baseline the record
+of `graph.nodedata` was defined independently by each of its codecs: the JVM writer and reader
+(`NodeRecordCodec.kt`), the JVM build spill (`MmapGraphBuilder.kt`), the Rust reader
+(`node.rs`), the Rust writer of the JSON importer (`interchange.rs`) and the Rust readers at
+fixed byte offsets (`columns.rs`). Nothing compared them below a whole-graph round trip, and
+the required-file list existed three times (twice in Rust, once in Kotlin).
+
+`backend/storage/schema/node-records.txt` now states the layout once (tag, kind, fields in
+order, the encoding of each) and holds a golden record per kind against a fixed string table.
+`graph-files.txt` beside it lists the required files. Both languages are tested against them:
+
+| Codec | Test | What fails it |
+| --- | --- | --- |
+| JVM writer and reader | `NodeRecordSchemaTest` (Kotlin) | the writer's bytes for a kind differ from its golden record, or the reader does not read the golden record back to the same node |
+| JVM build spill | `NodeRecordSchemaTest` | a field of any kind does not survive `MmapGraphBuilder` |
+| Rust reader | `node_schema_tests.rs` | `Node::read` of a golden record is not the expected node, or reads a record cut short |
+| Schema text | `node_schema_tests.rs` | walking a golden record by the declared encodings does not consume exactly its bytes |
+| Rust fixed-offset readers | `node_schema_tests.rs` | an entry of `RAW_STRING_FIELDS` is not a string id at that offset in the schema |
+| Rust importer's writer | `node_schema_tests.rs` | a record it writes renders differently from the golden record of its kind |
+| Required files | both | `REQUIRED_ENTRIES` (Rust, now one list) or `GraphManifest.REQUIRED_FILES` differs from `graph-files.txt` |
+
+Checked by mutation: reordering a field in the schema fails three Rust tests, and writing two
+fields in the other order in the importer fails its test with both renderings in the message.
+
+Adding a node field is now: the schema line and its golden record, then each codec, and CI
+names every codec that was left behind.
+
 **Not addressed.**
-- The node record codec is still written by hand in both engines (JVM `NodeSerializer`, and
-  `MmapGraphBuilder`'s spill format; Rust `node.rs`). A new node property still changes
-  each of them and needs a format decision.
-- There is no schema-driven codec.
+- The codecs are still written by hand. They are checked against one definition, not generated
+  from it: a new field is still an edit in each codec, and the schema makes a missed one a test
+  failure instead of a silent divergence. Generating the decoders would put generated code on
+  the query hot path, which needs its own multi-graph acceptance.
+- The JVM readers at fixed offsets (`MappedGraphNodeAccess.kt` and its neighbours) and the Rust
+  call-site fast paths are covered by their own tests on real graphs, not by the schema.
+- The other persisted files (metadata, type table, sidecars) have no schema file.
 - A newer storage format is refused, not migrated.
 
 ## 3. Data safety and corruption handling

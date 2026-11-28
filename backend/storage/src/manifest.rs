@@ -26,17 +26,8 @@ pub const STORAGE_FORMAT: &str = "storage-format";
 pub const SEAL: &str = "seal";
 /// The files every graph writer produces; a manifest that does not list them all is
 /// not the inventory of a complete graph.
-pub const REQUIRED_FILES: [&str; 9] = [
-    "forward.graph",
-    "forward.offsets",
-    "forward.properties",
-    "graph.labels",
-    "graph.metadata",
-    "graph.nodedata",
-    "graph.nodeoffsets",
-    "graph.strings",
-    "graph.typeindex",
-];
+/// One list with the container's: `backend/storage/schema/graph-files.txt` defines it.
+pub const REQUIRED_FILES: [&str; 9] = crate::container::REQUIRED_ENTRIES;
 /// The storage format this reader understands; a later one is refused by name.
 pub const CURRENT_STORAGE_FORMAT: u32 = 1;
 

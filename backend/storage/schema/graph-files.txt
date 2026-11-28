@@ -1,0 +1,16 @@
+# The files every graph writer produces: the one definition of the list.
+#
+# A graph.manifest that does not name all of them is not the inventory of a complete graph,
+# and a container without them is not a graph. The Rust list (container.rs REQUIRED_ENTRIES,
+# which manifest.rs uses) and the JVM list (GraphManifest.REQUIRED_FILES) are tested against
+# this file, so a file made mandatory on one side only fails in CI.
+
+required forward.graph
+required forward.offsets
+required forward.properties
+required graph.labels
+required graph.metadata
+required graph.nodedata
+required graph.nodeoffsets
+required graph.strings
+required graph.typeindex
