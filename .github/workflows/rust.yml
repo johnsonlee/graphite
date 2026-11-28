@@ -515,6 +515,13 @@ jobs:
         python3 backend/bench/parity-cli.py "${RUNNER_TEMP}/fixture-graph" \
           frontend/jvm/query/build/libs/graphite.jar target/release/graphite
 
+    # The same differential over a graph the Rust importer wrote (what a JavaScript build
+    # persists): the jar must open a graph it did not write, and answer as the Rust CLI does.
+    - name: Kotlin-vs-Rust CLI differential over an importer-written graph
+      run: |
+        python3 backend/bench/parity-cli.py backend/storage/fixtures/importer-graph \
+          frontend/jvm/query/build/libs/graphite.jar target/release/graphite
+
     - name: Completeness facts end to end (real frontend build, both engines)
       run: |
         # The acme graph was built from bytecode by the JVM frontend with --include com.acme:

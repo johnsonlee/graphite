@@ -154,6 +154,8 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
 sourceSets.test {
     // The node record's one definition, which the codecs of both languages are tested against.
     resources.srcDir(rootProject.file("backend/storage/schema"))
+    // The graph directory the Rust importer writes (`importer-graph/`), which the JVM reader must open.
+    resources.srcDir(rootProject.file("backend/storage/fixtures"))
     compileClasspath += sourceSets.named("jmh").get().output
     runtimeClasspath += sourceSets.named("jmh").get().runtimeClasspath
 }

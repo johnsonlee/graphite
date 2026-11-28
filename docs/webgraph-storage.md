@@ -25,7 +25,7 @@ graph-dir/
 ├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
 ├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
 ├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound through forward.properties
-├── graph.comparisons  BranchComparison data for ControlFlowEdges
+├── graph.comparisons  BranchComparison data for ControlFlowEdges; a writer with none to record (the Rust importer) writes no file, and both readers read that as none
 └── graph.manifest     Written last: producer, storage format, and size + SHA-256 of every file above
 ```
 

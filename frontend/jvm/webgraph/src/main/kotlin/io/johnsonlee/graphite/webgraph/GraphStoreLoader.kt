@@ -43,10 +43,12 @@ internal fun loadEagerGraph(dir: Path): Graph {
     val identity = GraphManifest.identity(dir)
     val backward = lazy { loadBackwardGraph(dir, forward, identity) }
 
+    // Not a required file (graph-files.txt): a writer with no branch comparison to record writes none, as the importer of
+    // another frontend's graph does. A sealed directory that lists the file and lost it was refused above, by its size.
+    val comparisons = dir.resolve(GraphStore.COMPARISONS_FILE)
     val comparisonMap =
-        DataInputStream(BufferedInputStream(dir.resolve(GraphStore.COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
-        }
+        if (!Files.exists(comparisons)) emptyMap()
+        else DataInputStream(BufferedInputStream(comparisons.toFile().inputStream())).use { dis -> NodeSerializer.readComparisons(dis) }
     val comparisonLookup = MapBranchComparisonLookup(comparisonMap)
 
     val callSiteOrdinals = loadPersistedCallSiteOrdinals(dir)

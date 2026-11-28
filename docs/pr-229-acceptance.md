@@ -146,9 +146,15 @@ Committed tests:
   gap, although JavaScript can rebind a function at run time.
 - The Apple frontend records no completeness evidence. Its emitter is Swift, and the change
   needs a toolchain this work did not have.
-- The Kotlin CLI cannot open a graph the Rust importer wrote (it needs `graph.comparisons`,
-  which the importer has never written), so the Kotlin engine answers these statuses only for
-  JVM-built graphs.
+- The Kotlin CLI could not open a graph the Rust importer wrote: its loaders opened
+  `graph.comparisons` unconditionally, a file outside the required list that the importer has
+  never written. Both loaders now read an absent file as no comparisons; a sealed directory
+  that lists the file and lost it is still refused by its size check.
+  `ImporterGraphInteropTest` loads `backend/storage/fixtures/importer-graph` (the directory
+  the Rust importer writes for `importer-graph.json`; a Rust test fails when the importer's
+  bytes move away from it) eagerly and mapped and compares nodes, edges and both completeness
+  functions; three of its five tests fail before the change with the missing-file error. CI
+  runs the 238-case CLI differential over that directory too (238 of 238 identical locally).
 - The library from #169 is not used by this PR and is not evidence for it.
 
 ## 2. Storage evolvability

@@ -879,6 +879,77 @@ mod tests {
             {"from":3,"to":0,"kind":"ASSIGN"},
             {"from":3,"to":4,"kind":"ASSIGN"}]})
     }
+    /// The graph directory committed beside the crate is what the importer writes today, so the
+    /// JVM test that reads that directory (`ImporterGraphInteropTest.kt`) reads the importer's
+    /// real output and not a copy that went stale. `GRAPHITE_UPDATE_IMPORTER_FIXTURE=1`
+    /// rewrites it after an intended change of the importer's bytes.
+    #[test]
+    fn the_committed_importer_graph_is_what_the_importer_writes() {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures");
+        let committed = fixtures.join("importer-graph");
+        let temp = Temp::new();
+        let written = temp.0.join("graph");
+        let json = std::fs::read(fixtures.join("importer-graph.json")).unwrap();
+        import_json(json.as_slice(), &written).unwrap();
+        let files = |dir: &Path| -> std::collections::BTreeMap<String, Vec<u8>> {
+            std::fs::read_dir(dir)
+                .unwrap()
+                .map(|entry| entry.unwrap())
+                .map(|entry| {
+                    let name = entry.file_name().into_string().unwrap();
+                    (name, std::fs::read(entry.path()).unwrap())
+                })
+                .collect()
+        };
+        let mut now = files(&written);
+        if std::env::var_os("GRAPHITE_UPDATE_IMPORTER_FIXTURE").is_some() {
+            let _ = std::fs::remove_dir_all(&committed);
+            std::fs::create_dir(&committed).unwrap();
+            for (name, bytes) in &now {
+                std::fs::write(committed.join(name), bytes).unwrap();
+            }
+        }
+        let mut then = files(&committed);
+        // The importer writes no branch comparisons: the file is not a required one, and a
+        // reader that insisted on it (the JVM's did) could not open this graph.
+        assert!(!now.contains_key("graph.comparisons"));
+        for required in crate::container::REQUIRED_ENTRIES {
+            assert!(now.contains_key(required), "{required}");
+        }
+        // The manifest names the producer's version, which moves with every release; it is
+        // compared by what it seals.
+        let sealed = |manifest: Vec<u8>| -> Vec<String> {
+            String::from_utf8(manifest)
+                .unwrap()
+                .lines()
+                .filter(|line| !line.starts_with('@'))
+                .map(str::to_string)
+                .collect()
+        };
+        let (now_manifest, then_manifest) = (
+            sealed(now.remove("graph.manifest").unwrap()),
+            sealed(then.remove("graph.manifest").unwrap()),
+        );
+        assert_eq!(
+            now.keys().collect::<Vec<_>>(),
+            then.keys().collect::<Vec<_>>()
+        );
+        for (name, bytes) in &now {
+            assert!(
+                bytes == &then[name],
+                "{name} differs from the committed fixture; if the change is intended, run with \
+                 GRAPHITE_UPDATE_IMPORTER_FIXTURE=1 and commit backend/storage/fixtures"
+            );
+        }
+        // The committed directory is a sealed graph in its own right.
+        assert_eq!(now_manifest, then_manifest);
+        assert_eq!(
+            crate::manifest::verify(&crate::source::GraphSource::open(&committed).unwrap())
+                .unwrap(),
+            Vec::<String>::new()
+        );
+    }
+
     /// `fixture()` with what a frontend recorded about it.
     fn with_completeness(completeness: serde_json::Value) -> serde_json::Value {
         let mut graph = fixture();
