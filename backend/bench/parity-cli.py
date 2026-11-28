@@ -13,10 +13,13 @@ neighbours. A case's two CLIs always read the same copy, so they are compared li
 """
 import concurrent.futures, queue, shutil, subprocess, sys, os, tempfile
 
-GRAPH = sys.argv[1] if len(sys.argv) > 1 else "/home/user/fixtures/explore-graph"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Relative paths name files of the repository, wherever the script is started from: both CLIs
+# run with the repository root as their working directory, and the graph is copied from the
+# same place (copying it relative to the caller's directory read another graph, or none).
+GRAPH = os.path.join(ROOT, sys.argv[1] if len(sys.argv) > 1 else "/home/user/fixtures/explore-graph")
 JAR = sys.argv[2] if len(sys.argv) > 2 else "frontend/jvm/query/build/libs/graphite.jar"
 RUST = sys.argv[3] if len(sys.argv) > 3 else "target/release/graphite"
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # The JVM prints these to stderr from the environment, not the program.
 NOISE = (b"Picked up JAVA_TOOL_OPTIONS:", b"Picked up _JAVA_OPTIONS:")
@@ -90,6 +93,10 @@ QUERIES = [
     "RETURN substring('abc', 1, 9223372036854775807) AS x, substring('abc', 3, 9223372036854775807) AS y",
     "MATCH (n) DELETE n",
     "MATCH (n) REMOVE n.x RETURN 1",
+    # UNION and UNION ALL in one query: the last UNION deduplicates everything before it, and
+    # a UNION ALL after it keeps its branch's rows.
+    "RETURN 1 AS v UNION RETURN 2 AS v UNION ALL RETURN 1 AS v UNION RETURN 3 AS v",
+    "RETURN 0 AS v UNION RETURN 1 AS v UNION ALL UNWIND [2, 2, 2] AS x RETURN x AS v",
     # Completeness: an absent fact told from an unrecorded one.
     "MATCH (c:CallSite) RETURN analysisStatus(c) AS s, count(*) AS n ORDER BY n DESC, s",
     "MATCH (m:Method) RETURN analysisStatus(m) AS s, count(*) AS n ORDER BY s",

@@ -99,6 +99,45 @@ fn a_plain_branch_pages_however_often_it_repeats_a_row() {
 }
 
 #[test]
+fn a_union_all_branch_after_a_union_keeps_every_row() {
+    // Review of #229: the union deduplicates the branches up to its last UNION, and a UNION ALL
+    // after it appends its branch as it is. Treating the whole query as deduplicating read the
+    // last branch as distinct rows: five rows were three, and a page of three claimed no next.
+    let mixed =
+        "RETURN 0 AS v UNION RETURN 1 AS v UNION ALL UNWIND range(1, 100000) AS i RETURN 2 AS v";
+    let whole = Executor::new(vec![], false).execute(mixed, None).unwrap();
+    assert_eq!(whole.rows.len(), 100_002);
+    for (window, expected) in [
+        (1, vec![0]),
+        (2, vec![0, 1]),
+        (3, vec![0, 1, 2]),
+        (5, vec![0, 1, 2, 2, 2]),
+    ] {
+        let probed = Executor::new(vec![], false).with_probe();
+        assert_eq!(values(&probed, mixed, window).unwrap(), expected);
+        assert!(probed.window_cut(), "rows remain past a window of {window}");
+        assert_eq!(
+            values(&Executor::new(vec![], false), mixed, window).unwrap(),
+            expected
+        );
+    }
+    // A UNION after a UNION ALL deduplicates everything before it, the rows an earlier UNION
+    // kept included: the merge used to seed its keys on top of that UNION's and drop them all.
+    let again = "RETURN 1 AS v UNION RETURN 2 AS v UNION ALL RETURN 1 AS v UNION RETURN 3 AS v";
+    let whole = Executor::new(vec![], false).execute(again, None).unwrap();
+    assert_eq!(whole.rows.len(), 3);
+    assert_eq!(
+        values(&Executor::new(vec![], false), again, 5).unwrap(),
+        [1, 2, 3]
+    );
+    // The other way round, the later UNION removes the duplicates of everything before it.
+    let later = "UNWIND [2, 2, 2] AS x RETURN x AS v UNION ALL RETURN 2 AS v UNION RETURN 3 AS v";
+    let probed = Executor::new(vec![], false).with_probe();
+    assert_eq!(values(&probed, later, 5).unwrap(), [2, 3]);
+    assert!(!probed.window_cut());
+}
+
+#[test]
 fn a_branch_with_its_own_limit_past_the_row_cap_fails_instead_of_answering_short() {
     // A branch with its own LIMIT cannot be deduplicated as it is read (that would apply
     // before the LIMIT and choose other rows), so it is read by row count and re-read with a
@@ -147,13 +186,16 @@ fn every_window_of_a_union_is_a_prefix_of_its_whole_result() {
         let items: Vec<String> = (0..length).map(|_| next(domain).to_string()).collect();
         format!("[{}]", items.join(","))
     };
-    for case in 0..120 {
-        let branches = 2 + next(2);
+    for _ in 0..200 {
+        let branches = 2 + next(3);
         let domain = 1 + next(6);
         let mut query = String::new();
         for branch in 0..branches {
             if branch > 0 {
-                query.push_str(if case % 3 == 2 {
+                // Each operator is chosen on its own, so UNION and UNION ALL mix in one
+                // query: a UNION ALL after a UNION keeps its branch's duplicates, and a UNION
+                // after a UNION ALL removes the ones before it.
+                query.push_str(if next(3) == 0 {
                     " UNION ALL "
                 } else {
                     " UNION "
@@ -262,6 +304,9 @@ fn across_graphs_every_window_is_a_prefix_of_the_whole_result_rows_and_provenanc
         format!("{strings} UNION MATCH (m:StringConstant) WITH DISTINCT m.value AS v RETURN v"),
         // A branch with its own LIMIT is read by row count.
         format!("{strings} LIMIT 7 UNION {strings}"),
+        // Mixed operators: the branch after the last UNION keeps its duplicates.
+        format!("RETURN 'c' AS v UNION {strings} UNION ALL {strings}"),
+        format!("{strings} UNION ALL {strings} UNION RETURN 'zzz' AS v"),
     ];
     for query in &queries {
         let whole = executor(false).execute(query, None).unwrap();

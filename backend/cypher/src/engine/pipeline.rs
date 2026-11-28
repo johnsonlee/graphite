@@ -303,6 +303,14 @@ impl Executor {
         // then hold fewer distinct rows than the page needs, and is re-read with a larger
         // window, up to a cap.
         let deduplicating = segments.iter().skip(1).any(|(_, all)| !all);
+        // Which branches the union deduplicates. A UNION removes duplicates from everything
+        // before it and from its own branch; a UNION ALL appends its branch as it is. So a
+        // branch is deduplicated when its own operator or any later one is a UNION, and the
+        // branches after the last UNION keep every row: `a UNION b UNION ALL c` returns each
+        // of c's rows, however often c repeats one.
+        let deduplicated: Vec<bool> = (0..segments.len())
+            .map(|i| segments.iter().skip(i.max(1)).any(|(_, all)| !all))
+            .collect();
         let branches = segments.len();
         let page_rows = max_rows.map(|max| {
             if deduplicating {
@@ -315,7 +323,7 @@ impl Executor {
             let mut factor = 1usize;
             // A branch the union can deduplicate while it reads: every row its window holds
             // is then a distinct one, so one read establishes the page.
-            let distinct_branch = deduplicating
+            let distinct_branch = deduplicated[i]
                 && page_rows.is_some()
                 && distinct_within_branch(&mut original.clone(), self.dialect);
             let (r, cut) = loop {
@@ -348,7 +356,7 @@ impl Executor {
                 let maybe_cut = cut
                     || (windowed && keep.is_none() && window.is_some_and(|w| r.rows.len() >= w));
                 if let (true, true, Some(needed), Some(window)) =
-                    (deduplicating, maybe_cut, page_rows, window)
+                    (deduplicated[i], maybe_cut, page_rows, window)
                 {
                     let earlier = result
                         .as_ref()
@@ -393,23 +401,20 @@ impl Executor {
                     if all {
                         acc.rows.extend(r.rows);
                     } else {
-                        if acc.rows.len() > seen.len() {
-                            // lazily seed from existing rows
-                            let mut dedup = Vec::new();
-                            for row in acc.rows.drain(..) {
-                                let k = visible_key(&row);
-                                if seen.insert(k) {
-                                    dedup.push(row);
-                                }
-                            }
-                            acc.rows = dedup;
+                        // `seen` holds the keys of the accumulated rows only while those rows
+                        // are distinct: the first UNION, and any UNION after a UNION ALL
+                        // appended rows, starts over. Seeding on top of the keys of an
+                        // earlier UNION dropped every row that UNION had kept
+                        // (`1 UNION 2 UNION ALL 1 UNION 3` answered `3`).
+                        if seen.len() != acc.rows.len() {
+                            seen.clear();
+                            acc.rows.retain(|row| seen.insert(visible_key(row)));
                         }
-                        for row in r.rows {
-                            let k = visible_key(&row);
-                            if seen.insert(k) {
-                                acc.rows.push(row);
-                            }
-                        }
+                        acc.rows.extend(
+                            r.rows
+                                .into_iter()
+                                .filter(|row| seen.insert(visible_key(row))),
+                        );
                     }
                     if acc.columns.is_empty() {
                         acc.columns = r.columns;

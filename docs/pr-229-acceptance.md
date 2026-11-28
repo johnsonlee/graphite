@@ -295,7 +295,12 @@ output formats, plus 7 CLI cases and 1 exit-code-only case. CI runs it (`rust.ym
 | `DELETE`, `REMOVE`: Kotlin printed an uncaught `NotImplementedError` stack trace, Rust a one-line error | 10 |
 | A path that does not exist (`no such graph`), and `CREATE` | 2 |
 
-**Candidate:** **228 of 228** identical.
+**Candidate:** **228 of 228** identical. The suite has since grown to 238 cases with two queries
+that mix `UNION` and `UNION ALL` (238 of 238 identical on the candidate); on the first of them
+the baseline's Rust engine answers `3` where its Kotlin engine answers `1, 2, 3`, a divergence
+the 228 did not cover. `backend/bench/test_parity_cli.py` pins that the script reads the graph
+it was given from any working directory (a relative path used to be copied relative to the
+caller's directory and compared another graph, or none).
 
 Committed regressions, one per class:
 - the differential itself;
@@ -351,10 +356,14 @@ graph.
 - **`backend/cypher/tests/union_paging.rs`:** the same distinct prefix with and without the
   probe; a plain branch of 100,000 copies of one row paging correctly (it failed before); a
   branch with its own LIMIT past the row cap failing instead of answering a short page; and
-  the paging contract as a property: for 120 generated UNIONs (heavy repeats, overlapping
-  branches, own LIMITs, UNION and UNION ALL) every window is a prefix of the unwindowed
-  result and reports a next page exactly when rows remain, with and without the probe.
-  Across two graphs with overlapping values, every window of seven UNION shapes equals the
+  the paging contract as a property: for 200 generated UNIONs (heavy repeats, overlapping
+  branches, own LIMITs, two to four branches with UNION and UNION ALL mixed per operator)
+  every window is a prefix of the unwindowed result and reports a next page exactly when rows
+  remain, with and without the probe. A `UNION ALL` branch after the last `UNION` keeps
+  every row (`0 UNION 1 UNION ALL <100,000 × 2>`: a window of 5 is `0,1,2,2,2` with a next
+  page; it was `0,1,2` and no next page), and a `UNION` after a `UNION ALL` keeps the rows
+  an earlier `UNION` kept (`1 UNION 2 UNION ALL 1 UNION 3` is `1,2,3`; `main` answers `3`).
+  Across two graphs with overlapping values, every window of nine UNION shapes equals the
   unwindowed prefix row for row including each row's graph provenance (this failed while the
   streaming path still merged a later duplicate's graph into a first occurrence).
 - **`hierarchy_walks_share_the_query_guard_and_a_visit_budget`:** 429 under a saturated
@@ -545,6 +554,7 @@ framework layer:
 | A duplicate past a deduplicating UNION's page claimed a next page | `88364ee` | route test and `union_paging.rs` (`a_duplicate_past_the_page_is_no_next_page`, failing before) |
 | A raw probe on top of the distinct lookahead evaluated a row nothing needed | `39ae076` | route test (`1.0/(7-…)` UNION, page of 6, failing before with Division by zero) |
 | A plain UNION branch that repeats a row past the re-read cap failed the query (found by the author, not the review) | `f77f233`, then the commit that deduplicates a plain branch as it is read | `union_paging.rs`: 100,000 copies page correctly; the prefix property over 120 generated UNIONs; the cross-graph prefix-and-provenance test |
+| A `UNION ALL` branch after a `UNION` was read as distinct rows and lost its duplicates and the next page (review); a `UNION` after `UNION … UNION ALL` dropped every row the first `UNION` kept (found by the generated cases; `main` has it) | the commit that decides deduplication per branch | `union_paging.rs`: `a_union_all_branch_after_a_union_keeps_every_row`, the prefix property with operators mixed per branch, two mixed shapes in the cross-graph test |
 | Evidence harness counted a crash as a rejection, ignored failed steps, trusted any listener on its port | `39ae076` | `test_replay.py` (classifier, crashing binary, failing build) |
 | A `{ ...; } \|\| handler` block in the replay hid a failed candidate command followed by a passing one | `717b45e` | `test_replay.py` `SectionPropagationTest` (bit flip, completeness, differential; failing before) |
 | Effective heap ≤ 8 GiB not shown for every JVM of the replay | `c428401` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |
