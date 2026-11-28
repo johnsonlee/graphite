@@ -52,7 +52,7 @@ The following common relationships make claims that **can be tested independentl
 
 ## 4. Empty results, partial results and query boundaries
 
-A coverage claim applies to **(snapshot or system inventory, fact definition and version, selected scope, extraction conditions)**. A claim can cover a batch with exceptions for narrower scopes. Complete means enumeration finished for the particular question. Partial means there are observations and known gaps. Unknown means no sufficient claim is available. The presence of a node kind cannot establish coverage across a graph. Record which run collected the facts, why extraction skipped a scope, or where data was damaged, as applicable. When data declared necessary is corrupt, affected queries return an integrity error.
+A coverage claim applies to **(snapshot or system inventory, fact definition and version, selected scope, extraction conditions)**. A claim can cover a batch with exceptions for narrower scopes. Complete means enumeration finished for the particular question. Partial means the checked scope is known and gaps remain, even if the checked portion yielded zero matches. Unknown means no sufficient claim is available. The presence of a node kind cannot establish coverage across a graph. Record which run collected the facts, why extraction skipped a scope, or where data was damaged, as applicable. When data declared necessary is corrupt, affected queries return an integrity error.
 
 For each query, determine the object domain and required facts, then combine coverage across the relevant scopes. A positive match can be reported with its evidence. Counts in the presence of gaps describe only the confirmed set. Negation, exact counts and unique bindings require coverage of every scope and resolution candidate that could change the answer. Check complete consumption of the query results separately. Cancellation or exhaustion of a work budget cannot establish zero matches. Existing Cypher contracts for rows, nulls and errors continue to apply. These conditions govern when a conclusion holds. How an API conveys them is a separate decision. [Existing method-body completeness semantics](analysis-completeness.md)
 
@@ -80,7 +80,7 @@ We built an arm64 iOS executable named Demo and a dynamic library named Pay in a
 | `otool -l` on Demo shows `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` and `LC_RPATH @executable_path/Frameworks`. | The main image declares a dependency and supplies its own search condition. Its separate load request for a system library can remain an external reference. |
 | `otool -D` on Pay gives the same install name. Its `nm -gU` output includes a definition of `_pay`. Demo’s `nm -u` output includes an undefined `_pay`. | The search condition, member location, architecture and library identity support a static candidate. The symbol reference and export each stand on their own. The two symbol tables alone cannot locate a call site or establish execution. |
 
-**Counterfactual checks.** If Pay is removed from the package, Demo still declares its load request and the packaged candidate disappears. Adding an unreferenced framework adds only a membership relation. In a multi-architecture Mach-O, arm64 and x86_64 each have their own address domain and build UUID. Matching a dSYM by architecture and UUID adds source associations only to the corresponding slice. A matching filename with a different UUID cannot establish a binding. The last two cases follow from the specification. [Apple’s build UUID and dSYM rules](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
+**Counterfactual checks.** If Pay is removed from the package, Demo still declares its load request and the packaged candidate disappears. Adding a framework that matches none of Demo’s load requests can add facts about the framework and its package membership. Demo’s candidates stay the same. In a multi-architecture Mach-O, arm64 and x86_64 each have their own address domain and build UUID. Matching a dSYM by architecture and UUID adds source associations only to the corresponding slice. A matching filename with a different UUID cannot establish a binding. The last two cases follow from the specification. [Apple’s build UUID and dSYM rules](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
 
 ### ELF: one number can denote two kinds of location
 
@@ -123,10 +123,25 @@ Starting at the payments handler, the query joins back through the provided oper
 >>> matches = callers('staging', 'payments', routes)
 >>> (len({caller for caller, _, _ in matches}), sorted(inventory - covered_requests))
 (1, ['legacy-worker'])
+>>> def caller_count(environment, target, bindings, *, covered, routes_complete):
+...     rows = callers(environment, target, bindings)
+...     observed = len({caller for caller, site, handler in rows})
+...     gaps = sorted(inventory - covered)
+...     if not routes_complete:
+...         gaps.append('route coverage')
+...     return observed, (observed if not gaps else None), gaps
+>>> caller_count('test', 'payments', routes, covered=inventory, routes_complete=True)
+(0, 0, [])
+>>> caller_count('staging', 'payments', [], covered=inventory, routes_complete=False)
+(0, None, ['route coverage'])
+>>> caller_count('staging', 'payments', routes, covered=covered_requests, routes_complete=True)
+(1, None, ['legacy-worker'])
 
 ```
 
 **Interpreting the results.** The first result identifies one call site that can be linked statically through C7, the staging route and the declaration of handler H1. Billing’s SDK membership does not enter this join. The second result finds no binding to payments under the test configuration. The third also returns an empty set, but in this case the configuration is missing and C7’s target remains unresolved. The fourth gives a candidate for the same call site under another configuration. Because coverage excludes legacy-worker, the first result establishes one confirmed caller and leaves the system-wide total unknown. If staging supplies two routes that could both apply, retain both candidates and their conditions. One route alone cannot establish a unique target.
+
+The last three assertions compare counts assuming a complete provider inventory, deterministic routing and completed execution. Each returns the observed number of services linked to the target, the exact count (`None` when unknown), and the gaps. The first assumes that request facts were subsequently collected for all services with no additional calls found. The last retains the original inventory coverage. Coverage is an input to this example.
 
 The existing topology runs rules over the configured graphIds, aggregates weights by (source, target, protocol) and deduplicates operation and evidence. The call-site results above can be projected onto service pairs while retaining the detailed evidence for inspection. Existing rules keep their original weight calculations. Each graph registered through the legacy workflow still maps to one service. C4, topology and endpoints grouped by graphId retain their existing contracts. Establishing field-level dataflow across services also requires evidence about serialized fields, protocol versions and the peer’s decoding map. An endpoint match alone supports only operation-level impact. [Topology query contract](topology-graph.md) · [Existing cross-graph rule example](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 

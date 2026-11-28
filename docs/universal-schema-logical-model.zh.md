@@ -52,7 +52,7 @@ Basis      = 直接观察(提取执行, 输入中的定位)
 
 ## 4. 空结果、部分结果与查询边界
 
-覆盖声明针对 **（快照或系统清单，事实定义及版本，所选范围，提取条件）**。允许整批声明再附作用域更小的例外。完整表示对这个具体问题已枚举完毕；部分表示已有观测且有已知缺口；未知表示缺少足以判定的声明。不能用“这个图含有某种节点”推导整图覆盖。采集于哪次执行、为何跳过、何处损坏应可区分。已声明必需的数据损坏时，受影响查询返回完整性错误。
+覆盖声明针对 **（快照或系统清单，事实定义及版本，所选范围，提取条件）**。允许整批声明再附作用域更小的例外。完整表示对这个具体问题已枚举完毕；部分表示已检查的范围有界，且仍有已知缺口，即使已检查部分没有匹配项；未知表示缺少足以判定的声明。不能用“这个图含有某种节点”推导整图覆盖。采集于哪次执行、为何跳过、何处损坏应可区分。已声明必需的数据损坏时，受影响查询返回完整性错误。
 
 对一次查询，先确定对象域和所需事实，再合并每个范围的覆盖。正向匹配可报告其已有证据；缺口下的计数只能描述已确认集合。否定、精确计数和唯一绑定还需要覆盖所有可能改变答案的范围及解析候选。最后单独检查查询是否完整消费结果；超预算或取消不能产生“零匹配”的证明。旧 Cypher 的行、null 和错误契约继续有效；这里定义的是结论成立的条件，不指定如何在 API 中携带它们。[已有方法体完整性语义](analysis-completeness.md)
 
@@ -80,7 +80,7 @@ Basis      = 直接观察(提取执行, 输入中的定位)
 | 对 Demo 执行 `otool -l` 读到 `LC_LOAD_DYLIB @rpath/Pay.framework/Pay` 及 `LC_RPATH @executable_path/Frameworks` | 主映像声明依赖，另有属于该映像的搜索条件。其对系统库的另一项装载请求可以保持外部引用。 |
 | 对 Pay 执行 `otool -D` 得到同一 install name；`nm -gU` 有 `_pay` 的定义；Demo 的 `nm -u` 有未定义的 `_pay` | 应用搜索条件、包内位置、架构和库身份支持一个静态候选。符号引用与导出各自成立；仅凭两张符号表无法定位具体调用点或断言实际执行。 |
 
-**反事实检验。** 移除包内 Pay，Demo 的装载请求仍成立，包内候选消失。另放入一个未被引用的 framework，只增加包含关系。对多架构 Mach-O，arm64 和 x86_64 各有自己的地址域及 build UUID；补入 dSYM 时按架构与 UUID 匹配，只给相应 slice 增加源码关联。文件名相同但 UUID 不同不能建立绑定。后两项为规范推演。[Apple 的 build UUID 与 dSYM 规范](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
+**反事实检验。** 移除包内 Pay，Demo 的装载请求仍成立，包内候选消失。另放入一个与 Demo 现有装载请求均不匹配的 framework，可增加该库自身的事实及包内成员关系，Demo 的候选集保持不变。对多架构 Mach-O，arm64 和 x86_64 各有自己的地址域及 build UUID；补入 dSYM 时按架构与 UUID 匹配，只给相应 slice 增加源码关联。文件名相同但 UUID 不同不能建立绑定。后两项为规范推演。[Apple 的 build UUID 与 dSYM 规范](https://developer.apple.com/documentation/technotes/tn3178-checking-for-and-resolving-build-uuid-problems)
 
 ### ELF：同一个数字可以是两种位置
 
@@ -123,10 +123,25 @@ Basis      = 直接观察(提取执行, 输入中的定位)
 >>> matches = callers('staging', 'payments', routes)
 >>> (len({caller for caller, _, _ in matches}), sorted(inventory - covered_requests))
 (1, ['legacy-worker'])
+>>> def caller_count(environment, target, bindings, *, covered, routes_complete):
+...     rows = callers(environment, target, bindings)
+...     observed = len({caller for caller, site, handler in rows})
+...     gaps = sorted(inventory - covered)
+...     if not routes_complete:
+...         gaps.append('route coverage')
+...     return observed, (observed if not gaps else None), gaps
+>>> caller_count('test', 'payments', routes, covered=inventory, routes_complete=True)
+(0, 0, [])
+>>> caller_count('staging', 'payments', [], covered=inventory, routes_complete=False)
+(0, None, ['route coverage'])
+>>> caller_count('staging', 'payments', routes, covered=covered_requests, routes_complete=True)
+(1, None, ['legacy-worker'])
 
 ```
 
 **如何解释查询结果。** 第一行是一处静态可关联调用点，依据是 C7、staging 路由和 H1 的提供方声明。billing 对 SDK 的包含关系不会进入这条连接。第二行是按 test 配置未得到 payments 绑定；第三行在缺少配置时也返回空集，但 C7 的目标仍未决。第四行给出同一调用点在另一个配置下的候选。清单中的 legacy-worker 缺覆盖，因此第一行的已确认调用者数为 1，系统总数未知。若 staging 同时给出两条均可能生效的路由，保留两项候选及条件；仅凭其中一条不能报告唯一目标。
+
+最后三个断言在提供方清单完整、路由确定且查询执行完成的条件下对照计数。返回值依次是可关联到目标的已观察服务数、精确服务数（未知用 `None` 表示）和缺口。第一个断言假设后来补采了所有服务的请求事实，未发现额外调用；最后一个仍采用原清单的实际覆盖。覆盖是样例输入。
 
 现有拓扑按配置的 graphId 执行规则，对 (source, target, protocol) 汇总权重并去重 operation 和 evidence。可将上面的调用点结果投影到服务对，同时保留详细依据供反查；既有规则的权重仍按其原定义计算。旧工作流的每个注册图仍映射到一个服务，C4、拓扑与按 graphId 分组的 endpoints 保持既有契约。若要证明跨服务字段级数据流，还需序列化字段、协议版本以及对端解码映射等证据，单个端点匹配只能支持操作级影响。[拓扑查询契约](topology-graph.md) · [现有跨图规则示例](https://github.com/johnsonlee/graphite/blob/70f908cf6acf4b80ce74d038cecba07f119a544b/README.md#L948-L965)
 
