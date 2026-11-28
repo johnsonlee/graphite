@@ -54,9 +54,13 @@ value 6 Null
 value 7 EnumRef sid sid
 value 8 List values
 
-# Golden records: one node of every kind, as the JVM writer encodes it against the string table
-# below (graph.strings is sorted, so these are the ids of exactly these strings). The node's id
-# is its tag. The values, which both test suites spell out:
+# Golden records, as the JVM writer encodes them against the string table below (graph.strings
+# is sorted, so these are the ids of exactly these strings): `golden <node id> <hex>`. Records
+# 0-16 are one node of every kind, the node's id being its tag; 17 and up are the variants that
+# reach what those do not, so that together the records hold every tagged value and an absent
+# and a present case of every optional field. Both test suites spell the values out as nodes and
+# compare each record's fields, read by the kind and value lines above, to those nodes by name,
+# type and value; a kind line that names or types a field otherwise fails both.
 #   0 -42   1 "hello"   2 1234567890123   3 1.5   4 -2.25   5 true   6 (null)
 #   7 sample.Color.RED with arguments [7, "label", null]
 #   8 local tmp:int in run   9 static field sample.Owner.count:int
@@ -65,6 +69,16 @@ value 8 List values
 #   13 @sample.Tag on sample.Owner.run with value="x", weights=[1L, 2L], level=sample.Color.RED
 #   14 app.yml mode=true (yaml, profile dev)   15 app.yml from classpath (yaml, no profile)
 #   16 the class literal Lsample/Owner;
+#   17 -1 (an int, not an absent one)
+#   18 sample.Color.RED with arguments [7, 2L, "label", 0.5f, 1.0e10, false, null,
+#      sample.Color.RED, [1.5f, [], -2.25]]
+#   19 return of helper, no actual type
+#   20 helper calls run, no line, receiver is node 9, no arguments
+#   21 app.yml count=2.5 (yaml, no profile)   22 app.yml from classpath (yaml, profile dev)
+#   23 @sample.Tag on sample.Owner.count with level=0.25f, mode=0.003, weights=[false, null],
+#      label=[]
+#   24 false   25 @sample.Tag on sample.Owner.run with no values
+#   26 instance field sample.Owner.tmp:java.lang.String
 # where run is sample.Owner.run(int, java.lang.String): java.lang.String
 # and helper is sample.Owner.helper(): void.
 
@@ -109,3 +123,13 @@ golden 13 0000000d0d000000100000000f0000000d000000030000001202000000150000001408
 golden 14 0000000e0e000000020000000c0501000000160100000005
 golden 15 0000000f0f00000002000000030000001600
 golden 16 000000101000000000
+golden 17 0000001100ffffffff
+golden 18 00000012070000000e00000001000000090000000007010000000000000002020000000a033f000000044202a05f20000000050006070000000e000000010800000003033fc00000080000000004c002000000000000
+golden 19 000000130b0000000f00000007000000000000001300
+golden 20 000000140c0000000f0000000700000000000000130000000f0000000d00000002000000080000000900000009ffffffff0000000900000000
+golden 21 000000150e00000002000000040440040000000000000000001600
+golden 22 000000160f0000000200000003000000160100000005
+golden 23 000000170d000000100000000f00000004000000040000000b033e8000000000000c043f689374bc6a7efa0000001408000000020500060000000a0800000000
+golden 24 000000180500
+golden 25 000000190d000000100000000f0000000d00000000
+golden 26 0000001a090000000f000000110000000900

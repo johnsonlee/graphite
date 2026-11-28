@@ -200,7 +200,9 @@ fixed byte offsets (`columns.rs`). Nothing compared them below a whole-graph rou
 the required-file list existed three times (twice in Rust, once in Kotlin).
 
 `backend/storage/schema/node-records.txt` now states the layout once (tag, kind, fields in
-order, the encoding of each) and holds a golden record per kind against a fixed string table.
+order, the encoding of each) and holds golden records against a fixed string table: one per
+kind, and ten variants, so that together they hold every tagged value and an absent and a
+present case of every optional field.
 `graph-files.txt` beside it lists the required files. Both languages are tested against them:
 
 | Codec | Test | What fails it |
@@ -208,13 +210,22 @@ order, the encoding of each) and holds a golden record per kind against a fixed 
 | JVM writer and reader | `NodeRecordSchemaTest` (Kotlin) | the writer's bytes for a kind differ from its golden record, or the reader does not read the golden record back to the same node |
 | JVM build spill | `NodeRecordSchemaTest` | a field of any kind does not survive `MmapGraphBuilder` |
 | Rust reader | `node_schema_tests.rs` | `Node::read` of a golden record is not the expected node, or reads a record cut short |
-| Schema text | `node_schema_tests.rs` | walking a golden record by the declared encodings does not consume exactly its bytes |
+| Schema text | both | a golden record's fields, read by the kind and value lines alone and rendered by name and type (`line=17`, `value=1234567890123L`, `Float(0.5f)`), are not the fields of the node the test spells out, rendered from that node's own properties; a tagged value or an optional field's absent or present case that no record holds |
 | Rust fixed-offset readers | `node_schema_tests.rs` | an entry of `RAW_STRING_FIELDS` is not a string id at that offset in the schema |
-| Rust importer's writer | `node_schema_tests.rs` | a record it writes renders differently from the golden record of its kind |
+| Rust importer's writer | `node_schema_tests.rs` | a record it writes, read by the schema and read by `Node::read`, is not the expected node's fields (the expectation is the typed node, not the golden bytes read through the same schema) |
 | Required files | both | `REQUIRED_ENTRIES` (Rust, now one list) or `GraphManifest.REQUIRED_FILES` differs from `graph-files.txt` |
 
 Checked by mutation: reordering a field in the schema fails three Rust tests, and writing two
 fields in the other order in the importer fails its test with both renderings in the message.
+
+The first version compared only a record's length, so a schema could name or type a field
+otherwise and stay green (review: `LongConstant value:i64` as `f64`, `line` and `receiver`
+exchanged, the tagged `Float` line changed, the JVM's tagged `Float`/`Double` payloads zeroed).
+Sixteen such schema mutations are now committed regressions in both suites
+(`a schema that names or types a field otherwise is caught`): same width and another type,
+names exchanged between fields of one encoding, a tagged value's encoding or name changed, a
+field added or removed. Zeroing the JVM's tagged `Float` and `Double` payloads by hand fails
+`the JVM writer produces every golden record` (checked once; the tree is unchanged).
 
 Adding a node field is now: the schema line and its golden record, then each codec, and CI
 names every codec that was left behind.
@@ -517,10 +528,30 @@ values)` records a fact through the one path a bytecode annotation takes
 persisted, and visible to `Graph.memberAnnotations`, to Cypher and to the views derived from
 annotations. A context without a class, member or name is refused.
 
+**One conflict policy (review).** The metadata is keyed by (class, member, name) and a second
+write replaced the entry while the graph kept a node for each, so after a save and a load
+`Graph.memberAnnotations` said `/second` and `MATCH (a:Annotation)` returned `/first` and
+`/second`. A name the member already has is now refused before either representation is
+written: at the call (`IllegalArgumentException`) when an extension or the bytecode already
+recorded it, and when the build commits the extensions' annotations (`IllegalStateException`,
+none of them written) when the class was read after the extension named it. Extension writes
+are held until every class is read, so the outcome does not depend on class order. The
+sootup module now exposes `sootup.core` as API: the SPI's signatures use its types, and a
+module implementing an extension did not compile against `:sootup` alone.
+
+Not changed, and present on `main`: the metadata key is the member *name*, so two overloads
+that carry the same bytecode annotation share one metadata entry (the last read) and have a
+node each. The node is the fact; the metadata view is lossy for overloads. Keying members by
+signature changes persisted metadata for every graph and is left out of this change.
+
 Committed tests: `GraphiteContextTest` (the writer receives the fact; an incomplete one is
-refused and writes nothing) and `AdapterResolutionHelpersTest` (an extension's annotations on a
+refused and writes nothing), `AdapterResolutionHelpersTest` (an extension's annotations on a
 class and on a member are in the built graph, as metadata and as nodes, with the values a
-bytecode annotation would have).
+bytecode annotation would have; a duplicate is refused and the first stays the only one; a
+name the bytecode carries is refused at the call and at commit; a context kept past the build
+is refused) and `ExtensionAnnotationPersistenceTest` (an extension registered through
+`ServiceLoader`, real bytecode with an annotation of its own, both builders: metadata and
+`Annotation` rows agree in the built graph and after `GraphStore.save` and `loadMapped`).
 
 **Still a design boundary.** This is the write half of the documented contract, not a
 framework layer:

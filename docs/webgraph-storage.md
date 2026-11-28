@@ -639,11 +639,14 @@ The chronological record of each WebGraph optimization attempt now lives in [web
 
 The layout of a `graph.nodedata` record is stated once, in
 `backend/storage/schema/node-records.txt`: the tag and name of every node kind, its fields in
-order and the encoding of each, plus one golden record per kind against a fixed string table.
+order and the encoding of each, plus golden records against a fixed string table (one per
+kind, and variants that reach every tagged value and both cases of every optional field).
 The codecs are still written by hand, in two languages, and each is tested against that file:
 the JVM writer and reader and the build spill (`NodeRecordSchemaTest`), the Rust reader, the
 JSON importer's writer and the readers at fixed byte offsets (`node_schema_tests.rs`). To add a
 field, change the schema line and the golden record of its kind, then every codec; a codec left
-behind fails its test. A change of layout is a change of storage format: bump
+behind fails its test. The tests read each golden record by the schema alone and compare its
+fields, by name, type and value, to the node they spell out, so the schema line itself is
+checked, not only the record's length. A change of layout is a change of storage format: bump
 `NodeSerializer.FORMAT_VERSION` and the version the Rust reader accepts, and keep reading the
 earlier one.
