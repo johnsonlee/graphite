@@ -975,6 +975,9 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 *CLI* (`graphite`) that drives both. See
 [docs/architecture-frontend-backend.md](docs/architecture-frontend-backend.md).
 
+For the proposed scope of analysis across artifacts and services, see
+[Universal schema goals and non-goals](docs/universal-schema-scope.md).
+
 ```
 graphite/
 ├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
