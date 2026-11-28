@@ -1205,6 +1205,14 @@ Spring mapping annotations. `annotationFqn` is the name queries match and need n
 that exists. An extension is called once per application class, after the class's methods and
 fields; it cannot add node kinds or edges.
 
+A member holds one annotation of a name. Recording a name the member already has, from the
+bytecode or from an earlier call by any extension, throws `IllegalArgumentException` and writes
+nothing; a class named before the build has read it is checked again once every class is
+read, and a name its bytecode carries fails the build. To add to what an annotation says (a
+route with its placeholders resolved), record the result under a name of your own on the same
+member. An extension module compiles against `io.johnsonlee.graphite:sootup`, which exposes the
+SootUp types of the SPI (`SootClass`, `SootMethod`).
+
 ## Kotlin Dependencies
 
 The JVM modules are published to Maven Central under `io.johnsonlee.graphite` with

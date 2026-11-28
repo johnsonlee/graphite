@@ -166,6 +166,9 @@ class MmapGraphBuilder(internal val workDir: Path = Files.createTempDirectory("g
         return this
     }
 
+    override fun hasMemberAnnotation(className: String, memberName: String, annotationFqn: String): Boolean =
+        memberAnnotations["$className#$memberName"]?.containsKey(annotationFqn) == true
+
     override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
         classOrigins.putIfAbsent(className, source)
         return this

@@ -33,6 +33,11 @@ interface FullGraphBuilder : GraphBuilder {
         values: Map<String, Any?> = emptyMap()
     ): FullGraphBuilder
     /**
+     * Whether [annotationFqn] is already recorded on [memberName] of [className]. A member holds one annotation of a name
+     * ([addMemberAnnotation] replaces it), so a writer that must not replace a fact asks first.
+     */
+    fun hasMemberAnnotation(className: String, memberName: String, annotationFqn: String): Boolean
+    /**
      * Record a branch scope. [trueDefinitions] and [falseDefinitions] are packed
      * `[stmtOrdinal, localNodeId, constantNodeId]*` arrays, see
      * [BranchScope.packDefinitions].

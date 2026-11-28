@@ -61,23 +61,82 @@ internal class NodeMetadata(private val context: SootUpAdapter) {
     }
 
     /**
-     * Records the annotation [fullName] on [memberName] of [className] (`<class>` for the class itself), as member metadata and as
-     * an [AnnotationNode]: the one way an annotation enters the graph, for the ones the bytecode carries and for the ones a
-     * [GraphiteExtension] adds. Values are normalized to what the graph persists.
+     * Records the annotation [fullName] the bytecode carries on [memberName] of [className] (`<class>` for the class itself), as
+     * member metadata and as an [AnnotationNode]. Values are normalized to what the graph persists.
      */
     fun recordAnnotation(className: String, memberName: String, fullName: String, values: Map<String, Any?>) {
+        writeAnnotation(AnnotationKey(className, memberName, fullName), normalizeAnnotationValues(values))
+    }
+
+    /**
+     * Holds the annotation a [GraphiteExtension] states until every class has been read ([commitExtensionAnnotations]).
+     *
+     * A member holds one annotation of a name: the metadata is keyed by (class, member, name), so a second write would replace
+     * the first there while the graph kept a node for each, and the two views of one fact would disagree. An extension states
+     * what the bytecode does not say, so a name that is already taken, by the bytecode or by an earlier extension write, is
+     * refused before anything is written. The refusal is checked here, where the stack names the extension, and again when
+     * the annotations are committed, because the class an extension names may not have been read yet.
+     */
+    fun stageExtensionAnnotation(className: String, memberName: String, fullName: String, values: Map<String, Any?>) {
+        val key = AnnotationKey(className, memberName, fullName)
+        check(!extensionAnnotationsCommitted) {
+            "$key was recorded after the build had read every class; an extension writes during visit()"
+        }
+        require(key !in extensionAnnotations) {
+            "An extension already recorded $key; a member holds one annotation of a name. Record the second fact under a name of its own"
+        }
+        require(!graphBuilder.hasMemberAnnotation(className, memberName, fullName)) { key.carriedByBytecode() }
+        extensionAnnotations[key] = normalizeAnnotationValues(values)
+    }
+
+    /** Starts a build's extension writes: nothing is held over from a build that failed, and writes are accepted again. */
+    fun openExtensionAnnotations() {
+        extensionAnnotations.clear()
+        extensionAnnotationsCommitted = false
+    }
+
+    /**
+     * Writes the annotations the extensions stated, once the bytecode's are all recorded; fails, having written none of them,
+     * when the bytecode carries one of them after all.
+     */
+    fun commitExtensionAnnotations() {
+        extensionAnnotationsCommitted = true
+        extensionAnnotations.keys
+            .firstOrNull { graphBuilder.hasMemberAnnotation(it.className, it.memberName, it.name) }
+            ?.let { error(it.carriedByBytecode()) }
+        extensionAnnotations.forEach(::writeAnnotation)
+        extensionAnnotations.clear()
+    }
+
+    private data class AnnotationKey(val className: String, val memberName: String, val name: String) {
+        override fun toString(): String = "annotation '$name' on '$className#$memberName'"
+
+        fun carriedByBytecode(): String =
+            "An extension recorded $this, which the bytecode already carries. An extension states what the bytecode does " +
+                "not say: record the added fact under a name of its own"
+    }
+
+    private val extensionAnnotations = LinkedHashMap<AnnotationKey, Map<String, Any?>>()
+    private var extensionAnnotationsCommitted = false
+
+    /** The one place an annotation enters the graph: its metadata entry and its node, written together. */
+    private fun writeAnnotation(key: AnnotationKey, values: Map<String, Any?>) {
+        graphBuilder.addMemberAnnotation(key.className, key.memberName, key.name, values)
+        graphBuilder.addNode(AnnotationNode(
+            id = NodeId.next(),
+            name = key.name,
+            className = key.className,
+            memberName = key.memberName,
+            values = values
+        ))
+    }
+
+    private fun normalizeAnnotationValues(values: Map<String, Any?>): Map<String, Any?> {
         val cleanValues = mutableMapOf<String, Any?>()
         for ((key, value) in values) {
             cleanValues[key] = normalizeAnnotationValue(value)
         }
-        graphBuilder.addMemberAnnotation(className, memberName, fullName, cleanValues)
-        graphBuilder.addNode(AnnotationNode(
-            id = NodeId.next(),
-            name = fullName,
-            className = className,
-            memberName = memberName,
-            values = cleanValues
-        ))
+        return cleanValues
     }
 
     fun normalizeAnnotationValue(value: Any?): Any? = when (value) {

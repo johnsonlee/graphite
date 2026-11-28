@@ -27,6 +27,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DefaultGraphTest {
@@ -646,6 +647,20 @@ class DefaultGraphTest {
         val annotations = graph.memberAnnotations("com.example.User", "name")
         assertEquals(1, annotations.size)
         assertEquals("required", annotations["javax.validation.NotNull"]?.get("message"))
+    }
+
+    @Test
+    fun `a builder says whether a member already has an annotation of a name`() {
+        for (builder in listOf<FullGraphBuilder>(DefaultGraph.Builder(), MmapGraphBuilder())) {
+            assertFalse(builder.hasMemberAnnotation("com.example.User", "name", "NotNull"))
+            builder.addMemberAnnotation("com.example.User", "name", "NotNull", mapOf("message" to "required"))
+            assertTrue(builder.hasMemberAnnotation("com.example.User", "name", "NotNull"))
+            // Another name, another member and another class are other keys.
+            assertFalse(builder.hasMemberAnnotation("com.example.User", "name", "Size"))
+            assertFalse(builder.hasMemberAnnotation("com.example.User", "id", "NotNull"))
+            assertFalse(builder.hasMemberAnnotation("com.example.Other", "name", "NotNull"))
+            (builder.build() as? AutoCloseable)?.close()
+        }
     }
 
     @Test

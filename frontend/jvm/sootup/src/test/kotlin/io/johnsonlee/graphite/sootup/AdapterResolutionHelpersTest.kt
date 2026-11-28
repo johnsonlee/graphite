@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.core.MethodDescriptor
+import kotlin.test.assertFailsWith
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -177,6 +178,109 @@ internal class AdapterResolutionHelpersTest : AdapterTestFixtures() {
         assertEquals(
             setOf(Triple("acme.Router", "<class>", router), Triple("acme.Route", "list", emptyMap())),
             nodes.filter { it.className == "sample.fake.Routes" }.map { Triple(it.name, it.memberName, it.values) }.toSet()
+        )
+    }
+
+    private fun routesAdapter(extension: GraphiteExtension, builder: DefaultGraph.Builder = DefaultGraph.Builder()) = SootUpAdapter(
+        view = FakeView(listOf(FakeSootClass(identifierFactory.getClassType("sample.fake.Routes"))), identifierFactory),
+        config = LoaderConfig(includePackages = listOf("sample.fake"), buildCallGraph = false),
+        extensions = listOf(extension),
+        resourceAccessor = EmptyResourceAccessor,
+        inputLocationSources = emptyMap(),
+        graphBuilder = builder
+    )
+
+    private fun routeNodes(graph: io.johnsonlee.graphite.graph.Graph) =
+        graph.nodes(io.johnsonlee.graphite.core.AnnotationNode::class.java).toList()
+            .filter { it.className == "sample.fake.Routes" }
+            .map { Triple(it.name, it.memberName, it.values) }
+
+    @Test
+    fun `a second write of an annotation a member already has is refused, and the first stays the only one`() {
+        // Review of #229: the metadata is keyed by (class, member, name) and kept the second write, the graph kept a node
+        // for each, and the two views of one fact disagreed after a save and a load.
+        var refusal: IllegalArgumentException? = null
+        var context: GraphiteContext? = null
+        val extension = object : GraphiteExtension {
+            override fun visit(sootClass: SootClass, context0: GraphiteContext) {
+                context = context0
+                context0.addMemberAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/first"))
+                refusal = assertFailsWith<IllegalArgumentException> {
+                    context0.addMemberAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/second"))
+                }
+                // Another name on the same member is another fact.
+                context0.addMemberAnnotation("sample.fake.Routes", "run", "audit.Resolved", mapOf("value" to "/second"))
+            }
+        }
+
+        val graph = routesAdapter(extension).buildGraph()
+
+        assertEquals(
+            "An extension already recorded annotation 'audit.Route' on 'sample.fake.Routes#run'; a member holds one " +
+                "annotation of a name. Record the second fact under a name of its own",
+            refusal?.message
+        )
+        val expected = mapOf("audit.Route" to mapOf("value" to "/first"), "audit.Resolved" to mapOf("value" to "/second"))
+        assertEquals(expected, graph.memberAnnotations("sample.fake.Routes", "run"))
+        assertEquals(expected.map { (name, values) -> Triple(name, "run", values) }, routeNodes(graph))
+        // A context kept past the build writes nothing, and says so.
+        val late = assertFailsWith<IllegalStateException> {
+            assertNotNull(context).addMemberAnnotation("sample.fake.Routes", "run", "audit.Late")
+        }
+        assertEquals(
+            "annotation 'audit.Late' on 'sample.fake.Routes#run' was recorded after the build had read every class; " +
+                "an extension writes during visit()",
+            late.message
+        )
+    }
+
+    @Test
+    fun `an unhandled duplicate write fails the build`() {
+        val extension = object : GraphiteExtension {
+            override fun visit(sootClass: SootClass, context: GraphiteContext) {
+                repeat(2) { context.addMemberAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/$it")) }
+            }
+        }
+        assertFailsWith<IllegalArgumentException> { routesAdapter(extension).buildGraph() }
+    }
+
+    @Test
+    fun `an annotation the bytecode carries is not an extension's to record`() {
+        val carried = "An extension recorded annotation 'audit.Route' on 'sample.fake.Routes#run', which the bytecode already " +
+            "carries. An extension states what the bytecode does not say: record the added fact under a name of its own"
+        // Read before the extension writes: refused at the call.
+        val early = routesAdapter(object : GraphiteExtension {
+            override fun visit(sootClass: SootClass, context: GraphiteContext) = Unit
+        })
+        early.metadata.openExtensionAnnotations()
+        early.metadata.recordAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/bytecode"))
+        assertEquals(carried, assertFailsWith<IllegalArgumentException> {
+            early.metadata.stageExtensionAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/extension"))
+        }.message)
+
+        // Read after the extension wrote (it named a class the build had not reached): refused when the build commits, with
+        // none of the extension's annotations written, the accepted ones included.
+        val builder = DefaultGraph.Builder()
+        val late = routesAdapter(object : GraphiteExtension {
+            override fun visit(sootClass: SootClass, context: GraphiteContext) = Unit
+        }, builder)
+        late.metadata.openExtensionAnnotations()
+        late.metadata.stageExtensionAnnotation("sample.fake.Routes", "list", "audit.Route", mapOf("value" to "/accepted"))
+        late.metadata.stageExtensionAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/extension"))
+        late.metadata.recordAnnotation("sample.fake.Routes", "run", "audit.Route", mapOf("value" to "/bytecode"))
+        assertEquals(carried, assertFailsWith<IllegalStateException> { late.metadata.commitExtensionAnnotations() }.message)
+        val graph = builder.build()
+        assertEquals(mapOf("audit.Route" to mapOf("value" to "/bytecode")), graph.memberAnnotations("sample.fake.Routes", "run"))
+        assertEquals(emptyMap(), graph.memberAnnotations("sample.fake.Routes", "list"))
+        assertEquals(listOf(Triple("audit.Route", "run", mapOf("value" to "/bytecode"))), routeNodes(graph))
+
+        // The next build starts clean: what a failed build staged is gone, and the name is free again.
+        late.metadata.openExtensionAnnotations()
+        late.metadata.stageExtensionAnnotation("sample.fake.Routes", "list", "audit.Route", mapOf("value" to "/again"))
+        late.metadata.commitExtensionAnnotations()
+        assertEquals(
+            mapOf("audit.Route" to mapOf("value" to "/again")),
+            builder.build().memberAnnotations("sample.fake.Routes", "list")
         )
     }
 

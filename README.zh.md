@@ -747,6 +747,8 @@ class RouterExtension : GraphiteExtension {
 
 `addMemberAnnotation(className, memberName, annotationFqn, values)` 写入的事实与字节码自带的注解完全一样：随图持久化，可通过 `Graph.memberAnnotations` 读取，在 Cypher 中作为 `Annotation` 节点匹配（`MATCH (a:Annotation) WHERE a.name = 'acme.Router' RETURN a.class, a.member`），也会被所有基于注解推导的视图看到（例如名称是 Spring 映射注解时的 endpoints 视图）。`annotationFqn` 是查询匹配用的名称，不要求是真实存在的类。扩展对每个应用类调用一次，在该类的方法和字段处理之后；它不能新增节点类型或边。
 
+一个成员上同名注解只有一条。如果成员上已经有这个名称（来自字节码，或任何扩展之前的调用），再次写入会抛出 `IllegalArgumentException`，且不写入任何数据；如果写入时目标类还没被读到，构建会在读完所有类之后再检查一次，字节码里确实带有同名注解时构建失败。想补充某个注解的信息（例如解析完占位符的路由），请在同一成员上用自己的注解名记录。扩展模块只需依赖 `io.johnsonlee.graphite:sootup`，SPI 用到的 SootUp 类型（`SootClass`、`SootMethod`）由它一并提供。
+
 在 `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension` 中注册。
 
 ## Kotlin 依赖
