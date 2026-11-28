@@ -55,7 +55,7 @@ chain is a use-case acceptance test. What is not solved is stated as not solved.
 | 4 | JVM/Rust error and JSON drift | Addressed for every case the differential covers (60 of 228 diverged at baseline, 0 now). Full engine equivalence is not proven | `cli-differential.txt` |
 | 5 | Query service: paging, wide hierarchy, capabilities | Addressed, with stated limits | `query-service.txt` |
 | 6 | Memory/scale: process-wide ids, max-id-sized indexes | Repeated-build drift fixed. The max-id sizing is kept and pinned as a contract. Matched multi-graph measurements exist for Linux and do not reproduce the review's two findings; performance is **not accepted** | `repeated-builds.txt`, `performance-linux.txt` |
-| 7 | Engineering: scheduling-sensitive tests, slow verification | Four tests made deterministic. The complete verification path is **not** faster; only the affected-change first pass is | source references below |
+| 7 | Engineering: scheduling-sensitive tests, slow verification | Five tests made deterministic. The complete path is measured per job and task; its two serial stages run in parallel now (locally 9.4→7.2 min and 2.1→1.1 min), hosted numbers pending | section 7 |
 | 8 | Framework-semantic extension layer | The documented extension write API now exists (it did not). A framework layer remains a design boundary, not implemented | section 8 |
 
 ---
@@ -418,11 +418,41 @@ parallel. Some plans:
 | `frontend/jvm/core` | all 7 Gradle projects |
 | build files, or `--all` | everything, including `npm test` |
 
+**The complete path, measured.** The complete path is CI: every job below runs on every PR. On
+`6925e90` (hosted runners, one run):
+
+| Job | Wall | Largest steps |
+| --- | ---: | --- |
+| Run unit tests | 20.2 min | `./gradlew check` 18.7 min |
+| Rust | 19.8 min | JVM-to-native interoperability 5.4, JVM frontend and fixture build 3.6, CLI differential 3.2, unit tests 1.9 |
+| Apple frontend (three jobs) | 5.8 min | |
+| JavaScript artifact frontend (three jobs) | 3.5 min | |
+| Cypher TCK | 1.1 min | |
+| Benchmark correctness and OOM | 31.9 min | the matched base/head run 29.9 |
+
+Inside `./gradlew check`, by the log's task timestamps: `:webgraph:test` 8.75 min,
+`:webgraph:largeCorpusTest` 3.77, `:sootup:test` 1.33, everything else under half a minute
+each. `:webgraph:test` is 84 classes, each in its own JVM, one after another; one of them, the
+Android SDK gate, is 274 s of the 413 s of test time, and the other 83 spend about as long
+starting JVMs as running tests.
+
+**Shortened, with every check kept.**
+
+| Change | Before | After | Measured |
+| --- | ---: | ---: | --- |
+| `:webgraph:test` runs two classes at a time (`maxParallelForks = 2`); each class still gets a fresh 4 GiB JVM, so the Android gate proves what it proved | 9 min 24 s | 7 min 10 s | locally, 4 vCPU, `--rerun-tasks`; 84 classes, 481 tests, 0 failures, coverage 8403/8403 lines both times |
+| The CLI differential runs four cases at a time, each worker on its own copy of the graph so no two JVMs write derived files into one directory | 2 min 07 s | 1 min 05 s | locally; 228 of 228 both times, and still 168 of 228 on the baseline's two CLIs |
+
+Neither removes or weakens a check. `:webgraph:largeCorpusTest` stays serial: its three gates
+time whole-JAR builds and must not share the host.
+
 **Not addressed.**
-- This shortens the first feedback loop for a narrow change. It does **not** make the
-  complete verification path faster.
-- No comparable before/after records of the complete path exist, so none are claimed.
-- The full path still runs in CI and with `--all`.
+- The hosted numbers for the two changes are not in yet; the table above is a local
+  measurement, and the first CI run with them is the comparable record.
+- The benchmark job (32 min) is the longest path and is unchanged: it builds 64 graphs twice.
+- `:webgraph:test` is still bounded by the Android gate (4.5 min in one class).
+- `verify-affected.py` shortens the first feedback loop for a narrow change; it does not
+  shorten the complete path.
 
 ## 8. Framework-semantic extension boundary
 

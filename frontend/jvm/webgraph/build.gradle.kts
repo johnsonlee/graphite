@@ -232,6 +232,10 @@ tasks.test {
     maxHeapSize = "4g"
     // The Android fixture must prove the 4 GiB gate without inheriting heap from prior tests.
     forkEvery = 1
+    // Two classes at a time, each still in its own fresh JVM. The Android gate is one class and
+    // more than half of this task's test time; run alone it left the other classes waiting behind
+    // it, and the task took 9 minutes where 5 do. Two 4 GiB heaps stay within a 16 GiB runner.
+    maxParallelForks = 2
     exclude("**/*CorpusPerformanceGateTest.class")
     inputs.files(androidDeclaredTypesFixture).withPropertyName("androidDeclaredTypesFixture")
     doFirst {

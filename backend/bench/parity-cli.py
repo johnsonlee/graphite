@@ -5,8 +5,13 @@ Unlike the HTTP suite, which parses JSON before comparing, this compares raw std
 stderr byte for byte along with the exit code. That is the only way to check the things
 a CLI actually promises: column widths, padding, Gson's escaping, and the exact error
 text a script might match on.
+
+Cases run a few at a time, since each starts a JVM. Every worker queries its own copy of the
+graph directory: the JVM CLI writes derived files (the transpose) beside a graph it queries,
+and two JVMs doing that to one directory at once would make a case's answer depend on its
+neighbours. A case's two CLIs always read the same copy, so they are compared like for like.
 """
-import subprocess, sys, os
+import concurrent.futures, queue, shutil, subprocess, sys, os, tempfile
 
 GRAPH = sys.argv[1] if len(sys.argv) > 1 else "/home/user/fixtures/explore-graph"
 JAR = sys.argv[2] if len(sys.argv) > 2 else "frontend/jvm/query/build/libs/graphite.jar"
@@ -93,18 +98,20 @@ QUERIES = [
 
 FORMATS = ["text", "json", "csv", "CSV", "bogus"]
 
-passed = failed = 0
-failures = []
+WORKERS = max(1, min(4, os.cpu_count() or 1))
+cases = []
 
 def check(label, argv_tail):
-    global passed, failed
-    kot = run(["java", "-jar", JAR] + argv_tail)
-    rust = run([RUST] + argv_tail)
-    if kot == rust:
-        passed += 1
-        return
-    failed += 1
-    failures.append((label, kot, rust))
+    cases.append((label, argv_tail))
+
+def compare(copies, argv_tail):
+    """Both CLIs on one private copy of the graph; GRAPH in the arguments names that copy."""
+    copy = copies.get()
+    try:
+        tail = [copy if arg is GRAPH else arg for arg in argv_tail]
+        return run(["java", "-jar", JAR] + tail), run([RUST] + tail)
+    finally:
+        copies.put(copy)
 
 for q in QUERIES:
     for fmt in FORMATS:
@@ -118,6 +125,22 @@ check("verbose json", ["query", GRAPH, "MATCH (n:CallSite) RETURN n LIMIT 1", "-
 check("format long", ["query", GRAPH, "RETURN 1 AS x", "--format", "csv"])
 check("no such graph", ["query", "/nonexistent", "RETURN 1"])
 check("CREATE", ["query", GRAPH, "CREATE (n:Foo)"])
+
+passed = failed = 0
+failures = []
+with tempfile.TemporaryDirectory(prefix="graphite-parity-cli-") as scratch:
+    copies = queue.Queue()
+    for worker in range(WORKERS):
+        copies.put(shutil.copytree(GRAPH, os.path.join(scratch, f"graph-{worker}")))
+    with concurrent.futures.ThreadPoolExecutor(WORKERS) as pool:
+        # Results in case order, whatever order the cases finished in.
+        results = list(pool.map(lambda case: compare(copies, case[1]), cases))
+for (label, _), (kot, rust) in zip(cases, results):
+    if kot == rust:
+        passed += 1
+    else:
+        failed += 1
+        failures.append((label, kot, rust))
 
 # A file is a container to the Rust CLI and not a graph to the jar, which reads directories
 # only: the two explain the refusal differently by design, so only the exit code is compared.
