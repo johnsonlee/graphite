@@ -242,6 +242,17 @@ Committed regressions, one per class:
   incl. the `Long.MAX` boundary);
 - `node_tostring.rs`;
 - `QueryCommandTest` (non-finite values in JSON, and a graph path that does not exist).
+- `Utf8ConsoleTest` (the jar's output under `LC_ALL=POSIX`, below).
+
+**The locale.** The reviewer's independent replay on macOS inherited a `C.UTF-8` the platform
+does not support, so the JVM wrote its standard streams in US-ASCII and 11 cases differed: the
+jar printed `?` for the em dash in "DELETE is not supported — graph is immutable", where the
+Rust CLI writes UTF-8 bytes in every locale. The same happens here under `LC_ALL=POSIX`
+(217 of 228 at the replayed candidate). The jar now writes UTF-8 on both streams in every locale
+(`Utf8Console.kt`): 228 of 228 under `POSIX`, `C` and `C.UTF-8`. `Utf8ConsoleTest` runs the
+real entry point under `LC_ALL=POSIX` and fails without the fix. The JVM still decodes its
+command-line arguments in the locale's charset, so a non-ASCII query text passed to the jar
+under an ASCII locale is already lost before the jar sees it; the Rust CLI receives the bytes.
 
 **Different by design or unsupported (recorded, not counted as drift)**
 - **A container file given as the graph:** the Rust CLI reads `.graphite` files and the jar
@@ -400,6 +411,7 @@ routing tables as first-class facts) remain the extension's or the query's job (
 | A `{ ...; } \|\| handler` block in the replay hid a failed candidate command followed by a passing one | `717b45e` | `test_replay.py` `SectionPropagationTest` (bit flip, completeness, differential; failing before) |
 | Effective heap ≤ 8 GiB not shown for every JVM of the replay | `c428401` | `test_replay.py` `HeapTest`; `jvm-heap.txt` |
 | An inherited `_JAVA_OPTIONS` heap outranked the replay's bound | the commit moving the bound to `_JAVA_OPTIONS` | `HeapTest` (guard alone with `-Xmx9g` inherited; real JVMs asking for more through every source get 64 MiB; failing before) |
+| The jar wrote `?` for every non-ASCII character under a non-UTF-8 locale | the commit adding `Utf8Console.kt` | `Utf8ConsoleTest` (`LC_ALL=POSIX`, failing before); differential 228/228 under `POSIX`, `C`, `C.UTF-8` |
 
 The latest-head correctness/OOM gate is in CI. Its only failing check is the two
 reviewed node-numbering transitions (`shape-id-lookup`, `shape-traverse-filtered`), which
