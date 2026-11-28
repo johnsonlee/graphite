@@ -24160,3 +24160,76 @@ non-interleaved comparison (one server per arm, measured in turn) had shown the 
 and then the candidate both 10 ms slower and 12 ms faster than the base in two starts: on this
 query two starts of one binary differ by up to 10%, more than any arm difference. Compare
 revisions on live servers with interleaved requests, or with several instances per arm.
+
+### Attempt327 — hold the mappings of closed graphs to a budget (2026-11-28)
+
+**Hypothesis.** The review of PR #229 measured the 64-graph construction fork's peak RSS 27%
+above the base in one pair (macOS, 2.87 → 3.66 GiB). The fork ends with a read-back that opens
+and closes every graph twice, and a mapped graph's `close()` unmaps nothing: the JDK unmaps a
+buffer when the collector finds it unreachable. The base allocates arrays sized by the
+process-wide largest node id on every load, humongous garbage that starts a concurrent cycle per
+graph; #229 numbers each build from 1, the arrays shrink, the cycles stop, and the files of
+graphs already closed should then stay mapped through the read-back, beside a heap no remark
+shrinks. Counting the mapped bytes of closed graphs and asking for a collection once more than
+256 MiB of them are unreleased should remove that component without unmapping anything by hand.
+
+**Fixture and revisions.** `Fixture64BuildBenchmark.buildAndSaveDistinctRealGraphs`, the
+review's protocol: `-f 1 -wi 0 -i 1 -bm ss -bs 1`, G1, `-Xmx4g`, the four pinned JARs (android
+`6be2218c`, hive `232d67c5`, kotlin-compiler `9fa8cdd1`, tika `87e06f88`). Base `70f908c`
+(JMH jar `0b45a301`), parent `afb6c33` (#229, jar `98d2ddf8`), candidate `afb6c33` plus this
+change (jar `4fcb4837`). JDK 21.0.13, Linux 6.18, 4 vCPU, 15 GiB, one fork at a time, page
+cache dropped before each.
+
+**Method.** Declared before the runs: the fork's kernel peak (`VmHWM`) and its CPU time, with
+`RssAnon` and `RssFile` of `/proc/<pid>/status` sampled every 0.5 s and the GC log kept; order
+base, parent, parent, base, then candidates with a base between. Chosen after the first parent
+run, when its samples showed where the peak was: the split into the build phase and the last
+58 s (the read-back). Every fork that ran is in the table; `first` is the first implementation,
+which counted the graph's context object rather than its node-data buffer.
+
+| Run | Wall (s) | CPU (s) | Peak RSS (GiB) | Max anon (GiB) | Build-phase peak | Read-back peak | Read-back max file-backed | Concurrent cycles | Full GCs |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| base 1 | 497.6 | 698.7 | 2.421 | 2.276 | 2.255 | 2.401 | 0.125 | 232 | 0 |
+| parent 1 | 409.5 | 578.1 | 2.609 | 2.210 | 2.304 | 2.602 | 0.829 | 141 | 0 |
+| parent 2 | 405.0 | 567.7 | 2.900 | 2.320 | 2.311 | 2.900 | 0.580 | 113 | 0 |
+| base 2 | 501.6 | 703.9 | 3.384 | 3.155 | 3.358 | 1.683 | 0.086 | 231 | 0 |
+| first 1 | 395.9 | 548.3 | 2.968 | 2.755 | 2.964 | 2.778 | 0.632 | 110 | 1 |
+| base 3 | 488.5 | 690.1 | 2.496 | 2.380 | 2.446 | 1.673 | 0.069 | 266 | 0 |
+| candidate 1 | 409.0 | 588.9 | 2.577 | 2.471 | 2.577 | 2.052 | 0.160 | 214 | 1 |
+| candidate 2 | 414.6 | 596.0 | 2.436 | 2.285 | 2.436 | 2.241 | 0.151 | 212 | 2 |
+
+A second measurement runs only the read-back (`Fixture64GraphPreparation --verify` over the 64
+graphs candidate 1 built, `-Xmx4g -Xms2g`, parent and candidate alternating, three each):
+
+| Arm | Wall (s) | Peak RSS (GiB) | Max file-backed (GiB) | Full GCs |
+|---|---|---|---|---|
+| parent | 60.6, 65.4, 62.6 | 2.705, 2.722, 2.885 | 0.492, 0.458, 0.500 | 0, 0, 0 |
+| candidate | 63.6, 64.9, 63.4 | 2.352, 2.619, 2.287 | 0.161, 0.160, 0.160 | 4, 5, 4 |
+
+**Result.** Correctness: all 64 graphs built, saved and read back in every fork, under `-Xmx4g`
+with `ExitOnOutOfMemoryError`; the new tests pass and each of nine mutations of the change fails
+one of them.
+Peak RSS: the parent's peak was the read-back in both runs, 0.58 and 0.83 GiB of it the files
+of closed graphs (the base: 0.07–0.13 GiB); the candidate's read-back holds 0.15–0.16 GiB in
+every run, full fork or read-back only, and its peak is back in the build phase, 2.44 and
+2.58 GiB against the parent's 2.61 and 2.90 and the base's 2.42, 2.50 and 3.38. The explicit
+collection the read-back's first closes ask for also returns the heap the build left committed
+(1305M→139M(480M) in candidate 1). The first implementation asked once, about 40 s into the
+read-back: a young collection frees a graph's context and promotes its buffers, so a count that
+follows the context falls while the files stay mapped. CPU: candidate 588.9 and 596.0 s against
+the parent's 578.1 and 567.7 (+3.4% on the means; the collections and the concurrent cycles a
+smaller heap runs), and 15% below the base's 698 s. Wall: +1.1% on the parent, 17% below the
+base. Query latency: not affected by construction; a server closes a graph when it is replaced,
+and pays one collection per 256 MiB it closes without the collector having released it.
+
+What this does not settle: the build-phase peak is G1's committed heap and differs by 40%
+between two runs of the base alone (2.42 and 3.38 GiB), and from 2.30 to 2.96 GiB across the five
+forks of #229 here, so a single pair in either direction (the review's +27%, and its −19.8% on
+the next pair, 3.30 → 2.65 GiB) measures that draw. The
+change removes the component the parent added, which is what a pair could attribute to #229;
+it does not make one pair's verdict repeatable. Samples and GC logs were kept with the run and
+are not part of the repository's tree.
+
+**Decision: kept.** The file-backed residue of closed graphs is bounded (0.16 GiB against
+0.46–0.83 GiB in every comparison) at +3.4% CPU on the parent, inside the 5% limit and far
+below the base.

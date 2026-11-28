@@ -456,20 +456,25 @@ the base built from the four pinned JARs, against base `70f908c`:
 | Loading CPU and peak RSS, query-lifetime CPU and peak RSS | candidate within 3.3% of base in every pair (load CPU −2.5% and −3.5%; load peak RSS +0.3% and +0.1%; query-lifetime CPU +3.3% and −1.5%; peak RSS −0.4% and +0.1%) |
 | `shape-group-count` at concurrency 1, requests interleaved across live servers, three runs of fresh processes (700 paired rounds) | head minus base: −1.4 ± 1.5, −3.7 ± 1.7 and −4.8 ± 1.2 ms on about 145 ms; head is not slower |
 | Construction fork, two runs per revision | peak RSS base 2.63 and 3.06 GiB, head 2.18 and 2.48 GiB; the peak is the G1 heap (anonymous memory), and two runs of one revision differ by 14–16% |
+| Construction fork again, sampled by phase (Attempt327): base ×3, #229 before the change ×2, after it ×2 | peak RSS base 2.42, 3.38 and 2.50 GiB; before 2.61 and 2.90 GiB, with 0.83 and 0.58 GiB of files of closed graphs still mapped in the final read-back (base 0.07–0.13 GiB); after 2.58 and 2.44 GiB, with 0.16 and 0.15 GiB |
 
 What this does and does not show:
 - The tail increase did not reproduce on this host. Two starts of the same binary differ by up
   to 10% on this query, so a comparison with one server per arm measures the process instance
   as much as the revision; interleaving requests across live servers removes that.
-- The construction peak did not reproduce either, and its run-to-run spread is larger than
-  the 5% and 10% limits, so neither this pair nor the review's settles it. The second pair here
-  overlapped other work on the host and is recorded as such.
+- The construction peak's run-to-run spread is larger than the 5% and 10% limits (the base
+  alone: 2.42 to 3.38 GiB), so no single pair settles it: the review's first pair was +27%, its
+  second, on `afb6c33`, −19.8% (3.30 → 2.65 GiB). Setting the first pair aside as "not
+  reproduced" was wrong all the same. Sampling the fork by phase found a component #229 did
+  add: its read-back kept the files of graphs it had already closed mapped (0.58–0.83 GiB),
+  because nothing collected the old generation any more once the id-sized arrays were gone.
+  Attempt327 bounds it (0.16 GiB in every run) and the peak is back in the build phase.
 - The host is saturated at concurrency 4 (4 workers on 4 vCPU) and is not the reference
   machine. The two findings stay open against the review's measurements until they are
   repeated there with several server instances per arm, or on the hosted gates.
 - The hosted fixture64 gate records report-only timings, which are not acceptance evidence.
-- One experiment came out of the investigation and was not kept (Attempt326 in
-  `docs/webgraph-optimization-attempts.md`).
+- Two experiments came out of the investigation: Attempt326 was not kept, Attempt327 was
+  (`docs/webgraph-optimization-attempts.md`).
 
 ## 7. Engineering: scheduling-sensitive tests and verification time
 

@@ -43,4 +43,12 @@ internal class MappedGraphSidecars(
     val declarations: MappedGraphDeclarations = MappedGraphDeclarations()
 )
 
-internal class MappedIndexFiles(val callSiteStringIndexFile: Path, val persistentCallSiteStringIndexEnabled: Boolean)
+/**
+ * [mappedBytes] is the bound of what the graph maps, counted against [closedMappings] from its close until the collector releases it.
+ */
+internal class MappedIndexFiles(
+    val callSiteStringIndexFile: Path,
+    val persistentCallSiteStringIndexEnabled: Boolean,
+    val mappedBytes: Long = 0L,
+    val closedMappings: ClosedGraphMappings = ClosedGraphMappings.process
+)

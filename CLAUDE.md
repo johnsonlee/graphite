@@ -1094,6 +1094,36 @@ toolchain (`frontend/apple/swift.sh`), which is how its completeness was verifie
 macOS; an index role or relation the model already reads (`dynamic`, `overrideOf`) may be
 unused downstream, so read the model before concluding a fact is unavailable.
 
+### A Closed Mapping Is Released by the Collector, and Removed Garbage May Have Been What Ran It
+
+The review of #229 measured the 64-graph construction fork's peak RSS 27% above the base in one
+pair and 20% below it in the next. Both described their run: the fork's peak is G1's committed
+heap, which differed by 40% between two runs of the base alone, and beneath that draw the
+candidate carried a component the base did not have (Attempt327). The fork ends by opening and
+closing every graph twice; a mapped graph's `close()` cannot unmap (JDK 17 has no supported
+call, and unmapping by hand behind a live reader reads freed memory), so its files stay mapped
+until a collection reaches the buffers. The base had been releasing them by accident: every
+load allocated arrays sized by the process-wide largest node id, humongous garbage that started
+a concurrent cycle per graph. #229 numbered each build from 1, the arrays shrank, the cycles
+stopped, and 0.5–0.8 GiB of closed graphs stayed mapped beside a heap no remark shrank.
+`ClosedGraphMappings` counts the mapped bytes of closed graphs and asks for a collection past a
+budget, as `java.nio` does for direct buffers. Lessons:
+
+- Split a peak RSS by phase and into anonymous and file-backed memory (`RssAnon` and `RssFile`
+  of `/proc/<pid>/status`, sampled beside the GC log) before reading a pair's difference. The
+  totals of base and candidate overlapped; the split showed a component only one of them had.
+- A measurement that does not reproduce on another host is still a finding to explain. The
+  first pair was set aside as noise on the strength of two Linux pairs whose totals happened to
+  favour the candidate, and whose samples were never split by phase.
+- Removing waste can remove a side effect something depended on: when a change deletes
+  allocation, ask what the collections it caused were doing for everything else.
+- Count the object that holds the resource. The first version watched the graph's context,
+  which a young collection frees while it promotes the buffers, and asked for one collection in
+  a read-back that needed several; watching the node-data buffer bounded the mappings in every
+  run. A mutation that swaps the watched object must fail a test.
+- A request to the collector needs a rate limit of its own: a caller that keeps its closed
+  graphs reachable is asked once per budget it closes, never once per close.
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

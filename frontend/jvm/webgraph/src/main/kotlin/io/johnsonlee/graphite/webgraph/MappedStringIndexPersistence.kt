@@ -53,7 +53,10 @@ internal fun MappedGraphContext.mappedCallSiteStringIndexView(workConsumer: Grap
 
 internal fun MappedGraphContext.close() {
     clearStringPropertyIndexes()
-    // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
+    // A mapped buffer is unmapped by the collector, not here: the graph's mappings are counted until it does (ClosedGraphMappings).
+    // What is watched is the node data, the first and largest file a graph maps, not this context: a collection that promotes
+    // the buffers and frees the context leaves every file mapped.
+    if (closed.compareAndSet(false, true)) closedMappings.closed(mappedNodeData, mappedBytes)
 }
 
 internal fun MappedGraphContext.clearStringPropertyIndexes() {

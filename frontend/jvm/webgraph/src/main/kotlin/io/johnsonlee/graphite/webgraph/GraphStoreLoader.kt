@@ -81,7 +81,12 @@ internal fun loadEagerGraph(dir: Path): Graph {
 }
 
 @Suppress("TooGenericExceptionCaught")
-internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, persistentCallSiteStringIndex: Boolean): Graph {
+internal fun loadMappedGraph(
+    dir: Path,
+    prepareCallSiteStringIndex: Boolean,
+    persistentCallSiteStringIndex: Boolean,
+    closedMappings: ClosedGraphMappings = ClosedGraphMappings.process
+): Graph {
     require(Files.isDirectory(dir)) { graphNotDirectoryMessage(dir) }
 
     val (nodeDataVersion, nodeCount) = readGraphNodeDataHeader(dir)
@@ -133,7 +138,12 @@ internal fun loadMappedGraph(dir: Path, prepareCallSiteStringIndex: Boolean, per
                         lazy { DeclaredTypeStore.load(dir, stringTable) },
                         lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) },
                         AnalysisCompletenessStore.bind(dir).let { bound -> lazy { bound() } })),
-            indexes = MappedIndexFiles(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE), persistentCallSiteStringIndex))
+            indexes =
+                MappedIndexFiles(
+                    dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
+                    persistentCallSiteStringIndex,
+                    ClosedGraphMappings.mappableBytes(dir),
+                    closedMappings))
     if (prepareCallSiteStringIndex) {
         try {
             if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
