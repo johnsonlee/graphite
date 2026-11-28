@@ -312,8 +312,14 @@ impl Executor {
         });
         for (i, (original, all)) in segments.into_iter().enumerate() {
             let mut factor = 1usize;
+            // Set once the bounded re-read below gave up on this branch: it is then read as
+            // distinct rows, so a window of `n` rows establishes `n` distinct ones.
+            let mut distinct_branch = false;
             let (r, cut) = loop {
                 let mut seg = original.clone();
+                if distinct_branch {
+                    distinct_within_branch(&mut seg);
+                }
                 self.fold_constant_limit(&mut seg);
                 let window = page_rows.map(|rows| rows.saturating_mul(factor));
                 let windowed = window.is_some_and(|max| inject_limit(&mut seg, max));
@@ -351,6 +357,17 @@ impl Executor {
                         // it, or refuse rather than answer a page that lacks rows.
                         if window < union_branch_row_cap(needed) {
                             factor *= 2;
+                            continue;
+                        }
+                        // The cap is spent. The union removes duplicates anyway, so a branch
+                        // that ends in a plain RETURN can remove its own first: every row the
+                        // window then reads is a distinct one. This is the last resort and not
+                        // the first read because DISTINCT evaluates every row of the branch,
+                        // where the plain read stops at its window: a page established within
+                        // the cap never evaluates a row past its lookahead.
+                        if !distinct_branch && distinct_within_branch(&mut original.clone()) {
+                            distinct_branch = true;
+                            factor = 1;
                             continue;
                         }
                         return Err(CypherError::Other(format!(
@@ -1811,6 +1828,25 @@ fn distinct_keys(rows: &[Row]) -> std::collections::HashSet<Vec<Key>> {
 /// Lowers a segment's LIMIT to `max`, or adds it; returns whether `max` is now the limit
 /// that binds the segment's trailing LIMIT (the query's own literal limit was larger, or it
 /// had none). A query limit equal to `max` binds itself: a row past it is no page.
+/// Makes a branch of a deduplicating UNION return distinct rows itself, and says whether it
+/// could. That cannot change the union: the union removes duplicates anyway, in
+/// first-occurrence order, which is the order DISTINCT keeps. Every row a window then reads
+/// from the branch is a distinct one, so a branch that fills a window of `n` rows has
+/// established `n` distinct rows, however often it repeats a row.
+///
+/// Only a branch that ends in a plain RETURN: with its own SKIP or LIMIT, DISTINCT would apply
+/// before them and choose other rows, and with ORDER BY it could name an expression DISTINCT
+/// does not allow. Such a branch has only the bounded re-read.
+fn distinct_within_branch(seg: &mut [Clause]) -> bool {
+    match seg.last_mut() {
+        Some(Clause::Return { distinct, .. }) => {
+            *distinct = true;
+            true
+        }
+        _ => false,
+    }
+}
+
 fn inject_limit(seg: &mut Vec<Clause>, max: usize) -> bool {
     let lit = Clause::Limit(Expr::Literal(Literal::Int(max as i64)));
     if let Some(pos) = seg.iter().rposition(|c| matches!(c, Clause::Limit(_))) {
