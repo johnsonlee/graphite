@@ -636,6 +636,8 @@ RETURN graphId(call) AS source,
 Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI*（`graphite`）组成。前端将编译产物转换为图，后端负责存储、提供服务和查询这些图，CLI 则驱动前后端。详见
 [docs/architecture-frontend-backend.md](docs/architecture-frontend-backend.md)。
 
+关于跨产物、跨服务分析的产品定位，见 [Universal schema 的目标与非目标](docs/universal-schema-scope.zh.md)。
+
 ```
 graphite/
 ├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
